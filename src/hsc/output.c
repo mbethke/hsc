@@ -86,7 +86,7 @@ VOID cleanup_output(VOID)
  */
 BOOL write_output(HSCPRC * hp)
 {
-#define MAX_ERRORLEN 79
+#define MAX_ERRORLEN 500
     STRPTR outfilenm = NULL;
     BOOL written = FALSE;
 
