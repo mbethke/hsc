@@ -34,6 +34,9 @@
 #include "hsclib/eval.h"
 #include "hsclib/uri.h"
 
+/* forward declaration */
+static HSCSTYLE *find_stylename(DLLIST *varlist, CONSTRPTR name);
+
 /*
  *-------------------------------------
  * debugging functions
@@ -209,44 +212,6 @@ HSCATTR *app_var(DLLIST * varlist, STRPTR newname)
 }
 
 /*
- * del_styleattr
- *
- * delete style element
- */
-VOID del_styleattr(APTR data)
-{
-#if DEBUG_ATTR
-   fprintf(stderr, DHL "   del_styleattr %s (mci=%d)\n",
-         var->name, var->macro_id);
-#endif
-
-   ufreestr(((HSCSTYLE*)data)->name);
-   ufreestr(((HSCSTYLE*)data)->value);
-   ufree(data);
-}
-
-
-/*
- * new_styleattr
- *
- * alloc & init a new style element
- */
-HSCSTYLE *new_styleattr(CONSTRPTR name, CONSTRPTR value)
-{
-   HSCSTYLE *newvar = (HSCSTYLE*)umalloc(sizeof(HSCSTYLE));
-
-#if DEBUG_ATTR
-   fprintf(stderr, DHL "   new_styleattr\n");
-#endif
-
-   if(newvar) {
-      newvar->name  = strclone(name);
-      newvar->value = strclone(value);
-   }
-   return newvar;
-}
-
-/*
  *-------------------------------------
  * search functions
  *-------------------------------------
@@ -266,14 +231,6 @@ static int cmp_varname(const APTR cmpstr, const APTR vardata) {
    return 0;
 }
 
-/*
- * cmp_stylename
- *
- * compares a string with a style element's name
- */
-static int cmp_stylename(const APTR cmpstr, const APTR vardata) {
-   return upstrcmp((STRPTR)cmpstr, ((HSCSTYLE*)vardata)->name) ? 0 : -1;
-}
 
 /*
  * find_attrnode
@@ -291,17 +248,6 @@ HSCATTR *find_varname(DLLIST * varlist, STRPTR name) {
    if(nd) return (HSCATTR*)nd->data;
    return NULL;
 }
-
-/*
- * find_stylename
- */
-HSCSTYLE *find_stylename(DLLIST *stylelist, STRPTR name) {
-   DLNODE *nd = find_dlnode(stylelist->first, (APTR) name, cmp_stylename);
-
-   if(nd) return (HSCSTYLE*)nd->data;
-   return NULL;
-}
-
 
 /*
  *-------------------------------------
