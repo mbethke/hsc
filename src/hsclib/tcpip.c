@@ -324,7 +324,7 @@ static BOOL check_proxyonly_uri(HSCPRC *hp, CONSTRPTR uri, CONSTRPTR proxy) {
    return ret;
 }
 
-BOOL check_ext_uri(HSCPRC *hp, char *uri) {
+BOOL check_ext_uri(HSCPRC *hp, const char *uri) {
    while(isspace(*uri)) ++uri;
    if(0 == strncmp(uri,"http://",7)) {
       return check_http_uri(hp,uri,getenv("http_proxy"));
