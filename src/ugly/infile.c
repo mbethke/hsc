@@ -3,12 +3,12 @@
 **
 ** ugly input file functions
 **
-** Version 1.3.0, (W) by Tommy-Saftwörx in 1995
+** Version 1.3.2, (W) by Tommy-Saftwörx in 1995
 **
-** updated:  8-Sep-1995
+** updated:  9-Sep-1995
 ** created:  8-Jul-1995
 **
-** $VER: infile.c 1.3.0 (7.9.1995)
+** $VER: infile.c 1.3.2 (9.9.1995)
 **
 */
 
@@ -16,6 +16,7 @@
 ** TODO:
 **
 ** - handle errors within expstr (no mem)
+** - more elegant handling of inunget( '\n' );
 */
 
 /*
@@ -343,8 +344,10 @@ INFILE *infopen( CONSTRPTR fname, size_t bufsize )
          || (!uinpf->logstr ) )
     {                                            /* Y-> clean up */
 
-        if ( uinpf ) infclose ( uinpf )
-        else if ( inpf ) fclose( inpf );
+        if ( uinpf )
+            infclose ( uinpf );
+        else if ( inpf )
+            fclose( inpf );
         uinpf = NULL;
 
     }
@@ -367,6 +370,9 @@ int infgetc( INFILE *inpf )
 {
     int result = EOF;
 
+#if 0
+    fprintf( stderr, "** ingetch( \"%s\" at %p\n", inpf->filename, inpf );
+#endif
     if ( inpf && (!inpf->eof_reached) ) {
 
         STRPTR lnbuf_str = estr2str( inpf->lnbuf );
@@ -460,14 +466,27 @@ int inungetc( int ch, INFILE *inpf )
 
         STRPTR lnbuf_str = estr2str( inpf->lnbuf );
 
-        inpf->lnctr--;
-        lnbuf_str[inpf->lnctr] = ch;
-        result = ch;
+        /* update file position */
+        if ( ch == '\n' ) {
 
-        /* unget in logstr */
-        if ( (inpf->log_enable) && ( estrlen( inpf->logstr ) ) )
-            if ( !get_left_estr( inpf->logstr, inpf->logstr, estrlen(inpf->logstr)-1 ) )
-                /* TODO: handle out of mem */;
+            result = ch;
+            inpf->flnctr--;
+            inpf->lnctr = 0;
+            set_estr( inpf->lnbuf, "\n" );
+
+        } else {
+            inpf->lnctr--;
+
+            /* write back char */
+            lnbuf_str[inpf->lnctr] = ch;
+            result = ch;
+
+            /* unget in logstr */
+            if ( (inpf->log_enable) && ( estrlen( inpf->logstr ) ) )
+                if ( !get_left_estr( inpf->logstr, inpf->logstr, estrlen(inpf->logstr)-1 ) )
+                    /* TODO: handle out of mem */;
+
+        }
     }
 
     return( result );

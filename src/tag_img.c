@@ -69,7 +69,7 @@ BOOL handle_img( INFILE *inpf )
 
         } else if ( !upstrcmp( nxtoptn, "SRC" ) ) {
 
-            src = parse_url( inpf );          /* get filename */
+            src = parse_uri( inpf );          /* get filename */
             if ( src ) {
 
                 outstr( "=\"" );

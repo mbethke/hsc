@@ -249,7 +249,8 @@ BYTE str2vartype( STRPTR s )
 **
 ** params: var......var to set
 **         newtext..new text to set
-** result: TRUE, if new value set correctly
+** result: value of new text set
+** errors: return NULL if out of mem, display error message
 */
 STRPTR set_vartext( HSCVAR *var, STRPTR newtext )
 {

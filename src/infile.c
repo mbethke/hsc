@@ -3,21 +3,19 @@
 **
 ** ugly input file functions
 **
-** Version 1.2.1, (W) by Tommy-Saftwörx in 1995
+** Version 1.3.2, (W) by Tommy-Saftwörx in 1995
 **
-** updated:  5-Aug-1995
+** updated:  9-Sep-1995
 ** created:  8-Jul-1995
 **
-** $VER: infile.c 1.2.1 (5.8.1995)
+** $VER: infile.c 1.3.2 (9.9.1995)
 **
 */
 
 /*
 ** TODO:
 **
-** - handle whtspc correctly when inungetw()
-** - own wordbuf & wspcbuf for every infile
-** - dynamically allocated wordbuf (autoexpandable)
+** - handle errors within expstr (no mem)
 */
 
 /*
@@ -28,6 +26,7 @@
 #include <string.h>
 
 #include "types.h"
+#include "expstr.h"
 #include "string.h"
 
 #define NOEXTERN_UGLY_FILE_H
@@ -35,6 +34,9 @@
 #include "memory.h"
 
 #define MAX_IFLINELEN 511
+
+/* buffer size for fgets() in infgetc() */
+#define INF_FGETS_BUFSIZE 32
 
 /*
 ** global vars
@@ -45,8 +47,6 @@ STRPTR FNAME_STDIN="<stdin>";          /* filename for stdin (CONSTANT) */
 /*
 ** local vars
 */
-char wordbuf[MAX_IFLINELEN]; /* buffers written by ingetw */
-char wspcbuf[MAX_IFLINELEN];
 
 /* forward references */
 BOOL infget_skws( INFILE *inpf );
@@ -161,13 +161,7 @@ int infeof( INFILE *inpf )
 */
 STRPTR infgetcws( INFILE *inpf )
 {
-    if ( !infget_skws( inpf ) ) {
-
-        wspcbuf[0] = '\0';
-
-    }
-
-    return ( wspcbuf );
+    return ( estr2str( inpf->wspcbuf ) );
 }
 
 /*
@@ -178,7 +172,7 @@ STRPTR infgetcws( INFILE *inpf )
 */
 STRPTR infgetcw( INFILE *inpf )
 {
-    return ( wordbuf );
+    return ( estr2str( inpf->wordbuf ) );
 }
 
 
@@ -254,12 +248,15 @@ int infclose1( INFILE *inpf )
 
         if ( inpf->infile != stdin )   /* free filename */
             ufreestr( inpf->filename );
-        ufree( inpf->lnbuf );          /* free line buffer */
-        inpf->lnbufsz     = 0;         /* reset vars */
-        inpf->lnctr       = 0;
+        del_estr( inpf->lnbuf );       /* free line buffer */
+        del_estr( inpf->wordbuf );     /* free word buffers */
+        del_estr( inpf->wspcbuf );
+        del_estr( inpf->logstr );
+        inpf->lnctr       = 0;         /* reset vars */
         inpf->flnctr      = 0;
         inpf->eof_reached = FALSE;
         inpf->skipped_ws  = FALSE;
+        inpf->log_enable  = FALSE;
         inpf->is_nc       = NULL;
         inpf->is_ws       = NULL;
         ufree( inpf );                 /* free whole struct */
@@ -297,19 +294,17 @@ INFILE *infopen( CONSTRPTR fname, size_t bufsize )
 
         uinpf->infile      = NULL;
         uinpf->filename    = NULL;
-        uinpf->lnbuf       = (char *) malloc( bufsize+1 );
-        uinpf->lnbufsz     = bufsize;
+        uinpf->lnbuf       = init_estr();
+        uinpf->wordbuf     = init_estr();        /* reset wordbuffers */
+        uinpf->wspcbuf     = init_estr();
+        uinpf->logstr      = init_estr();
         uinpf->lnctr       = 0;
         uinpf->flnctr      = 0;
         uinpf->eof_reached = FALSE;
         uinpf->skipped_ws  = FALSE;
+        uinpf->log_enable  = FALSE;
         uinpf->is_nc       = NULL;
         uinpf->is_ws       = NULL;
-
-        memset( uinpf->lnbuf, 0, bufsize+1 );    /* clear buffer */
-
-        wordbuf[0] = '\0';             /* reset wordbuffers */
-        wspcbuf[0] = '\0';
 
     }
 
@@ -342,11 +337,16 @@ INFILE *infopen( CONSTRPTR fname, size_t bufsize )
     if ( (!inpf)                                 /* error? */
          || (!fnm)
          || (!uinpf)
-         || (!uinpf->lnbuf) )
+         || (!uinpf->lnbuf)
+         || (!uinpf->wordbuf )
+         || (!uinpf->wspcbuf )
+         || (!uinpf->logstr ) )
     {                                            /* Y-> clean up */
 
-        if ( uinpf ) infclose ( uinpf )
-        else if ( inpf ) fclose( inpf );
+        if ( uinpf )
+            infclose ( uinpf );
+        else if ( inpf )
+            fclose( inpf );
         uinpf = NULL;
 
     }
@@ -369,29 +369,51 @@ int infgetc( INFILE *inpf )
 {
     int result = EOF;
 
-    if ( inpf && (inpf->eof_reached == FALSE) ) {
+#if 1
+    fprintf( stderr, "** ingetch( \"%s\" at %p\n", inpf->filename, inpf );
+#endif
+    if ( inpf && (!inpf->eof_reached) ) {
+
+        STRPTR lnbuf_str = estr2str( inpf->lnbuf );
+        BOOL   ok;          /* result of expstr-funcs */
 
         /*
         ** if at end of line buffer, scan next line
         ** before proceding
         */
-        if ( inpf->lnbuf[inpf->lnctr] == 0) {
+        if ( lnbuf_str[inpf->lnctr] == 0 ) {
 
-            STRPTR restr;               /* result of fgets() */
+            STRARR buf[ INF_FGETS_BUFSIZE ];
+            STRPTR restr = buf; /* result of fgets() (dummy init)*/
+            BOOL   eol = FALSE; /* flag: end of line reached */
 
-            /*
-            ** read next input line into buffer,
-            ** reset line counter
-            */
-            restr = fgets( inpf->lnbuf, inpf->lnbufsz, inpf->infile );
-            inpf->lnctr = 0;
-            inpf->flnctr++;
+            /* read next input line into buffer (expstr) */
+            ok = clr_estr( inpf->lnbuf );
+            while (ok && restr && (!eol) ) {
+
+                restr = fgets( buf, INF_FGETS_BUFSIZE, inpf->infile );
+                if ( restr ) {
+
+                    ok &= app_estr( inpf->lnbuf, restr );
+                    eol = (restr[strlen(restr)] != '\n' );
+
+                } else ok = (!feof( inpf->infile ) );
+
+            }
+
+            /* reset line counter if LF found at end of line */
+            if ( eol ) {
+
+                inpf->lnctr = 0;
+                inpf->flnctr++;
+
+            }
 
             /*
             ** check for end of file or error,
             ** set eof-flag if neccessary
             */
-            if ( restr != inpf->lnbuf )
+            if ( !ok )
                 inpf->eof_reached = TRUE;
 
         }
@@ -402,10 +424,19 @@ int infgetc( INFILE *inpf )
         */
         if ( inpf->eof_reached == FALSE ) {
 
-            result = inpf->lnbuf[inpf->lnctr];   /* set last char as result */
+            lnbuf_str = estr2str( inpf->lnbuf );
+            result = lnbuf_str[inpf->lnctr];     /* set last char as result */
             if ( result ) inpf->lnctr++;         /* goto next char in buf */
 
         }
+
+        /* update log-string if neccessary */
+        if ( (result != EOF) && (inpf->log_enable) )
+            ok &= app_estrch( inpf->logstr, result );
+
+
+        if ( !ok )
+            /* TODO: handle out of mem */;
     }
 
     return result;
@@ -432,13 +463,24 @@ int inungetc( int ch, INFILE *inpf )
 
     if ( inpf && ( inpf->lnctr ) ) {
 
+        STRPTR lnbuf_str = estr2str( inpf->lnbuf );
+
+        /* update file position */
         inpf->lnctr--;
-        inpf->lnbuf[inpf->lnctr] = ch;
+        if ( ch == '\n' )
+            inpf->flnctr--;
+
+        /* write back char */
+        lnbuf_str[inpf->lnctr] = ch;
         result = ch;
 
+        /* unget in logstr */
+        if ( (inpf->log_enable) && ( estrlen( inpf->logstr ) ) )
+            if ( !get_left_estr( inpf->logstr, inpf->logstr, estrlen(inpf->logstr)-1 ) )
+                /* TODO: handle out of mem */;
     }
 
-    return result;
+    return( result );
 }
 
 /*
@@ -476,25 +518,36 @@ size_t inungets( STRPTR s, INFILE *inpf )
 
 
 /*
-** inungetw
-** write word back to stream
+** inungetcw
+** write current word back to stream
 **
-** params: s......word to write back
-**         ws.....char to be used as white space
-**         inpf...input file
+** params: inpf...input file
 ** result: num of chars written back
 */
-size_t inungetw( STRPTR s, char ws, INFILE *inpf )
+size_t inungetcw( INFILE *inpf )
 {
-    size_t ctr;                        /* counter how many chars written */
+    size_t ctr; /* counter how many chars written */
 
     /* unget word */
-    ctr = inungets( s, inpf );
+    ctr = inungets( infgetcw( inpf ), inpf );
 
-    /* unget white space */
-    if ( (ctr==strlen(s)) && infget_skws(inpf) )
-        if ( inungetc(ws,inpf) != EOF )
-            ctr++;
+    return (ctr);
+}
+
+/*
+** inungetcwws
+** write current word & whitespaces back to stream
+**
+** params: inpf...input file
+** result: num of chars written back
+*/
+size_t inungetcwws( INFILE *inpf )
+{
+    size_t ctr; /* counter how many chars written */
+
+    /* unget word & white spaces */
+    ctr = inungets( infgetcw( inpf ), inpf );
+    ctr += inungets( infgetcws( inpf ), inpf );
 
     return (ctr);
 }
@@ -520,7 +573,7 @@ BOOL inf_isws( char ch, INFILE *inpf )
 /*
 ** infskip_ws
 **
-** skip white spaces; update wspbuf
+** skip white spaces; update wspbuf; clear wordbuf
 **
 ** TODO: handle wspcbuf-overflow
 */
@@ -528,38 +581,42 @@ size_t infskip_ws( INFILE *inpf )
 {
     char   nxtch;                      /* next char to read */
     size_t ctr = 0;                    /* num of ws skipped */
+    BOOL ok;
+
     /*
     ** set function to determine if a
     ** specified char is a white space
     */
     inpf->skipped_ws = FALSE;          /* clear skippe-flag */
 
+    /* clear wspcbuf */
+    ok = clr_estr( inpf->wspcbuf );
+
     /*
     ** loop:  skip white spaces
     */
     nxtch = infgetc(inpf);             /* read next char */
     while ( (!infeof(inpf))            /* while not at end of file.. */
+            && ok
             && inf_isws(nxtch,inpf) )  /* ..and current char is a whtspc */
     {
-        wspcbuf[ctr] = nxtch;          /*   update wspc-buffer */
+        ok &=app_estrch( inpf->wspcbuf, nxtch );
+        ctr++;
         nxtch = infgetc(inpf);         /*   read next char */
-        ctr++;                         /*   inc counter */
     }
 
-    if (ctr) {                         /* any whtspcs skipped? */
-
+    if ( ctr )                         /* any whtspcs skipped? */
         inpf->skipped_ws = TRUE;       /* Y-> set skippe-flag */
-        wspcbuf[ctr] = '\0';         /*     mark end of wspc-buffer */
 
-    } else
-        wspcbuf[ctr] = '\0';           /*     mark end of wspc-buffer */
+    if ( !ok )
+        /* TODO: error */;
 
     /*
     ** write back last char read
     */
     inungetc( nxtch, inpf );
 
-    return (ctr);
+    return( ctr );
 }
 
 
@@ -572,8 +629,11 @@ size_t infskip_ws( INFILE *inpf )
 */
 STRPTR infgetw( INFILE *inpf )
 {
+    /* TODO: handle expstr errors */
     int ch = EOF;
-    size_t wordctr = 0;
+    BOOL   wordread = FALSE;
+    STRPTR thisword = NULL;
+    BOOL   ok = TRUE;
 
     /* set function for normal chars */
     BOOL (*isnc)(char ch) = inpf->is_nc;
@@ -582,35 +642,37 @@ STRPTR infgetw( INFILE *inpf )
     /* skip all white spaces */
     infskip_ws( inpf );
 
+    ok = clr_estr( inpf->wordbuf );
+
     /*
     ** read word until non-normal char is reached
     */
     if ( !infeof(inpf) ) {
 
         ch = infgetc( inpf );
-        if ( !((*isnc)(ch)) ) {
 
-            wordbuf[0] = ch;
-            wordbuf[1] = '\0';
+        if ( ((*isnc)(ch)) )
+            do  {
 
-        } else do  {
+                ok &= app_estrch( inpf->wordbuf, ch );
+                ch = infgetc( inpf );
+                wordread = TRUE;
+                /* todo: set out-of-mem-flag */
 
-            wordbuf[wordctr] = ch;
-            wordctr++;
-            wordbuf[wordctr] = '\0';
-            ch = infgetc( inpf );
-
-        } while ( (ch!=EOF) && ((*isnc)(ch)) );
-
-        if ( (ch!=EOF) && (wordctr) )
-            inungetc( ch, inpf );
+            } while ( (ch!=EOF) && ok && ((*isnc)(ch)) );
         else
-            wordbuf[wordctr-1] = '\0';
+            ok &= app_estrch( inpf->wordbuf, ch );
 
-    }
+        if ( (ch!=EOF) && (wordread) )
+            inungetc( ch, inpf );
 
-    return ( wordbuf );
+        if ( ch != EOF );
+        thisword = estr2str( inpf->wordbuf );
 
+    } else
+        thisword = NULL;
+
+    return ( thisword );
 }
 
 
@@ -651,6 +713,37 @@ int infgotoeol( INFILE *inpf )
     ** return last char read
     */
     return (ch);
+}
+
+/*
+**-------------------------------------
+** functions for logstr
+**-------------------------------------
+*/
+
+/* enable log */
+void inflog_enable( INFILE *inpf )
+{
+    inpf->log_enable = TRUE;
+}
+
+/* disable log */
+void inflog_disable( INFILE *inpf )
+{
+    inpf->log_enable = FALSE;
+}
+
+/* clear log-string */
+BOOL inflog_clear( INFILE *inpf )
+{
+    /* TODO: handle out of mem */
+    return ( clr_estr( inpf->logstr ) );
+}
+
+/* get log-string */
+STRPTR infget_log( INFILE *inpf )
+{
+    return ( estr2str( inpf->logstr ) );
 }
 
 

@@ -31,6 +31,7 @@ void main( int argc, char *argv[] )
 
     if ( inpf ) {
 
+#if 0
         /* info about first word */
         wdbuf = infgetw( inpf );
         printf( "word#0: \"%s\", \"%s\"\n",
@@ -54,6 +55,7 @@ void main( int argc, char *argv[] )
             inungetc( ch, inpf );
         }
         printf( "\"\n" );
+#endif
 
         /*
         ** read the first 3 words

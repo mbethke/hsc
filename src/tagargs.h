@@ -16,7 +16,7 @@
 /*
 ** global funcs
 */
-extern STRPTR parse_url( INFILE *inpf );
+extern STRPTR parse_uri( INFILE *inpf );
 extern STRPTR parse_strarg( INFILE *inpf );
 extern STRPTR parse_tagoptn( INFILE *inpf );
 extern STRPTR parse_mutex( STRPTR line, INFILE *inpf, BOOL *match, BOOL igcs );

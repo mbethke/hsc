@@ -3,7 +3,7 @@
 **
 ** output functions for hsc
 **
-** updated: 29-Jul-1995
+** updated:  9-Sep-1995
 ** created: 01-Jul-1995
 */
 
@@ -17,6 +17,7 @@
 
 #include "global.h"
 #include "error.h"
+#include "msgid.h"
 
 /*
 ** open_output:
@@ -38,6 +39,7 @@ BOOL open_output( void )
 
         if ( !result ) {
 
+            message( NO_OUTPUT, NULL );
             errqstr( outfilename );
             errstr( ": can not open output file: " );
             errstr( strerror( errno ) );
@@ -45,15 +47,14 @@ BOOL open_output( void )
 
         } else if ( debug ) {
 
-            errqstr( outfilename );
-            errstr( ": opened as output file\n" );
+            fprintf( stderr, "\"%s\": opened as output file\n",  outfilename );
 
         }
 
     } else {                                               /* N-> set stdout as output file */
 
         if ( debug )
-            errstr( "opened stdout as output file\n" );
+            fprintf( stderr, "opened stdout as output file\n" );
 
         outfile = stdout;              /* redirect output to stdout */
         result = TRUE;

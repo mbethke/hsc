@@ -3,7 +3,7 @@
 **
 ** parse file: handle for entities & tags
 **
-** updated:  4-Sep-1995
+** updated: 10-Sep-1995
 ** created:  1-Jul-1995
 **
 */
@@ -31,21 +31,165 @@
 #include "global.h"
 #include "output.h"
 #include "error.h"
-#include "find.h"
 #include "msgid.h"
 #include "status.h"
 
+#include "entity.h"
+#include "tag.h"
+#include "vars.h"
+
 #define NOEXTERN_PARSE_H
 #include "parse.h"
+
+/* TODO: remove this */
+#include "tag_a.h"
 
 INFILE *parse_end_file; /* file for do_list-methods called in parse_end() */
 
 
 /*
 **---------------------------
-** parse functions
+** parse tag functions
 **---------------------------
 */
+
+#if 0
+/*
+** set_tag_arg
+**
+** parse & set one single tag argument
+**
+*/
+BOOL set_tag_arg( STRPTR varname, DLLIST *varlist, INFILE *inpf )
+{
+    HSCVAR *var = find_varname( varlist, varname );
+    STRPTR  arg = NULL;
+    BOOL    ok  = FALSE;
+    STRPTR  nw;
+
+    if ( var ) {
+
+        var = find_varname( varlist, varname );
+        if ( debug )
+            fprintf( stderr, "**    set var %s", varname );
+
+        /* get argument */
+        nw  = infgetw( inpf );
+        if ( !strcmp( nw, "=" ) ) {
+
+            arg = parse_vararg( var, inpf );
+            if ( arg ) {
+
+                if ( set_vartext( var, arg ) ) {
+
+                    if ( debug )
+                        fprintf( stderr, "=\"%s\"\n", arg );
+                    ok = TRUE;
+
+                }
+
+            }
+
+        } else {
+
+            arg = NULL;
+            inungets( nw, inpf );
+            ok = TRUE;
+
+        }
+
+        if ( arg ) {
+
+            /* todo: bool var doesn't require arg */
+
+        } else {
+
+            if ( var->vartype == VT_BOOL ) {
+
+                /* set boolean var */
+                if ( debug )
+                    fprintf( stderr, " (bool)\n", var->name );
+                set_vartext( var, var->name );
+                var->quote = VQ_NO_QUOTE;
+
+            } else {
+
+                /* todo:non-bool var requires arg */
+
+            }
+        }
+
+
+    } else {
+
+        /* reference to unknown var */
+        message( VAR_UNKN, inpf );
+        errstr( "Unknown" );
+        errsym( varname );
+        errlf();
+
+    }
+    return( ok );
+
+}
+
+
+/*
+** set_tag_args
+**
+** parse & set all arguments of a tag
+*/
+ULONG set_tag_args( HSCTAG *tag, INFILE *inpf, BOOL open_tag )
+{
+    BOOL    ok = FALSE;
+    STRPTR  nw = infgetw( inpf );
+
+    /* TODO: enable log */
+
+    tag_call_id++;
+
+    /* read args */
+    if ( strcmp( nw, ">" ) ) {
+
+        while ( nw ) {
+
+            if ( !nw )
+                err_eof( inpf );
+            if ( !strcmp( nw, ">" ) ) {
+
+                nw = NULL;
+                ok = TRUE;
+
+            } else  {
+
+                if ( strcmp( nw, "\n" ) ) {
+
+                    DLLIST *varlist;
+
+                    if ( open_tag )
+                        varlist = tag->op_args;
+                    else
+                        varlist = tag->cl_args;
+                    set_tag_arg( nw, varlist, inpf );
+
+                }
+
+                nw = infgetw( inpf );
+
+            }
+        }
+
+        /* todo: check for required args */
+
+    } else
+        ok = TRUE;
+
+    if ( !ok )
+        tag_call_id = MCI_ERROR;
+
+    return( tag_call_id );
+}
+#endif
 
 /*
 ** parse_tag
@@ -58,6 +202,7 @@ BOOL parse_tag( INFILE *inpf)
 
         STRPTR  nxtwd;
         DLNODE *nd;
+        ULONG   tci   = 0;   /* tag_call_id returned by set_tag_args() */
 
         /* write white space (if any) */
         outstr( infgetcws( inpf ) );
@@ -96,6 +241,7 @@ BOOL parse_tag( INFILE *inpf)
                 errtag( nxtwd );
                 errlf();
 
+                /* TODO: should also work using log */
                 outstr( this_tag );                  /* copy whole tag */
                 copy_until_gt( inpf );
 
@@ -106,6 +252,12 @@ BOOL parse_tag( INFILE *inpf)
 
                 /* set global pointer to tag */
                 this_tag_data = tag;
+
+                /*
+                ** set attributes
+                */
+                /* TODO: set attr with closing tag */
+                tci = set_tag_args( tag, inpf, TRUE );
 
                 /*
                 ** handle options
@@ -133,21 +285,28 @@ BOOL parse_tag( INFILE *inpf)
                 }
 
                 /* write out tag? */
+#if 0
                 if ( !(tag->option & HT_NOCOPY) )
                     outstr( this_tag );                        /* write out tag */
+#endif
 
                 /*
                 ** call handle if available
                 */
-                if ( hnd && !fatal_error)
+                if ( !upstrcmp( tag->name, "A" ) )
+                    handle_anchor( inpf, tag );
+#if 0
+                if ( hnd && !fatal_error && !(tag->option & HT_NOHANDLE) )
                     (*hnd)( inpf );                            /* call handle */
+#endif
 
                 /*
                 ** copy rest of tag if HT_COPY-bit not set
                 */
+#if 0
                 if ( !(tag->option & HT_NOCOPY) )              /* write out '>' */
                     copy_until_gt( inpf );
-
+#endif
             }
 
         } else {
@@ -248,6 +407,12 @@ BOOL parse_tag( INFILE *inpf)
 
     return (BOOL)( !fatal_error );
 }
+
+/*
+**---------------------------
+** other parse functions
+**---------------------------
+*/
 
 
 /*

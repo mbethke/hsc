@@ -3,7 +3,7 @@
 **
 ** defines for message-ids (warnings, errors,..)
 **
-** updated:  5-Sep-1995
+** updated:  8-Sep-1995
 ** created: 30-Jul-1995
 */
 
@@ -13,14 +13,24 @@
 
 #include "ugly/types.h"
 
+#define CONFIG 20
+
 /*
 ** messeges
 */
 #define MSG    0
 #define MSG_UNKN_MACRO      (MSG   +1) /* unknown macro */
 #define MSG_RPLC_MACRO      (MSG   +2) /* replacing existing macro */
-#define MSG_STRIPPED_URL    (MSG   +3) /* stripped external URL */
+#define MSG_STRIPPED_URI    (MSG   +3) /* stripped external URI */
 
+/*
+** config messages
+*/
+#define CFG_NOTEXT          (CONFIG+1) /* no text allowed in config */
+#define CFG_UNKN_TAG        (CONFIG+2) /* unknown config tag */
+#define UNKN_TAG_OPTION     (CONFIG+3) /* unknown tag option */
+
+#define NO_OUTPUT ( FATAL + 1 ) /* can't open output file */
 
 /*
 ** bad style messages
@@ -62,7 +72,7 @@
 #define ERROR_UNKN_HSCOPTN  (ERROR+ 8) /* unknown option in hsc-tag */
 #define ERROR_A_NOARG       (ERROR+ 9) /* no HREF and NAME for <A> */
 #define ERROR_EXPAND_MACRO  (ERROR+10) /* can not expand macro */
-#define ERROR_NO_URLPATH    (ERROR+11) /* path to URL not found */
+#define ERROR_NO_URIPATH    (ERROR+11) /* path to URI not found */
 
 /*
 ** fatal errors
@@ -82,5 +92,6 @@
 #define VAR_2ND_DEFAULT     (ERROR+50) /* 2nd default value */
 #define VAR_BOOL_DEFAULT    (ERROR+51) /* default value for boolean */
 #define VAR_CIRCULAR        (ERROR+52) /* circular var reference */
+
 
 #endif

@@ -47,7 +47,7 @@ typedef struct infile {
 /*
 ** global macros
 */
-#define infclose( f ) { if ( f ) { infclose1( f ); f = NULL; } }
+#define infclose( f ) ((f) ? (infclose1( f ), f=NULL) : (NULL))
 
 /*
 ** global vars

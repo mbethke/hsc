@@ -3,7 +3,7 @@
 **
 ** config handling for hsc; reads "hscdef.cfg"
 **
-** updated:  2-Sep-1995
+** updated:  8-Sep-1995
 ** created: 12-Jul-1995
 */
 
@@ -36,12 +36,15 @@
 /*
 ** include hsc structs
 */
-#include "vars.h"
+#include "entity.h"
 #include "macro.h"
+#include "tag.h"
+#include "vars.h"
 
 /*
 ** include tag handles
 */
+#include "tagargs.h"
 #include "tag_a.h"
 #include "tag_hsc.h"
 #include "tag_img.h"
@@ -73,149 +76,116 @@ void prt_tag( FILE *stream, APTR data )
     if ( data ) {
 
         HSCTAG *tag = (HSCTAG*) data;
-        fprintf( stream, " %-12s", tag->name );
+        fprintf( stream, " <" );
         if ( tag->option & HT_CLOSE )
-            fprintf( stream, " %s", HT_CLOSE_ID );
+            fprintf( stream, "/" );
+        fprintf( stream, "%s", tag->name );
         if ( tag->option & HT_REQUIRED )
-            fprintf( stream, " %s", HT_REQUIRED_ID );
+            fprintf( stream, "/r" );
         if ( tag->option & HT_ONLYONCE )
-            fprintf( stream, " %s", HT_ONLYONCE_ID );
+            fprintf( stream, "/1" );
         if ( tag->vers )
-            fprintf( stream, " VERS=%d", tag->vers );
-        fprintf( stream, "\n" );
+            fprintf( stream, "/v=%d", tag->vers );
+        fprintf( stream, ">" );
 
     } else
         fprintf( stream, " <NULL>" );
 }
 
-/*
-**-------------------------------------
-** append entity functions
-**-------------------------------------
-*/
 
 /*
-** app_entnode
+** open_config_file
 **
-** create a new entity and append it to the defent-list
-**
-** params: entid..name of the new entity (eg "uuml")
-** result: ptr to the new entity or NULL if no mem
+** try to open (any) config file
 */
-HSCENT *app_entnode( STRPTR entid )
+INFILE *open_config_file( void )
 {
-    HSCENT *newent;
+    /* TODO: #ifdef CONFIG_FILE */
+    STRPTR  paths[]  =                 /* paths to search for config file */
+       { CONFIG_PATH, NULL };          /*    (defined in "global.h") */
+    STRPTR  path;
+    UBYTE   path_ctr = 0;
+    STRARR  cfgfn[ MAX_PATHLEN ];      /* filename of config file */
+    INFILE *cfgf    = NULL;            /* config file (result) */
 
-    newent = new_hscent( entid );
-    if ( newent ) {
+    do {                               /* loop: */
 
-        if (app_dlnode( defent, newent ) == NULL ) {
+        path = paths[path_ctr];        /*   get next path */
+        if ( path ) {                  /*   is it the last one? */
 
-            del_entity( (APTR) newent );
-            newent = NULL;
+            strcpy( cfgfn, path );     /*   N->generate filename */
+            strcat( cfgfn, CONFIG_FILE );
 
+            cfgf = infopen( cfgfn,
+                   MAXLINELEN );       /*      try to open file */
         }
-    } else
-        err_mem( NULL );
+        path_ctr++;                    /*   process next path */
 
-    return (newent);
+    } while ( path && (!cfgf) );       /* until no path left or file opened */
+
+    return( cfgf );
 }
 
-
-/*
-** add_ent
-*/
-BOOL add_ent( STRPTR entid, STRPTR entsource )
+/* read_deftag */
+BOOL read_deftag( INFILE *inpf )
 {
     BOOL    ok = FALSE;
-    HSCENT *newent = app_entnode( entid );
+    BOOL    open_tag;
+    HSCTAG *tag;
 
-    if ( newent ) {
+    /* get name and argumets */
 
-        newent->source = entsource;
-        ok = TRUE;
+    tag = def_tag_name( inpf, &open_tag );
 
-    } else
-        err_mem( NULL );
+    ok = ( tag && def_tag_args( tag, inpf, &open_tag ) );
 
+    skip_lf( inpf );
 
-    return (ok);
+    return ( ok );
 
 }
-
-
-
 /*
-**-------------------------------------
-** append tag functions
-**-------------------------------------
+** read_config
 */
-
-/*
-** app_tagnode
-**
-** create a new tag and append it to the deftag-list
-**
-** params: tagid..name of the new tag (eg "IMG")
-** result: ptr to the new tag or NULL if no mem
-*/
-HSCTAG *app_tagnode( STRPTR tagid )
+BOOL read_config( INFILE *inpf )
 {
-    HSCTAG *newtag;
+    BOOL   ok = TRUE;
+    STRPTR nw = infgetw( inpf );       /* next word of config file */
 
-    newtag = new_hsctag( tagid );
-    if ( newtag ) {
-        if (app_dlnode( deftag, newtag ) == NULL ) {
+    while ( nw ) {
 
-            del_tag( (APTR) newtag );
-            newtag = NULL;
+        if ( !strcmp( nw, "<" ) ) {                   /* tag found? */
+
+            nw = infgetw( inpf );                     /* read next word */
+            if ( !nw )
+                err_eof( inpf );
+
+            else if ( !strcmp( nw, "*" ) )            /* skip comment */
+                handle_hsc_comment( inpf );
+            else if ( !upstrcmp( nw, "DEFTAG" ) )     /* define a new tag */
+                read_deftag( inpf );
+            else {
+
+                message( CFG_UNKN_TAG, inpf );
+                errstr( "Unknown config tag " );
+                errtag( nw );
+                errlf();
+            }
+
+        } else {
+
+            /* ignore normal text */
+            /* TODO: check for unkmatched ">" */
+            if ( debug )
+                fprintf( stderr, "** ignored \"%s\"\n", nw );
 
         }
-    } else
-        err_mem( NULL );
+        nw = infgetw( inpf );          /* read next word */
 
-    return (newtag);
+    }
+
+    return( ok );
 }
-
-
-/*
-** add_tag
-*/
-HSCTAG *add_tag(
-  STRPTR tagid,
-  ULONG  optn,
-  ULONG  version,
-  BOOL   (*op_handle)(INFILE *inpf),
-  BOOL   (*cl_handle)(INFILE *inpf)
-)
-{
-    HSCTAG *newtag = app_tagnode( tagid );
-
-    if ( newtag ) {
-
-        newtag->option   = optn;
-        newtag->vers     = version;
-        newtag->o_handle = op_handle;
-        newtag->c_handle = cl_handle;
-
-    } else
-        err_mem( NULL );
-
-    return (newtag);
-
-}
-
-
-/*
-** add_stag: add simple tag (no version & handles)
-*/
-HSCTAG *add_stag( STRPTR tagid, ULONG optn )
-{
-    return ( add_tag( tagid, optn, 0, NULL, NULL) );
-}
-
-
-
 /*
 ** config_tag_handles
 **
@@ -224,7 +194,7 @@ HSCTAG *add_stag( STRPTR tagid, ULONG optn )
 BOOL config_tag_handles( void )
 {
     BOOL ok = TRUE;
-
+#if 0
     /* HTML 1.0 tags */
     ok &= (BOOL) add_tag ( "A"         , HT_CLOSE|HT_NOCOPY,
                                          0, handle_anchor, handle_canchor );
@@ -337,7 +307,7 @@ BOOL config_tag_handles( void )
     ok &= (BOOL) add_tag( STR_HSC_VAR    , HT_NOCOPY, 0,
                                            handle_hsc_var, NULL );
 
-
+#endif
     /* entities */
     ok &= add_ent( "amp", NULL );      /* & */
     ok &= add_ent( "lt", NULL );       /* < */
@@ -358,6 +328,8 @@ BOOL config_tag_handles( void )
     ok &= add_ent( "ntilde", NULL );
     ok &= add_ent( "Icirc", NULL );
 
+    ok = TRUE;
+
     return (ok);
 }
 
@@ -373,7 +345,7 @@ BOOL config_tag_handles( void )
 */
 BOOL config_ok( void )
 {
-    BOOL   ok = TRUE;             /* return value */
+    BOOL   ok = FALSE;             /* return value */
 
     /* get current time */
     now = time( NULL );
@@ -395,15 +367,22 @@ BOOL config_ok( void )
         /*
         ** append tags with handles
         */
-        config_tag_handles();
+        INFILE *cfgf = open_config_file();       /* open config file */
+
+        if ( cfgf ) {
+
+            ok = read_config( cfgf );            /* read config file */
+            infclose( cfgf );                    /* close config file */
+
+        }
+
+        ok = config_tag_handles();
 
         /* printf list of entities & tags */
-        if ( debug ) {
+        if ( ok && debug ) {
 
             DLNODE *nd;
             HSCENT *ent;
-            HSCTAG *tag;
-
 
             nd = defent->first;
             if ( nd ) {
@@ -416,15 +395,18 @@ BOOL config_ok( void )
                     nd = nd->next;
 
                 }
+                fprintf( stderr, "\n" );
 
             }
 
             nd = deftag->first;
             if ( nd ) {
 
-                fprintf( stderr, "\n**Known tags:" );
+                fprintf( stderr, "**Known tags:" );
                 while (nd) {
 
+                    prt_tag( stderr, nd->data );
+#if 0
                     tag = (HSCTAG*) nd->data;
                     fprintf( stderr, " <" );
                     if ( tag->o_handle ) fprintf( stderr, "*" );
@@ -432,6 +414,7 @@ BOOL config_ok( void )
                     fprintf( stderr, "%s", tag->name );
                     if ( tag->o_handle ) fprintf( stderr, "*" );
                     fprintf( stderr, ">" );
+#endif
                     nd = nd->next;
 
                 }
@@ -439,14 +422,11 @@ BOOL config_ok( void )
 
 
             }
-            errlf();
-
         }
 
     } else
         err_mem( NULL );
 
-
-    return ok;
+    return( ok );
 }
 

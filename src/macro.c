@@ -1,9 +1,9 @@
 /*
 ** macro.c
 **
-** hsc-variable funcs for hsc
+** hsc-macro functions
 **
-** updated:  5-Sep-1995
+** updated:  8-Sep-1995
 ** created:  3-Sep-1995
 **
 ** TODO:
@@ -26,8 +26,8 @@
 #include "msgid.h"
 #include "tagargs.h"
 
+#include "tag.h"
 #include "vars.h"
-#include "find.h"
 
 #define NOEXTERN_HSC_MACRO
 #include "macro.h"

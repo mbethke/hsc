@@ -3,7 +3,7 @@
 **
 ** argument handling for hsc
 **
-** updated:  7-Aug-1995
+** updated:  8-Sep-1995
 ** created:  1-Jul-1995
 */
 
@@ -61,11 +61,11 @@ BOOL args_ok( int argc, char *argv[] )
               /* numeric */
               "MaxErr/N/K"    , &max_error  , "max. number of errors (default:20)",
               /* switches */
-              "AbsUrl=au/S"   , &absurl     , "use absolute URLs",
-              "CheckUrl=cu/S" , &chkurl     , "check existence of local URLs",
-              "InsAnch=ia/S"  , &insanch    , "insert stripped URLs as text",
+              "AbsUri=au/S"   , &absuri     , "use absolute URIs",
+              "CheckUri=cu/S" , &chkuri     , "check existence of local URIs",
+              "InsAnch=ia/S"  , &insanch    , "insert stripped URIs as text",
               "PipeIn=pi/S"   , &pipe_in    , "read input file from stdin",
-              "StripUrl=su/S" , &stripurl   , "strip external urls",
+              "StripUri=su/S" , &stripuri   , "strip external URIs",
               "Status=st/S"   , &statusmsg  , "enable status message",
               "Verbose=v/S"   , &verbose    , "enable verbose output",
               "-Debug/S"      , &debug      , "enable debugging output",
@@ -85,8 +85,6 @@ BOOL args_ok( int argc, char *argv[] )
     if ( ok ) {
 
         ok = set_args( argc, argv, my_args );
-        if ( !ok )
-            pargerr();
         ok &= ( !need_help && ( inpfilename || pipe_in ) );
 
         if ( !ok ) {
@@ -98,7 +96,7 @@ BOOL args_ok( int argc, char *argv[] )
         } else {
 
             /* TODO: check conflicting options */
-            /*       - check urls & pipein */
+            /*       - check URIs & pipein */
 
             /* autoset depending options */
             if ( debug )   verbose   = TRUE;
@@ -118,9 +116,13 @@ BOOL args_ok( int argc, char *argv[] )
                 rel_destdir = strclone( get_fpath( inpfilename ) );
 
             if ( destdir )
-                if ( outfilename )
+                if ( outfilename ) {
+
                     outfilename = strclone( app_fname( destdir, outfilename ) );
-                else {
+                    if ( !outfilename )
+                        err_mem( NULL );
+
+                } else {
 
                     if ( !pipe_in ) {
 
@@ -133,6 +135,8 @@ BOOL args_ok( int argc, char *argv[] )
                         strcpy( outfnbuf, set_fext( inpfilename, "html" ) );
 
                         outfilename = strclone( app_fname( destdir, outfnbuf ) );
+                        if ( !outfilename )
+                            err_mem( NULL );
 
                     } else {
 
@@ -149,6 +153,17 @@ BOOL args_ok( int argc, char *argv[] )
 
         }
 
+        /* display argument error message */
+        if ( !ok ) {
+
+            /* NOTE: no strclone() is used on outfilename, if an
+            ** error already occured within set_args(). therefore,
+            ** you must not call ufreestr( outfilename ) */
+            pargerr();
+            outfilename = NULL;
+
+        }
+
         /* release mem used by args */
         free_args( my_args );
 
@@ -156,6 +171,6 @@ BOOL args_ok( int argc, char *argv[] )
         /* only for developer */
         printf( "ArgDef error: %2x\n", prep_error_num );
 
-    return ( ok );
+    return( (BOOL)( ok && (!fatal_error) ) );
 }
 

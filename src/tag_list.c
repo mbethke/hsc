@@ -3,7 +3,7 @@
 **
 ** tag handles for <UL>, <DL>, <LI>
 **
-** updated: 29-Jul-1995
+** updated:  8-Sep-1995
 ** created: 29-Jul-1995
 */
 
@@ -19,6 +19,7 @@
 #include "error.h"
 #include "msgid.h"
 
+#include "tag.h"
 /*
 ** counter for nesting of list; it is increased by <UL> and <DL>,
 ** and decreased by the matching closing tags. so is possible for

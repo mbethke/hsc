@@ -3,7 +3,7 @@
 **
 ** tag handles for "<HSC_xx>"
 **
-** updated:  4-Sep-1995
+** updated:  8-Sep-1995
 ** created: 23-Jul-1995
 */
 
@@ -25,6 +25,7 @@
 #include "tagargs.h"
 #include "parse.h"
 
+#include "tag.h"
 #include "vars.h"
 
 #define TIMEBUF_SIZE 40

@@ -3,7 +3,7 @@
 **
 ** tag handles for "<HSC_MACRO>" and "<macro>"
 **
-** updated:  4-Sep-1995
+** updated:  9-Sep-1995
 ** created:  5-Aug-1995
 */
 
@@ -19,17 +19,19 @@
 #include "ugly/string.h"
 
 #include "global.h"
+
 #include "macro.h"
+#include "tag.h"
 #include "vars.h"
 
 #include "config.h"
 #include "cleanup.h"
 #include "error.h"
-#include "find.h"
 #include "msgid.h"
 #include "output.h"
 #include "tagargs.h"
 #include "parse.h"
+
 
 char macpar[ MAX_ARGLEN ];
 BYTE  rmt_str[ MAXLINELEN ];
@@ -243,9 +245,22 @@ BOOL handle_hsc_macro( INFILE *inpf )
 
         /* create a new tag for macro */
         if ( ok ) {
-            ok = (BOOL) add_tag( macro->name, HT_NOCOPY | HT_MACRO, 0,
-                                 handle_op_macro, handle_cl_macro );
+
+#if 0
+            HSCTAG mtag = app_tag( macro->name );
+            if ( mtag ) {
+
+                mtag->option = HT_NOCOPY | HT_MACRO;
+
+                ok = TRUE;
+            }
+
+
+            , 0,
+                                handle_op_macro, handle_cl_macro );
+#endif
         }
+
     }
 
     return ( ok );

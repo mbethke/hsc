@@ -3,7 +3,7 @@
 **
 ** tag handles for "<HSC_VAR>" and "<var>"
 **
-** updated:  2-Sep-1995
+** updated:  8-Sep-1995
 ** created:  2-Sep-1995
 */
 
@@ -21,7 +21,6 @@
 #include "config.h"
 #include "cleanup.h"
 #include "error.h"
-#include "find.h"
 #include "msgid.h"
 #include "output.h"
 #include "tagargs.h"

@@ -3,7 +3,7 @@
 **
 ** tag handle for "<A..>" (anchor)
 **
-** updated:  5-Aug-1995
+** updated: 10-Sep-1995
 ** created:  3-Aug-1995
 */
 
@@ -21,6 +21,8 @@
 #include "output.h"
 #include "parse.h"
 
+#include "tag.h"
+#include "vars.h"
 
 /*
 ** TODO:
@@ -31,11 +33,11 @@
 
 /*
 ** this flag is set by handle_anchor if the HREF goes to
-** an global URL. if this  flag and the stripurl
+** an global URI. if this  flag and the stripuri
 ** option is enabled, handle_clanchor will not write
 ** a </A> to the output
 */
-BOOL was_ext_url = FALSE;
+BOOL was_ext_uri = FALSE;
 
 /*
 ** handle_anchor
@@ -47,85 +49,26 @@ BOOL was_ext_url = FALSE;
 **
 ** TODO: handle NAME="xx"
 */
-BOOL handle_anchor( INFILE *inpf )
+BOOL handle_anchor( INFILE *inpf, HSCTAG *tag )
 {
-    STRPTR href   = NULL;
-    STRPTR name   = NULL;
-    STRPTR nxtoptn;
+    DLLIST *vars   = tag->op_args;
+    HSCVAR *vhref  = find_varname( vars, "HREF" );
+    HSCVAR *vname  = find_varname( vars, "NAME" );
+    STRPTR  href   = NULL;
+    STRPTR  name   = NULL;
 
     /* reset some vars */
     ufreestr( last_anchor );
     last_anchor = NULL;
-    was_ext_url = FALSE;
+    was_ext_uri = FALSE;
+
+    /* set attribute values */
+    if ( vhref ) href = vhref->text;
+    if ( vname ) name = vname->text;
 
     /* read first option */
-    nxtoptn = parse_tagoptn( inpf );
-    while ( nxtoptn ) {
 
-        strcat( this_tag, infgetcws( inpf) );
-        strcat( this_tag, infgetcw( inpf) );
-
-        if ( !upstrcmp( nxtoptn, "NAME" ) ) {
-
-            name = parse_strarg( inpf );          /* get name */
-            if ( name ) {
-
-                strcat( this_tag, infgetcws( inpf) );
-                strcat( this_tag, "=\"" );
-                strcat( this_tag, name );
-                strcat( this_tag, "\"" );
-                if ( debug )
-                     fprintf( stderr, "** NAME for \"%s\"\n", name );
-
-            }
-
-#if 0
-        } else if ( !upstrcmp( nxtoptn, "ALIGN" ) ) {
-
-            if ( parse_eq( inpf ) )
-                align = parse_mutex( "TOP:MIDDLE:BOTTOM", inpf, &match, TRUE );
-                if ( align ) {
-
-                    strcat( this_tag, "=" );
-                    strcat( this_tag, align );
-
-                }
-#endif
-
-        } else if ( !upstrcmp( nxtoptn, "HREF" ) ) {
-
-            href = parse_url( inpf );          /* get filename */
-            if ( href ) {
-
-                strcat( this_tag, "=\"" );
-                strcat( this_tag, href );
-                strcat( this_tag, "\"" );
-
-                /* remember current anchor to write out it after </A> */
-                if ( insanch )
-                    last_anchor = strclone( href );
-
-            }
-            /* if a ':' is found in the url-path, it's an global url */
-            was_ext_url = ( (!href) || strchr(href,':') );
-
-
-        } else {
-
-            /* just copy unknown options */
-            /* TODO: a bit silly, cause also a "=" and args after */
-            /*  unknown options are treted as unknwon option; */
-            /*  possible problems, if eg: HUGO=NAME */
-            strcat( this_tag, infgetcws( inpf ) );
-            strcat( this_tag, infgetcw( inpf ) );
-
-        }
-
-        nxtoptn = parse_tagoptn( inpf );
-
-    }
-
-    /* check for HREF missing */
+    /* check for both HREF and NAME missing */
     if ( (!href) && (!name) ) {
 
         message( ERROR_A_NOARG, inpf );
@@ -136,23 +79,11 @@ BOOL handle_anchor( INFILE *inpf )
 
 
     /* write whole tag */
-    if ( !(was_ext_url && stripurl) ) {
+    if ( !(was_ext_uri && stripuri) ) {
 
-        outstr( this_tag );
-        copy_until_gt( inpf );
+        /* TODO: write log */
 
     } else {
-        size_t i = 0;
-
-        /* write out white spaces before tag */
-        while ( inf_isws( this_tag[i], inpf ) ) {
-
-            outch( this_tag[i] );
-            i++;
-
-        }
-
-        skip_until_gt( inpf );
 
         if ( href ) {
 
@@ -178,7 +109,7 @@ BOOL handle_canchor( INFILE *inpf )
 {
     if ( anchor_nesting) anchor_nesting--;
 
-    if ( !(was_ext_url && stripurl) ) {
+    if ( !(was_ext_uri && stripuri) ) {
 
         outstr( this_tag );
         copy_until_gt( inpf );
@@ -188,15 +119,15 @@ BOOL handle_canchor( INFILE *inpf )
         /* skip rest of tag */
         skip_until_gt( inpf );
 
-        /* write URL of anchor */
+        /* write URI of anchor */
         if ( last_anchor ) {
 
-            /* write out italic URL */
+            /* write out italic URI */
             outstr( " (" );
             outstr( last_anchor );
             outstr( ") " );
 
-            /* release mem used by URL */
+            /* release mem used by URI */
             ufreestr( last_anchor );
             last_anchor = NULL;
         }

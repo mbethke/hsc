@@ -3,7 +3,7 @@
 **
 ** cleanup function for hsc
 **
-** updated:  3-Sep-1995
+** updated:  8-Sep-1995
 ** created:  1-Jul-1995
 */
 
@@ -20,33 +20,11 @@
 #include "global.h"
 #include "error.h"
 
-#include "vars.h"
+#include "entity.h"
 #include "macro.h"
+#include "tag.h"
+#include "vars.h"
 
-/*
-** del_entity
-*/
-void del_entity( APTR data )
-{
-    HSCENT *ent = (HSCENT *)data;
-
-    ufreestr( ent->name );
-    ufreestr( ent->source );
-    ufree( ent );
-
-}
-
-/*
-** del_tag
-*/
-void del_tag( APTR data )
-{
-    HSCTAG *tag = (HSCTAG *)data;
-
-    ufreestr( tag->name );
-    ufree( tag );
-
-}
 
 /*
 ** cleanup:

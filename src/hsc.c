@@ -48,12 +48,12 @@
 int main( int argc, char *argv[] )
 {
 #ifdef AMIGA
-    STRPTR version_string = "$VER: 0.7.4 hsc (8.9.1995)";
+    STRPTR version_string = "$VER: 0.8.1 hsc (10.9.1995)";
 #endif
     BOOL ok = FALSE;
 
     /* set program information */
-    set_prginfo( "hsc", "Tommy-Saftwörx", 0, 7, 4,
+    set_prginfo( "hsc", "Tommy-Saftwörx", 0, 8, 1,
         "HTML Sucks Completely", "This is FreeWare!" );
 
 #ifdef UMEM_TRACKING

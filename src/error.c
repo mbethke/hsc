@@ -3,7 +3,7 @@
 **
 ** error vars & funs for hsc
 **
-** updated:  3-Sep-1995
+** updated:  8-Sep-1995
 ** created:  9-Jul-1995
 **
 ** TODO:
@@ -44,7 +44,6 @@ BOOL fatal_error = FALSE;
 /* flag set by message() and checked by errch() to determine if*/
 /* a message really should be printed out */
 BOOL display_message = FALSE;
-ULONG message_limit = 0;
 
 /*
 ** errch
@@ -52,9 +51,9 @@ ULONG message_limit = 0;
 int errch( char ch )
 {
     if ( display_message )
-        return ( fputc( ch, errfile ) );
+        return( fputc( ch, errfile ) );
     else
-        return ( 1 );
+        return( 0 );
 }
 
 /*
@@ -71,7 +70,10 @@ int errlf( void )
 */
 int errstr( CONSTRPTR str )
 {
-    return fputs( str, errfile );
+    if ( display_message )
+        return( fputs( str, errfile ) );
+    else
+        return( 0 );
 }
 
 /*
@@ -243,7 +245,9 @@ int message( ULONG id, INFILE *f )
 {
     int ctr = 0;
 
-    display_message = ( (id>=message_limit) && !(fatal_error) );
+    /* TODO: check if message should be oppressed */
+
+    display_message = ( !(fatal_error) );
 
     if ( display_message ) {
 
@@ -257,7 +261,10 @@ int message( ULONG id, INFILE *f )
         else if ( id>=STYLE ) ctr = msg_prt( "Bad style", f );
         else if ( id>=MSG )   ctr = msg_prt( "Note", f );
 
-    }
+    } else if ( debug )
+        /* in debug mode, display a dot ('.') for every oppressed message */
+        fputc( '.', errfile );
+
 
     return (ctr);
 

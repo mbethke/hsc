@@ -33,11 +33,11 @@
 
 #include "vars.h"
 
-#define PARENT_URL "../" /* string for parent dir within URLs */
+#define PARENT_URI "../" /* string for parent dir within URIs */
 
-char argbuf[ MAX_URLLEN ];             /* buffer for url names */
+char argbuf[ MAX_URILEN ];             /* buffer for URI names */
 char relnam[ MAX_PATHLEN ];            /* result for get_relfname() */
-char relurl[ MAX_PATHLEN ];            /* result for conv_path2url() */
+char reluri[ MAX_PATHLEN ];            /* result for conv_path2uri() */
 
 /*
 **-------------------------------------
@@ -211,7 +211,7 @@ STRPTR parse_strarg( INFILE *inpf )
         int    ch;                     /* next char to be read */
 
         /* clear buffer */
-        memset( argbuf, 0, MAX_URLLEN );
+        memset( argbuf, 0, MAX_URILEN );
 
         ch = infgetc( inpf );
 
@@ -287,7 +287,7 @@ STRPTR parse_mutex( STRPTR line, INFILE *inpf, BOOL *match, BOOL igcs )
 ** get_relfname
 **
 ** convert absolut filename passed to <IMG> or <A HREF>
-** to a relative filename (used with absolute URLs)
+** to a relative filename (used with absolute URIs)
 **
 ** params: absn...absolute filename passed to tag
 **         curp...current path currently processed
@@ -367,66 +367,66 @@ STRPTR get_relfname( STRPTR absnam, STRPTR curdir )
 }
 
 /*
-** conv_path2url
+** conv_path2uri
 **
 ** convert a path for local (system-dependant)
-** file system to url
+** file system to URI
 */
-STRPTR conv_path2url( STRPTR path )
+STRPTR conv_path2uri( STRPTR path )
 {
-    relurl[0] = '\0';               /* result for conv_path2url() */
+    reluri[0] = '\0';               /* result for conv_path2uri() */
 
     while ( !strncmp( path, PARENT_DIR, strlen(PARENT_DIR) ) ) {
 
-        strcat( relurl, PARENT_URL );
+        strcat( reluri, PARENT_URI );
         path += strlen( PARENT_DIR );
 
     }
 
-    strcat( relurl, path );
+    strcat( reluri, path );
 
-    return ( relurl );
+    return ( reluri );
 }
 
 
 /*
-** conv_url2path
+** conv_uri2path
 **
-** convert a url to a path for local (system-dependant)
+** convert a uri to a path for local (system-dependant)
 ** file system
 */
-STRPTR conv_url2path( STRPTR url )
+STRPTR conv_uri2path( STRPTR uri )
 {
-    relurl[0] = '\0';               /* result for conv_path2url() */
+    reluri[0] = '\0';               /* result for conv_path2uri() */
 
-    while ( !strncmp( url, PARENT_URL, strlen( PARENT_URL ) ) ) {
+    while ( !strncmp( uri, PARENT_URI, strlen( PARENT_URI ) ) ) {
 
-        strcat( relurl, PARENT_DIR );
-        url += strlen( PARENT_URL );
+        strcat( reluri, PARENT_DIR );
+        uri += strlen( PARENT_URI );
 
     }
 
     /*
     ** TODO: for MS-Dos, replace "/" by "\"
     */
-    strcat( relurl, url );
+    strcat( reluri, uri );
 
-    return ( relurl );
+    return ( reluri );
 }
 
 
 
 
 /*
-** parse_url
+** parse_uri
 **
-** read an url-string, check it for syntatic correctnes.
-** if the url refers to an local file, convert its absolute
+** read an uri-string, check it for syntatic correctnes.
+** if the uri refers to an local file, convert its absolute
 ** path to a relative path and check its existence.
 **
-** url = "rsrc_type://host.domain:port/pathname#name"
+** uri = "rsrc_type://host.domain:port/pathname#name"
 */
-STRPTR parse_url( INFILE *inpf )
+STRPTR parse_uri( INFILE *inpf )
 {
 
     STRPTR rsrc = NULL;
@@ -435,19 +435,19 @@ STRPTR parse_url( INFILE *inpf )
     STRPTR path = NULL;
     STRPTR name = NULL;
     char dest_fname[MAX_PATHLEN]; /* destination file name that's existence */
-                                  /* is checked if chkurl is enabled */
-    char dest_url[MAX_URLLEN];    /* destination url name that is written to */
+                                  /* is checked if chkuri is enabled */
+    char dest_uri[MAX_URILEN];    /* destination uri name that is written to */
                                   /* the output file */
-    STRPTR url = parse_strarg( inpf );
+    STRPTR uri = parse_strarg( inpf );
 
-    if (url) {
+    if (uri) {
 
-        /* check for valid url */
-        rsrc = strchr( url, ':' );
+        /* check for valid uri */
+        rsrc = strchr( uri, ':' );
         if ( rsrc ) {
 
             /*
-            ** check global url
+            ** check global uri
             */
             if (!host) host = "";
             if (!port) port = "";
@@ -455,22 +455,22 @@ STRPTR parse_url( INFILE *inpf )
 
             /*
             ** TODO:
-            ** - parse global urls
+            ** - parse global uris
             */
 
 
         } else {
 
             /*
-            ** check local url
+            ** check local uri
             */
 
             /* extract path and #name */
-            if ( url[0] == '#' ) {
+            if ( uri[0] == '#' ) {
                 path = "";
-                name = url+1; /* skip '#' */
+                name = uri+1; /* skip '#' */
             } else {
-                path = strtok( url, "#" );
+                path = strtok( uri, "#" );
                 name = strtok( NULL, "" );
             }
 
@@ -478,18 +478,18 @@ STRPTR parse_url( INFILE *inpf )
 
                 FILE *exist;
 
-                if ( absurl ) {
+                if ( absuri ) {
 
                     /*
                     **
-                    ** parse absolute url
+                    ** parse absolute uri
                     **
                     */
                     /* debug */
                     if (debug)
                         fprintf( stderr, "** exists %s\n", path );
 
-                    /* check if local url exists */
+                    /* check if local uri exists */
                     strcpy( dest_fname, destdir );
                     strcat( dest_fname, path );
 
@@ -498,8 +498,8 @@ STRPTR parse_url( INFILE *inpf )
                         fprintf( stderr, "**   ->file %s\n", dest_fname );
 
                     /* create path of destination file */
-                    strcpy( dest_url, rel_destdir );
-                    strcat( dest_url, path );
+                    strcpy( dest_uri, rel_destdir );
+                    strcat( dest_uri, path );
 
 
                     path = get_relfname( path, rel_destdir );
@@ -507,17 +507,17 @@ STRPTR parse_url( INFILE *inpf )
                     if (debug)
                         fprintf( stderr, "**   -> real path %s\n", path );
 
-                    /* convert (filesystem depending) path to url */
-                    url = conv_path2url( path );
+                    /* convert (filesystem depending) path to uri */
+                    uri = conv_path2uri( path );
 
                     /* debug */
                     if (debug)
-                        fprintf( stderr, "**   -> real url  %s\n", url );
+                        fprintf( stderr, "**   -> real uri  %s\n", uri );
 
-                } else { /* if (absurl) */
+                } else { /* if (absuri) */
 
                     /*
-                    ** parse relative url
+                    ** parse relative uri
                     */
 
 
@@ -525,32 +525,32 @@ STRPTR parse_url( INFILE *inpf )
                     if (debug)
                         fprintf( stderr, "** exists %s\n", path );
 
-                    /* check if local url exists */
+                    /* check if local uri exists */
                     strcpy( dest_fname, destdir );
                     strcat( dest_fname, rel_destdir );
-                    strcat( dest_fname, conv_url2path(path) );
+                    strcat( dest_fname, conv_uri2path(path) );
 
-                    /* create url (only copy path) */
-                    strcpy( dest_url, path );
-                    url = dest_url;
+                    /* create uri (only copy path) */
+                    strcpy( dest_uri, path );
+                    uri = dest_uri;
 
                     /* debug */
                     if (debug) {
                         fprintf( stderr, "**   -> real path %s\n", dest_fname );
-                        fprintf( stderr, "**   -> real url  %s\n", dest_url );
+                        fprintf( stderr, "**   -> real uri  %s\n", dest_uri );
                     }
                 }
 
                 /*
-                **check existence of local url
+                **check existence of local uri
                 */
-                if ( chkurl ) {
+                if ( chkuri ) {
 
                     exist = fopen( dest_fname, "r" );
                     if ( !exist ) {
 
-                        message( ERROR_NO_URLPATH, inpf );
-                        errstr( "path to URL not found:" );
+                        message( ERROR_NO_URIPATH, inpf );
+                        errstr( "path to URI not found:" );
                         errqstr( dest_fname );
                         errlf();
 
@@ -566,14 +566,14 @@ STRPTR parse_url( INFILE *inpf )
 
             /* add #name part */
             if ( name ) {
-                strcat( url, "#" );
-                strcat( url, name );
+                strcat( uri, "#" );
+                strcat( uri, name );
             }
 
         } /* else (rsrc) */
 
-    } /* if (url) */
+    } /* if (uri) */
 
-    return ( url );
+    return ( uri );
 }
 
