@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -140,12 +141,9 @@ extern VOID prt_varlist(DLLIST * varlist, STRPTR title);
 extern HSCATTR *new_hscattr(CONSTRPTR newname);
 extern VOID del_hscattr(APTR data);
 extern HSCATTR *cpy_hscattr(HSCATTR * oldvar);
-extern HSCSTYLE *new_styleattr(CONSTRPTR name, CONSTRPTR value);
-extern VOID del_styleattr(APTR data);
 
 extern DLNODE *find_attrnode(DLLIST * varlist, STRPTR name);
 extern HSCATTR *find_varname(DLLIST * varlist, STRPTR name);
-extern HSCSTYLE *find_stylename(DLLIST *varlist, STRPTR name);
 extern HSCATTR *app_var(DLLIST * varlist, STRPTR newname);
 
 extern BOOL check_enumstr(HSCATTR * var, STRPTR value, INFILE * inpf);

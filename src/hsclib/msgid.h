@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +23,7 @@
  *
  * defines for message-ids (warnings, errors,..)
  *
- * updated:  2-Mar-1997
+ * updated: 24-Mar-2003
  * created: 30-Jul-1995
  */
 
@@ -112,6 +113,12 @@
 #define MSG_ICON_ENTITY        (MSG_PORT + 58)  /* icon-entity found */
 #define MSG_RPLC_ICON          (MSG_NOTE + 77)  /* icon-entity found */
 
+/* 
+ * messages pertaining to Cascading Style Sheets
+ */
+#define MSG_INVALID_STYLE      (MSG_WARN + 90)  /* sytax error in CSS definition */
+#define MSG_STYLE_REDEFINED    (MSG_WARN + 91)  /* CSS property redefined */
+
 /*
  * messages within attributes
  */
@@ -141,8 +148,6 @@
 #define MSG_ATTR_OBSOLETE      (MSG_WARN + 87)  /* attribute is obsolete */
 #define MSG_ATTR_AFTER_SLASH   (MSG_ERROR+ 89)  /* attribute after closing slash
                                                    in XHTML mode */
-#define MSG_INVALID_STYLE      (MSG_WARN + 90)  /* sytax error in CSS definition */
-#define MSG_STYLE_REDEFINED    (MSG_WARN + 91)  /* CSS property redefined */
 
 /*
  * messages from tag handles

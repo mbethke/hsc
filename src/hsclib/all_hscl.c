@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,6 +56,7 @@
 #include "hsclib/posteval.c"
 #include "hsclib/defattr.c"
 #include "hsclib/deftag.c"
+#include "hsclib/css.c"
 
 BOOL hsc_include_string( HSCPRC *hp, STRPTR filename, STRPTR s, ULONG optn );
 

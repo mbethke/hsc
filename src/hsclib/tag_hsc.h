@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +36,7 @@
 extern BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag);
 
 extern BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag);
+extern BOOL handle_hsc_defstyle(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_deficon(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_deftag(HSCPRC * hp, HSCTAG * tag);

@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +39,7 @@
 
 #include "hsclib/idref.h"
 #include "hsclib/tag_if.h"
+#include "hsclib/css.h"
 
 /*
  * del_inpf_stack_node
@@ -59,6 +61,7 @@ VOID del_hscprc(HSCPRC * hp)
     if (hp)
     {
         /* remove list */
+        del_dllist(hp->defstyle);
         del_dllist(hp->defent);
         del_dllist(hp->deftag);
         del_dllist(hp->defattr);
@@ -180,13 +183,14 @@ HSCPRC *new_hscprc(void)
         hp->deftag = init_dllist(del_hsctag);
         hp->defattr = init_dllist(del_hscattr);
         hp->deflazy = init_dllist(del_hsctag);
+        hp->defstyle = init_dllist(del_styleattr);
         hp->container_stack = init_dllist(del_hsctag);
         hp->content_stack = init_dllist(del_string_node);
         hp->inpf_stack = init_dllist(del_inpf_stack_node);
         hp->project = NULL;
         hp->idrefs = init_dllist(del_idref);
         hp->select_stack = init_dllist(del_select_stack_node);
-        hp->tag_styles = init_dllist(del_styleattr);
+        hp->tag_styles = init_dllist(&del_styleattr);
         hp->include_dirs = init_strlist();
 
         /* init strings */
@@ -574,7 +578,14 @@ VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml)
     if((hp->xhtml = new_xhtml))
        hp->lctags = TRUE;            /* XHTML implies LOWERCASETAGS */
        hp->quotemode = QMODE_DOUBLE; /* use double quotes by default */
+       hp->validate_css = TRUE;      /* CSS should be validated by default */
     D(fprintf(stderr, DHL "flag: xhtml=%d\n", new_xhtml));
+}
+
+VOID hsc_set_vcss(HSCPRC * hp, BOOL new_vcss)
+{
+    hp->validate_css = new_vcss;
+    D(fprintf(stderr, DHL "flag: validatecss=%d\n", new_vcss));
 }
 
 /*

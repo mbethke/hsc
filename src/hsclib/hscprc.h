@@ -43,7 +43,7 @@
 #define OPTION_FILE "hsc.options", "env:hsc.options"
 #define CONFIG_PATH "PROGDIR:"
 
-#define UNIX 1                  /* utilise POSIX-layer of BeOS */
+#define UNIX 1                  /* utilize POSIX-layer of BeOS */
 #elif defined RISCOS
 #define CONFIG_FILE "hsc:hsc.prefs"
 #define CONFIG_PATH "hsc:"
@@ -59,7 +59,7 @@
 #error "Operating system not supported: config-file/path"
 #endif
 
-/* utilise POSIX-layer of BEOS */
+/* utilize POSIX-layer of BEOS */
 #if defined BeOS
 #define UNIX 1
 #endif
@@ -116,9 +116,6 @@
 #define FILENAME_STDIN1 "STDIN"
 #define FILENAME_STDIN2 "-"
 
-/* prefix char used for special hsc-tags  */
-#define HSC_SPECIAL_PREFIX "$"
-
 /* size of input buffer for getting dimension of image files */
 #define IMAGE_BUFFER_SIZE  2048
 
@@ -137,7 +134,7 @@
 #define HSCREVISION_ATTR    "HSC.REVISION"
 
 
-/* attribute that hold condition on <$if/$elseif> */
+/* attribute that holds condition on <$if/$elseif> */
 #define CONDITION_ATTR "COND"
 
 /* attribute that tells operating system */
@@ -192,6 +189,7 @@ struct hsc_process
     DLLIST *defattr;            /* defined attributes */
     DLLIST *defent;             /* defined special charcters & entities */
     DLLIST *deflazy;            /* defined lazy attribute lists */
+    DLLIST *defstyle;           /* defined CSS styles */
     DLLIST *container_stack;    /* stack of container-tags currently open */
     DLLIST *content_stack;      /* stack of contents of container macros */
     DLLIST *include_dirs;       /* include directories */
@@ -251,6 +249,7 @@ struct hsc_process
     BOOL nested_errors;         /* show "location of previous call" msgs */
     BOOL lctags;                /* force all tags to lowercase */
     BOOL xhtml;                 /* try to be XHTML compatible */
+    BOOL validate_css;          /* validate contents of STYLE attributes */
 
     BOOL fatal;                 /* fatal error occured; abort process */
 
@@ -369,6 +368,7 @@ extern VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext);
 extern VOID hsc_set_nested_errors(HSCPRC * hp, BOOL new_nested_errors);
 extern VOID hsc_set_lctags(HSCPRC * hp, BOOL new_lctags);
 extern VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml);
+extern VOID hsc_set_vcss(HSCPRC * hp, BOOL new_vcss);
 
 /* set-methodes for values */
 extern BOOL hsc_set_destdir(HSCPRC * hp, STRPTR dir);
