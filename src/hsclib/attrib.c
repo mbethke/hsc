@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 15-Jul-1996
+ * updated:  4-Dec-1996
  * created:  2-Sep-1995
  *
  */
@@ -139,7 +139,7 @@ HSCATTR *new_hscattr(STRPTR newname)
             newvar->varflag = 0;
         else
             newvar->varflag = VF_KEEP_QUOTES;
-        newvar->quote = EOF;
+        newvar->quote = VQ_NO_QUOTE;
     }
 
     if (!(newvar->name))

@@ -42,6 +42,8 @@ extern BOOL hsc_project_read_file(HSCPRJ * hp, INFILE * inpf);
 extern BOOL hsc_project_write_file(HSCPRJ * hp, STRPTR project_fname);
 
 extern BOOL hsc_project_add_document(HSCPRJ *hp);
+extern BOOL hsc_project_del_document(HSCPRJ * hp, STRPTR docname);
+
 extern BOOL hsc_project_set_filename( HSCPRJ *hp, STRPTR new_prjname);
 extern BOOL hsc_project_set_document( HSCPRJ *hp, STRPTR new_docname);
 extern BOOL hsc_project_set_source( HSCPRJ *hp, STRPTR new_sourcename);

@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 12-Sep-1996
+ * updated: 28-Oct-1996
  * created: 13-Apr-1996
  */
 
@@ -102,8 +102,7 @@ int check_document_id(HSCPRJ * hp, STRPTR docname, STRPTR id)
     }
     else
     {
-        DP(fprintf(stderr, DHP "    no file-entry in project\n",
-                   docname, id));
+        DP(fprintf(stderr, DHP "    no file-entry in project\n"));
         err = ERR_CDI_NoDocumentEntry;
     }
 
@@ -143,6 +142,30 @@ BOOL hsc_project_add_document(HSCPRJ * hp)
     hp->document = NULL;
 
     return (ok);
+}
+
+/*
+ * hsc_project_del_document
+ *
+ * remove document from project
+ */
+BOOL hsc_project_del_document(HSCPRJ * hp, STRPTR docname)
+{
+    BOOL deleted = FALSE;
+    DLNODE *docnd = find_document_node(hp->documents, docname);
+
+    if (docnd)
+    {
+        DP(fprintf(stderr, DHP "  remove document `%s'\n", docname));
+        del_dlnode(hp->documents, docnd);
+        deleted = TRUE;
+    }
+    else
+    {
+        DP(fprintf(stderr, DHP "  remove document `%s': FAILED\n", docname));
+    }
+
+    return (deleted);
 }
 
 /*

@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 30-Jul-1996
+ * updated: 30-Oct-1996
  * created:  8-Oct-1995
  */
 
@@ -39,80 +39,26 @@
 #define DHLS "*hsclib* skip: "
 
 /*
- * skip_lf
+ * skip_next_lf
  *
  * ignore '\n'
  *
  * params: inpf...input file to read char from
  * result: TRUE if skipped
  */
-BOOL skip_lf(HSCPRC * hp)
+BOOL skip_next_lf(HSCPRC * hp)
 {
-    /*
-     * TODO: check, why skip_lf() should not be allowed to
-     *   change the infp's current word
-     */
-    /* TODO: skip white-spaces after linefeed, if COMPACT set */
+    /* TODO: skip white-spaces after linefeed,
+     * if COMPACT set; but this has to be performed
+     * at another part of the code... */
     INFILE *inpf = hp->inpf;
 
-#if 0
     int nc = infgetc(inpf);
 
     if (nc != '\n')
         inungetc(nc, inpf);
 
     return ((BOOL) (nc == EOF));
-#else
-    BOOL skipped = FALSE;
-    STRPTR nw = infgetw(inpf);
-
-    if (nw)
-        if (strcmp(nw, "\n"))
-            inungetcwws(inpf);
-        else
-        {
-            if (hp->compact && !(hp->inside_pre))
-            {
-                if (infskip_ws(inpf))
-                {
-                    DMSG("skipped whtspc after LF");
-                }
-            }
-            skipped = TRUE;
-        }
-
-    return skipped;
-#endif
-}
-
-/*
- * skip_lfs
- *
- * skip until any <> LF is found
- *
- * params: inpf...input file to read(s) char from
- * result: TRUE if skipped at least one LF
- */
-BOOL skip_lfs(HSCPRC * hp)
-{
-    BOOL skipped_any = FALSE;
-    INFILE *inpf = hp->inpf;
-    STRPTR nw = infgetw(inpf);
-
-    /* skip linefeeds */
-    while (nw && (!strcmp(nw, "\n")))
-    {
-
-        skipped_any = TRUE;
-        nw = infgetw(inpf);
-
-    }
-
-    /* write back last white spaces and word */
-    if (nw)
-        inungetcwws(inpf);
-
-    return (skipped_any);
 }
 
 BOOL eot_reached(HSCPRC * hp, BYTE * state)
@@ -122,10 +68,8 @@ BOOL eot_reached(HSCPRC * hp, BYTE * state)
 
     if (nw)
     {
-
         switch (*state)
         {
-
         case TGST_TAG:
             if (!strcmp(nw, "\""))
                 *state = TGST_DQUOTE;
@@ -146,7 +90,6 @@ BOOL eot_reached(HSCPRC * hp, BYTE * state)
 
             if (strcmp(nw, "\n"))
             {
-
                 switch (*state)
                 {
 
@@ -165,27 +108,21 @@ BOOL eot_reached(HSCPRC * hp, BYTE * state)
                         *state = TGST_TAG;
                     break;
                 }
-
             }
             else
             {
-
                 /* unexpected end of line */
                 hsc_msg_eol(hp);
                 *state = TGST_TAG;      /* go on reading inside tag */
-
             }
 
             break;
-
         }
     }
     else
     {
-
         hsc_msg_eof(hp, "`>' expected");
         *state = TGST_ERR;
-
     }
 
     return ((BOOL) ((*state == TGST_END) || (*state == TGST_ERR)));
@@ -211,19 +148,15 @@ BOOL skip_until_eot_state(HSCPRC * hp, BYTE * state, EXPSTR * logstr)
     while (!eot_reached(hp, state))
         if (logstr)
         {
-
             app_estr(logstr, infgetcws(inpf));
             app_estr(logstr, infgetcw(inpf));
-
         }
 
     /* append ">" */
     if (logstr)
     {
-
         app_estr(logstr, infgetcws(inpf));
         app_estr(logstr, infgetcw(inpf));
-
     }
 
     return ((BOOL) ! (hp->fatal));
@@ -271,10 +204,8 @@ BOOL eoc_reached(HSCPRC * hp, BYTE * state, LONG * nest)
 
     if (nw)
     {
-
         switch (*state)
         {
-
         case CMST_TEXT:
             if (!strcmp(nw, "*"))
                 *state = CMST_STAR;
@@ -290,10 +221,8 @@ BOOL eoc_reached(HSCPRC * hp, BYTE * state, LONG * nest)
             else if (!strcmp(nw, ">"))
                 if (*nest)
                 {
-
                     (*nest)--;
                     *state = CMST_TEXT;
-
                 }
                 else
                     *state = CMST_END;
@@ -305,22 +234,17 @@ BOOL eoc_reached(HSCPRC * hp, BYTE * state, LONG * nest)
                 *state = CMST_TAG;
             else
             {
-
                 if (!strcmp(nw, "*"))
                     (*nest)++;
                 *state = CMST_TEXT;
-
             }
             break;
-
         }
     }
     else
     {
-
         hsc_msg_eof(hp, "missing end of comment (\"*>\")");
         *state = CMST_ERR;
-
     }
 
     return ((BOOL) ((*state == CMST_END) || (*state == CMST_ERR)));
@@ -341,9 +265,7 @@ BOOL skip_hsc_comment(HSCPRC * hp)
 
     while (!end && !(hp->fatal))
     {
-
         end = eoc_reached(hp, &cstate, &cnest);
-
     }
 
     return ((BOOL) ! (hp->fatal));

@@ -90,9 +90,5 @@ extern int cmp_iddef(APTR cmp_data, APTR list_data);
 extern HSCIDD *app_iddef(HSCDOC * document, STRPTR iddef_name);
 extern HSCIDD *find_iddef(HSCDOC * document, STRPTR name);
 
-/* function called if invalid state dedected */
-#define panic(text) call_panic(text,__FILE__,__LINE__)
-extern VOID call_panic(STRPTR text, STRPTR file, ULONG line);
-
 #endif /* HSCPRJ_DOCUMENT_H */
 

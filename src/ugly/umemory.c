@@ -68,7 +68,7 @@
 #define UMEM_BLOCKSIZE 8
 #endif
 
-#ifndef modaj
+#ifndef modfit
 #define modfit(x,by) ((by)*(((x)+(by-1))/(by)))
 #endif
 

@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 17-Aug-1995
+ * updated:  4-Dec-1995
  * created: 11-Oct-1995
  */
 
@@ -195,7 +195,7 @@ static STRPTR getfilesize(HSCPRC * hp, EXPSTR * dest, STRPTR uri)
 
     D(fprintf(stderr, DHL "  GETFILESIZE(`%s')\n", filename));
     errno = 0;
-    file = fopen(filename, "r");
+    file = fopen(filename, "rb");
     if (file)
     {
         /* retrieve size */
@@ -354,14 +354,18 @@ STRPTR quotestr(int quote)
 {
     STRPTR s = "UNKNOWN";
 
-    if (quote == '\"')
+    if (quote == DOUBLE_QUOTE)
         s = "[double]";
-    else if (quote == '\'')
+    else if (quote == SINGLE_QUOTE)
         s = "[single]";
     else if (quote == VQ_NO_QUOTE)
         s = "[none]";
     else
-        panic("unknown quote-kind");
+    {
+        STRARR tmp[60];
+        sprintf(tmp, "unknown quote-kind: $%02x #%03d", quote, quote);
+        panic(tmp);
+    }
 
     return (s);
 }
@@ -384,33 +388,41 @@ static VOID choose_quote(HSCPRC * hp, HSCATTR * attr)
 
     D(fprintf(stderr, DHL "  choosing quote\n"));
 
-    /* scan attribute value for quotes */
-    while (value[0])
+    if (value[0])
     {
-        if (value[0] == SINGLE_QUOTE)
+        /* scan attribute value for quotes */
+        while (value[0])
         {
-            D(fprintf(stderr, DHL "    single quote detected\n"));
-            single_quote = TRUE;
-            nasty_char = TRUE;
-        }
-        else if (value[0] == DOUBLE_QUOTE)
-        {
-            D(fprintf(stderr, DHL "    double quote detected\n"));
-            double_quote = TRUE;
-            nasty_char = TRUE;
-        }
-        else if (!hsc_normch(value[0]) && !nasty_char)
-        {
-            D(fprintf(stderr, DHL "    nasty-char #%d detected\n", value[0]));
-            nasty_char = TRUE;
-        }
+            if (value[0] == SINGLE_QUOTE)
+            {
+                D(fprintf(stderr, DHL "    single quote detected\n"));
+                single_quote = TRUE;
+                nasty_char = TRUE;
+            }
+            else if (value[0] == DOUBLE_QUOTE)
+            {
+                D(fprintf(stderr, DHL "    double quote detected\n"));
+                double_quote = TRUE;
+                nasty_char = TRUE;
+            }
+            else if (!hsc_normch(value[0]) && !nasty_char)
+            {
+                D(fprintf(stderr, DHL "    nasty-char #%d detected\n", value[0]));
+                nasty_char = TRUE;
+            }
 
-        value++;
+            value++;
+        }
+    }
+    else
+    {
+        /* empty value */
+        nasty_char = TRUE;
+        /* TODO: warninbg "empty value" */
     }
 
     if (qm == QMODE_KEEP)
     {
-#if 0                           /* TODO: enable this */
         /* check, if quote is missing */
         if ((attr->quote == VQ_NO_QUOTE)
             && nasty_char)
@@ -418,7 +430,6 @@ static VOID choose_quote(HSCPRC * hp, HSCATTR * attr)
             hsc_message(hp, MSG_REQU_QUOTE,
                         "value for %A requires quotes", attr);
         }
-#endif
     }
     else
     {
@@ -1158,10 +1169,6 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
     else
         dest->quote = ch;
 
-    /* skip linefeeds, if evaluation hsc-expression */
-    if (endstr)
-        skip_lfs(hp);
-
     if (ch == '(')
     {
         /* process braket */
@@ -1202,8 +1209,6 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
     if (exprstr && endstr)
     {
         BYTE op;
-
-        skip_lfs(hp);           /* skip linefeeds */
 
         /* evaluate operator */
         op = eval_op(hp);
@@ -1258,41 +1263,11 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
     {
         if (exprstr && !endstr)
         {
-            /*
-             * set quote, depending on quotemode
-             */
-
-#if 0                           /* TODO:remove */
-            switch (hp->quotemode)
-            {
-
-            case QMODE_KEEP:
-                /* do nufin */
-                break;
-
-            case QMODE_DOUBLE:
-                dest->quote = '\"';
-                break;
-
-            case QMODE_SINGLE:
-                dest->quote = '\'';
-                break;
-
-            case QMODE_NONE:
-                dest->quote = VQ_NO_QUOTE;
-                break;
-
-            default:
-                panic("unknown quotemode");
-                break;
-            }
-#else
             if ((dest->vartype != VT_BOOL)
                 && !(dest->varflag & (VF_MACRO | VF_KEEP_QUOTES)))
             {
                 choose_quote(hp, dest);
             }
-#endif
 
             /*
              * check enum type
@@ -1437,7 +1412,7 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
  *         if attribute is empty or unknown or other error
  *         has occured.
  */
-STRPTR eval_cloneattr(HSCPRC * hp, HSCATTR *dest)
+STRPTR eval_cloneattr(HSCPRC * hp, HSCATTR * dest)
 {
     STRPTR nw = eval_attrname(hp);
     STRPTR attrval = NULL;
@@ -1463,6 +1438,6 @@ STRPTR eval_cloneattr(HSCPRC * hp, HSCATTR *dest)
         choose_quote(hp, dest);
     }
 
-    return( attrval);
+    return (attrval);
 }
 

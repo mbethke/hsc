@@ -17,7 +17,7 @@
 #define EXPSTR_MEMSTEP 96
 #define ES_MIN_MEMSTEP 8        /* min. memory step for init( step_size ) */
 
-#ifndef modaj
+#ifndef modadj
 #define modadj(x,by) ((by)*(((x)+(by))/(by)))
 #endif
 

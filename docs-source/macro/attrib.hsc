@@ -1,4 +1,4 @@
-<WEBPAGE chapter="hsc - Features - Macros - " title="Macro/tag attributes">
+<WEBPAGE chapter="hsc - Features - Macros - " title="Attribute declaration">
 
 <$macro LITYPE TYPE:string/r>
 <DT><CODE><(type)></CODE>
@@ -24,19 +24,21 @@ like Pascal, Oberon or E. So attributes are arguments passed to a tag or
 macro.</P>
 
 <P>Additionally, you can create/update attributes using <ln_define>
-and <ln_let>.</P>
+and <ln_let> therefor using them like variables.</P>
+
+<H2>General syntax</H2>
 
 <P>Within <ln_macro>, <ln_define> and <ln_deftag>,
-an  attribute is defined with
+an  attribute is declared using
 <BLOCKQUOTE>
-<I>name</I> ":" <I>type</I>  [ "/" <I>flag</I> ]  [ "=" <I>default value</I> ]
+<I>name</I> ":" <I>type</I>  [ "/" <I>modifiers</I> ]  [ "=" <I>default value</I> ]
 </BLOCKQUOTE>
 </P>
 
-<H2>Attribute types</H2>
+<A NAME="type"><H2>Attribute types</H2></A>
 <DL>
 <LITYPE type="STRING"> any text
-<LITYPE type="URI"> references to an URI. Is affected bye command line
+<LITYPE type="URI"> references to an URI. Is affected by CLI
     options like <op_stripexternal>.
 <LITYPE type="BOOL"> boolean flag
 <LITYPE type="ENUM"> enumerator type; accepts only given values (eg the
@@ -45,26 +47,27 @@ an  attribute is defined with
 <LITYPE type="ID"> id for current position in document; can be refered
   with <TG>A HREF="#id"</TG>
 <LITYPE type="NUM"> decimal integer value
-<LITYPE type="COLOR"> a color-value of the template <CODE>"#rrggbb"</CODE>
-  (used by some jerk-tags)
+<LITYPE type="COLOR"> a color-value matching the template <CODE>"#rrggbb"</CODE>
+ or one of the values defined using 
+<A HREF=":features/spcattr.html#colornames"><CODE>HSC.COLOR-NAMES</CODE></A>.
 </DL>
 
-<A NAME="flags"><H2>Attribute flags</H2></A>
+<A NAME="modifier"><H2>Attribute modifiers</H2></A>
 <DL>
 <LIATTR LONG="CONST" SHORT="C">
     Attribute is read-only; you can't set a new value using <ln_let>.
-    This flag is only allowed within <ln_define>
+    This option is only allowed within <ln_define>
 <LIATTR LONG="GLOBAL" SHORT="G">
     Attribute is global. Useful if you want to define an attribute inside
     a macro, that is not removed after macro has been processed.
-    This flag is only allowed within <ln_define>.
+    This option is only allowed within <ln_define>.
 <LIATTR long="JERK" short="J">
     Attribute is only used by a <jerk>.
 <LIATTR long="REQUIRED" short="R">
     Attribute must be set when macro/tag is called.
 </DL>
 
-Within <ln_macro> and <ln_deftag>, URIs also can have the following flags:
+Within <ln_macro> and <ln_deftag>, URIs also can have the following options:
 
 <DL>
 <LIATTR long="SIZE" short="Z">
@@ -97,4 +100,3 @@ will be used as new value.</P>
 </DL>
 
 </WEBPAGE>
-

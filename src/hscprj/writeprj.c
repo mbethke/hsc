@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 10-Sep-1996
+ * updated: 27-Oct-1996
  * created: 10-Sep-1996
  */
 
@@ -247,13 +247,20 @@ BOOL hsc_project_write_file(HSCPRJ * hp, STRPTR project_fname)
         FILE *outfile = NULL;
 
         DP(fprintf(stderr, DHP "update project file `%s'\n",
-                     project_fname));
+                   project_fname));
 
         /* append header information */
         append_header(prjstr);
 
         /* append current document to project */
-        hsc_project_add_document(hp);
+        if ((hp->document) && (hp->document->docname))
+        {
+            hsc_project_add_document(hp);
+        }
+        else
+        {
+            DP(fprintf(stderr, DHP "  no new document to add\n"));
+        }
 
         /*
          * append all old project info of other files

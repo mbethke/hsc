@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  8-Sep-1996
+ * updated: 31-Oct-1996
  * created: 11-Feb-1996
  */
 
@@ -28,6 +28,7 @@
 #include "hsclib/inc_base.h"
 
 #include "ugly/fname.h"
+#include "ugly/ustrlist.h"
 #include "ugly/returncd.h"
 
 #include "hscprj/project.h"
@@ -62,6 +63,7 @@ VOID del_hscprc(HSCPRC * hp)
         del_dllist(hp->inpf_stack);
         del_dllist(hp->idrefs);
         del_dllist(hp->select_stack);
+        del_strlist(hp->include_dirs);
 
         /* remove strings */
         del_estr(hp->destdir);
@@ -75,11 +77,10 @@ VOID del_hscprc(HSCPRC * hp)
         del_estr(hp->rmt_str);
         del_estr(hp->curr_msg);
         del_estr(hp->curr_ref);
+        del_estr(hp->whtspc);
 
-#if 0                           /* TODO:remove */
-        ufreestr(hp->filename_project);
-#endif
         ufreestr(hp->filename_document);
+        ufreestr(hp->strip_tags);
 
         /* remove project-data */
         del_project(hp->project);
@@ -100,7 +101,7 @@ VOID del_hscprc(HSCPRC * hp)
  *
  * reset all items of a hsc process
  */
-static VOID reset_hscprc(HSCPRC * hp)
+VOID reset_hscprc(HSCPRC * hp)
 {
     int i;
 
@@ -111,6 +112,7 @@ static VOID reset_hscprc(HSCPRC * hp)
     clr_estr(hp->destdir);
     clr_estr(hp->reldir);
     clr_estr(hp->if_stack);
+    clr_estr(hp->whtspc);
 
     hp->suppress_output = TRUE;
     hp->fatal = FALSE;
@@ -118,13 +120,23 @@ static VOID reset_hscprc(HSCPRC * hp)
     hp->prev_status_line = (ULONG) - 1;
     hp->msg_count = 0;
 
-    hp->preceding_whtspc = FALSE;
-
     hp->inside_pre = FALSE;
     hp->inside_anchor = FALSE;
     hp->inside_title = FALSE;
 
-    /* reset message arrays */
+    hp->strip_badws = FALSE;
+    hp->strip_next_whtspc = FALSE;
+    hp->strip_next2_whtspc = FALSE;
+
+    ufreestr(hp->strip_tags);
+
+    /* check for prostitute */
+    hp->prostitute = (getenv(ENV_HSCSALARY) != NULL);
+
+    /* reset messages */
+    hp->msg_ignore_notes = FALSE;
+    hp->msg_ignore_style = FALSE;
+    hp->msg_ignore_port = FALSE;
     for (i = 0; i < MAX_MSGID; i++)
     {
         hp->msg_ignore[i] = FALSE;
@@ -155,6 +167,7 @@ HSCPRC *new_hscprc(void)
         hp->project = NULL;
         hp->idrefs = init_dllist(del_idref);
         hp->select_stack = init_dllist(del_select_stack_node);
+        hp->include_dirs = init_strlist();
 
         /* init strings */
         hp->destdir = init_estr(0);
@@ -168,6 +181,7 @@ HSCPRC *new_hscprc(void)
         hp->rmt_str = init_estr(128);
         hp->curr_msg = init_estr(64);
         hp->curr_ref = init_estr(64);
+        hp->whtspc = init_estr(0);
 
 #if 0                           /* TODO:remove */
         hp->filename_project = NULL;
@@ -247,6 +261,11 @@ BOOL hsc_get_rplc_quote(HSCPRC * hp)
 BOOL hsc_get_smart_ent(HSCPRC * hp)
 {
     return (hp->smart_ent);
+}
+
+BOOL hsc_get_strip_badws(HSCPRC * hp)
+{
+    return (hp->strip_badws);
 }
 
 BOOL hsc_get_strip_cmt(HSCPRC * hp)
@@ -375,39 +394,23 @@ BOOL hsc_set_iconbase(HSCPRC * hp, STRPTR uri)
 {
     set_estr(hp->iconbase, uri);
 
-    /* append "/" if neccessary
-     * NOTE: in this case link_fname can't be used because
-     * hp->iconbase refers to an URI, but not to a file
-     */
-    if (strlen(uri))
-    {
-        char lastch = uri[strlen(uri) - 1];
-        if (lastch != '/')
-            app_estrch(hp->iconbase, '/');
-    }
     D(fprintf(stderr, DHL "iconbase=`%s'\n", estr2str(hp->iconbase)));
 
     return (TRUE);
 }
 
-#if 0 /* TODO: remove */
-BOOL hsc_set_filename_project(HSCPRC * hp, STRPTR filename)
+BOOL hsc_set_strip_tags(HSCPRC * hp, STRPTR taglist)
 {
-    BOOL ok = FALSE;
-
-    D(fprintf(stderr, DHL "project =`%s'\n", filename));
-    ok = hsc_project_set_filename(hp->project, filename);
-
-    return (ok);
+    reallocstr(&(hp->strip_tags), taglist);
+    return (TRUE);
 }
-#endif
 
 BOOL hsc_set_filename_document(HSCPRC * hp, STRPTR filename)
 {
     BOOL ok = FALSE;
 
     D(fprintf(stderr, DHL "document=`%s'\n", filename));
-    hp->filename_document = strclone( filename );
+    hp->filename_document = strclone(filename);
 
     return (ok);
 }
@@ -479,6 +482,12 @@ VOID hsc_set_smart_ent(HSCPRC * hp, BOOL new_smart_ent)
 {
     hp->smart_ent = new_smart_ent;
     D(fprintf(stderr, DHL "flag: smart_ent=%d\n", new_smart_ent));
+}
+
+VOID hsc_set_strip_badws(HSCPRC * hp, BOOL new_strip_badws)
+{
+    hp->strip_badws = new_strip_badws;
+    D(fprintf(stderr, DHL "flag: strip_bws=%d\n", new_strip_badws));
 }
 
 VOID hsc_set_strip_cmt(HSCPRC * hp, BOOL new_strip_cmt)
@@ -594,7 +603,7 @@ BOOL hsc_set_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id, BOOL value)
 
 BOOL hsc_get_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id)
 {
-/*    HSCMSG_ID max_msgid = MAX_MSGID; */
+    /* HSCMSG_ID max_msgid = MAX_MSGID; */
     if ((msg_id & MASK_MESSAGE) <= MAX_MSGID)
         return (hp->msg_ignore[msg_id & MASK_MESSAGE]);
     else
@@ -627,6 +636,30 @@ HSCMSG_CLASS hsc_get_msg_class(HSCPRC * hp, HSCMSG_ID msg_id)
         return (MSG_NONE);
 }
 
+/*
+ * set message classes to be ignored
+ */
+BOOL hsc_set_msg_ignore_notes(HSCPRC * hp, BOOL value)
+{
+    hp->msg_ignore_notes = value;
+    return (value);
+}
+
+BOOL hsc_set_msg_ignore_style(HSCPRC * hp, BOOL value)
+{
+    hp->msg_ignore_style = value;
+    return (value);
+}
+
+BOOL hsc_set_msg_ignore_port(HSCPRC * hp, BOOL value)
+{
+    hp->msg_ignore_port = value;
+    return (value);
+}
+
+/*
+ * reset whole arrays for message-class/ignores
+ */
 VOID hsc_clear_msg_ignore(HSCPRC * hp)
 {
     size_t i;
@@ -642,9 +675,56 @@ VOID hsc_reset_msg_class(HSCPRC * hp)
 }
 
 /*
+ * methods for include-directories
+ */
+BOOL hsc_add_include_directory(HSCPRC * hp, STRPTR dir)
+{
+    return ((BOOL) (app_strnode(hp->include_dirs, dir) != NULL));
+}
+
+VOID hsc_clr_include_directory(HSCPRC * hp)
+{
+    clr_strlist(hp->include_dirs);
+}
+
+/*
+ *-------------------------------------
+ * misc. funtions for white spaces
+ *-------------------------------------
+ */
+
+/*
+ * compactWs - reduce white space string to blank
+ *             or linefeed
+ */
+STRPTR compactWs(HSCPRC * hp, STRPTR ws)
+{
+    STRPTR newWs = "";
+
+    if (ws[0])
+    {
+        /* any white spaces at all */
+        STRPTR containsLF = strchr(ws, '\n');
+        STRPTR containsCR = strchr(ws, '\r');
+
+        if (containsLF)
+            if (containsCR)
+                newWs = "\r\n";
+            else
+                newWs = "\n";
+        else if (containsCR)
+            newWs = "\r";
+        else
+            newWs = " ";
+    }
+
+    return (newWs);
+}
+
+/*
  * output text function
  *
- * output text to
+ * output text to host process
  *
  * params: hp....hsc process to perform ouput with
  *         wspc..white spaces
@@ -656,7 +736,32 @@ BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text)
     BOOL written = FALSE;
     if ((hp)->CB_text && !((hp)->suppress_output))
     {
-        (*((hp)->CB_text)) ((hp), wspc, text);
+        /* add current white spaces to white space
+         * buffer; if hp->compact is enabled, reduce
+         * white spaces */
+        app_estr(hp->whtspc, wspc);
+        if (hp->compact && (!hp->inside_pre))
+        {
+            /* reduce white spaces */
+            wspc = compactWs(hp, estr2str(hp->whtspc));
+        }
+        else
+        {
+            wspc = estr2str(hp->whtspc);
+        }
+
+        /* strip white spaces if requested */
+        if (hp->strip_next_whtspc)
+        {
+            D(fprintf(stderr, DHL "bad white spaces stripped\n"));
+            hp->strip_next_whtspc = FALSE;
+            wspc = "";
+        } else if (hp->strip_next2_whtspc)
+        {
+            hp->strip_next2_whtspc = FALSE;
+            hp->strip_next_whtspc = TRUE;
+        }
+
 #if DEBUG_HSCLIB_OUTPUT
         if (hp->debug)
             if (text)
@@ -665,7 +770,15 @@ BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text)
                 else
                     fprintf(stderr, DHL "ouput: `%s', `\\n'\n", wspc);
 #endif
-        written = TRUE;
+        if ((wspc && wspc[0]) || (text && text[0]))
+        {
+            (*((hp)->CB_text)) ((hp), wspc, text);
+            written = TRUE;
+        }
+
+        /* reset white space buffer */
+        clr_estr(hp->whtspc);
+
     }
     return (written);
 }

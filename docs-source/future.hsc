@@ -11,24 +11,19 @@
 
 The enhancements below are planed to implemented.. sometimes
 <UL>
-<LI>Additional tool to add/remove/rename documents to project-file
-<LI>Improve <KBD>COMPACT</KBD> to also act inside tag calls
+<LI>Add a copy/move/add command to <hscpitt>
 <LI>Add option <CODE>INDENT</CODE> for <TG>$include</TG> and
     <TG>$source</TG> to indent preformatted text
 <LI>Add some inheritance-concept for attribute values, so
     that macros need no attribute-cloning code like
     <TG>A HREF=(HREF)</TG>
 <LI>Support creation of an index-document (like found in most AmigaGuides)
-<LI>Do checking of external URIs with an external program (eg. `GetURL')
+<LI>Do checking of external URIs with an external program 
+    (eg. <qq>GetURL</qq>)
 <LI><TG>$select</TG>, <TG>$when</TG> and <TG>$otherwise</TG> as an extended version of <TG>$if</TG>
 <LI>Plausibility checking of external URIs (unknown protocoll, missing domain)
-<LI>CLI-option <KBD>STRIPBADWS</KBD> to automatically remove those white-spaces
-    which cause messages#78 and #79.
 <LI>Use system-independant paths for filenames stored in project-file, so
     you can work with the same project-file under multiple systems.
-<LI>After having read the specs for html 0.32, maybe I should rename
-    the program to `hsemtics' (short for `HTML sucks even more than
-    I can say")
 </UL>
 
 <H2>Far future</H2>
@@ -38,21 +33,21 @@ probably not in the near future.
 <UL>
 <LI>Fully support creation of a NoNet-version
 <LI>Write a GUI-frontend for AmigaOS
-<LI>Tool to link whole project directory into one document
+<LI>Tool to link whole project into one document
 </UL>
 
 <H2>No future</H2>
 
 For the thinggies below, from my point of view, there is no need to 
-ever be implemented. But if you think, there is really a need for one
-or more of them, fell free trying to convince me.
+ever be implemented. 
 
 <UL>
 <LI>Something like "preccompiled" include files, which would have
     also speed up reading <hsc.prefs>; I experimented around a bit
     with this, and it seems that more time is wasted scanning those
     bloody linked lists then by checking the data. It's more likely
-    that an AVL-tree will make it into the source.
+    that some sort of balanced binary tree will make it into 
+    the source.
 <LI>Type checking for attributes - anything more then the current 
     (very relaxed) checking wouldn't fit into the typeless 
     concept if plain-html.

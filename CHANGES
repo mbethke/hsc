@@ -1,20 +1,97 @@
 CHANGES
 =======
 
+Version 0.911, 4-Dec-1996 (The Porsche Release)
+ (included hscpitt; improved white space handling; some bugfixes 
+ and minor improvements)
+
+ hsc:
+   - fixed bug: scope rules for attribute being defined using
+     <$define> did not work [Magnus Holmgren]
+   - fixed bug: HSC.SOURCE.* used *.html-file, not *.hsc [Walter 
+     Doerwald]
+   - fixed bug that resulted into wrong URIs for SRC if ICONBASE 
+     contained an asterisk ("*") [Hartmut Goebel]
+   - fixed bug: COMPACT did not strip empty lines if they have been
+     separated by a hsc- or stripped tag [Hartmut Goebel]
+   - fixed bug: STRIPTAGS did not work as expected [Hartmut Goebel]
+   - fixed bug that made an invokation like `hsc x/y.hsc TO x/y.html'
+     result in an argument-error [Mathew Hunter]
+   - fixwed bug: QUOTESTYLE=NONE removed quotes also for attributes
+     with empty value, eg. ALT="" [Magnus Holmgren]
+   - fixed bug (AmigaOS only) that prevented `TO=""' act the same as
+     `TO ""' [Mathew Hunter]
+   - changed base directory of source archive from `source/' to
+     `hsc/source/'
+   - changed CLI option ICONBASE that it now only works in "*"-mode
+   - changed version numbering to be conformant to AmigaOS (using
+     0.911 instead of 0.9.11)
+   - added CLI option INCLUDEDIR
+   - added CLI option STRIPBADWS (as suggested by Armin Obersteiner
+     about 20 years ago)
+   - added warning if quotes are missing from attribute 
+     (message #81)
+   - added environment variable HSCSALARY
+   - added: version for AmigaOS can now be made resident
+   - improved white spaces; now carriage return ("\r") is also
+     recognised
+   - improved <$exec> that REMOVE="ON" implictly enables TEMPORARY
+   - improved GETSIZE that attributes for dimension, that have been
+     set by hand are now validated (before: ignored; see also
+     message#45)
+   - improved IGNORE that it now handles whole classes to be ignored
+     more reliabel
+   - improved IGNORE that you now can pass a whole list of messages
+     and classes to be ignored, separated by a vertical bar ("|")
+   - improved HSCPATH that no more trailing slash is required
+   - removed the GIF89a-bug from "known bugs" because I failed to
+     create a GIF89a image that hsc can not cope with using several
+     paint programs
+
+ hscdepp (v1.2):
+   - forgot to document some minor important CLI options: NAMEALL
+     and NOTAGLINES
+
+ hscpitt (v1.0):
+   - released
+
+ hsc.prefs:
+   - added icon entities described in 
+     http://www.w3.org/pub/WWW/TR/WD-wwwicn (29. July 1996)
+
+ documentation:
+   - all currently used messages are now described
+   - reworked author information, included some stuff you should 
+     read before contacting me
+   - added chapter about file options (fileargs.html)
+   - added chapter about environment vriables (envvar.html)
+   - several sub-topics can now be reached from the main page
+   - included an example on how CLI-option GETSIZE is supposed to
+     affect the output
+   - added some stuff about LHA to the Q&A-chapter for non-Amigoids
+
+ source/Makefile:
+   - now supports a `make install' in Un*x environments
+
+ miscellaneous:
+   - compiled with gcc 2.7.0 and libnix 1.1 (I ought to download the
+     current ADE sometimes..)
+---------------------------------------------------------------------
+
 Version 0.9.10, 30-Sep-1996
  (minor update, mostly bugfixes and code-cleanup)
  - fixed Enforcer-Hits if no project-file has been specified and
    external URIs have been referenced (reported by Jens T. Berger 
    Thielemann)
  - fixed bug that caused trashed relative URIs, if a <BASE>-tag 
-   occured (reported by Alois Kastner-Maresch)
+   occured (reported by Andreas Gaszner)
  - fixed bug that allowed attributes of type URI being parsed
    more then once if they've been declared using <$define>,
    usually resulting into wrong paths for existence-check
-   (reported by Alois Kastner-Maresch)
+   (reported by Andreas Gaszner)
  - fixed bug that caused the relative destination-dir to be ommited
    for the output-filename, if a full input-filename has been passed
-   (reported by Alois Kastner-Maresch)
+   (reported by Walter Doerwald)
  - fixed a minor bug in grafflwerk/hScMsg.rexx, which could lead to
    a wrong return-code if ScMsg had to be invoked from the script
  - stopped supporting plain 68000 CPUs; now at least a 68020 is
@@ -22,7 +99,7 @@ Version 0.9.10, 30-Sep-1996
  - added CLI option DEFINE
  - added CLI-option MSGANSI
  - added CLI-option PREFSFILE
- - added CLI-option QUOTEMODE
+ - added CLI-option QUOTESTYLE
  - improved id-checking that it now also works if current document
    is referenced indirectly via it's own filename.
  - improved handling of input-files (speed increase for files >100k)

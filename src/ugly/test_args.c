@@ -125,6 +125,7 @@ int main(int argc, char *argv[])
 #endif
     if (my_args)
     {
+        ARGFILE *argf = NULL;
 
         fprintf_prginfo(stdout);
         printf("**short help**\n");
@@ -136,7 +137,22 @@ int main(int argc, char *argv[])
             fprintf_arghelp(stdout, my_args);
         }
 #endif
-        if (set_args(argc, argv, my_args))
+        /* read argfile */
+        argf = new_argfile("test_args.options");
+        if (argf)
+        {
+            int i=1;
+            printf( "argfile `%s', %d args\n", argf->argv[0], argf->argc);
+            while( argf->argv[i])
+            {
+                printf( "  %2d: `%s'\n", i, argf->argv[i]);
+                i++;
+            }
+        }
+
+        if (set_args_file(argf, my_args)
+            && set_args(argc, argv, my_args)
+            && check_args( my_args))
         {
 
             DLNODE *nd = NULL;
@@ -163,7 +179,7 @@ int main(int argc, char *argv[])
                 printf("  num : %ld\n", num);
             if (ignore)
             {
-                printf(" ign :\n");
+                printf("  ign :\n");
                 fprintf_dllist(stdout, ignore, prt_ign);
             }
             if (line)
@@ -176,6 +192,7 @@ int main(int argc, char *argv[])
             pargerr();
 
         /* cleanup args */
+        del_argfile(argf);
         free_args(my_args);
         del_dllist(ignore);
         del_dllist(fromfiles);

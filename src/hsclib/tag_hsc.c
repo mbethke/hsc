@@ -20,7 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 18-Sep-1996
+ * updated: 25-Nov-1996
  * created: 23-Jul-1995
  */
 
@@ -181,7 +181,8 @@ static VOID do_include(HSCPRC * hp, STRPTR filename,
         optn |= IH_PARSE_SOURCE;
 
     /* compute filename (convert from URI if neccessary) */
-    conv_uri2path(fname, filename);
+#define weenix jens /* TODO:remove this */
+    conv_uri2path(fname, filename, hp->weenix);
 
     /* insert leading <PRE> */
     if (pre)
@@ -332,6 +333,28 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
             D(fprintf(stderr, DHL "  use file `%s'\n", filename));
         }
 
+        /* check, if output-file should be removed */
+        if (remove_str)
+        {
+            if (!upstrcmp(remove_str, "ON"))
+            {
+                remove_file = TRUE;
+                temporary = TRUE;
+                D(fprintf(stderr, DHL "  auto-temporary (remove=ON)\n"));
+            }
+            else if (!upstrcmp(remove_str, "AUTO"))
+                if (hp->msg_count == old_msg_count)
+                {
+                    remove_file = temporary;
+                    D(if (!remove_file)
+                      fprintf(stderr, DHL "  no auto-remove (temp)\n"));
+                }
+                else
+                {
+                    D(fprintf(stderr, DHL "  no auto-remove (count)\n"));
+                }
+        }
+
         /* status message */
         app_estr(msg, "execute: ");
         app_estr(msg, cmd);
@@ -424,7 +447,7 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
         }
         else
         {
-            D(fprintf(stderr, DHL "  don't read exec-output\n", filename));
+            D(fprintf(stderr, DHL "  don't read exec-output\n"));
         }
 
         /* update result-attribute */
@@ -482,7 +505,7 @@ BOOL handle_hsc_export(HSCPRC * hp, HSCTAG * tag)
         if (errno)
         {
             hsc_message(hp, MSG_IOERROR, "error opening/writting %q: %s",
-                    filename, strerror(errno));
+                        filename, strerror(errno));
         }
     }
     else
@@ -677,15 +700,14 @@ BOOL handle_hsc_deficon(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag)
 {
-
-    HSCVAR *attr = define_var(hp, hp->defattr, 0);
+    HSCVAR *attr = define_var(hp, hp->defattr, 0); /* TODO: define local macro attributes */
     if (attr)
     {
         /* set mci for local attribute */
         if (attr->varflag & VF_GLOBAL)
-            attr->macro_id = get_mci(hp);
-        else
             attr->macro_id = MCI_GLOBAL;
+        else
+            attr->macro_id = get_current_mci(hp);
 
         /* see "attrib.h" why this */
         attr->varflag |= VF_MACRO;
@@ -783,9 +805,6 @@ BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
     BOOL ok = TRUE;
     EXPSTR *bufstr = NULL;
     EXPSTR *srcstr = NULL;
-#if 0
-    LONG nesting = 0;
-#endif
     BYTE state = SRST_TEXT;
     STRPTR nw = NULL;
     INFILEPOS *base = new_infilepos(hp->inpf);
@@ -808,125 +827,7 @@ BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
         hsc_include_string(hp, SPECIAL_FILE_ID "insert <PRE>", "<PRE>",
                            IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
     }
-#if 0                           /* TODO: remove */
-    while (!((hp->fatal) || (state == SRST_CSOURCE)))
-    {
 
-        /* read next word */
-        if (state == SRST_SLASH)
-            nw = infget_tagid(hp);
-        else if (state != SRST_TAG)
-            nw = infgetw(inpf);
-
-        if (nw)
-        {
-            if (state == SRST_TAG)
-            {
-                /*
-                 * skip inside tags
-                 */
-                BYTE tag_state = TGST_TAG;      /* state var passe to */
-                /*     eot_reached() */
-
-                do
-                {
-                    if (eot_reached(hp, &tag_state))
-                        state = SRST_TEXT;
-
-                    app_estr(srcstr, infgetcws(inpf));
-                    app_estr(srcstr, infgetcw(inpf));
-                }
-                while ((tag_state != TGST_END) && !(hp->fatal));
-            }
-            else
-            {
-                switch (state)
-                {
-                case SRST_TEXT:
-                    if (!strcmp(nw, "<"))
-                        state = SRST_LT;
-                    break;
-
-                case SRST_LT:
-                    if (!strcmp(nw, "/"))
-                        state = SRST_SLASH;
-                    else if (!upstrcmp(nw, HSC_COMMENT_STR))
-                    {
-                        state = SRST_COMT;
-                    }
-                    else
-                    {
-                        /* handle "<$SOURCE" (open source) */
-                        if (!upstrcmp(nw, HSC_SOURCE_STR))
-                            nesting++;  /* incr. source nesting */
-                        state = SRST_TAG;
-                    }
-                    break;
-
-                case SRST_SLASH:
-                    if (!upstrcmp(nw, HSC_SOURCE_STR))
-                        /* handle "</$SOURCE" (close source) */
-                        if (nesting)
-                            nesting--;  /* decr. source nesting */
-                        else
-                            state = SRST_CSOURCE;       /* end of source */
-                    else
-                        state = SRST_TAG;
-                    break;
-
-                }
-
-                if (state == SRST_TEXT)
-                {
-                    /* append current white spaces & word to srcstr */
-                    app_estr(srcstr, infgetcws(inpf));
-                    app_estr(srcstr, infgetcw(inpf));
-                }
-                else if ((state == SRST_COMT)
-                         || (state == SRST_TAG))
-                {
-                    /* append bufstr to srcstr, clear bufstr,
-                     * append current word to srcstr
-                     */
-                    app_estr(srcstr, estr2str(bufstr));
-                    set_estr(bufstr, "");
-                    app_estr(srcstr, infgetcws(inpf));
-                    app_estr(srcstr, infgetcw(inpf));
-                }
-                else
-                {
-                    /* append current white spaces & word to srcstr */
-                    app_estr(bufstr, infgetcws(inpf));
-                    app_estr(bufstr, infgetcw(inpf));
-                }
-
-                /*
-                 * skip hsc comment
-                 */
-                if (state == SRST_COMT)
-                {
-                    BYTE cstate = CMST_TEXT;    /* vars for eoc_reached() */
-                    LONG cnest = 0;
-                    BOOL end = FALSE;   /* end of comment reached? */
-
-                    while (!end && !(hp->fatal))
-                    {
-                        end = eoc_reached(hp, &cstate, &cnest);
-                        app_estr(srcstr, infgetcws(inpf));
-                        app_estr(srcstr, infgetcw(inpf));
-                    }
-
-                    state = SRST_TEXT;  /* reset state after comment */
-                }
-            }
-        }
-        else
-        {
-            hsc_msg_eof(hp, "missing </" HSC_SOURCE_STR ">");
-            state = SRST_ERR;
-        }
-    }                           /* while */
-#else
     while (!((hp->fatal) || (state == SRST_CSOURCE)))
     {
 
@@ -1008,7 +909,6 @@ BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
             state = SRST_ERR;
         }
     }                           /* while */
-#endif
 
     /* check for legal end state */
     if (state == SRST_CSOURCE)

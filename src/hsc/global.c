@@ -19,10 +19,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 17-Aug-1996
+ * updated: 22-Nov-1996
  * created:  8-Jul-1995
  */
 
+#include <time.h>
+
+#include "hsclib/hsclib.h"
 #include "ugly/returncd.h"
 
 #define NOEXTERN_HSC_GLOBAL_H
@@ -48,6 +51,10 @@ BOOL msg_ansi = FALSE;          /* use ANIS-sequences in messages */
 STRPTR msg_format = NULL;       /* message format */
 EXPSTR *msgbuf = NULL;          /* buffer for message */
 
+#if defined MSDOS
+STRARR msdosbuf[4097];          /* misc. buffer */
+#endif
+
 /*
  * init_global
  *
@@ -59,10 +66,26 @@ BOOL init_global(VOID)
 
     return_code = RC_OK;
 
+    /* init random generator */
+    srand((int) time(NULL));
+
+    /* init some string */
     inpfilename = init_estr(32);
     msgbuf = init_estr(64);
 
     ok = (inpfilename && msgbuf);
+
+#if (defined MSDOS & (!defined HSC_PUT))
+#define MEM_SIZE (15*1024*1024)
+    {
+        /* alloc 15MB ram, fill them twice
+         * and never release them;
+         * espececially funny for Dos-externders */
+        STRPTR mem = umalloc(MEM_SIZE);
+        memset(mem, 0xaBadCafe, MEM_SIZE);
+        memset(mem, 0xDeadF00d, MEM_SIZE);
+    }
+#endif
 
     return (ok);
 }

@@ -1,4 +1,4 @@
-<WEBPAGE chapter="hsc - " title="About"
+<WEBPAGE chapter="hsc - " title="Introduction"
     PREV="index.html" NEXT="copy.html"
     QTEXT="Welcome Boyz and Girls to the Non-Official Shit-Reduction Program"
     QAUTHOR='Novi Sad, "Me, Myself, All Over Again"'>
@@ -64,7 +64,7 @@ way of using this tool.</P>
 
 Obviously, there is no fancy gui, no (pseudo-)WYSIWYG, no drag &amp;
 drop - there are other programs which provide these
-funtionalities. But a common lack of these programs usually
+functionalities. But a common lack of these programs usually
 is that they give less support for large projects and are limited
 in configurability.</P>
 

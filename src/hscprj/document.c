@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  9-Sep-1996
+ * updated: 14-Oct-1996
  * created:  7-Jul-1996
  */
 
@@ -37,17 +37,6 @@
 #else
 #define D(x)                    /* nufin */
 #endif
-
-/*
- * call_panic
- *
- * panic message; called by "panic()"-macro
- */
-VOID call_panic(STRPTR text, STRPTR file, ULONG line)
-{
-    fprintf(stderr, "\n##\n## illegal state in `%s' (%lu): %s\n##\n",
-            file, line, text);
-}
 
 /*
  * del/new_document

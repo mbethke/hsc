@@ -25,7 +25,7 @@ URIKIND;                        /* uri kinds */
 #ifndef NOEXTERN_HSCLIB_URI_H
 
 extern VOID conv_path2uri(EXPSTR * dest, STRPTR path);
-extern VOID conv_uri2path(EXPSTR * dest, STRPTR uri);
+extern VOID conv_uri2path(EXPSTR * dest, STRPTR uri, BOOL weenix);
 
 extern VOID conv_hscuri2file(HSCPRC * hp, EXPSTR * dest_fname, STRPTR uri);
 

@@ -7,7 +7,7 @@
  *
  * (C) by Tommy-Saftwörx 1996
  *
-*/
+ */
 
 #ifdef DEBUG_UGLY
 
@@ -33,5 +33,9 @@
 
 #endif /* DEBUG_UGLY */
 
-#endif  /* UGLY_DEBUG_H */
+#define panic(msg)                                              \
+    fprintf(stderr, "\n##\n## PANIC at \"%s\" (%u): %s\n##\n", \
+            __FILE__, __LINE__, (msg))                          \
+
+#endif /* UGLY_DEBUG_H */
 

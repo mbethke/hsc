@@ -2,7 +2,7 @@
     PREV=":macro/macros.html"
     NEXT=":macro/macros.html">
 
-<H2>Syntax</H2>
+<A NAME="general"><H2>General syntax</H2></A>
 
 Conditionals looks like that:
 
@@ -28,7 +28,7 @@ Conditionals looks like that:
 set <CODE>COND</CODE> using
 <A HREF="expressions.html">expressions</A>.</P>
 
-<H2>Some simple examples</H2>
+<A NAME="simple"><H2>Some simple examples</H2></A>
 
 Now let's see how this works in practice:
 
@@ -57,7 +57,7 @@ Now let's extend this:
 other value for <CODE>NAME</CODE> will insert 
 "<CODE>I don't know you.</CODE>".</P>
 
-<H2>Nesting conditionals</H2>
+<A NAME="nesting"><H2>Nesting conditionals</H2></A>
 
 <P>Nesting them is also possible, of course:</P>
 
@@ -75,7 +75,7 @@ other value for <CODE>NAME</CODE> will insert
 </$SOURCE>
 
 
-<H2>Conditionals and macros</H2>
+<A NAME="macros"><H2>Conditionals and macros</H2></A>
 
 <P>You can not compare <hsc>'s <TG>$if</TG> to primitive and clumsy 
 <CODE>#if</CODE> of the C-preprocessor. The main difference is that 

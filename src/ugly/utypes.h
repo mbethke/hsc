@@ -22,7 +22,7 @@
  * are you running a amiga?
  */
 
-#if 0
+#if 0 /* defined AMIGA */
 
 /*
  * on amiga system, just include system types

@@ -25,8 +25,8 @@
 #
 # (1) Use "make -f Makefile.dodl" to compile.
 #
-# (2) Copy "hsc/hsc" and "hscdepp/hscdepp" anywhere in your 
-#     search-path.
+# (2) Copy "hsc/hsc", "hsctools/hscdepp" and "hsctools/hscpitt" to
+#     anywhere in your search-path.
 #
 # (3) Use "make -f Makefile.dodl sterile" for a total cleanup. Maybe 
 #     you also have to pass an option to make to ignore the 
@@ -67,34 +67,44 @@ LINK	= $(CC) -o $@ $(SYS) -I.
 MOVE	= mv
 DELETE	= rm -f
 
+#--------------------------------------------------------------------
+# do not touch anything below this line
+#--------------------------------------------------------------------
+
 #
 # compile all tools
 #
-all : hsc/all_hsc hscdepp/all_hscd
+all : hsc/all_hsc hsctools/all_depp
 
 # implict rule for object-files
 # (old-style implicit rule)
 .c.o :
 	$(COMP) $*.c $(CFLAGS)
 
-hsc/all_hsc : hsclib/all_hscl.o hscprj/all_hscp.o hsc/all_hsc.o \
+hsc/all_hsc : hsclib/all_hscl.o hscprj/all_pitt.o hsc/all_hsc.o \
 		ugly/all_ugly.o
-	$(LINK) hsc/all_hsc.o hsclib/all_hscl.o hscprj/all_hscp.o \
+	$(LINK) hsc/all_hsc.o hsclib/all_hscl.o hscprj/all_pitt.o \
 		ugly/all_ugly.o $(CMODE)
-	$(MOVE) hsc/all_hsc hsc/hsc
+	$(COPY) hsc/all_hsc hsc/hsc
 
-hscdepp/all_hscd : hscdepp/all_hscd.o hsclib/all_hscl.o hscprj/all_hscp.o \
+hsctools/all_depp : hsctools/all_depp.o hsclib/all_hscl.o hscprj/all_pitt.o \
 		ugly/all_ugly.o
-	$(LINK) hscdepp/all_hscd.o hsclib/all_hscl.o hscprj/all_hscp.o \
+	$(LINK) hsctools/all_depp.o hsclib/all_hscl.o hscprj/all_pitt.o \
 		ugly/all_ugly.o $(CMODE)
-	$(MOVE) hscdepp/all_hscd hscdepp/hscdepp
+	$(COPY) hsctools/all_depp hsctools/hscdepp
+
+hsctools/all_pitt : hsctools/all_pitt.o hsclib/all_hscl.o hscprj/all_pitt.o \
+		ugly/all_ugly.o
+	$(LINK) hsctools/all_pitt.o hsclib/all_hscl.o hscprj/all_pitt.o \
+		ugly/all_ugly.o $(CMODE)
+	$(COPY) hsctools/all_pitt hsctools/hscdepp
 
 #
 # cleanup - remove all objects and executables
 #
 clean :
 	$(DELETE) hsc/*.o
-	$(DELETE) hscdepp/*.o
+	$(DELETE) hsctools/*.o
 	$(DELETE) hsclib/*.o
 	$(DELETE) hscprj/*.o
 	$(DELETE) ugly/*.o
@@ -104,12 +114,15 @@ all_clean :
 	$(DELETE) hsclib/all_hscl.o
 	$(DELETE) hsc/all_hsc.o
 	$(DELETE) hsc/all_hsc
-	$(DELETE) hscdepp/all_hscd.o
-	$(DELETE) hscdepp/all_hscd
+	$(DELETE) hsctools/all_depp.o
+	$(DELETE) hsctools/all_depp
+	$(DELETE) hsctools/all_pitt.o
+	$(DELETE) hsctools/all_pitt
 
 sterile : clean all_clean
 	$(DELETE) hsc/hsc
-	$(DELETE) hscdepp/hscdepp
+	$(DELETE) hsctools/hscdepp
+	$(DELETE) hsctools/hscpitt
 
 #
 # the dependencies below are created using `MkDepend' by Lars Düning,
@@ -118,21 +131,15 @@ sterile : clean all_clean
 
 # --- DO NOT MODIFY THIS LINE -- AUTO-DEPENDS FOLLOW ---
 hsc/all_hsc.o : hsc/hsc.c hsc/callback.c hsc/output.c hsc/args.c \
-    hsc/status.c hsc/global.c hsc/hsc_rev.h hsc/status.h hsc/output.h \
-    hsc/callback.h hsc/args.h ugly/returncd.h ugly/prginfo.h ugly/uargs.h \
-    hscprj/project.h hsc/global.h ugly/fname.h ugly/infile.h ugly/utypes.h \
-    ugly/umemory.h ugly/utypes.h hsc/hdebug.h ugly/ustring.h ugly/umemory.h \
-    ugly/expstr.h ugly/dllist.h hsclib/hsclib.h ugly/expstr.h ugly/dllist.h \
-    ugly/udebug.h hsclib/linit.h hsclib/include.h hsclib/inc_base.h \
-    hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
-    hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
-    hsclib/ldebug.h
-
-hscdepp/all_hscd.o : hscdepp/hscdepp.c hscdepp/hscdepp_rev.h \
-    hscprj/project.h hscprj/document.h ugly/returncd.h ugly/prginfo.h \
-    ugly/uargs.h ugly/infile.h ugly/expstr.h ugly/dllist.h ugly/ustring.h \
-    ugly/umemory.h ugly/utypes.h hsclib/ldebug.h ugly/umemory.h \
-    ugly/utypes.h ugly/dllist.h ugly/expstr.h ugly/udebug.h
+    hsc/status.c hsc/global.c hsc/status.h hsc/output.h hsc/callback.h \
+    hsc/args.h ugly/returncd.h ugly/uargs.h hscprj/project.h ugly/prginfo.h \
+    hsc/global.h hsc/hsc_rev.h hscprj/license.h ugly/fname.h ugly/infile.h \
+    ugly/utypes.h ugly/umemory.h ugly/utypes.h hsc/hdebug.h ugly/ustring.h \
+    ugly/umemory.h ugly/expstr.h ugly/dllist.h hsclib/hsclib.h \
+    ugly/expstr.h ugly/dllist.h ugly/udebug.h hsclib/linit.h \
+    hsclib/include.h hsclib/inc_base.h hsclib/lstatus.h hsclib/lmessage.h \
+    hsclib/hscprc.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
+    hscprj/document.h hsclib/msgid.h hsclib/ldebug.h
 
 hsclib/all_hscl.o : hsclib/tag_macr.c hsclib/tag_if.c hsclib/tag_hsc.c \
     hsclib/tag_a.c hsclib/tag_misc.c hsclib/size.c hsclib/linit.c \
@@ -146,21 +153,29 @@ hsclib/all_hscl.o : hsclib/tag_macr.c hsclib/tag_if.c hsclib/tag_hsc.c \
     hsclib/skip.h hsclib/eval.h hsclib/tag_if.h hsclib/tag_macr.h \
     hsclib/uri.h ugly/fname.h hscprj/document.h hsclib/inc_base.h \
     hsclib/tag_misc.h hsclib/tag_hsc.h hsclib/tag_a.h hsclib/input.h \
-    hsclib/size.h hscprj/project.h hsclib/posteval.h hsclib/idref.h \
-    ugly/returncd.h hsclib/tag.h hsclib/entity.h ugly/utypes.h \
-    ugly/dllist.h ugly/expstr.h ugly/udebug.h hsclib/hscprc.h \
-    hsclib/lstatus.h hsclib/lmessage.h hsclib/attrib.h
+    ugly/ufile.h hsclib/size.h hscprj/project.h hsclib/posteval.h \
+    hsclib/idref.h ugly/returncd.h ugly/ustrlist.h hsclib/tag.h \
+    hsclib/entity.h ugly/utypes.h ugly/dllist.h ugly/expstr.h ugly/udebug.h \
+    hsclib/hscprc.h hsclib/lstatus.h hsclib/lmessage.h hsclib/attrib.h \
+    ugly/ustring.h
 
 hscprj/all_hscp.o : hscprj/writeprj.c hscprj/readprj.c hscprj/project.c \
-    hscprj/document.c hscprj/project.h hscprj/document.h ugly/ustring.h \
-    ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
-    hscprj/pdefs.h hscprj/pdebug.h hsclib/ldebug.h ugly/utypes.h \
-    ugly/dllist.h ugly/expstr.h ugly/udebug.h
+    hscprj/license.c hscprj/document.c hscprj/project.h hscprj/document.h \
+    ugly/ustring.h ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
+    ugly/utypes.h hscprj/pdefs.h hscprj/pdebug.h hsclib/ldebug.h \
+    ugly/utypes.h ugly/dllist.h ugly/expstr.h ugly/udebug.h
 
-ugly/all_ugly.o : ugly/prginfo.c ugly/infile.c ugly/uargs.c ugly/dllist.c \
-    ugly/fname.c ugly/expstr.c ugly/ustring.c ugly/umemory.c ugly/udebug.h \
-    ugly/utypes.h ugly/umemory.h ugly/infile.h ugly/fname.h ugly/ustring.h \
-    ugly/expstr.h ugly/args_hlp.c ugly/args_prp.c ugly/args_set.c \
-    ugly/args_fre.c ugly/uargs.h ugly/dllist.h
+hsctools/all_depp.o : hsctools/hscdepp.c hscprj/license.h hscprj/project.h \
+    hscprj/document.h ugly/returncd.h ugly/prginfo.h ugly/uargs.h \
+    ugly/infile.h ugly/expstr.h ugly/dllist.h ugly/ustring.h \
+    hsctools/depp_rev.h ugly/umemory.h ugly/utypes.h hsclib/ldebug.h \
+    ugly/umemory.h ugly/utypes.h ugly/dllist.h ugly/expstr.h ugly/udebug.h
+
+ugly/all_ugly.o : ugly/prginfo.c ugly/infile.c ugly/ustrlist.c ugly/uargs.c \
+    ugly/ufile.c ugly/dllist.c ugly/fname.c ugly/expstr.c ugly/ustring.c \
+    ugly/umemory.c ugly/udebug.h ugly/utypes.h ugly/umemory.h ugly/infile.h \
+    ugly/fname.h ugly/ustring.h ugly/expstr.h ugly/ustrlist.h \
+    ugly/args_hlp.c ugly/args_prp.c ugly/args_set.c ugly/args_fre.c \
+    ugly/uargs.h ugly/dllist.h ugly/ufile.h ugly/udebug.h
 
 # --- DO NOT MODIFY THIS LINE -- AUTO-DEPENDS PRECEDE ---

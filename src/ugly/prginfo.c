@@ -19,10 +19,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 28-Nov-1995
+ * updated: 27-Oct-1996
  * created:  3-Jul-1994
- *
- * $VER: prginfo.c 1.0.3 (28.11.1995)
  *
  *=========================================================
  * TODO:
@@ -30,9 +28,8 @@
  *
  */
 
-/*
- * includes
- */
+/* ANSI includes */
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -71,7 +68,6 @@ STRPTR pi_dt_year = NULL;
 void call_set_prginfo(STRPTR name, STRPTR auth, int ver, int rel, int rev,
         STRPTR rel_date, STRPTR rel_time, STRPTR infostr, STRPTR copystatus)
 {
-
     pi_progname = name;
     pi_authname = auth;
     pi_version = ver;
@@ -89,7 +85,48 @@ void call_set_prginfo(STRPTR name, STRPTR auth, int ver, int rel, int rev,
     if (pi_dt_day[0] == ' ')
         pi_dt_day++;
     pi_dt_year = &(pi_rel_date[7]);
+}
 
+/*
+ * call_set_prginfo2
+ *
+ * set pi_xxx vars; called by macro set_info()
+ *
+ * NOTE: this version expects date "DD.MM.YY"
+ */
+void call_set_prginfo2(STRPTR name, STRPTR auth, int ver, int rel, int rev,
+        STRPTR rel_date, STRPTR rel_time, STRPTR infostr, STRPTR copystatus)
+{
+    STRPTR monthName[] =
+    {"XXX", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    pi_progname = name;
+    pi_authname = auth;
+    pi_version = ver;
+    pi_release = rel;
+    pi_revision = rev;
+    pi_rel_time = rel_time;
+    pi_descript = infostr;
+    pi_copystat = copystatus;
+
+    strncpy(pi_rel_date, rel_date, SIZE_DATESTR);
+
+    /* eval day */
+    pi_dt_day = pi_rel_date;
+
+    /* eval month */
+    pi_dt_month = strchr(pi_rel_date, '.');
+    pi_dt_month[0] = '\0';
+    pi_dt_month++;
+
+    /* eval year */
+    pi_dt_year = strchr(pi_dt_month, '.');
+    pi_dt_year[0] = '\0';
+    pi_dt_year++;
+
+    /* convert numeric month */
+    pi_dt_month = monthName[strtol(pi_dt_month, NULL, 10)];
 }
 
 /*

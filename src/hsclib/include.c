@@ -19,13 +19,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  6-Sep-1996
+ * updated: 17-Nov-1996
  * created: 19-Feb-1996
  */
 
 #include <time.h>
 
 #include "hsclib/inc_base.h"
+
+#include "ugly/ufile.h"
+#include "ugly/fname.h"
 
 #include "hsclib/input.h"
 #include "hsclib/parse.h"
@@ -55,8 +58,16 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
         panic("IH_POS_PARENT set");
     }
 
-    if (inpf)
-    {                           /* file opened? */
+    if (inpf)                   /* file opened? */
+    {                  
+#if (defined MSDOS && !defined HSC_YOUR)
+        /* check input > 32K */
+        if (estrlen(inpf->lnbuf) > (32*1024))
+        {
+            fprintf(stderr, "** input file too huge\n");
+            exit(RC_FAIL);
+        }
+#endif
         /* push current input file on input-file-stack */
         if (hp->inpf)
             ins_dlnode(hp->inpf_stack, hp->inpf_stack->first, (APTR) hp->inpf);
@@ -126,7 +137,6 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
         }
         else
         {
-
             hp->inpf = NULL;
         }
 
@@ -154,7 +164,7 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
     }
 
     /* check for stdin to use as input-file */
-    if ( !strcmp(filename, FILENAME_STDIN))
+    if (!strcmp(filename, FILENAME_STDIN))
         filename = NULL;
 
     /* open & read input file */
@@ -186,17 +196,7 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
             if (filename && (optn & IH_IS_INCLUDE))
             {
                 D(fprintf(stderr, DHL "INCLUDE subfile: `%s'\n", filename));
-#if 1
                 hsc_project_add_include(hp->project, filename);
-#else /* TODO: remove */
-                HSCINC *inc = app_include(hp->document, filename);
-                INFILEPOS *fpos = NULL;
-                if (hp->inpf)
-                    fpos = new_infilepos(hp->inpf);
-                inc->caller = fpos2caller(fpos);
-                if (fpos)
-                    del_infilepos(fpos);
-#endif
             }
         }
     }
@@ -230,10 +230,77 @@ BOOL hsc_base_include_string(HSCPRC * hp, STRPTR filename, STRPTR s, ULONG optn,
     return (ok);
 }
 
+/*
+ * find_includefile
+ *
+ * scan all include-directories for file to be opened;
+ * if the file can't be found, the filename in the current
+ * directory will be returned (which should therefor result
+ * in an error while processing hsc_include())
+ *
+ * NOTE: this function considers the file to be found if it could have
+ *       been opened for input. afterwards, the file is immediatly
+ *       closed. This isn't really a multitasking-conform behavior
+ *       because the file will have to be reopend again by the
+ *       hsc_include() function later and meanwhile could have been
+ *       removed by another task.
+ */
+static BOOL find_includefile(HSCPRC *hp, EXPSTR * dest, STRPTR filename)
+{
+    BOOL found = FALSE;
+
+    /* reset filename */
+    set_estr(dest, filename);
+
+    if (!fexists(filename))
+    {
+        DLNODE *nd = dll_first(hp->include_dirs);
+
+        /* process all include-directories.. */
+        while (nd && !found)
+        {
+            /* concat incdir+filename, check if it exists,
+             * process next or abort loop */
+            link_fname(dest, (STRPTR) dln_data(nd), filename);
+            D(fprintf(stderr, DHL "  try `%s'\n", estr2str(dest)));
+            if (fexists(estr2str(dest)))
+            {
+                found = TRUE;
+            }
+            else
+                nd = dln_next(nd);
+        }
+    }
+    else
+    {
+        /* found in current directory */
+        found = TRUE;
+    }
+
+    if (found)
+    {
+        D(fprintf(stderr, DHL "  found at `%s'\n", estr2str(dest)));
+    }
+
+    return (found);
+}
+
 /* hsc_include_file: include file without base-position */
 BOOL hsc_include_file(HSCPRC * hp, STRPTR filename, ULONG optn)
 {
-    return (hsc_base_include_file(hp, filename, optn, NULL));
+    BOOL ok = FALSE;
+    EXPSTR *real_filename = init_estr(64);
+
+    /* scan include directories */
+    find_includefile(hp, real_filename, filename);
+
+    /* now include file */
+    ok = hsc_base_include_file(hp, estr2str(real_filename), optn, NULL);
+
+    /* cleanup */
+    del_estr(real_filename);
+
+    return ok;
 }
 
 /* hsc_include_string: include string without base-position */

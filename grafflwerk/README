@@ -21,7 +21,8 @@ hScMsg.rexx
 -----------
 An ARexx-script that invokes hsc redirecting it's messages and sends
 messages outputed by hsc to ScMsg, which is part of the
-SAS/c-package. See the source-code for usage.
+SAS/c-package. It is supposed to be used as a substitute for hsc
+inside Makefiles. See the source-code for usage.
 
 SendAWeb.rexx
 -------------

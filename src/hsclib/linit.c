@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 11-Sep-1996
+ * updated: 12-Nov-1996
  * created: 19-Feb-1996
  */
 
@@ -34,6 +34,8 @@
 #include "hsclib/tag_if.h"
 #include "hsclib/tag_macr.h"
 #include "hsclib/tag_misc.h"
+
+#include "ugly/fname.h"
 
 #if DEBUG
 /*
@@ -115,12 +117,21 @@ static STRPTR find_prefs_fname(HSCPRC * hp)
     UBYTE path_ctr = 0;
     FILE *cfgf = NULL;          /* prefs file */
     STRPTR hscenv = NULL;
+    EXPSTR *hscpathstr = init_estr(32); /* buffer to read $HSCPATH */
+
     static STRARR cfgfn[300];   /* TODO: expstr; buffer to create
                                  *   filename of config file */
     /* setup path from envvar */
-    hscenv = getenv(HSCPREFS_ENVVAR);
+    hscenv = getenv(ENV_HSCPATH);
     if (hscenv)
     {
+#if 1
+        if (link_envfname(hscpathstr, ENV_HSCPATH, NULL, NULL))
+        {
+            /* add hscenv to paths */
+            paths[1] = estr2str(hscpathstr);
+        }
+#else
         /* copy envvar to own memory area */
         hscenv = strclone(hscenv);
 
@@ -130,6 +141,7 @@ static STRPTR find_prefs_fname(HSCPRC * hp)
 
         /* add hscenv to paths */
         paths[1] = hscenv;
+#endif
     }
 
     /* try to open any prefs-file */
@@ -155,7 +167,7 @@ static STRPTR find_prefs_fname(HSCPRC * hp)
         fclose(cfgf);
     }
 
-    ufreestr(hscenv);
+    del_estr(hscpathstr);
 
     return (prefs_fname);
 }
@@ -288,8 +300,7 @@ BOOL hsc_read_prefs(HSCPRC * hp, STRPTR prefs_fname)
     else
     {
         hsc_message(hp, MSG_NO_CONFIG,
-                    "can not open preferences file %q",
-                    CONFIG_FILE);
+                    "can not open preferences file");
     }
 
     return (ok);

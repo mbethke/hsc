@@ -36,6 +36,21 @@ void test_link_fname(STRPTR dir, STRPTR fn)
 
 }
 
+void test_link_envfname(STRPTR env, STRPTR dir, STRPTR fn)
+{
+    BOOL ok = link_envfname(dest, env, dir, fn);
+
+    if (!env)
+        env = "NULL";
+    if (!dir)
+        dir = "NULL";
+    if (!fn)
+        fn = "NULL";
+    printf("file `%s', `%s' and `%s' -> [%d] `%s'\n",
+           env, dir, fn, ok, estr2str(dest));
+
+}
+
 void test_getfne(void)
 {
     STRPTR name[NUM_NAME] =
@@ -72,7 +87,6 @@ void test_tmpnamstr(STRPTR prefix)
     for (i=0; i<5; i++) {
         STRPTR s = tmpnamstr(prefix);
         printf("tmpnamstr: `%s'\n", s);
-        ufreestr(s);
     }
 }
 void test_reldir(STRPTR absn, STRPTR curp)
@@ -154,7 +168,7 @@ int main(void)
     test_getfne();
 #endif
 
-#if 1
+#if 0
     /* test tmpnamstr */
     test_tmpnamstr(NULL);
     test_tmpnamstr("testfn");
@@ -164,7 +178,7 @@ int main(void)
 
 #if 0
     /*
-     * test app_fname
+     * test link_fname
      */
     test_link_fname("c:tools", "sucktool.exe");
     test_link_fname("c:", "sucktool.exe");
@@ -173,6 +187,23 @@ int main(void)
     test_link_fname("tools", "");
     test_link_fname("tools/", "");
     test_link_fname(NULL, NULL);
+#endif
+
+#if 1
+    /*
+     * test link_fname
+     */
+    system("setenv TEST_DEV  sepp:");
+    system("setenv TEST_DIR  sepp:hugo/");
+    system("setenv TEST_DIR2 sepp:hugo");
+    test_link_envfname("TEST_DEV", "confix", "sucktool.exe");
+    test_link_envfname("TEST_DEV", NULL, "sucktool.exe");
+    test_link_envfname("TEST_DEV", "confix", NULL);
+    test_link_envfname("TEST_DEV", NULL, NULL);
+    test_link_envfname("TEST_DIR", NULL, "sucktool.exe");
+    test_link_envfname("TEST_DIR2", NULL, "sucktool.exe");
+    test_link_envfname(NULL, NULL, NULL);
+
 #endif
 
 #if 0
@@ -208,7 +239,7 @@ int main(void)
     test_fsdir("");
 #endif
 
-#if 1
+#if 0
 #if 0
     test_reldir("image/back.gif", "image/hugo/");
     test_reldir("image/back.gif", "");

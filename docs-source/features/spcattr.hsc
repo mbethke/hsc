@@ -72,11 +72,11 @@ using <ln_exec>. It is updated after every call of this hsc-tag.
 
 <SPCATTR NAME="lf" TITLE="HSC.LF">
 
-This attribute contains a single linefeed-character (<CODE>`\n'</CODE>)
+This attribute contains a single linefeed-character (<qq><CODE>\n</CODE></qq>)
 and can be used to include linefeeds into attribute-values without
 <hsc> whining about them.
 
-<SPCATTR NAME="sourceattr" TITLE="HSC.SOURCE.NAME, HSC.SOURCE.PATH, HSC.SOURCE.URI">
+<SPCATTR NAME="sourceattr" TITLE="HSC.SOURCE.NAME, HSC.SOURCE.PATH, HSC.SOURCE.FILE">
 
 <P>These attributes are defined internaly during startup and are read-only.
 They contain the filename, the directory and the full path and filename
@@ -93,7 +93,7 @@ will lead to
     ----------------+----------------
     HSC.SOURCE.NAME | "hugo.hsc"
     HSC.SOURCE.PATH | "people/"
-    HSC.SOURCE.URI  | "people/hugo.hsc"
+    HSC.SOURCE.FILE | "people/hugo.hsc"
 </$source>
 
 <SPCATTR NAME="system" TITLE="HSC.SYSTEM">
@@ -134,10 +134,12 @@ the attribute <CODE>HSC.TMP.insert.expression</CODE>.</P>
 <P>This attribute is defined in <hsc.prefs> and can be altered to the
 user's needs. However, it's value is only scanned once and later
 changes will not be recognised by <hsc>.</P>
-<P>For attributes of type <CODE>COLOR</CODE>, you can not only use the
+<P>For attributes of type 
+<A HREF=":macro/attrib.html#type"><CODE>COLOR</CODE></A>, 
+you can not only use the
 cryptic <CODE>#rrggbb</CODE>-style, but also use some predefined
 values. With this attribute you can declare which values <hsc> should
-know about, each separated by a vertical bar (`<CODE>|</CODE>').</P>
+know about, each separated by a <vbar>.</P>
 Example: <CODE><$source>
 <$define HSC.COLOR-NAMES:string/c="aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|olive|purple|red|silver|teal|white|yellow">
 </$source></CODE>
@@ -150,9 +152,9 @@ user's needs. However, it's value is only scanned once and later
 changes will not be recognised by <hsc>.</P>
 
 Inside an anchor tag (<TG>A HREF="..."</TG>), the normal text is
-scanned for special keywords indicating a `click here'-syndrome.
+scanned for special keywords indicating a <qq>click here</qq>-syndrome.
 With this attribute you can declare these keywords
-, each separated by a vertical bar (`<CODE>|</CODE>').</P>
+, each separated by a <vbar>.</P>
 Example: <CODE><$source>
 <$define HSC.CLICK-HERE:string/c="click|here">
 </$source></CODE>
@@ -193,9 +195,9 @@ Conversion specifications
     <STRONG>%b or %h</STRONG>
            is replaced by the abbreviated month name, where the abbreviation
            is the first three characters.
-    <STRONG>%C</STRONG>    is equivalent to ``%a %b %e %H:%M:%S %Y''
-    <STRONG>%c</STRONG>    is equivalent to ``%m/%d/%y''.
-    <STRONG>%D</STRONG>    is replaced by the date in the format ```mm/dd/yy'''.
+    <STRONG>%C</STRONG>    is equivalent to <qq>%a %b %e %H:%M:%S %Y</qq>
+    <STRONG>%c</STRONG>    is equivalent to <qq>%m/%d/%y</qq>.
+    <STRONG>%D</STRONG>    is replaced by the date in the format <qq>mm/dd/yy</qq>.
     <STRONG>%d</STRONG>    is replaced by the day of the month as a decimal number (01­31).
     <STRONG>%e</STRONG>    is replaced by the day of month as a decimal number (1­31); single
            digits are preceded by a blank.
@@ -211,29 +213,29 @@ Conversion specifications
     <STRONG>%M</STRONG>    is replaced by the minute as a decimal number (00­59).
     <STRONG>%m</STRONG>    is replaced by the month as a decimal number (01­12).
     <STRONG>%n</STRONG>    is replaced by a newline.
-    <STRONG>%p</STRONG>    is replaced by either ``AM'' or ``PM'' as appropriate.
-    <STRONG>%R</STRONG>    is equivalent to ``%H:%M''
-    <STRONG>%r</STRONG>    is equivalent to ``%I:%M:%S %p''.
+    <STRONG>%p</STRONG>    is replaced by either <qq>AM</qq> or <qq>PM</qq> as appropriate.
+    <STRONG>%R</STRONG>    is equivalent to <qq>%H:%M</qq>
+    <STRONG>%r</STRONG>    is equivalent to <qq>%I:%M:%S %p</qq>.
     <STRONG>%t</STRONG>    is replaced by a tab.
     <STRONG>%S</STRONG>    is replaced by the second as a decimal number (00­60).
     <STRONG>%s</STRONG>    is replaced by the number of seconds since the Epoch, UCT.
     <STRONG>%T or %X</STRONG>    
-           is equivalent to ``%H:%M:%S''.
+           is equivalent to <qq>%H:%M:%S</qq>.
     <STRONG>%U</STRONG>    is replaced by the week number of the year (Sunday as the first day
            of the week) as a decimal number (00­53).
     <STRONG>%W</STRONG>    is replaced by the week number of the year (Monday as the first day
            of the week) as a decimal number (00­53).
     <STRONG>%w</STRONG>    is replaced by the weekday (Sunday as the first day of the week) as
            a decimal number (0­6).
-    <STRONG>%x</STRONG>    is equivalent to ``%m/%d/%y %H:%M:%S''.
+    <STRONG>%x</STRONG>    is equivalent to <qq>%m/%d/%y %H:%M:%S</qq>.
     <STRONG>%Y</STRONG>    is replaced by the year with century as a decimal number.
     <STRONG>%y</STRONG>    is replaced by the year without century as a decimal number
            (00­99).
     <STRONG>%Z</STRONG>    is replaced by the time zone name.
-    <STRONG>%%</STRONG>    is replaced by `%'.
+    <STRONG>%%</STRONG>    is replaced by <qq>%</qq>.
 </PRE>
 This attribute is defined internaly during startup, and contains the
-value <CODE>"%d-%b-%Y, %H:%M"</CODE>, leading to results like 
+value <qq><CODE>%d-%b-%Y, %H:%M</CODE></qq>, leading to results like 
 <CODE>"<(GetTime())></CODE>".
 <BR>
 </WEBPAGE>

@@ -66,10 +66,15 @@
                                        /*     occurend more then once */
 #define ARG_HANDLEFUNC      ( 1 << 5 )  /* $ */
 
+/* values for arginfo.ai_set */
+#define AIS_UNSET        0 /* not set at all */
+#define AIS_SET_PREVIOUS 1 /* set by previous set_args() */
+#define AIS_SET_LOCAL    2 /* set by current set_args() */
+
 /*
  * struct arginfo (PRIVATE,DON NOT USE)
  */
-struct arginfo
+typedef struct arginfo
 {
     STRPTR ai_id;               /* arg id string */
     LONG ai_type;               /* arg type */
@@ -89,7 +94,13 @@ struct arginfo
       STRPTR(*ai_func) (STRPTR);        /* additional arg handling function */
     STRPTR ai_help;             /* help text */
     BOOL ai_set;                /* handled by _set_args() */
-};
+} ARGINFO;
+
+typedef struct argfile
+{
+    int argc;
+    char **argv;
+} ARGFILE;
 
 /*
  * commments about ARGINFO
@@ -119,13 +130,13 @@ struct arginfo
 /*
  * struct arglist (PRIVATE)
  */
-struct arglist
+typedef struct arglist
 {
     STRPTR al_name;             /* name (only for debugging) */
     struct dllist *al_list;     /* argument template */
     struct arginfo *al_multiple;        /* entry with /M flag set */
     struct arginfo *al_nokeywd; /* entry w/o /K flag; TODO: remove */
-};
+} ARGLIST;
 
 /* debuggin define */
 #if DEBUG_UGLY_ARG
@@ -139,23 +150,31 @@ struct arglist
 /*
  * extern functions & global vars
  */
+
 #ifndef NOEXTERN_UGLY_UARGS_H
 
 extern LONG prep_error_num;
 extern int prep_error_idx;
 extern size_t prep_error_pos;
 
-extern struct arglist *prepare_args(STRPTR arglist_name,...);
-extern BOOL set_args(int argc, char *argv[], struct arglist *al);
-extern void free_args(struct arglist *al);
+extern ARGLIST *prepare_args(STRPTR arglist_name,...);
+extern BOOL set_args(int argc, char *argv[], ARGLIST *al);
+extern BOOL set_args_argv(int argc, char *argv[], ARGLIST * al);
+extern BOOL set_args_file(ARGFILE *argf, ARGLIST *argl);
+extern VOID free_args(ARGLIST *al);
+extern BOOL check_args(ARGLIST *al);
+
+extern ARGFILE *new_argfile(char *argfname);
+extern ARGFILE *new_argfilev(STRPTR fname[]);
+extern VOID del_argfile(ARGFILE *argf);
 
 /* display help */
-extern int fprintf_arghelp(FILE * stream, struct arglist *al);
-extern int fprintf_arghelp_short(FILE * stream, struct arglist *al);
+extern int fprintf_arghelp(FILE * stream, ARGLIST *al);
+extern int fprintf_arghelp_short(FILE * stream, ARGLIST *al);
 
 /* error handling */
-extern STRPTR strargerr(void);
-extern void pargerr(void);
+extern STRPTR strargerr(VOID);
+extern void pargerr(VOID);
 
 #endif /* NOEXTERN_UGLY_UARGS_H */
 

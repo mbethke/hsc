@@ -20,7 +20,7 @@ String constants must be enclosed inside quotes.</P>
     <IMG SRC="hugo.gif" ALT="image">
 </$source>
 
-<H2>Operators</H2>
+<A NAME="operators"><H2>Operators</H2></A>
 
 <H3>Unary operators</H3>
 <DL>
@@ -75,7 +75,7 @@ String constants must be enclosed inside quotes.</P>
 
 <P>At least on my machine.</P>
 
-<H2>Boolean expressions</H2>
+<A NAME="boolean"><H2>Boolean expressions</H2></A>
 
 <P>If you pass an expression to a boolean attribute, the expression is
 evaluated as before. If the expression returned an empty string,
@@ -107,7 +107,7 @@ resulting in a value equal to the name of attribute. (In html, writing
 only the second call enables the boolean attribute <CODE>ISMAP</CODE>,
 while it gets stripped for the first call.</P>
 
-<H2>Priorities</H2>
+<A NAME="priorities"><H2>Priorities</H2></A>
 <P><STRONG>Important:</STRONG> Different to most programming languages, <hsc>
 does not support priorities for different operators. Therefor, expressions
 are simply processed sequentialy (I'm too lazy to build a tree).</P>

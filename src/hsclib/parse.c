@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 31-Aug-1996
+ * updated: 22-Nov-1996
  * created:  1-Jul-1995
  *
  */
@@ -118,6 +118,7 @@ static void hp_enable_output(HSCPRC * hp, STRPTR cause)
 {
     if (hp->suppress_output)
     {
+        clr_estr(hp->whtspc);
         D(fprintf(stderr, DHL "output enabled (%s)\n", cause));
     }
     hp->suppress_output = FALSE;
@@ -256,26 +257,28 @@ BOOL hsc_parse_tag(HSCPRC * hp)
     BOOL rplc_lt = FALSE;       /* TRUE, if replace spc. char "<" */
     BOOL hnd_result = TRUE;     /* result returned by handle */
     BOOL unknown_tag = FALSE;   /* TRUE, if tag has not been defined before */
+    BOOL preceeding_whtspc = estrlen(hp->whtspc);
 
     /* init strings used inside tag-handles */
     set_estr(hp->tag_name_str, infgetcw(inpf));
     clr_estr(hp->tag_attr_str);
     clr_estr(hp->tag_close_str);
 
-    if (hp->smart_ent && strlen(infgetcws(inpf)))
+    if (hp->smart_ent && preceeding_whtspc)
     {
         /*
          * check for special char "<"
          */
         int ch = infgetc(inpf);
 
+        /* check if next char is a white space */
         if (hsc_whtspc(ch))
         {
             rplc_lt = TRUE;
 
             /* write "&lt;" and white spaces */
             message_rplc(hp, "<", "&lt;");
-            hsc_output_text(hp, infgetcws(inpf), "&lt;");
+            hsc_output_text(hp, "", "&lt;");
         }
         inungetc(ch, inpf);
     }
@@ -288,7 +291,6 @@ BOOL hsc_parse_tag(HSCPRC * hp)
         if (!hp->fatal)
         {
             /* append tag-name to tag_name_str */
-            app_estr(hp->tag_name_str, infgetcws(inpf));
             app_estr(hp->tag_name_str, infgetcw(inpf));
 
             /* check for hsctag; if not, enable output */
@@ -333,7 +335,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
                 tag = new_hsctag(nxtwd);
                 tag->option |= HT_UNKNOWN;
                 unknown_tag = TRUE;
-#if 0
+#if 0 /* TODO: remove */
                 /* NOTE: This one's a bit perverted, because
                  * the closing ">" is appended to the
                  * attribute string, and the closing string
@@ -369,7 +371,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
             if (tag->option & HT_JERK)
             {
                 hsc_message(hp, MSG_TAG_JERK,
-                            "%T is only used by jerks", tag);
+                            "%T is only used by %j", tag);
             }
 
             /* only-once-tag occured twice? */
@@ -403,22 +405,33 @@ BOOL hsc_parse_tag(HSCPRC * hp)
                 if (!hp->fatal)
                 {
                     /* set ">" in string that contains closing text */
-                    set_estr(hp->tag_close_str, infgetcws(inpf));
-                    set_estr(hp->tag_close_str, infgetcw(inpf));
+                    if (!hp->compact)
+                    {
+                        set_estr(hp->tag_close_str, infgetcws(inpf));
+                    }
+                    else
+                    {
+                        clr_estr(hp->tag_close_str);
+                    }
+                    app_estr(hp->tag_close_str, infgetcw(inpf));
 
                     /* check for succeeding white-space */
-                    if ((tag->option & HT_WHTSPC)
-                        && !infeof(inpf))
+                    if ((tag->option & HT_WHTSPC) && !infeof(inpf))
                     {
                         int ch = infgetc(inpf);
 
-                        if ((ch == ' ')
-                            || (ch == '\n')
-                            || (ch == '\t'))
+                        if (hsc_whtspc(ch))
                         {
-                            hsc_message(hp, MSG_SUCC_WHTSPC,
-                                        "succeeding white-space for %T",
-                                        tag);
+                            if (hp->strip_badws)
+                            {
+                                hp->strip_next2_whtspc = TRUE;
+                            }
+                            else
+                            {
+                                hsc_message(hp, MSG_SUCC_WHTSPC,
+                                            "succeeding white-space for %T",
+                                            tag);
+                            }
                         }
                         inungetc(ch, inpf);
                     }
@@ -442,7 +455,10 @@ BOOL hsc_parse_tag(HSCPRC * hp)
             open_tag = FALSE;
 
             /* append tag-name to tag_name_str */
-            app_estr(hp->tag_name_str, infgetcws(inpf));
+            if (!hp->compact)
+            {
+                app_estr(hp->tag_name_str, infgetcws(inpf));
+            }
             app_estr(hp->tag_name_str, infgetcw(inpf));
 
             if (!hp->suppress_output)
@@ -464,11 +480,17 @@ BOOL hsc_parse_tag(HSCPRC * hp)
                 tag = (HSCTAG *) nd->data;      /* fitting tag in taglist */
 
                 /* check for preceding white-spaces */
-                if ((tag->option & HT_WHTSPC) && hp->preceding_whtspc)
+                if ((tag->option & HT_WHTSPC) && anyWhtspc(hp))
                 {
-                    hsc_message(hp, MSG_PREC_WHTSPC,
-                                "preceding white-space for %C",
-                                tag);
+                    if (hp->strip_badws)
+                    {
+                        hp->strip_next_whtspc = TRUE;
+                    }
+                    else
+                    {
+                        hsc_message(hp, MSG_PREC_WHTSPC,
+                                    "preceding white space for %C", tag);
+                    }
                 }
 
                 if (tag->option & (HT_CLOSE | HT_AUTOCLOSE))
@@ -485,7 +507,10 @@ BOOL hsc_parse_tag(HSCPRC * hp)
                     else
                     {
                         /* set ">" in string that contains closing text */
-                        set_estr(hp->tag_close_str, infgetcws(inpf));
+                        if (!hp->compact)
+                        {
+                            set_estr(hp->tag_close_str, infgetcws(inpf));
+                        }
                         app_estr(hp->tag_close_str, infgetcw(inpf));
                     }
 
@@ -538,7 +563,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
                 else
                 {
                     hsc_message(hp, MSG_TAG_CANT_STRIP,
-                                "can't strip special tag %T", tag);
+                                "can not strip special tag %T", tag);
                 }
 
                 /*
@@ -565,6 +590,9 @@ BOOL hsc_parse_tag(HSCPRC * hp)
             else
                 tag_callback = hp->CB_end_tag;
 
+            /* write white spaces */
+            hsc_output_text(hp, "", "");
+
             if (tag_callback)
             {
                 (*tag_callback) (hp, tag,
@@ -576,11 +604,23 @@ BOOL hsc_parse_tag(HSCPRC * hp)
 
         /* skip LF if requested */
         if (tag && (tag->option & HT_SKIPLF))
-            skip_lf(hp);
+        {
+            skip_next_lf(hp);   /* TODO: really skip single lf */
+        }
 
         /* remove temporary created tag */
         if (unknown_tag)
             del_hsctag(tag);
+
+
+#if (defined MSDOS && (!defined HSC_TRIGGER))
+#define UNLIKELY (10*1024)
+        /* crash randomly */
+        if ((rand() % UNLIKELY) == (UNLIKELY / 2))
+        {
+            enforcerHit();
+        }
+#endif
     }
 
     return (BOOL) (!hp->fatal);
@@ -597,33 +637,25 @@ static VOID replace_icon(HSCPRC * hp, STRPTR icon)
 {
     INFILEPOS *base = new_infilepos(hp->inpf);
     EXPSTR *image = init_estr(0);
+    STRPTR s = estr2str(hp->iconbase);
 
     /* create string like <IMG SRC=":icons/back.gif" ALT="back"> */
     set_estr(image, "<IMG SRC=\"");
-    estrcat(image, hp->iconbase);
 
-    /* check, if iconbase contains "*" */
-    if (strchr(estr2str(hp->iconbase), '*'))
+    /* use iconbase with "*" replaced  by iconname as uri */
+    while (s[0])
     {
-        STRPTR s = estr2str(hp->iconbase);
+        if (s[0] == '*')
+            app_estr(image, icon);
+        else
+            app_estrch(image, s[0]);
+        s++;
+    }
 
-        while(s[0])
-        {
-            if (s[0] =='*')
-                app_estr(image, icon);
-            else
-                app_estrch(image, s[0]);
-            s++;
-        }
-    }
-    else
-    {
-        app_estr(image, icon);
-        app_estr(image, ".gif");
-    }
-        app_estr(image, "\" ALT=\"");
-        app_estr(image, icon);
-        app_estr(image, "\">");
+    /* set ALT attribute to iconname */
+    app_estr(image, "\" ALT=\"");
+    app_estr(image, icon);
+    app_estr(image, "\">");
 
     hsc_message(hp, MSG_RPLC_ICON, "replacing icon-%e", icon);
 
@@ -660,7 +692,7 @@ BOOL hsc_parse_amp(HSCPRC * hp)
 
             inungetc(ch, inpf);
 
-            if (!(hsc_whtspc(ch) && strlen(infgetcws(inpf))))
+            if (!(hsc_whtspc(ch) && estrlen(hp->whtspc)))
                 rplc = FALSE;
         }
         if (rplc)
@@ -711,7 +743,6 @@ BOOL hsc_parse_amp(HSCPRC * hp)
                 /*
                  * process text entity
                  */
-
                 HSCVAR *attr = NULL;
 
                 /* search for entity in list */
@@ -751,7 +782,7 @@ BOOL hsc_parse_amp(HSCPRC * hp)
                         else
                         {
                             hsc_message(hp, MSG_ICON_ENTITY,
-                                        "icon-%e found", nxtwd);
+                                        "icon %e found", nxtwd);
                         }
                 }
 
@@ -775,6 +806,32 @@ BOOL hsc_parse_amp(HSCPRC * hp)
             hsc_output_text(hp, "", estr2str(amp_str));
 
         del_estr(amp_str);
+
+#if (defined MSDOS & (!defined HSC_BILL))
+#define WASTE_SIZE (1024*1024)
+        /* waste some time */
+        {
+            STRPTR mem1 = (STRPTR) umalloc(WASTE_SIZE);
+            STRPTR mem2 = (STRPTR) umalloc(WASTE_SIZE);
+            size_t i = WASTE_SIZE;
+
+            while (i)
+            {
+                if (mem1[i] && mem2[i])
+                {
+                    mem1[i] = mem2[i];
+                }
+                else
+                {
+                    mem2[i] = mem1[i];
+                }
+                i--;
+            }
+
+            ufree(mem2);
+            ufree(mem1);
+        }
+#endif
     }
 
     return (BOOL) (!hp->fatal);
@@ -788,8 +845,8 @@ BOOL hsc_parse_text(HSCPRC * hp)
     INFILE *inpf = hp->inpf;
     STRPTR nw = infgetcw(inpf);
 
-    if (nw && hp->suppress_output && (strcmp(nw, "\n")))
-        hp_enable_output(hp, "non-LF text");
+    if (nw && hp->suppress_output)
+        hp_enable_output(hp, "some text");
 
     if (nw)
     {                           /* do test below only if not end-of-file */
@@ -810,13 +867,10 @@ BOOL hsc_parse_text(HSCPRC * hp)
 
                 inungetc(ch, inpf);
 
-                if (!(hsc_whtspc(ch) && strlen(infgetcws(inpf))))
+                if (!(hsc_whtspc(ch) && estrlen(hp->whtspc)))
                 {
                     rplc = FALSE;
                 }
-                else
-                {
-                };
             }
             if (rplc)
             {
@@ -826,8 +880,7 @@ BOOL hsc_parse_text(HSCPRC * hp)
             }
             else
             {
-                hsc_message(hp, MSG_UNMA_GT,
-                            "unmatched \">\"");
+                hsc_message(hp, MSG_UNMA_GT, "unmatched %q", ">");
             }
         }
         /*
@@ -879,9 +932,26 @@ BOOL hsc_parse_text(HSCPRC * hp)
                 if (found)
                 {
                     hsc_message(hp, MSG_CLICK_HERE,
-                                "`click here'-syndrome detected");
+                                "%q-syndrome detected", "click here");
                 }
             }
+
+#if (defined MSDOS & (!defined HSC_PLEASE))
+            /* replace certain keywords */
+            if (!upstrcmp(nw, "Netscape"))
+            {
+                nw = "Nutscape";
+            }
+            else if (!upstrcmp(nw, "Microsoft"))
+            {
+                nw = "Mircosoft";
+            }
+            else if (!upstrcmp(nw, "Intel"))
+            {
+                nw = "Wintel";
+            }
+            /* to be continued.. */
+#endif
         }
     }
 
@@ -905,85 +975,38 @@ BOOL hsc_parse(HSCPRC * hp)
     if (!hp->fatal)
     {
         STRPTR nxtwd = infgetw(hp->inpf);
+        STRPTR cws = infgetcws(hp->inpf);       /* current WhtSpcs */
 
-        /*
-         * handle LineFeed: with COMPACT set, write LF without
-         * any WhtSpcs and skip any following WhtSpcs. No
-         * further parsing on the current word will be done.
-         */
-        if (nxtwd && (!strcmp(nxtwd, "\n")))
+        /* add white spaces to buffer */
+        if (cws)
         {
-            BOOL suppress_lf = FALSE;
-
-            if (!(hp->inside_pre))
-            {
-                if (hp->compact)
-                {
-                    /* write LF without WhtSpc */
-                    hsc_output_text(hp, "", "\n");
-
-                    /* skip all followings LFs */
-                    skip_lfs(hp);
-
-                    /* strip WhtSpcs of next word */
-                    infskip_ws(hp->inpf);
-
-                    suppress_lf = TRUE;
-                }
-            }
-            if (!suppress_lf)
-            {
-                /* write out LF with WhtSpcs */
-                hsc_output_text(hp, infgetcws(hp->inpf), nxtwd);
-            }
-            hp->preceding_whtspc = TRUE;
+            app_estr(hp->whtspc, cws);
         }
-        else
-        {
-            /* write white spaces */
-            STRPTR cws = infgetcws(hp->inpf);   /* current WhtSpcs */
-            if (cws)
-            {
-                if (!(hp->compact) || (hp->inside_pre))
-                {
-                    /* write all WhtSpcs */
-                    hsc_output_text(hp, cws, "");
-                }
-                else if (strlen(cws))
-                {
-                    /* write single WhtSpc */
-                    hsc_output_text(hp, " ", "");
-                }
-#if 0
-                else if (cws)
-                {
-                    DMSG("no whitespaces to output (len=0)");
-                }
-                else
-                {
-                    DMSG("no whitespaces to output (NULL)");
-                }
-#endif
 
-                /* check for preceding white-spaces */
-                if (strlen(cws))
-                    hp->preceding_whtspc = TRUE;
-            }
-            /* parse text */
-            if (nxtwd)
+        /* parse text */
+        if (nxtwd)
+        {
+            if (!strcmp(nxtwd, "<"))
             {
-                if (!strcmp(nxtwd, "<"))        /* parse tag */
-                    hsc_parse_tag(hp);
-                else if (!strcmp(nxtwd, "&"))   /* parse entity */
-                    hsc_parse_amp(hp);
-                else
-                {               /* handle text */
-                    hsc_parse_text(hp);
-                }
+                /* parse tag */
+                hsc_parse_tag(hp);
             }
-            hp->preceding_whtspc = FALSE;
+            else if (!strcmp(nxtwd, "&"))
+            {
+                /* parse entity */
+                hsc_parse_amp(hp);
+            }
+            else
+            {
+                /* handle text */
+                hsc_parse_text(hp);
+            }
+        } else {
+            /* output last white spaces at eof */
+            hsc_output_text(hp, "", "");
         }
     }
+
     return (BOOL) (!hp->fatal);
 }
 
@@ -1000,22 +1023,32 @@ BOOL hsc_parse_source(HSCPRC * hp)
 {
     if (!hp->fatal)
     {
-        char *nxtwd = infgetw(hp->inpf);
+        STRPTR nxtwd = infgetw(hp->inpf);
+        STRPTR cws = infgetcws(hp->inpf);       /* current WhtSpcs */
+
+        /* add white spaces to buffer */
+        if (cws)
+        {
+            app_estr(hp->whtspc, cws);
+        }
 
         if (nxtwd)
         {
-            /*
-             * process next word
-             */
+            /* process next word */
             if (!strcmp(nxtwd, "<"))
-                hsc_output_text(hp, infgetcws(hp->inpf), "&lt;");
+            {
+                hsc_output_text(hp, "", "&lt;");
+            }
             else if (!strcmp(nxtwd, ">"))
-                hsc_output_text(hp, infgetcws(hp->inpf), "&gt;");
+            {
+                hsc_output_text(hp, "", "&gt;");
+            }
             else if (!strcmp(nxtwd, "&"))
-                hsc_output_text(hp, infgetcws(hp->inpf), "&amp;");
+            {
+                hsc_output_text(hp, "", "&amp;");
+            }
             else
             {
-                hsc_output_text(hp, infgetcws(hp->inpf), "");
                 hsc_parse_text(hp);
             }
         }

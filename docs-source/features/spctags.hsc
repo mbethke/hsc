@@ -8,6 +8,7 @@
 <P><hsc> adds several special tags to process macros, handle conditionals,
 include files and lots of other things.</P>
 
+<H2>List of special tags</H2>
 <UL>
 <LI><A HREF="#comments"><TG>* <I>comment</I> *</TG></A> insert comments
 <LI><A HREF="prefs.html#defent"><TG>$defent</TG></A>, 
@@ -31,6 +32,20 @@ include files and lots of other things.</P>
 <H2><A NAME=(name)><(title)></A></H2>
 </$macro>
 
+<$macro POSSATTR>
+<P><STRONG>Possible attributes:</STRONG><DL>
+</$macro>
+<$macro /POSSATTR></DL></$macro>
+
+<* attribute definition title/data *>
+<$macro DTA><DT><CODE></$macro>  
+<$macro /DTA></CODE><DD></$macro>  
+
+<$macro EXAMPLE>
+<P><STRONG>Example:</STRONG>
+</$macro>
+
+
 <SPCTAG NAME="comments" TITLE="Comments">
     You can insert a comment with
 
@@ -50,51 +65,54 @@ include files and lots of other things.</P>
     </BLOCKQUOTE>
     as usual.<P>
 
-<SPCTAG NAME="if" TITLE="Conditional conversion">
-    As there is a lot to tell about this feature, there exists a whole
-    <A HREF="if.html">section about <TG>$if</TG></A>.
+<SPCTAG NAME="if" TITLE="Conditionals">
+    Conditionals are used to decide whether some part of the text should
+    be processed or not.
+    As there is a lot to tell about them, there exists a whole chapter 
+    dealing with <A HREF="if.html">conditionals</A>.
 
 <SPCTAG NAME="include" TITLE="Include file">
-    A <hsc>-file can be included to the text using
+    Text files can be included using <TG>$include</TG>.
 
-    <BLOCKQUOTE>
-    <TG>$include FILE="filename" [SOURCE] [PRE] [TEMPORARY]</TG>
-    </BLOCKQUOTE>
+    <POSSATTR>
+    <DTA>FILE:string/required</DTA>
+         This specifies the input file to be included
+    <DTA>SOURCE:bool</DTA>
+         by default, include files are interpreted as normal 
+         <FILE>*.hsc</FILE> files. Therefor, they may defines macros
+         or contain html tags to render the text. But it you for
+         example want to include an exerpt of a source code, it is
+         handy if a less-than character (<qqc>&lt;</qqc>) is not interpreted
+         as an escape character, but converted to an entity.<BR>
+         This attribute enables such a conversion for less than, greater
+         than and ampersand (<qqc>&amp;</qqc>).
+    <DTA>PRE:bool</DTA>
+         The included data will be enclosed inside a 
+         <TG>PRE</TG> ... <TG>/PRE</TG>, and the whole section will
+         be rendered as preformated.
+    <DTA>TEMPORARY:bool</DTA>
+         Normally, <hsc> keeps track of all files included and stores 
+         the names in the project file. Later, they can be used by
+         <hscdepp> to find out dependencies.<BR>
+         But if a file that is to be removed after the conversion
+         ends up in the dependency list of your <Makefile>, it can
+         cause trouble for <make>. If the attribute is enabled, the
+         input file will not be added to the dependency list.<BR>
+         You should consider to enable this attribute, if invoking
+         <make> returns something like<BR>
+        <SAMP>make: *** No rule to make target `hsc0x395bf7e0001.tmp', 
+              needed by `/html/hugo.html'.</SAMP>
+<* " INDENT:num TABSIZE:num=\"4\" " *>
+    </POSSATTR>
 
-    <P>If you include a file this way, it is handled as an usual
-    <hsc>-file. That means, all tags and special characters are
-    handled as before.</P>
-
-    To include a source file, eg a C- or HTML-source so that the
-    tags are not interpreted but displayed, add the optional
-    boolean attribute <CODE>SOURCE</CODE>.
-
-    <BLOCKQUOTE>
-    <TG>$include FILE="hugo.c" SOURCE</TG>
-    </BLOCKQUOTE>
-
-    <P>Now the basic special characters "&lt;", "&gt;" and "&amp;" are
-    replaced by their entities.<P>
-    Note that this does <STRONG>not</STRONG> include a <TG>PRE</TG>-tag
-    to render the text as it exists with the same line breaks and
-    spaces.</P>
-
-    <P>To get this done, you should use the optional boolean attribute
-    <CODE>PRE</CODE>. This inserts a <TG>PRE</TG> before the included
-    data and a <TG>/PRE</TG> afterwards.</P>
-
-    <P>If you enable <CODE>TEMPORARY</CODE>, the file included will not
-    effect the dependencies for the current document. This is only
-    reasonable if you have the <KBD>PRJFILE</KBD> CLI-option set
-    and want to include a temporary file which might not exist
-    anymore when invokin <make> the next time.</P>
-
-    <P>You should consider to enable this attribute, if invoking <make>
-    returns something like<BR>
-    <SAMP>make: *** No rule to make target `hsc0x395bf7e0001.tmp', 
-          needed by `/html/hugo.html'.</SAMP>
-    </P>
-
+    <EXAMPLE>
+    <DL>
+    <DT><TG>$include FILE="macro.hsc"</TG>
+    <DD>This can be used to include some macro definitions
+    <DT><TG>$include FILE="hugo.c" SOURCE PRE</TG>
+    <DD>This is reasonable to include a source code that has been
+        written using the programming langugage C.
+    </DL>
 <*
 <SPCTAG NAME="insert" TITLE="Insert several stuff">
     You can insert several stuff using the tag
@@ -113,10 +131,11 @@ include files and lots of other things.</P>
         <A HREF="strftime.txt"><CODE>strftime()</CODE></A>
         to perform that task, you can use the same format specifications.
 
-        Example:<BR>
-          <UBQ><TG>$insert TIME FORMAT="%b %d  %y"</TG></UBQ>
+        <EXAMPLE>
+        <DL><TG>$insert TIME FORMAT="%b %d  %y"</TG>
         inserts current date with the strange ANSI-C
         <CODE>__TIME__</CODE>-format.
+        </DL>
 
     <H3>Insert text</H3>
         As an required argument, you must give a string
@@ -154,28 +173,37 @@ include files and lots of other things.</P>
     <I>new_value</I></TG>
     </BLOCKQUOTE>
 
-    Example:<BR>
+    <EXAMPLE>
     <$source PRE>
     <$define hugo:string="hugo">       <* create hugo and set to "hugo" *>
     <$let hugo=(hugo+" ist doof.")>    <* update it to "hugo ist doof." *>
     </$source>
 
-<SPCTAG NAME="macro" TITLE="Define macros">
+<SPCTAG NAME="macro" TITLE="Macros">
+    Macros can used to define your own short-cuts and templates.
     As there is a lot to tell about this feature, there exists a whole
-    <A HREF=":macro/macros.html">section about macros</A>...
+    chapter dealing with
+    <A HREF=":macro/macros.html">macros</A>.
 
 <SPCTAG NAME="message" TITLE="User messages">
-    During conversion, you can invoke messages by yourself using
-    <$source PRE>
-    <$message TEXT="message text" [CLASS="class"]>
-    </$source>
-    For an example, look at <A HREF="exec.html"><TG>$exec</TG></A>.
+    <P>During conversion, messages might show up. But not only <hsc>
+    creates messages, also the user is able to so, if for instance
+    he wants to perform some plausibility checks of macro arguments.</P>
+    <POSSATTR>
+    <DTA>TEXT:string/required</DTA>
+         Specifies message text
+    <DTA>CLASS:enum("note|warning|error|fatal")='note'</DTA>
+         Specifies message class
+    </POSSATTR>
+    <EXAMPLE><BR>
+    <TG>$message TEXT="shit happens..." CLASS="fatal"</TG><BR>
+    <TG>$message TEXT="something's wrong" CLASS="warning"</TG>
 
 <SPCTAG NAME="expression" TITLE="Insert expression">
 
     This tag is used to insert data of attributes and
-    <A HREF="expressions.html">expressions</A>. For example:
-
+    <A HREF="expressions.html">expressions</A>.<BR>
+    <EXAMPLE>
     <$source PRE>
     <$define hugo:string="hugo">       <* create hugo and set to "hugo" *>
     <(hugo+" ist doof.")>              <* insert text "hugo ist doof." *>

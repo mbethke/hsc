@@ -31,6 +31,125 @@
 
 #include "hscprj/project.h"
 
+/*
+ * system-dependant defines
+ */
+#ifdef AMIGA
+#define CONFIG_FILE "hsc.prefs"
+#define OPTION_FILE "hsc.options", "env:hsc.options"
+#define CONFIG_PATH "PROGDIR:"
+
+#elif defined BEBOX
+#define CONFIG_FILE "hsc.prefs"
+#define CONFIG_PATH ""          /* TODO: where to search for prefs */
+#define OPTION_FILE "hsc.options"
+#define UNIX                    /* utilise POSIX-layer of BeOS */
+
+#elif defined UNIX
+#define CONFIG_FILE "hsc.prefs"
+#define CONFIG_PATH "/usr/local/lib/"
+#define OPTION_FILE "hsc.options"
+
+#elif defined WINNT
+#define CONFIG_FILE "hsc.prefs"
+#define CONFIG_PATH "\\"
+#define OPTION_FILE "hsc.options"
+
+#elif defined MSDOS
+#define CONFIG_FILE "HSC.PRE"
+#define CONFIG_PATH "\\"
+#define OPTION_FILE "HSC.OPT"
+
+#else
+#error "Operating system not supported: config-file/path"
+#endif
+
+#if (!defined MSDOS) & ((defined WINNT))
+/* handle several OS-es same as MSDOS */
+#define MSDOS 1
+#endif
+
+/* step sizes for expstr's */
+#define ES_STEP_RMTSTR   256    /* tag_macr.c */
+#define ES_STEP_MACRO   1024    /* tag_macr.c */
+#define ES_STEP_INFILE  4096    /* input file buffer */
+
+/*
+ * modes for syntax check
+ */
+#define MODE_PEDANTIC 1
+#define MODE_NORMAL   2
+#define MODE_RELAXED  3
+
+/*
+ * modes for attribute quotes
+ */
+#define QMODE_KEEP   1          /* keep quotes from input */
+#define QMODE_DOUBLE 2          /* always use double quotes (compatible) */
+#define QMODE_SINGLE 3          /* always use single quotes */
+#define QMODE_NONE   4          /* never use any quotes (compact) */
+
+/*
+ * modes for special characters/entity extraction
+ */
+#define EMODE_KEEP     1        /* do not replace */
+#define EMODE_REPLACE  2        /* replace by prefered value */
+                                /*   (depends wheter if a PREFNUM was used */
+                                /*   within $DEFENT) */
+#define EMODE_NUMERIC  3        /* always replace by numeric (&#123;) */
+#define EMODE_SYMBOLIC 4        /* always replace by symbolic (&uuml;) */
+
+/*
+ * misc. defines for files & envvars
+ */
+#define ENV_HSCPATH    "HSCPATH"        /* envvar that contains path for prefs */
+#define ENV_HSCSALARY  "HSCSALARY"      /* contains salary of user */
+#define ENV_HSCUSER    "HSCUSER_PATH"   /* to substitute "~/" */
+#define ENV_HSCUSERS   "HSCUSERS_PATH"  /* to substitute "~" */
+#define ENV_HSCROOT    "HSCROOT_PATH"   /* to substitute "/" */
+
+#define SPECIAL_FILE_ID "::s::" /* used as prefix in filename for */
+                                   /* internal (pseudo-)files (macros,init) */
+#define PARENT_FILE_ID  "::p::" /* used as prefix in filename if */
+              /* parent file on input-stack should be used for message-pos. */
+#define FILENAME_STDIN "STDIN"  /* pseudo-filename for stdin */
+
+/* prefix char used for special hsc-tags  */
+#define HSC_SPECIAL_PREFIX "$"
+
+/* attribute that holds "click here" words */
+#define CLICK_HERE_ATTR     "HSC.CLICK-HERE"
+#define COLOR_NAMES_ATTR    "HSC.COLOR-NAMES"
+#define ANCHOR_ATTR         "HSC.ANCHOR"
+#define RESULT_ATTR         "HSC.EXEC.RESULT"
+#define FILESIZEFORMAT_ATTR "HSC.FORMAT.FILESIZE"
+#define TIMEFORMAT_ATTR     "HSC.FORMAT.TIME"
+#define LINEFEED_ATTR       "HSC.LF"
+
+/* attribute that hold condition on <$if/$elseif> */
+#define CONDITION_ATTR "COND"
+
+/* attribute that tells operating system */
+#define SYSTEM_ATTR     "HSC.SYSTEM"
+#ifdef AMIGA
+#define SYSTEM_ATTR_ID "AMIGA"
+
+#elif defined BEBOX
+#define SYSTEM_ATTR_ID "BEBOX"
+
+#elif defined UNIX
+#define SYSTEM_ATTR_ID "UNIX"
+
+#elif defined WINNT
+#define SYSTEM_ATTR_ID "WINNT"
+
+#elif defined MSDOS
+#define SYSTEM_ATTR_ID "LLIBLLIK"       /* "kill bill" backwards, stupid! */
+
+#else
+#error "system not supported: SYSTEM_ATTR_ID"
+#endif
+
 typedef LONG HSCMSG_ID;         /* hsc message id */
 typedef LONG HSCMSG_CLASS;      /* hsc message class */
 
@@ -45,6 +164,7 @@ typedef struct hscprocess
     DLLIST *defattr;            /* defined attributes */
     DLLIST *defent;             /* defined special charcters & entities */
     DLLIST *container_stack;    /* stack of container-tags currently open */
+    DLLIST *include_dirs;       /* include directories */
     HSCPRJ *project;            /* project data */
     DLLIST *idrefs;             /* list of references to local IDs */
     EXPSTR *destdir;            /* destination root directory */
@@ -63,12 +183,12 @@ typedef struct hscprocess
     EXPSTR *tag_attr_str;
     EXPSTR *tag_close_str;
 
-#if 0
-    STRPTR filename_project;    /* where to read/write project data */
-#endif
     STRPTR filename_document;   /* document-name to be stored in project */
 
     BOOL *msg_ignore;           /* messages to be ignored */
+    BOOL msg_ignore_notes;      /* message-classes to be ignores */
+    BOOL msg_ignore_style;
+    BOOL msg_ignore_port;
     HSCMSG_CLASS *msg_class;    /* messages with remaped classes */
     ULONG msg_count;            /* numer of messages occured until now */
 
@@ -86,12 +206,14 @@ typedef struct hscprocess
     BOOL smart_ent;             /* flag: replace special entities "<>&" */
     BOOL strip_cmt;             /* flag: strip SGML-comments */
     BOOL strip_ext;             /* flag: strip external references */
+    BOOL strip_badws;           /* flag: strip bad white spaces */
 
-    BOOL suppress_output;
+    BOOL suppress_output;       /* flag: TRUE, until outputable data occure */
     BOOL docbase_set;           /* <BASE HREF=".."> occured */
     BOOL inside_pre;            /* inside preformatted tag <PRE> & Co. */
     BOOL inside_anchor;         /* inside anchor-tag <A> */
     BOOL inside_title;          /* inside title-tag <TITLE> */
+    BOOL prostitute;            /* use "prostitute" or "jerk"? */
 
     BOOL fatal;                 /* fatal error occured; abort process */
 
@@ -104,8 +226,10 @@ typedef struct hscprocess
     STRPTR click_here_str;      /* keywords for click-here syndrome */
     STRPTR color_names;         /* predifined names for colors */
     STRPTR strip_tags;          /* tags that should be stripped */
-    BOOL preceding_whtspc;      /* FLAG: white-space before tag? */
-    /*       CLUMSY! used by parse_tag() */
+    EXPSTR *whtspc;             /* white spaces buffered */
+    BOOL strip_next_whtspc;     /* flag: strip next whtite space
+                                 * set by parse_tag(), if strip_badws = TRUE */
+    BOOL strip_next2_whtspc;    /* flag: strip next but one white space */
     /* status callbacks */
       VOID(*CB_status_misc) (struct hscprocess * hp, STRPTR s);
     /* called for verbose messages */
@@ -138,106 +262,16 @@ typedef struct hscprocess
 }
 HSCPRC;
 
-#define HSCPREFS_ENVVAR  "HSCPREFS"     /* envvar that contains path for prefs */
-#define SPECIAL_FILE_ID  "::s::"        /* used as prefix in filename for */
-                                   /* internal (pseudo-)files (macros,init) */
-#define PARENT_FILE_ID  "::p::" /* used as prefix in filename if */
-              /* parent file on input-stack should be used for message-pos. */
-
-/*
- * system-dependant defines
- */
-#ifdef AMIGA
-#define CONFIG_FILE "hsc.prefs"
-#define CONFIG_PATH "env:", "s:"
-
-#elif defined UNIX
-#define CONFIG_FILE "hsc.prefs"
-#define CONFIG_PATH "/usr/local/lib/"
-
-#elif defined WINNT
-#define CONFIG_FILE "hsc.prefs"
-#define CONFIG_PATH "\\"
-
-#elif defined MSDOS
-#define CONFIG_FILE "HSC.PRE"
-#define CONFIG_PATH "\\"
-
-#else
-#error "Operating system not supported: config-file/path"
-#endif
-
-/* handle several OS-es same as MSDOS */
-#if (!defined MSDOS) & (defined WINNT)
-#define MSDOS
-#endif
-
-/* step sizes for expstr's */
-#define ES_STEP_RMTSTR    32    /* tag_macr.c */
-#define ES_STEP_MACRO   1024    /* tag_macr.c */
-#define ES_STEP_INFILE  4096    /* input file buffer */
-
-/*
- * modes for syntax check
- */
-#define MODE_PEDANTIC 1
-#define MODE_NORMAL   2
-#define MODE_RELAXED  3
-
-/*
- * modes for attribute quotes
- */
-#define QMODE_KEEP   1          /* keep quotes from input */
-#define QMODE_DOUBLE 2          /* always use double quotes (compatible) */
-#define QMODE_SINGLE 3          /* always use single quotes */
-#define QMODE_NONE   4          /* never use any quotes (compact) */
-
-/*
- * modes for special characters/entity extraction
- */
-#define EMODE_KEEP     1        /* do not replace */
-#define EMODE_REPLACE  2        /* replace by prefered value */
-                                /*   (depends wheter if a PREFNUM was used */
-                                /*   within $DEFENT) */
-#define EMODE_NUMERIC  3        /* always replace by numeric (&#123;) */
-#define EMODE_SYMBOLIC 4        /* always replace by symbolic (&uuml;) */
-
-#define FILENAME_STDIN "STDIN"  /* pseudo-filename for stdin */
-
-/* prefix char used for special hsc-tags  */
-#define HSC_SPECIAL_PREFIX "$"
-
-/* attribute that holds "click here" words */
-#define CLICK_HERE_ATTR     "HSC.CLICK-HERE"
-#define COLOR_NAMES_ATTR    "HSC.COLOR-NAMES"
-#define ANCHOR_ATTR         "HSC.ANCHOR"
-#define RESULT_ATTR         "HSC.EXEC.RESULT"
-#define FILESIZEFORMAT_ATTR "HSC.FORMAT.FILESIZE"
-#define TIMEFORMAT_ATTR     "HSC.FORMAT.TIME"
-#define LINEFEED_ATTR       "HSC.LF"
-
-/* attribute that hold condition on <$if/$elseif> */
-#define CONDITION_ATTR "COND"
-
-/* attribute that tells operating system */
-#define SYSTEM_ATTR     "HSC.SYSTEM"
-#ifdef AMIGA
-#define SYSTEM_ATTR_ID "AMIGA"
-#elif defined UNIX
-#define SYSTEM_ATTR_ID "UNIX"
-#elif defined MSDOS
-#define SYSTEM_ATTR_ID "KILLBILL"
-#else
-#error "system not supported: SYSTEM_ATTR_ID"
-#endif
-
 /*
  * global funcs
  */
 #ifndef NOEXTERN_HSC_HSCPRC
 
+#define anyWhtspc(hp) (estrlen(hp->whtspc))
+
 extern VOID del_hscprc(HSCPRC * hp);
 extern HSCPRC *new_hscprc(void);
+extern VOID reset_hscprc(HSCPRC * hp);
 
 /* set-methodes for callbacks */
 extern VOID hsc_set_status_file_begin(HSCPRC * hp, VOID(*status_file) (HSCPRC * hp, STRPTR filename));
@@ -288,6 +322,7 @@ extern VOID hsc_set_jerkvalues(HSCPRC * hp, BOOL new_jens);
 extern VOID hsc_set_rplc_ent(HSCPRC * hp, BOOL new_rplc_ent);
 extern VOID hsc_set_rplc_quote(HSCPRC * hp, BOOL new_rplc_quote);
 extern VOID hsc_set_smart_ent(HSCPRC * hp, BOOL new_smart_ent);
+extern VOID hsc_set_strip_badws(HSCPRC * hp, BOOL new_strip_badws);
 extern VOID hsc_set_strip_cmt(HSCPRC * hp, BOOL new_strip_cmt);
 extern VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext);
 
@@ -295,9 +330,14 @@ extern VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext);
 extern BOOL hsc_set_destdir(HSCPRC * hp, STRPTR dir);
 extern BOOL hsc_set_reldir(HSCPRC * hp, STRPTR fname);
 extern BOOL hsc_set_iconbase(HSCPRC * hp, STRPTR uri);
+extern BOOL hsc_set_strip_tags(HSCPRC * hp, STRPTR taglist);
 extern BOOL hsc_set_filename_document(HSCPRC * hp, STRPTR filename);
 extern VOID hsc_set_quote_mode(HSCPRC * hp, LONG new_mode);
 extern VOID hsc_set_entity_mode(HSCPRC * hp, LONG new_mode);
+
+/* methodes for include-directories */
+extern BOOL hsc_add_include_directory(HSCPRC * hp, STRPTR dir);
+extern VOID hsc_clr_include_directory(HSCPRC * hp);
 
 /* get-methodes for flags */
 extern BOOL hsc_get_chkid(HSCPRC * hp);
@@ -311,6 +351,7 @@ extern BOOL hsc_get_jens(HSCPRC * hp);
 extern BOOL hsc_get_rplc_ent(HSCPRC * hp);
 extern BOOL hsc_get_rplc_quote(HSCPRC * hp);
 extern BOOL hsc_get_smart_ent(HSCPRC * hp);
+extern BOOL hsc_get_strip_badws(HSCPRC * hp);
 extern BOOL hsc_get_strip_cmt(HSCPRC * hp);
 extern BOOL hsc_get_strip_ext(HSCPRC * hp);
 
@@ -333,6 +374,9 @@ extern ULONG hsc_get_file_column(HSCPRC * hp);
 extern ULONG hsc_get_msg_count(HSCPRC * hp);
 
 /* methodes for messages */
+extern BOOL hsc_set_msg_ignore_notes(HSCPRC * hp, BOOL value);
+extern BOOL hsc_set_msg_ignore_style(HSCPRC * hp, BOOL value);
+extern BOOL hsc_set_msg_ignore_port(HSCPRC * hp, BOOL value);
 extern BOOL hsc_set_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id, BOOL value);
 extern BOOL hsc_get_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id);
 extern BOOL hsc_set_msg_class(HSCPRC * hp, HSCMSG_ID msg_id, HSCMSG_CLASS msg_class);
@@ -341,6 +385,7 @@ extern VOID hsc_clear_msg_ignore(HSCPRC * hp);
 extern VOID hsc_reset_msg_class(HSCPRC * hp);
 
 /* output function */
+extern STRPTR compactWs(HSCPRC * hp, STRPTR ws);
 extern BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text);
 
 /* misc. functions */

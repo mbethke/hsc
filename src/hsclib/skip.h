@@ -33,13 +33,14 @@
 /*
  * global funcs
  */
-extern BOOL skip_lf(HSCPRC * hp);
-extern BOOL skip_lfs(HSCPRC * hp);
+extern BOOL skip_next_lf(HSCPRC * hp);
 extern BOOL skip_hsc_comment(HSCPRC * hp);
 
 extern BOOL skip_until_eot_state(HSCPRC * hp, BYTE * state, EXPSTR * logstr);
 extern BOOL skip_until_eot(HSCPRC * hp, EXPSTR * logstr);
+#if 1 /* TODO: get rid of this */
 extern BOOL eot_reached(HSCPRC * hp, BYTE * state);
+#endif
 extern BOOL eoc_reached(HSCPRC * hp, BYTE * state, LONG * nest);
 
 extern BOOL skip_until_tag(HSCPRC * hp, EXPSTR * tagfound, STRPTR tagstoplist, STRPTR tagnest);

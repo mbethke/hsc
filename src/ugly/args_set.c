@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 30-Jul-1996
+ * updated: 17-Nov-1996
  * created:  3-Jul-1994
  *
  *===================================================================
@@ -39,6 +39,7 @@
 #include <ctype.h>
 
 #include "utypes.h"
+#include "ufile.h"
 #include "umemory.h"
 #include "ustring.h"
 #include "dllist.h"
@@ -86,40 +87,39 @@ static int compare_arginfo(APTR cmp_data, APTR list_data)
 
     if (lst_arg && cmp_arg)
     {
-
         STRPTR nxt_arg = strtok(lst_arg, "=");
 
         while (nxt_arg && (eq == FALSE))
         {
-
             if (ai->ai_flags & ARG_CASESENS)
-
+            {
                 eq = (strncmp(nxt_arg, cmp_arg, strlen(nxt_arg)) == 0);
-
+            }
             else
+            {
                 eq = (upstrncmp(nxt_arg, cmp_arg, strlen(nxt_arg)) == 0);
+            }
 
 #if 0
             if (eq)
             {
-
                 if (ai->ai_type != ARG_SWITCH)
                     eq = (cmp_arg[strlen(nxt_arg)] == '=');
-
             }
 #endif
             lastch = cmp_arg[strlen(nxt_arg)];
             eq &= (lastch == '\0') || (lastch == '=');
 
             nxt_arg = strtok(NULL, "=");
-
         }                       /* while */
-
-        ufree(lst_arg);
 
     }
     else
+    {
         eq = FALSE;
+    }
+
+    ufreestr(lst_arg);
 
     return eq;
 }
@@ -130,7 +130,7 @@ static int compare_arginfo(APTR cmp_data, APTR list_data)
  * clear all ai_set bits in all _arginfo entries of an _arglist
  *
  */
-static void clr_ai_set(struct arglist *al)
+static VOID clr_ai_set(ARGLIST * al)
 {
 #if 0
     struct dlnode *nd;
@@ -150,21 +150,17 @@ static void clr_ai_set(struct arglist *al)
 #endif
     if (al && (al->al_list))
     {
-
         struct dlnode *nd = al->al_list->first;
 
         while (nd)
         {
-
             struct arginfo *ai = (struct arginfo *) nd->data;
 
             if (ai)
                 ai->ai_set = FALSE;
             nd = nd->next;
-
         }
     }
-
 }
 
 /*
@@ -173,7 +169,7 @@ static void clr_ai_set(struct arglist *al)
  * set al_nokeywd to first entry w/o ARG_KEYWORD flag
  *
  */
-static void reset_nokeywd(struct arglist *al)
+static VOID reset_nokeywd(ARGLIST * al)
 {
     /*
      * NOTE: _al must be fully initialised _arglist,
@@ -184,33 +180,28 @@ static void reset_nokeywd(struct arglist *al)
     struct dlnode *nd = al->al_list->first;
     struct arginfo *ai = (struct arginfo *) nd->data;
 
-    if (ai->ai_flags & ARG_KEYWORD || (ai->ai_type & ARG_SWITCH))
+    if (ai->ai_flags & ARG_KEYWORD || (ai->ai_type == ARG_SWITCH))
     {
-
         al->al_nokeywd = NULL;
 
         do
         {
-
             if ((ai->ai_flags & ARG_KEYWORD)
-                || (ai->ai_type & ARG_SWITCH))
+                || (ai->ai_type == ARG_SWITCH))
             {
-
                 nd = nd->next;
                 if (nd)
                     ai = (struct arginfo *) nd->data;
-
             }
             else
                 al->al_nokeywd = ai;
-
         }
         while (nd && !(al->al_nokeywd));
-
     }
     else
+    {
         al->al_nokeywd = ai;
-
+    }
 }
 
 /*
@@ -219,7 +210,7 @@ static void reset_nokeywd(struct arglist *al)
  * find next entry w/o ARG_KEYWORD flag set
  *
  */
-static void find_nxt_nokeywd(struct arglist *al)
+static VOID find_nxt_nokeywd(ARGLIST * al)
 {
     if (al->al_nokeywd)
     {
@@ -240,16 +231,14 @@ static void find_nxt_nokeywd(struct arglist *al)
         al->al_nokeywd = NULL;
         while (nd && (al->al_nokeywd == NULL))
         {
-
             ai = (struct arginfo *) nd->data;
 
             if ((ai->ai_flags & ARG_KEYWORD)
-                || (ai->ai_type & ARG_SWITCH)
+                || (ai->ai_type == ARG_SWITCH)
                 )
                 nd = nd->next;
             else
                 al->al_nokeywd = ai;
-
         };
 #endif
         /*
@@ -264,7 +253,6 @@ static void find_nxt_nokeywd(struct arglist *al)
         al->al_nokeywd = NULL;
         while (nd && (al->al_nokeywd == NULL))
         {
-
             BOOL is_keywd = FALSE;
             BOOL multiple_nokeywd = FALSE;
 
@@ -275,13 +263,17 @@ static void find_nxt_nokeywd(struct arglist *al)
                 (ai->ai_flags & ARG_MULTIPLE)
                 && !is_keywd;
 
-            if (((ai->ai_flags & ARG_KEYWORD) || (ai->ai_type & ARG_SWITCH) || (ai->ai_set)) && !multiple_nokeywd)
+            if (((ai->ai_flags & ARG_KEYWORD)
+                 || (ai->ai_type == ARG_SWITCH)
+                 || (ai->ai_set))
+                && !multiple_nokeywd)
             {
                 nd = nd->next;
             }
             else
+            {
                 al->al_nokeywd = ai;
-
+            }
         }
     }
 }
@@ -291,22 +283,19 @@ static void find_nxt_nokeywd(struct arglist *al)
  * error functions for _set_args()
  *
  */
-static void set_argerr(int num, STRPTR arg)
+static VOID set_argerr(int num, STRPTR arg)
 {
     if (no_argerr)
     {
-
         no_argerr = FALSE;
         any_argerr = TRUE;
 
         arg_error_num = num;
         arg_error_arg = arg;
-
     }
-
 }
 
-static void clr_argerr(void)
+static VOID clr_argerr(VOID)
 {
     no_argerr = TRUE;
     any_argerr = FALSE;
@@ -321,13 +310,12 @@ static void clr_argerr(void)
  * error occured in last call of _set_args()
  *
  */
-STRPTR strargerr(void)
+STRPTR strargerr(VOID)
 {
     STRPTR str = "unknown error";
 
     switch (arg_error_num)
     {
-
     case ASE_NO_MEM:
         str = "out of memory";
         break;
@@ -366,16 +354,13 @@ STRPTR strargerr(void)
     case ASE_HANDLE_FUNC:       /* error in handle function */
         str = arg_error_hfs;
         break;
-
     }                           /* switch */
 
     strcpy(argerrstr, str);
     if (arg_error_arg)
     {
-
         strncat(argerrstr, ": ", SIZE_ARGERRSTR - strlen(str) - 1);
         strncat(argerrstr, arg_error_arg, SIZE_ARGERRSTR - strlen(str) - 3);
-
     }
 
     if (arg_error_num)
@@ -390,7 +375,7 @@ STRPTR strargerr(void)
  * printf error message from last call of _set_args()
  *
  */
-void pargerr(void)
+VOID pargerr(VOID)
 {
     if (arg_error_num)
         fprintf(stderr, "%s\n", strargerr());
@@ -416,7 +401,6 @@ static UBYTE set_arg_value(struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL key
     /*   rest of the arg is taken as param                 */
     if (keywd && !(ai->ai_type == ARG_SWITCH))
     {
-
         param = arg;
         while (param[0] && (param[0] != '='))
             param++;
@@ -429,7 +413,6 @@ static UBYTE set_arg_value(struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL key
             if (!param)
                 set_argerr(ASE_REQUIRED_MISS, arg);
         }
-
     }
     else
         param = arg;
@@ -439,36 +422,35 @@ static UBYTE set_arg_value(struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL key
      */
     if (no_argerr)
     {
-
         if (ai->ai_func)
         {
-
             /* call handle function with arg value */
             arg_error_hfs = (*(ai->ai_func)) (param);
             if (arg_error_hfs)
                 set_argerr(ASE_HANDLE_FUNC, param);
-
         }
         else if (ai->ai_type == ARG_SWITCH)     /* switch */
-
+        {
             *((BOOL *) dest) = TRUE;
-
+        }
         else
         {
-
             /*
-             * check if argument already set
+             * check if argument already set by this set_args()
              */
-            if (ai->ai_set && !((ai->ai_flags & ARG_OVERWRITE)
-                                || (ai->ai_flags & ARG_MULTIPLE))
-                )
+            if ((ai->ai_set == AIS_SET_LOCAL)
+                && !((ai->ai_flags & ARG_OVERWRITE)
+                     || (ai->ai_flags & ARG_MULTIPLE)))
+            {
                 set_argerr(ASE_OCCURED_TWICE, arg);
+            }
             else
-                ai->ai_set = TRUE;
+            {
+                ai->ai_set = AIS_SET_LOCAL;
+            }
 
             if (no_argerr)
             {
-
                 APTR aparam = NULL;
                 DLLIST **dest_list = (DLLIST **) dest;
                 LONG along;
@@ -476,22 +458,24 @@ static UBYTE set_arg_value(struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL key
                 /*
                  * get new value and  store it in aparam
                  */
-                if (!param)     /* missing param */
+                if (!param)
+                {
+                    /* missing param */
                     set_argerr(ASE_NO_VAL_AFTER_KW, arg);
-                if (ai->ai_type == ARG_TEXT)    /* text */
+                }
+                if (ai->ai_type == ARG_TEXT)
+                {               /* text */
                     aparam = (APTR) param;
+                }
                 else if (ai->ai_type == ARG_LONG)
                 {               /* long */
-
                     if (!str2long(param, &along))
                         set_argerr(ASE_INVALID_NUM, arg);
                     else
                         aparam = (APTR) along;  /* what a pervert! */
-
                 }
                 else if (ai->ai_type == ARG_ENUM)
                 {
-
                     LONG aenum = strenum(param, ai->ai_misc1.ai_enum,
                                          '|', STEN_NOCASE);
 
@@ -499,7 +483,6 @@ static UBYTE set_arg_value(struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL key
                         set_argerr(ASE_INVALID_ENUM, arg);
                     else
                         aparam = (APTR) aenum;  /* what a pervert! */
-
                 }
 #if 0
                 if (!param)     /* missing param */
@@ -508,7 +491,6 @@ static UBYTE set_arg_value(struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL key
                     *((STRPTR *) dest) = param;
                 else if (ai->ai_type == ARG_LONG)
                 {               /* long */
-
                     if (!str2long(param, (LONG *) dest))
                         set_argerr(ASE_INVALID_NUM, arg);
                 }
@@ -518,9 +500,9 @@ static UBYTE set_arg_value(struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL key
                  * set new value
                  */
                 if (no_argerr)
+                {
                     if (ai->ai_flags & ARG_MULTIPLE)
                     {
-
                         if (!(*dest_list))
                             *dest_list = init_dllist(NULL);
                         if (*dest_list)
@@ -530,11 +512,9 @@ static UBYTE set_arg_value(struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL key
                         }
                         else
                             set_argerr(APE_NO_MEM, arg);
-
                     }
                     else
                     {
-
                         if (ai->ai_type == ARG_LONG)
                             *((LONG *) dest) = (LONG) aparam;
                         else if (ai->ai_type == ARG_ENUM)
@@ -543,14 +523,12 @@ static UBYTE set_arg_value(struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL key
                             *((STRPTR *) dest) = (STRPTR) aparam;
 
                     }
-
+                }
             }
-
         }
 
         if (arg2used)           /* set return value that arg2 */
             arg_incr = 1;       /* is skipped outside this func */
-
     }
 
     return (arg_incr);
@@ -562,28 +540,133 @@ static UBYTE set_arg_value(struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL key
  * check, if all required arguments are set
  *
  */
-static void check_required_set(struct arglist *al)
+static VOID check_required_set(ARGLIST * al)
 {
-    struct dlnode *nd = al->al_list->first;
-    struct arginfo *ai;
+    DLNODE *nd = al->al_list->first;
+    ARGINFO *ai;
 
     do
     {
+        ai = (struct arginfo *) dln_data(nd);
 
-        ai = (struct arginfo *) nd->data;
-
-        if ((ai->ai_flags & ARG_REQUIRED) && !(ai->ai_set))
+        if ((ai->ai_flags & ARG_REQUIRED) && (ai->ai_set == AIS_UNSET))
             set_argerr(ASE_REQUIRED_MISS, ai->ai_id);
         else
-            nd = nd->next;
-
+            nd = dln_next(nd);
     }
     while (nd && no_argerr);
-
 }
 
 /*
- * set_args
+ * set_args_file
+ *
+ * set args from argument file
+ */
+ARGFILE *new_argfile(char *argfname)
+{
+#define SIZE_FGETSBUF 1024
+    ARGFILE *argf = umalloc(sizeof(ARGFILE));
+
+    BOOL no_argerr = TRUE;
+    if (argf)
+    {
+        FILE *file = NULL;
+
+        argf->argc = 0;
+        argf->argv = umalloc(2 * sizeof(char *));
+        argf->argv[0] = NULL;
+        argf->argv[1] = NULL;
+
+        if (argfname)
+        {
+            argf->argv[0] = strclone(argfname);
+            file = fopen(argfname, "r");
+        }
+        if (file)
+        {
+            STRPTR fgetsbuf = umalloc(SIZE_FGETSBUF);   /* alloc buf for fgets() */
+
+            if (fgetsbuf)
+            {
+                STRPTR argline = NULL;
+                no_argerr = FALSE;
+
+                do
+                {
+                    argline = fgets(fgetsbuf, SIZE_FGETSBUF, file);
+                    if (argline)
+                    {
+                        int i = 0;      /* loop var */
+
+                        /* increse argv-array */
+                        char **old_argv = argf->argv;
+                        argf->argc++;
+                        argf->argv = umalloc((argf->argc + 2) * sizeof(char *));
+
+                        /* copy old argv-array */
+                        for (i = 0; i <= (argf->argc); i++)
+                        {
+                            argf->argv[i] = old_argv[i];
+                        }
+
+                        /* free old argv-array */
+                        ufree(old_argv);
+
+                        /* strip succeeding linefeed */
+                        while (fgetsbuf[0]
+                               && strchr("\r\n", fgetsbuf[strlen(fgetsbuf) - 1]))
+                        {
+                            fgetsbuf[strlen(fgetsbuf) - 1] = '\0';
+                        }
+
+                        /* assign new argv */
+                        argf->argv[argf->argc] = strclone(fgetsbuf);
+                        argf->argv[argf->argc + 1] = NULL;
+                    }
+                }
+                while (argline);
+                argf->argc++;
+            }
+
+            ufree(fgetsbuf);    /* cleanup resources */
+            fclose(file);
+        }
+    }
+
+    return (argf);
+}
+
+ARGFILE *new_argfilev(STRPTR fname[])
+{
+    int i=0;
+
+    while(fname[i] && !fexists(fname[i]))
+    {
+        i++;
+    }
+
+    return(new_argfile(fname[i]));
+}
+
+/*
+ * del_argfile: release all resources allocated by new_argfile
+ */
+VOID del_argfile(ARGFILE * argf)
+{
+    if (argf)
+    {
+        while (argf->argc+1)
+        {
+            ufreestr(argf->argv[argf->argc]);
+            argf->argc--;
+        }
+        ufree(argf->argv);
+        ufree(argf);
+    }
+}
+
+/*
+ * set_args_argv
  *
  * check and set arguments according to template specified in _al
  *
@@ -593,7 +676,7 @@ static void check_required_set(struct arglist *al)
  * errors: return FALSE, error information in _arg_error_???
  *
  */
-BOOL set_args(int argc, char *argv[], struct arglist *al)
+BOOL set_args_argv(int argc, char *argv[], ARGLIST * al)
 {
 #if 0
     DA(fprintf(stderr, DUA "set_args()\n"));
@@ -611,7 +694,6 @@ BOOL set_args(int argc, char *argv[], struct arglist *al)
 
     while ((argidx < argc) && no_argerr)
     {
-
         struct arginfo search_ai;
         struct arginfo *found_ai;
         struct dlnode *ainode;
@@ -631,49 +713,84 @@ BOOL set_args(int argc, char *argv[], struct arglist *al)
 
         DA(fprintf(stderr, DUA "  arg: `%s'\n", argv[argidx]));
 
-        /* this line compensates a bug in sas/c 6.50 optimizer */
+        /* this line compensates a bug in sas/c 6.51 optimizer */
         strncpy(sas_c_is_buggy, argv[argidx], 20);
 
         if (ainode)
         {
-
             found_ai = (struct arginfo *) ainode->data;
-
             argidx += set_arg_value(found_ai, argv[argidx], arg2, TRUE);
-
         }
         else
         {
-
             find_nxt_nokeywd(al);
             if (al->al_nokeywd)
             {
-
                 argidx += set_arg_value(al->al_nokeywd, argv[argidx], arg2, FALSE);
-
             }
             else
             {
-
                 set_argerr(ASE_UNKNOWN_KEYWORD, argv[argidx]);
 #if 0
                 DA(fprintf(stderr, DUA "  unknown keyword\n"));
 #endif
             }
-
         }
 
         argidx++;
-
     }                           /* while */
 
-    /* 
-     * check, if all required arguments were set
-     */
+    /* mark all arguments that have been set locally
+     * (with ai_set==AIS_SET_LOCAL) as set */
     if (no_argerr)
-        check_required_set(al);
+    {
+        DLNODE *nd = dll_first(al->al_list);
+        while (nd)
+        {
+            ARGINFO *ai = (struct arginfo *) dln_data(nd);
+            if (ai->ai_set == AIS_SET_LOCAL)
+                ai->ai_set = AIS_SET_PREVIOUS;
+            nd = dln_next(nd);
+        }
+    }
 
     return no_argerr;
-
 }
+
+/*
+ * check_args
+ *
+ * check for required args missing
+ */
+BOOL check_args(ARGLIST * al)
+{
+    /* check, if all required arguments were set */
+    if (no_argerr)
+    {
+        check_required_set(al);
+    }
+
+    return no_argerr;
+}
+
+/*
+ * set_args
+ *
+ * set and check args from arg-vector
+ */
+BOOL set_args(int argc, char *argv[], ARGLIST * al)
+{
+    return( (BOOL)(set_args_argv(argc,argv,al) && check_args(al)));
+}
+
+/*
+ * set_args_file
+ *
+ * set args read from file
+ */
+BOOL set_args_file(ARGFILE *argf, ARGLIST *argl)
+{
+    return(set_args((argf)->argc, (argf)->argv, argl));
+}
+
 

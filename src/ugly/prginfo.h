@@ -45,9 +45,15 @@
 }
 #else
 */
+#if (defined DATE && defined TIME)
+#define  set_prginfo( name, auth, ver, rev, rel, info, copy ) \
+    call_set_prginfo2( name, auth, ver, rev, rel,              \
+    DATE, TIME, info, copy )
+#else
 #define  set_prginfo( name, auth, ver, rev, rel, info, copy ) \
     call_set_prginfo( name, auth, ver, rev, rel,              \
     __DATE__, __TIME__, info, copy )
+#endif
 
 /*
  * extern vars & functions
@@ -55,8 +61,14 @@
 
 extern STRPTR pi_progname;
 
-extern void call_set_prginfo(STRPTR name, STRPTR auth, int ver, int rel, int rev,
-       STRPTR rel_date, STRPTR rel_time, STRPTR infostr, STRPTR copystatus);
+extern void call_set_prginfo(STRPTR name, STRPTR auth,
+       int ver, int rel, int rev,
+       STRPTR rel_date, STRPTR rel_time,
+       STRPTR infostr, STRPTR copystatus);
+extern void call_set_prginfo2(STRPTR name, STRPTR auth,
+       int ver, int rel, int rev,
+       STRPTR rel_date, STRPTR rel_time,
+       STRPTR infostr, STRPTR copystatus);
 extern int fprintf_prginfo(FILE * stream);
 
 #ifdef AMIGA

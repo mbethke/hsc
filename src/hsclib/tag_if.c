@@ -56,7 +56,7 @@ typedef BYTE if_t;
 static VOID message_unma_else(HSCPRC * hp, HSCTAG * tag)
 {
     hsc_message(hp, MSG_UNMA_ELSE,
-                "%T not associated with %t", tag, HSC_IF_STR);
+                "unmatched %T", tag);
 }
 
 /* forward references */
@@ -645,7 +645,7 @@ BOOL handle_hsc_else(HSCPRC * hp, HSCTAG * tag)
 {
     if (is_empty(hp))
     {
-        message_unma_else(hp, tag);
+        panic("unhandled <$else>");
     }
     else
     {

@@ -20,7 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  4-Aug-1996
+ * updated: 13-Oct-1996
  * created:  6-Jan-1995
  */
 
@@ -140,26 +140,21 @@ static BOOL check_attr_option(HSCPRC * hp, STRPTR option, HSCATTR * attr, STRPTR
 
     if (!((upstrcmp(option, id)) && (upstrcmp(option, sid))))
     {
-
         DDA(fprintf(stderr, DHL "  option %s\n", id));
 
         if (value & unmasked_flags)
         {
-
             hsc_message(hp, MSG_ILLG_ATTR_FLAG,
-                        "attribute flag %q not allowed in this context",
+                        "attribute option %q not allowed in this context",
                         id);
-
         }
         else
             attr->varflag |= value;
 
         found = TRUE;
-
     }
 
     return (found);
-
 }
 
 /*

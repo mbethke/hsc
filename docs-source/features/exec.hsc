@@ -99,7 +99,7 @@ one call to <TG>$exec</TG>.</P>
 
 <H2>A more complex example</H2>
 
-If you want to create a protable hsc-source to insert a listing of a
+If you want to create a portable hsc source to insert a listing of a
 directory, you could try something like this:
 
 <$include FILE="exmpl/exec.hsc" SOURCE PRE>

@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 18-Sep-1996
+ * updated:  4-Dec-1996
  * created: 16-Jul-1995
  */
 
@@ -33,6 +33,8 @@
 #include "hsclib/uri.h"
 
 #define PARENT_URI "../"        /* string for parent dir within URIs */
+
+#define weenix jens /* TODO:remove this */
 
 /*
  * conv_path2uri
@@ -68,7 +70,7 @@ VOID conv_path2uri(EXPSTR * dest, STRPTR path)
     }
 
 #elif defined MSDOS
-    /* replace all "\" by "/" */
+    /* replace "\" by "/" */
     while (path[0])
     {
         if ((path[0] == '\\'))
@@ -92,11 +94,24 @@ VOID conv_path2uri(EXPSTR * dest, STRPTR path)
  * convert a uri to a path for local (system-dependant)
  * file system
  */
-VOID conv_uri2path(EXPSTR * dest, STRPTR uri)
+VOID conv_uri2path(EXPSTR * dest, STRPTR uri, BOOL weenix)
 {
     clr_estr(dest);
 
 #ifdef AMIGA
+    if (weenix)
+    {
+        /* convert leading "/" to ":" */
+        /* convert leading "~" to ":" */
+        if (!strncmp(uri, "/", 1)
+            || !strncmp(uri, "~/", 2)
+            || !strncmp(uri, "~", 1))
+        {
+            app_estr(dest, ":");
+            uri++;
+        }
+    }
+
     /* convert leading "../" to "/" */
     while (!strncmp(uri, PARENT_URI, strlen(PARENT_URI)))
     {
@@ -120,7 +135,7 @@ VOID conv_uri2path(EXPSTR * dest, STRPTR uri)
     }
 
 #elif defined MSDOS
-    /* convert all "/" to "\" */
+    /* replace "\" by "/" */
     while (uri[0])
     {
         if (uri[0] == '/')
@@ -133,7 +148,7 @@ VOID conv_uri2path(EXPSTR * dest, STRPTR uri)
 #elif defined UNIX
     set_estr(dest, uri);
 #else
-#error "system not supported: conv_2path"
+#error "system not supported: conv_uri2path"
 #endif
 }
 
@@ -204,7 +219,7 @@ static VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_f
         /* check if local uri exists */
         {
             EXPSTR *dest_relfname = init_estr(32);
-            conv_uri2path(dest_relfname, uri);
+            conv_uri2path(dest_relfname, uri, hp->weenix);
 
             estrcpy(dest_fname, hp->destdir);
             estrcat(dest_fname, dest_relfname);
@@ -245,7 +260,7 @@ static VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_f
         D(fprintf(stderr, DHL "exists `%s' [rel]\n", uri));
 
         /* create local filename */
-        conv_uri2path(uri_path, uri);
+        conv_uri2path(uri_path, uri, hp->weenix);
         estrcat(dest_fname, hp->destdir);
         estrcat(dest_fname, hp->reldir);
         estrcat(dest_fname, uri_path);
@@ -400,13 +415,12 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
                                     D(fprintf(stderr, DHL "  id ok\n"));
                                     break;
                                 case ERR_CDI_NoID:
-                                    hsc_message(hp, MSG_UNKN_ID,
-                                                "unknown %i", name);
+                                    hsc_msg_unknown_id(hp, NULL, name);
                                     break;
                                 case ERR_CDI_NoDocumentEntry:
                                     hsc_message(hp, MSG_NO_DOCENTRY,
                                                 "no entry for document %q "
-                                                "to check %i",
+                                              "in project data to check %i",
                                                 estr2str(dest_fname),
                                                 name);
                                     break;

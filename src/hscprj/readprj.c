@@ -44,7 +44,7 @@
 #include "hscprj/project.h"
 
 /*
- * hsc_msg_project_corrupt: display warning about
+ * hsc_msg_project_corrupt: display error message about
  * corrupt project file
  */
 static VOID hsc_msg_project_corrupt(HSCPRJ * hp, STRPTR descr)
@@ -67,7 +67,7 @@ static int x2int(char c)
 }
 
 /*
- * read_long
+ * read_long: read (unsigned) long integer value
  */
 static ULONG read_ulong(HSCPRJ * hp)
 {
@@ -291,7 +291,8 @@ static BOOL read_header(HSCPRJ * hp)
  *
  * params: hp....HSCPRJ created using new_project()
  *         inpf..input file opened using infopen();
- *               this has to be closed by you.
+ *               this has to be opened and closed by
+ *               you outside this function.
  */
 BOOL hsc_project_read_file(HSCPRJ * hp, INFILE * inpf)
 {

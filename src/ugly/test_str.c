@@ -1,31 +1,30 @@
 /*
-**
-** test_str.c
-**
-** test string functions
-**
-** (W) by Tommy-Saftwörx in 1995
-**
-*/
+ *
+ * test_str.c
+ *
+ * test string functions
+ *
+ * (W) by Tommy-Saftwörx in 1995
+ *
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "types.h"
-#include "memory.h"
-#include "string.h"
+#include "utypes.h"
+#include "umemory.h"
+#include "ustring.h"
 
-
-void test_enumstr( STRPTR str, STRPTR set, char sep, BYTE options )
+void test_enumstr(STRPTR str, STRPTR set, char sep, BYTE options)
 {
-    LONG result = strenum( str, set, sep, options );
+    LONG result = strenum(str, set, sep, options);
 
-    printf( "strenum( \"%4s\",%-16s,\"%c\",%d) -> %ld\n",
-            str, set, sep, options, result );
+    printf("strenum( \"%4s\",%-16s,\"%c\",%d) -> %ld\n",
+           str, set, sep, options, result);
 }
 
-int main( void )
+int main(void)
 {
     STRPTR nam;
 
@@ -33,36 +32,35 @@ int main( void )
 
     /* display a memory tracking report */
     /* at end of execution */
-    atexit( atexit_uglymemory );
+    atexit(atexit_uglymemory);
 
 #endif
 
-    printf( "Testing ugly string functions:\n\n" );
+    printf("Testing ugly string functions:\n\n");
 
 #if 1
     /*
-    ** test strenum:
-    */
-    test_enumstr( "SEPP", "sepp|hugo|resi", '|', STEN_NOCASE );
-    test_enumstr( "SEPP", "sepp|hugo|resi", '|', STEN_CASE );
-    test_enumstr( "HUGO", "sepp|hugo|resi", '|', STEN_NOCASE );
-    test_enumstr( "HUGO", "sepp|hugo|resi", '|', STEN_CASE );
-    test_enumstr( "hugo", "sepp|hugo|resi", '|', STEN_CASE );
-    test_enumstr( "RESI", "sepp|hugo|resi", '|', STEN_NOCASE );
-    test_enumstr( "RESI", "sepp|hugo|resi", '|', STEN_CASE );
+     * test strenum:
+     */
+    test_enumstr("SEPP", "sepp|hugo|resi", '|', STEN_NOCASE);
+    test_enumstr("SEPP", "sepp|hugo|resi", '|', STEN_CASE);
+    test_enumstr("HUGO", "sepp|hugo|resi", '|', STEN_NOCASE);
+    test_enumstr("HUGO", "sepp|hugo|resi", '|', STEN_CASE);
+    test_enumstr("hugo", "sepp|hugo|resi", '|', STEN_CASE);
+    test_enumstr("RESI", "sepp|hugo|resi", '|', STEN_NOCASE);
+    test_enumstr("RESI", "sepp|hugo|resi", '|', STEN_CASE);
 #endif
-
 
 #if 1
     /*
-    ** test strclone
-    */
-    nam = strclone( "hugo" );
-    printf( "CLONE: \"%s\"\n", nam );
-    ufreestr( nam );
+     * test strclone
+     */
+    nam = strclone("hugo");
+    printf("CLONE: \"%s\"\n", nam);
+    ufreestr(nam);
 #endif
 
-    return( 0 );
+    return (0);
 
 }
 

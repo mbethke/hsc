@@ -6,60 +6,72 @@
     QAUTHOR='The Farm, "Groovy Train"'>
 
 <$macro MSG_NOTE><A HREF=":messages.html#msg_note">Note</A></$macro>
-<$macro MSG_STYLE><A HREF=":messages.html#msg_style">Bad style</A></$macro>
+<$macro MSG_STYLE><A HREF=":messages.html#msg_style">Bad-style</A></$macro>
+<$macro MSG_PORT><A HREF=":messages.html#msg_port">Portability-problem</A></$macro>
 <$macro MSG_WARN><A HREF=":messages.html#msg_warn">Warning</A></$macro>
 <$macro MSG_ERR><A HREF=":messages.html#msg_err">Error</A></$macro>
 <$macro MSG_FERR><A HREF=":messages.html#msg_ferr">Fatal error</A></$macro>
 <$macro OPTN_IGNORE><CODE><A HREF=":options.html#ignore">IGNORE</A></CODE></$macro>
 
-<$macro msg id:string/r name:string/r class:enum("note|style|port|warning|error|fatal") undoc:bool>
-<P><DT><STRONG><$if cond=(set class)>
-<$if COND=(class="style")>bad style
+<$macro msg id:string/r name:string class:enum("note|style|port|warning|error|fatal") undoc:bool>
+<P><DT><$if COND=(undoc)><STRONG>message <(id)>:</STRONG><DD>Ununsed or undocumented.
+<$else><A NAME=("message."+id)><STRONG><$if COND=(class="style")>bad style
+<$elseif COND=(class="port")>portability problem
 <$elseif COND=(class="fatal")>fatal error
 <$else><(class)>
-</$if></$if>
-<(id)>: <(name)></STRONG>
-<DD><$if COND=(undoc)>Undocumented.</$if>
+</$if>
+<(id)>: <(name)></STRONG></A><DD></$if>
 </$macro>
 
-<$MACRO insattr>attribute <VAR>attrib</VAR></$MACRO>
-<$MACRO insent>entity &lt;<VAR>entity</VAR>&gt;</$MACRO>
-<$MACRO instag>tag &lt;<VAR>tag</VAR>&gt;</$MACRO>
-<$MACRO insendtag>end-tag &lt;<VAR>tag</VAR>&gt;</$MACRO>
-<$MACRO insval>value <VAR>value</VAR></$MACRO>
+<$MACRO insattr>attribute <I>attrib</I></$MACRO>
+<$MACRO insent>entity <I>entity</I></$MACRO>
+<$MACRO instag>tag &lt;<I>tag</I>&gt;</$MACRO>
+<$MACRO insendtag>end tag &lt;<I>tag</I>&gt;</$MACRO>
+<$MACRO insval>value <I>value</I></$MACRO>
+<$MACRO insid>id <I>id</I></$MACRO>
+<$MACRO inssval><I>value</I></$MACRO>
 
-<hsc> is able to produce lots of different warnings and
-errors when parsing html-files. The appearence looks something
-like:
+<P><hsc> is able to produce lots of different warnings and
+errors when parsing hsc-sources. The are devided into several classes,
+and there is a possibility to filter out specific messages or whole
+message classes. 
+There are also possibilities to change the rendering of messages and
+redirect them to a file, making it easy to integrate <hsc> into
+existing developer environments.
+
+<A NAME="elements"><H2>Message elements</H2></A>
+By default, messages show up as seen below:
 
 <BLOCKQUOTE>
 <CODE>file (line#, colum#): class and message-id: message</CODE>
 </BLOCKQUOTE>
 
-with
-<PRE>
-  file           input file that caused message
-  line#,         position in input file that caused error
-  colum#
-  class          one of <MSG_NOTE>, <MSG_WARN>, <MSG_ERR> or <MSG_FERR>
-  message        message text
-</PRE>
+with being<UL>
 
-This can be modified using the CLI-option
-<KBD><A HREF="options.html#msgformat">MSGFORMAT</A></KBD>.
+<LI><CODE>file</CODE> the name of the input file that caused message
+<LI><CODE>line#</CODE> and <CODE>colum#</CODE> the position in input file that caused error
+<LI><CODE>class</CODE> the message class, 
+    one of <MSG_NOTE>, <MSG_STYLE>, <MSG_PORT>, <MSG_WARN>, <MSG_ERR> or <MSG_FERR>.
+    See below for details about message classes.
+<LI><CODE>message</CODE> the message text, which consists of a description what 
+    has caused the message
+</UL>
 
-<HR>
+For example, a typical message would be:
+<$source PRE>
+    hugo.hsc (17,23): Warning 11: unknown tag <SEPP>
+</$source>
 
-<H2>Message Classes</H2>
+<A NAME="classes"><H2>Message classes</H2></A>
 
 <STRONG><A NAME="msg_note">Note</A></STRONG> is a message only for the
 users information. It can be suppressed using <OPTN_IGNORE>.
 <P>
-<STRONG><A NAME="msg_style">Bad style</A></STRONG> informs the user that
+<STRONG><A NAME="msg_style">Bad-style</A></STRONG> informs the user that
 his altough legal html-code includes constructs that indicate a bad style.
 It can be suppressed using <OPTN_IGNORE>.
 <P>
-<STRONG><A NAME="msg_port">Portability problem</A></STRONG> informs the
+<STRONG><A NAME="msg_port">Portability-problem</A></STRONG> informs the
 user that his altough legal html-code includes constructs can lead to problems
 on old or buggy browsers.
 It can be suppressed using <OPTN_IGNORE>.
@@ -77,11 +89,31 @@ terrible has happened and there is no way to continue the conversion.
 No output is written.
 <P>
 
+<A NAME="options"><H2>Message options</H2></A>
+
+There are several CLI options to modify the behavior of <hsc>'s messages:
+<UL>
+<LI><op_ignore> can be used to suppress single messages or whole 
+message classes, if you are not interested in them
+<LI><KBD><A HREF="options.html#msgformat">MSGFORMAT</A></KBD> specifies a
+template how to use message elements
+<LI><KBD><A HREF="options.html#msgformat">MSGFILE</A></KBD> is used to 
+redirect messages into a file, where they for example can be processed
+by some message parser that controls your editor
+<LI><KBD><A HREF="options.html#msgformat">MSGANSI</A></KBD> tells <hsc>
+to use some ANSI escape sequences to make messages easier to read, if
+you only let them show up on the screen (and don't use any IDE)
+</UL>
+
 <HR>
 
-<STRONG>Note:</STRONG> I've already started to collect the messages, but
-this list is not yet complete.
+<A NAME="list"><H2>List of messages</H2></A>
 
+Below you can find a list of messages that might show up when processiong
+hsc-sources. Most of them also include a short explanation what could
+have caused the problem and how to fix it.
+However, this is not a html-tutorial. To fully
+understand these messages requires some experience from the user.
 <DL>
 <MSG ID="1" CLASS="warning" NAME="unable to open project-file">
 
@@ -108,9 +140,17 @@ already ends; <hsc> tells you what it still expects to come.
 An input file could not been opened. A more detailed message that tells
 you why is displayed, too.
 
-<MSG ID="7" CLASS="error" NAME="" UNDOC>
+<MSG ID="7" CLASS="note" NAME="stripped <instag>">
+Notifies user that a tag has been removed. This usually happens
+because the user requested this with one of the CLI-options.
+
 <MSG ID="8" CLASS="error" NAME="" UNDOC>
-<MSG ID="9" CLASS="error" NAME="" UNDOC>
+<MSG ID="9" CLASS="style" NAME="expected heading <TG>Hx</TG>">
+A heading should not be more than one level below the heading
+which preceded it. That is, an <TG>H3</TG> element should not
+follow an <TG>H1</TG> element directly. The first heading
+showing up in a document should be <TG>H1</TG>.
+
 <MSG ID="10" CLASS="style" NAME='"click here" syndrome detected'>
 A keyword defined with the special attribute <CODE>HSC.CLICK-HERE</CODE>
 has been found within the text inside an anchor specification.<P>
@@ -148,13 +188,22 @@ A tag that is required for every document is missing.
 You called an start-tag, but didn't end it. Insert the required
 end-tag.
 
-<MSG ID="17" CLASS="error" NAME="" UNDOC>
+<MSG ID="17" CLASS="error" NAME="unknown tag modifier <I>/modifier</I>">
+
+You have used an unknown <A HREF=":macro/flag.html">modifier</A> 
+to define the characteristics of an tag or macro.
+
 <MSG ID="18" CLASS="warning" NAME="unknown entity">
 You used an entity, that <hsc> doesn't know. This can happen if you
 made a typo, or the entity has not been defined within
-<FILE>hsc.prefs</FILE>.
+<hsc.prefs>.
 
-<MSG ID="19" CLASS="error" NAME="" UNDOC>
+<MSG ID="19" CLASS="warning" NAME='";" expected'>
+
+A <semicolon> has been expected, but didn't occure. For instance,
+you could have an entity <qq><CODE>&amp;uuml</CODE></qq> instead of
+<qq><CODE>&amp;uuml;</CODE></qq>.
+
 <MSG ID="20" CLASS="error" NAME="reference to unknown attribute">
 You referered to an attribute that doesn't exist at all.
 
@@ -171,31 +220,51 @@ value has been set for. Usually, you try to refer to an attribute
 inside a macro, that no value has been passed to within the call
 of the macro.
 
-<MSG ID="24" CLASS="error" NAME="" UNDOC>
+<MSG ID="24" CLASS="warning" NAME="attribute option <qq><I>option</I></qq> not allowed in this context">
+You have used an <A HREF=":macro/attrib.html#modifier">option</A>
+to define the characteristics of an attribute, which is not allowed to
+appear at this location.
+
 <MSG ID="25" CLASS="style" NAME="<TG>BLINK</TG> sucks">
 Some browser support the non-html-tag <TG>BLINK</TG>. It is used
 to make text blinking, which annoys many users. Additionally, most
 of them don't know how to configure their browser that it doesn't
 blink, so you really should avoid it.
 
-<MSG ID="26" CLASS="error" NAME="" UNDOC>
-<MSG ID="27" CLASS="error" NAME="" UNDOC>
+<MSG ID="26" CLASS="error" NAME="default value for <insattr> already set">
+You tried to assign more than one default value within an attribute declaration.
+For instance, like in
+<$source PRE>
+    <$define HUGO:string="hugo"="or sepp?">
+</$source>
+Remove the part corresponding to <qq><CODE>="or sepp?"</CODE></qq>.
+
+<MSG ID="27" CLASS="error" NAME="attempt to modify constant <insattr>">
+You tried to assign a new value to an attribute declared as constant.
+That is, the <A HREF="macro/attrib.html#modifier">attribute option</A>
+<CODE>/CONST</CODE> has been specified when defining it earlier.
+
 <MSG ID="28" CLASS="error" NAME="" UNDOC>
-<MSG ID="29" CLASS="error" NAME="" UNDOC>
+<MSG ID="29" CLASS="error" NAME="tag &lt;A&gt; without HREF or NAME">
+An anchor tag has been specified without one of the required attributes
+<CODE>HREF</CODE> or <CODE>NAME</CODE>.
 
 <MSG ID="30" CLASS="error" NAME='unmatched "&gt;"'>
 A "greater than" sign appeared inside the text. You should write
 "<CODE>&amp;gt;</CODE>" instead. This can also happen, if you made
 an error calling a tag, and <hsc>'s parser couln't recover.
 
-<MSG ID="31" CLASS="error" NAME="" UNDOC>
+<MSG ID="31" CLASS="error" NAME='expected "<I>element_expected</I>", found "<I>element_found</I>"'>
+A syntax element did not occure where it has been expected.
+
 <MSG ID="32" CLASS="error" NAME="" UNDOC>
-<MSG ID="33" CLASS="error" NAME="" UNDOC>
+<MSG ID="33" CLASS="warning" NAME="linefeed found inside string">
+
 <MSG ID="34" CLASS="error" NAME="" UNDOC>
 <MSG ID="35" CLASS="error" NAME="unknown <insval> for enumerator <insattr>">
 You tried to set an enumerator to a value it doesn't support.
 
-<MSG ID="36" CLASS="error" NAME="" UNDOC>
+<MSG ID="36" CLASS="error" NAME="unexpected end of line">
 
 <MSG ID="37" CLASS="warning" NAME="<instag> is obsolete">
 The tag was defined within some old html-version, but should
@@ -205,46 +274,98 @@ not be used any more (eg. <TG>LISTING</TG>).
 This tag is no legal html-tag and is only supportet by special
 browsers.
 
-<MSG ID="39" CLASS="error" NAME="" UNDOC>
-<MSG ID="40" CLASS="error" NAME="" UNDOC>
-<MSG ID="41" CLASS="error" NAME="" UNDOC>
-<MSG ID="42" CLASS="error" NAME="" UNDOC>
+<MSG ID="39" CLASS="error" NAME="<I>custom user message</I>">
+This text and class of this message can be controlled by the
+user using <A HREF="features/spctags.html#message"><TG>$message</TG></A>.
+
+<MSG ID="40" CLASS="fatal" NAME="can not open preferences file">
+The file <hsc.prefs> could not be found at any of the 
+<A HREF="features/prefs.html#search">expected locations</A>.
+
+<MSG ID="41" CLASS="warning" NAME="unknown environment variable <qq><I>envvar</I></qq>">
+The function <ln_GetEnv> 
+could not access the environment variable specified an returned an 
+empty value.
+
+<MSG ID="42" CLASS="error" NAME="missing value for <insattr>">
+Non-boolean attributes require an value set.
+
 <MSG ID="43" CLASS="error" NAME="unknown attribute option <I>option</I>">
 You defined a new attribute, but used an
-<A HREF=":macro/attrib.html#flags">option</A> that is unknown.
+<A HREF=":macro/attrib.html#modifier">option</A> that is unknown.
 
 <MSG ID="44" CLASS="error" NAME="required <insattr> missing">
 An attribute that is required has not been set within the call
 of a tag or macro.
 
-<MSG ID="45" CLASS="error" NAME="" UNDOC>
+<MSG ID="45" CLASS="warning" NAME="unexpected value for <insattr>: expected <qq><inssval></qq>, found <qq><inssval></qq>">
+This message can show up if you have specified <op_getsize> when invoking <hsc>, 
+and have set the attribute <CODE>WIDTH</CODE> and/or <CODE>HEIGHT</CODE> by
+hand. It denotes that the values you have used differ from those <hsc> has
+evaluated from the image data.
+
 <MSG ID="46" CLASS="note" NAME="replaced <I>char</I> by <I>entity</I>">
 Informs you that a special character (non-7-bit-ASCII) has been replaced
 by it's corresponding entity.
 
-<MSG ID="47" CLASS="error" NAME="" UNDOC>
-<MSG ID="48" CLASS="error" NAME="" UNDOC>
-<MSG ID="49" CLASS="error" NAME="" UNDOC>
-<MSG ID="50" CLASS="error" NAME="" UNDOC>
-<MSG ID="51" CLASS="error" NAME="" UNDOC>
-<MSG ID="52" CLASS="error" NAME="" UNDOC>
-<MSG ID="53" CLASS="error" NAME="" UNDOC>
+<MSG ID="47" CLASS="error" NAME="illegal white space">
+A white space occured at a place where it was not supposed to.
+
+<MSG ID="48" CLASS="port" NAME="line feed inside sgml-comment">
+<MSG ID="49" CLASS="port" NAME='"&gt;" inside sgml-comment'>
+<MSG ID="50" CLASS="port" NAME="sgml-comment ends inside quotes">
+The messages#47 to #50 touch problems that are known bugs of 
+several browsers. A general comment on sgml-comments: Try to avoid
+them, use the <A HREF="features/spctags.html#comments"><TG>* <I>comment</I> *</TG></A>
+tag instead.
+
+<MSG ID="51" CLASS="warning" NAME='no entry for document "<I>document</I>" in project data to check <insid>'>
+This message is active only if you specified a project file when invoking <hsc> using
+the option <op_prjfile>. It tell you that a reference to a local id within a
+document could not be checked because the document linked to is not mentioned
+in the project file.
+
+<P>Usually, this happens when you did not process the above mentioned document
+with a project file specified before. Do not worry about that too much,
+after processing all documents of your project at least once, this message
+usually does not show up any more.</P>
+
+If it still is there, then you are refering to documents that are part of
+none or another project using another project-file; if so, there is no 
+work-around for this case.
+
+<MSG ID="52" CLASS="error" NAME="" UNDOC><* replace spec. char *>
+<MSG ID="53" CLASS="error" NAME="unmatched <TG>$else</TG>">
+An <TG>$else</TG> tag has been at an unexptected position. Usually,
+a single preceding <TG>$if</TG> has two or more corresponging <TG>$else</TG> 
+tags assigned.
 
 <MSG ID="54" CLASS="warning" NAME="calling external command returned <I>value</I>">
-
-You've called a shell-command using <TG>$exec</TG> and it returned a
+You have invoked a shell-command using <ln_exec> and it returned a
 value unequal to zero, which usually denotes an error while processing
 the command. For error analysis, look at the output that the command
 (hopefully) has made.
 
-<MSG ID="55" CLASS="error" NAME="" UNDOC>
-<MSG ID="56" CLASS="error" NAME="" UNDOC>
-<MSG ID="57" CLASS="error" NAME="" UNDOC>
+<MSG ID="55" CLASS="port" NAME="empty sgml-comment">
+An element of the form <TG>!</TG> has been detected.
+
+<MSG ID="56" CLASS="port" NAME="sgml-comment consists of a single word">
+A sgml-comment consisting of a single word, for instance 
+<qq><TG>!--sepp--</TG></qq>,
+has been detected. Note that there are no blanks preceding/succeding 
+<qq>sepp</qq>)
+
+<MSG ID="57" CLASS="error" NAME="no start tag for <insendtag>">
+An end tag has been detected without it's corresponding start tag
+occuring before.
+
 <MSG ID="58" CLASS="port" NAME="icon-<insent> found">
+Icon-entities are not (yet) widly supported.
 
-Icon-entities are (not-yet) widly supported.
+<MSG ID="59" CLASS="warning" NAME="redefined <instag>">
+You have just redefined a tag or macro that has already been
+declared before. The previous declaration will be thrown away.
 
-<MSG ID="59" CLASS="error" NAME="" UNDOC>
 <MSG ID="60" CLASS="error" NAME="<instag> must be inside <instag>">
 Before you are allowed to use the first tag, the second tag has to
 occure before. Example: <TG>INPUT</TG> may only occure
@@ -265,8 +386,18 @@ You redefined an alredy existing attribute. If this occures during
 the definition of a new macro, you just tried to give two arguments the
 same name.
 
-<MSG ID="64" CLASS="error" NAME="" UNDOC>
-<MSG ID="65" CLASS="error" NAME="" UNDOC>
+<MSG ID="64" CLASS="error" NAME='illegal attribute identifier "<I>attribute_name</I>"'>
+You have tried to use an attribute name which contains characters not 
+allowed for that. Legal characters for attribute names are letters, digits, 
+<underscore>, <period> and <hyphen>.
+
+<MSG ID="65" CLASS="error" NAME='unknown binary operator "<I>operator</I>"'>
+Within an 
+<A HREF="features/expressions.html">expression</A>,
+you have used an binary operator that is not
+one of those mentioned in the 
+<A HREF="features/expressions.html#operators">list of operators</A>.
+
 <MSG ID="66" CLASS="error" NAME="illegal end-tag">
 You tried to use a simple tag as a container, for example <TG>/IMG</TG>
 
@@ -278,51 +409,86 @@ of a link destination.
 
 <MSG ID="69" CLASS="error" NAME="illegal entity definition">
 
-Somethings wrong with a <ln_deftag> or <ln_deficon> call.
+Somethings wrong with a <ln_defent> or <ln_deficon> call.
 
-<MSG ID="70" CLASS="error" NAME="" UNDOC>
-<MSG ID="71" CLASS="error" NAME="" UNDOC>
+<MSG ID="70" CLASS="warning" NAME="can not strip special <instag>">
+You have tried to strip one of <hsc>'s 
+<A HREF="features/spctags.html">special tags</A> using the CLI-option
+<op_striptags>. This does not make much sense, because all these tags
+will not show up in the output anyway.
+
+<MSG ID="71" CLASS="error" NAME="illegal numeric <insval> for <insattr>/entity">
+A numeric value must only consist of letters. Only integer values are
+allowed, therefor even a <period> must not be used.
+
 <MSG ID="72" CLASS="warning" NAME="illegal color value">
 
-A color value must fit the template `#rrggbb' or be one
-of the values declared in the special attribute
+A color value must fit the template <qq><CODE>#rrggbb</CODE></qq> 
+or be one of the values declared in the special attribute
 <A HREF=":features/spcattr.html#colornames"><CODE>HSC.COLOR-NAMES</CODE></A>
 defined in <hsc.prefs>
 
 <MSG ID="73" CLASS="error" NAME="" UNDOC>
-<MSG ID="74" CLASS="error" NAME="" UNDOC>
-<MSG ID="75" CLASS="error" NAME="" UNDOC>
+<MSG ID="74" CLASS="warning" NAME="unknown id <insid>">
+
+You forgot to specify the ID mentioned using <TG>A NAME=..</TG>,
+or just made a typo.
+
+<MSG ID="75" CLASS="warning" NAME="local id <insid> already declared">
+
+You tried to redfine an ID that has already been declared before within
+the current document.
+
 <MSG ID="76" CLASS="style" NAME="frames are disgusting">
 
 This message should need no comment; anyway, read 
 <A HREF="http://www.ummed.edu:8000/pub/i/ijosh/frames/">Why Frames Suck</A> 
 for more details.
 
-<MSG ID="77" CLASS="error" NAME="" UNDOC>
+<MSG ID="77" CLASS="note" NAME="replacing icon-entity">
+
+A icon-entity has been found is was replaced by an <TG>IMG</TG>.
+This message will only show up if you have passed the CLI option
+<op_iconbase>.
+
 <MSG ID="78" CLASS="style" NAME="succeeding white-space for <instag>">
 
 See below.
 
 <MSG ID="79" CLASS="style" NAME="preceding white-space for <insendtag>">
 
-These two messages point out that instead of (read the underscore (`_')
+These two messages point out that instead of (read the <underscore>)
 as a blank)
 
 <BLOCKQUOTE>
 <TG>STRONG</TG>__important__<TG>/STRONG</TG>
 </BLOCKQUOTE>
 
-you should better use
+you better should use
 
 <BLOCKQUOTE>
 <TG>STRONG</TG>important<TG>/STRONG</TG>
 </BLOCKQUOTE>
 
-It only affects the tags <TG>A</TG>, <TG>TITLE</TG>, headings and
+It only affects tags like <TG>A</TG>, <TG>TITLE</TG>, headings and
 physical/locigal styles.
 
+<MSG ID="80" CLASS="error" NAME="" UNDOC>
+<MSG ID="81" CLASS="warning" NAME="value for <insattr> requires quotes">
 
+If a attribute value contains any characters other then letters,
+digits, <period> or <hyphen>, it needs to be quoted.
+
+<MSG ID="82" CLASS="note" NAME="changed quotes for <insattr> from [<I>style</I>] to [<I>style</I>]">
+
+The quote style has been changed for a specific attribute. 
+This message will only show up if you have passed the CLI option
+<op_quotestyle>.
+
+<*
+<MSG ID="83" CLASS="error" NAME="" UNDOC>
+<MSG ID="84" CLASS="error" NAME="" UNDOC>
+*>
 </DL>
 
 </WEBPAGE>
-

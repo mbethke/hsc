@@ -7,6 +7,7 @@ STRINGMERGE
 ERRORREXX
 NOMULTIPLEINCLUDES
 OPTIMIZERSIZE
+NOOPTIMIZERINLINE
 SMALLCODE
 SMALLDATA
 MAPHUNK
@@ -24,6 +25,7 @@ LIBRARY=hscprj/readprj.o
 LIBRARY=hscprj/writeprj.o
 LIBRARY=hscprj/document.o
 LIBRARY=hscprj/project.o
+LIBRARY=hscprj/license.o
 LIBRARY=ugly/infile.o
 LIBRARY=ugly/prginfo.o
 LIBRARY=ugly/uargs.o
@@ -32,3 +34,5 @@ LIBRARY=ugly/umemory.o
 LIBRARY=ugly/fname.o
 LIBRARY=ugly/expstr.o
 LIBRARY=ugly/ustring.o
+LIBRARY=ugly/ustrlist.o
+LIBRARY=ugly/ufile.o

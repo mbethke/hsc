@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 30-Jul-1996
+ * updated: 17-Nov-1996
  * created: 29-Jul-1995
  */
 
@@ -43,12 +43,20 @@
  * result: TRUE, if ch is a 'normal' ch
  *
  * NOTE: this function is used as is_ws-methode
- *       for the infile class
+ *       for the INFILE class
  */
 BOOL hsc_whtspc(int ch)
 {
-    if (strchr(" \t", ch) != NULL)
+    if ((ch == ' ')
+        || (ch == '\n')
+#if (!defined MSDOS || defined HSC_INTO)
+        || (ch == '\r')
+#endif
+        || (ch == '\t')
+        )
+    {
         return TRUE;
+    }
     else
         return FALSE;
 }
@@ -62,25 +70,20 @@ BOOL hsc_whtspc(int ch)
  * result: TRUE, if ch is a 'normal' ch
  *
  * NOTE: this function is used as is_nc-methode
- *       for the infile class
+ *       for the INFILE class
  */
 BOOL hsc_normch(int ch)
 {
-#if 0
-    if (isalnum(ch) || (ch == '_') || (ch == '-') || (ch == '.'))
-        return TRUE;
-    else
-        return FALSE;
-#else
     if (((ch >= '0') && (ch <= '9'))
         || ((ch >= 'a') && (ch <= 'z'))
         || ((ch >= 'A') && (ch <= 'Z'))
         || (ch == '_') || (ch == '-') || (ch == '.')
         )
+    {
         return TRUE;
+    }
     else
         return FALSE;
-#endif
 }
 
 /*
@@ -182,18 +185,11 @@ BOOL parse_wd(HSCPRC * hp, STRPTR expstr)
 
     if (expstr)
     {
-
-        STRPTR nw;
-
-        /* skip LFs */
-        do
-            nw = infgetw(inpf);
-        while (nw && !strcmp(nw, "\n"));
+        STRPTR nw = infgetw(inpf);
 
         /* check for expeted word */
         if (!nw || upstrcmp(nw, expstr))
         {
-
             if (!nw)
                 nw = "<EOF>";
 
@@ -201,6 +197,10 @@ BOOL parse_wd(HSCPRC * hp, STRPTR expstr)
                         "expected %q, found %q", expstr, nw);
             value = FALSE;
         }
+    }
+    else
+    {
+        panic("no data to expect");
     }
 
     return (value);

@@ -10,29 +10,38 @@
           +"You gotta eat up all you get")
     QAUTHOR='Soup Dragons, "Beauty Freak"'*>
 
-Some tools that can be useful in combination with <hsc>:
+Some stuff that should be useful for project-management:
 
 <UL>
-<LI>The Amiga-port for <EXEC>GNU-make</EXEC> can be found at
-    <A HREF="http://wuarchive.wustl.edu/~aminet/dev/c">aminet:dev/c/make*.lha</A>.
-<LI>The sources for a portable version of <EXEC>LHA</EXEC> are available from
-    <A HREF="http://wuarchive.wustl.edu/~aminet/misc/unix/lha_1_00.tar.Z">aminet:misc/unix/lha_1_00.tar.Z</A>,
-    if you have problems decompressing the archives of <hsc>.
+<LI><AMINET FILE="dev/c/make_bin.lha">, an Amiga-port of <EXEC>GNUmake</EXEC>.
+    different to several other Unix-ports, no <CODE>ixemul.library</CODE>
+    is required.
+<LI><AMINET FILE="dev/gcc/" TEXT="aminet:dev/gcc/gccXXXdoc.lha">, which contains
+    (among other documents) the manual to <EXEC>GNUmake</EXEC> in 
+    AmigaGuide-format (the full filename depends on the version of 
+    <EXEC>gcc</EXEC>).
 </UL>
 
 As <hsc>'s syntax check is quite small and clumsy, maybe you should also
 have a look at one of the following sources:
 
 <UL>
-<LI><A HREF="http://wuarchive.wustl.edu/~aminet/dev/lang/sgmls.readme">SGMLS</A>
+<LI><AminetReadMe FILE="dev/lang/sgmls.readme" TEXT="SGMLS">
     - Amiga port, source included; available from
-    <A HREF="http://wuarchive.wustl.edu/~aminet/dev/lang/sgmls.lha">aminet:dev/lang/sgmls.lha</A>;
-    for those who insist on using a DTD.
+    <Aminet FILE="dev/lang/sgmls.lha">; for those who insist on using a DTD.
 <LI><WebLint>, a Perl-script that is even more cryptic to configure
-    than <hsc>. And it's Perl.. (<(HSC.ANCHOR)>)
+    than <hsc>. And it's Perl.. würg, kotz, reiha.. (<(HSC.ANCHOR)>)
 <LI><A HREF="http://www.webtechs.com/html-val-svc/">HalSoft's
     validation service</A> maybe provides the most competent syntax-check,
     but most likely the slowest. (<(HSC.ANCHOR)>)
+</UL>
+
+To use Un*x-alike filenames within AmigaOS, there are numerous tools 
+available. For example, you can use
+<UL>
+<LI><Aminet FILE="dev/gcc/ixpath.lha"> - CLI only, source code included
+<LI><Aminet FILE="util/boot/" TEXT="util/boot/DosWedgeXX"> - implemeted as
+    a commodity
 </UL>
 
 And some resources that have been quite useful during the development of <hsc>:

@@ -20,7 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 30-Jul-1996
+ * updated: 15-Nov-1996
  * created:  3-Jul-1994
  *
  */
@@ -56,11 +56,11 @@ void del_arginfo(APTR data)
 
         /* type dependent cleanup */
         if (arg->ai_type == ARG_ENUM)
-            ufree(arg->ai_misc1.ai_enum);
+            ufreestr(arg->ai_misc1.ai_enum);
 
         /* cleanup entities */
-        ufree(arg->ai_id);
-        ufree(arg->ai_help);
+        ufreestr(arg->ai_id);
+        ufreestr(arg->ai_help);
         arg->ai_type = 0;
         arg->ai_dest = NULL;
         arg->ai_func = NULL;

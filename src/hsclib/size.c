@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 27-Jul-1996
+ * updated:  8-Nov-1996
  * created:  7-Jan-1996
  */
 
@@ -61,26 +61,42 @@ static UBYTE msof[] =
  */
 static VOID try_setattr(HSCPRC * hp, HSCVAR * attr, ULONG value)
 {
-    if (attr && !get_vartext(attr))
+    if (attr)
     {
-        set_vartext(attr, long2str(value));
+        STRPTR old_value = get_vartext(attr);
+        STRPTR new_value = long2str(value);
+        if (!old_value)
+        {
+            /* set new value */
+            set_vartext(attr, new_value);
 
-        /* append attribute name and "=" */
-        app_estr(hp->tag_attr_str, " ");
-        app_estr(hp->tag_attr_str, attr->name);
-        app_estr(hp->tag_attr_str, "=");
+            /* append attribute name and "=" */
+            app_estr(hp->tag_attr_str, " ");
+            app_estr(hp->tag_attr_str, attr->name);
+            app_estr(hp->tag_attr_str, "=");
 
-        /* append quotes and value */
-        if ((hp->quotemode == QMODE_KEEP) || (hp->quotemode == QMODE_DOUBLE))
-            app_estrch(hp->tag_attr_str, '\"');
-        else if (hp->quotemode == QMODE_SINGLE)
-            app_estrch(hp->tag_attr_str, '\'');
-        app_estr(hp->tag_attr_str, long2str(value));    /* append value */
-        if ((hp->quotemode == QMODE_KEEP) || (hp->quotemode == QMODE_DOUBLE))
-            app_estrch(hp->tag_attr_str, '\"');
-        else if (hp->quotemode == QMODE_SINGLE)
-            app_estrch(hp->tag_attr_str, '\'');
+            /* append quotes and value */
+            if ((hp->quotemode == QMODE_KEEP) || (hp->quotemode == QMODE_DOUBLE))
+                app_estrch(hp->tag_attr_str, '\"');
+            else if (hp->quotemode == QMODE_SINGLE)
+                app_estrch(hp->tag_attr_str, '\'');
+            app_estr(hp->tag_attr_str, long2str(value));        /* append value */
+            if ((hp->quotemode == QMODE_KEEP) || (hp->quotemode == QMODE_DOUBLE))
+                app_estrch(hp->tag_attr_str, '\"');
+            else if (hp->quotemode == QMODE_SINGLE)
+                app_estrch(hp->tag_attr_str, '\'');
 
+        }
+        else
+        {
+            /* validate old value */
+            if (strcmp(old_value, new_value))
+            {
+                hsc_message(hp, MSG_UNEX_ATTR_VALUE,
+                            "unexpected value for %A: expected %q, found %q",
+                            attr, new_value, old_value);
+            }
+        }
     }
 }
 
@@ -120,11 +136,13 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
         STRPTR filetype = NULL;
         FILE *fref = NULL;      /* file link references to */
         STRARR id_PNG[8] =
-        {137, 80, 78, 71, 13, 10, 26, 10};      /* PNG image header */
+        {
+            137, 80, 78, 71, 13, 10, 26, 10
+        };                      /* PNG image header */
 
         conv_hscuri2file(hp, srcpath, srcuri);
 
-        DSZ(fprintf(stderr, DHL "   uri : \"%s\"\n**    path: \"%s\"\n",
+        DSZ(fprintf(stderr, DHL "   uri : \"%s\"\n" DHL "   path: \"%s\"\n",
                     srcuri, estr2str(srcpath)));
 
         fref = fopen(estr2str(srcpath), "r");
@@ -153,10 +171,11 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                         BOOL is_msof = FALSE;
                         int j = 0;
 
-                        DSZ(printf("%04x: %02x %02x: (%02x%02x %02x%02x) ",
-                                   (ULONG) i, buf[i], buf[i + 1],
-                                   buf[i + 2], buf[i + 3],
-                                   buf[i + 4], buf[i + 5]));
+                        DSZ(fprintf(stderr,
+                                    "%04lx: %02x %02x: (%02x%02x %02x%02x) ",
+                                    (ULONG) i, buf[i], buf[i + 1],
+                                    buf[i + 2], buf[i + 3],
+                                    buf[i + 4], buf[i + 5]));
 
                         /* check if marker is of required type */
                         while (!is_msof && msof[j])
@@ -214,8 +233,14 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                 13 + use_global_colormap * 3 * (1 << pixeldepth);
                 BOOL fucked_up = FALSE;
 
+                DSZ(fprintf(stderr, DHL "  buf=%d: gcolmap=%ld, pxldep=%ld\n",
+                            buf[10], use_global_colormap, pixeldepth));
+
                 while (!fucked_up && (buf[startimg] != ','))
                 {
+                    DSZ(fprintf(stderr, DHL "  %04lx: id=%02x\n",
+                                startimg, buf[startimg]));
+
                     if (buf[startimg] == '!')
                     {
                         UBYTE blksize = 0;
@@ -225,13 +250,10 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                             /* graphic control extensions */
                             /* check if transparent */
                             transparent = (buf[startimg + 3] & 0x01);
-
-                            DDA(
-                                   {
-                                   if (transparent)
-                                   fprintf(stderr, DHL "  (transparent)\n");
-                                   }
-                            );
+                            if (transparent)
+                            {
+                                DDA(fprintf(stderr, DHL "  (transparent)\n"));
+                            }
                         }
 
                         /* skip all blocks */
@@ -255,6 +277,8 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                     else
                     {
                         panic("unknown gif-block");
+                        DSZ(fprintf(stderr, "  id='%x', index=%ld/\n",
+                                    buf[startimg], startimg));
                         fucked_up = TRUE;
                     }
                 }
@@ -266,11 +290,16 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                 else
                 {
                     /* been sucessful */
+                    DSZ(fprintf(stderr, DHL "  %04lx: id=%02x\n",
+                                startimg, buf[startimg]));
+
                     filetype = "GIF";
                     width = buf[startimg + 5] + 256 * buf[startimg + 6];
                     height = buf[startimg + 7] + 256 * buf[startimg + 8];
                     progressive = (0 != (buf[startimg + 9] & (1 << 6)));
-                    DDA(fprintf(stderr, DHL "  width : %lu\nheight: %lu\n",
+                    DDA(fprintf(stderr,
+                                DHL "  width : %lu\n"
+                                DHL "  height: %lu\n",
                                 width, height));
                 }
             }

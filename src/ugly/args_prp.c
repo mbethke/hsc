@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 30-Jul-1996
+ * updated: 15-Nov-1996
  * created:  3-Jul-1994
  *
  *===================================================================
@@ -146,7 +146,7 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
         do
         {
 
-            ufree(nxtdef);
+            ufreestr(nxtdef);
             nxtdef = va_arg(ap, STRPTR);        /* get next definition */
 
             /* clone nxtdef: this is necessary because on unix-systems, */
@@ -406,11 +406,12 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
         while (nxtdef && no_preperr);
 
         /* free last value of nxtdef */
-        ufree(nxtdef);
+        ufreestr(nxtdef);
 
+#if 0
         while (nxtdef)          /* flush arguments */
             nxtdef = va_arg(ap, STRPTR);        /* (in error case) */
-
+#endif
         va_end(ap);
 
     }

@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "types.h"
+#include "utypes.h"
 #include "prginfo.h"
 
 void main( void )

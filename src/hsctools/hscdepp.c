@@ -1,7 +1,7 @@
 /*
  * hscdepp
  *
- * Dependency generator for hsc-project
+ * hsc dependency procreator
  *
  * Copyright (C) 1996  Thomas Aglassinger
  *
@@ -29,9 +29,9 @@
  *
  *-------------------------------------------------------------------
  *
- * hscdepp/hscdepp.c
+ * hsctools/hscdepp.c
  *
- * updated:  8-Sep-1996
+ * updated: 17-Nov-1996
  * created:  8-Jul-1996
  */
 
@@ -40,6 +40,9 @@
 #include <errno.h>
 #include <string.h>
 #include <time.h>
+
+/* include revision data */
+#include "hsctools/depp_rev.h"
 
 /* ugly includes */
 #include "ugly/ustring.h"
@@ -53,9 +56,7 @@
 /* hsclib includes */
 #include "hscprj/document.h"
 #include "hscprj/project.h"
-
-/* include revision data */
-#include "hscdepp/hscdepp_rev.h"
+#include "hscprj/license.h"
 
 #ifdef AMIGA
 /* AmigaOS version string
@@ -159,31 +160,6 @@ static BOOL hscdepp_nomem_handler(size_t size)
 VOID msg_corrupt_pf(HSCPRJ * hp, STRPTR reason)
 {
     fprintf(stderr, "project-file corrupt: %s\n", reason);
-}
-
-/*
- * show_license
- *
- * display short description of GNU GPL
- */
-static VOID show_license(VOID)
-{
-    STRPTR license =            /* the usual boring text */
-    "\nThis program is free software; you can redistribute it and/or modify\n"
-    "it under the terms of the GNU General Public License as published by\n"
-    "the Free Software Foundation; either version 2 of the License, or\n"
-    "(at your option) any later version.\n\n"
-
-    "This program is distributed in the hope that it will be useful,\n"
-    "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-    "GNU General Public License for more details.\n\n"
-
-    "You should have received a copy of the GNU General Public License\n"
-    "along with this program; if not, write to the Free Software\n"
-    "Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\n";
-
-    fprintf(stderr, license);
 }
 
 /*

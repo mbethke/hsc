@@ -2,10 +2,17 @@
     PREV=":features/absuris.html"
     NEXT=":features/rplcent.html">
 
+Macros are a powerful feature which enables you to create
+shortcuts for often used text. As you can also pass arguments
+to macros, it is even possible to create templates for whole
+pages.
+
+<H2>General syntax</H2>
+
 Macros can be defined like
 
 <BLOCKQUOTE><CODE>&lt;$MACRO</CODE> <I>MacroName</I>
-  [ <I><A HREF="flag.html">flags</A></I> ]
+  [ <I><A HREF="flag.html">modifiers</A></I> ]
   [ <I><A HREF="attrib.html">attributes</A></I> ]
   <CODE>&gt;</CODE><BR>
 
@@ -94,7 +101,6 @@ which will give the button seen below:<P>
 Note that the value of <CODE>NXTREF</CODE> is passed to the <CODE>HREF</CODE>
 attribute within the <TG>A</TG> tag when the macro is extracted.<P>
 
-
 If you wonder, what <CODE>HREF=(NxtRef)</CODE> (see above) should
 mean: This sets <CODE>HREF</CODE> with the value stored in
 <CODE>NxtRef</CODE>. For details, read the section about
@@ -112,4 +118,3 @@ To make your macros more powerful and flexible, you can use
 <P>
 
 </WEBPAGE>
-

@@ -19,7 +19,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *  updated: 31-Aug-1996
+ *  updated: 13-Oct-1996
  *  created:  3-Aug-1995
  */
 
@@ -36,28 +36,29 @@
  *  handle_anchor
  *
  *  handle tag <A>:
- *  - check for HREF or NAME set
+ *  - check for HREF set
  *  - update value for attribute HSC.ANCHOR
- *
- *  TODO: handle NAME="xx"
  */
 BOOL handle_anchor(HSCPRC * hp, HSCTAG * tag)
 {
     HSCVAR *vhref = find_varname(tag->attr, "HREF");
     HSCVAR *vname = find_varname(tag->attr, "NAME");
+    HSCVAR *vid   = find_varname(tag->attr, "ID");
     STRPTR href = NULL;
     STRPTR name = NULL;
+    STRPTR id = NULL;
 
     /* set attribute values */
     if (vhref)
         href = vhref->text;
     if (vname)
         name = vname->text;
+    if (vid)
+        id = vid->text;
 
     /* tell parser that he is inside an anchor */
     if (href)
     {
-
         HSCATTR *anchor_attr = find_varname(hp->defattr, ANCHOR_ATTR);
 
         if (anchor_attr)
@@ -73,12 +74,10 @@ BOOL handle_anchor(HSCPRC * hp, HSCTAG * tag)
     }
 
     /* check for both HREF and NAME missing */
-    if ((!href) && (!name))
+    if ((!href) && (!name) && (!id))
     {
-
         hsc_message(hp, MSG_ANCH_NO_NMHR,
-                    "%T without HREF or NAME", tag);
-
+                    "%T without HREF, NAME or ID", tag);
     }
 
     return (TRUE);

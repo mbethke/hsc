@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 18-Aug-1996
+ * updated: 25-Nov-1996
  * created: 13-Oct-1995
  */
 
@@ -48,6 +48,10 @@ LONG get_mci(HSCPRC * hp)
 VOID unget_mci(HSCPRC * hp)
 {
     hp->tag_call_id--;
+    if (hp->tag_call_id < 0)
+    {
+        panic("MCI underflow");
+    }
 }
 
 /*
@@ -221,7 +225,7 @@ static BOOL parse_lazy_option(HSCPRC * hp, HSCTAG * tag, STRPTR lazy)
             break;
         default:
             hsc_message(hp, MSG_UNKN_TAG_OPTION,
-                        "unknown tag option %q (arg %q)",
+                        "unknown tag modifier %q (arg %q)",
                         "LAZY", ch2str(lazy[0]));
             break;
         }
@@ -300,7 +304,7 @@ static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
         if (!ok)
         {
             hsc_message(hp, MSG_UNKN_TAG_OPTION,
-                        "unknown tag option %q", option);
+                        "unknown tag modifer %q", option);
         }
     }
 
@@ -424,7 +428,7 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
     INFILE *inpf = hp->inpf;
     STRPTR arg = NULL;
     BOOL ok = FALSE;
-    BOOL inheritage_failed = FALSE; /* flag: set, if "?=" failed */
+    BOOL inheritage_failed = FALSE;     /* flag: set, if "?=" failed */
     STRPTR nw;
     HSCATTR skipvar;            /* dummy-attribute to skip unknown */
     EXPSTR *attr_str = init_estr(40);   /* string for attribute name */
@@ -433,7 +437,14 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
     DAV(fprintf(stderr, DHL "   set attr %s\n", varname));
 
     /* append attribute name to attr_str */
-    app_estr(attr_str, infgetcws(inpf));
+    if (hp->compact)
+    {
+        app_estr(attr_str, compactWs(hp, infgetcws(inpf)));
+    }
+    else
+    {
+        app_estr(attr_str, infgetcws(inpf));
+    }
     app_estr(attr_str, infgetcw(inpf));
 
     if (!var)
@@ -458,7 +469,10 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
         if (!strcmp(nw, "="))
         {
             /* append "=" to log */
-            app_estr(val_str, infgetcws(inpf));
+            if (!hp->compact)
+            {
+                app_estr(val_str, infgetcws(inpf));
+            }
             app_estr(val_str, infgetcw(inpf));
 
             /* parse expression */
@@ -481,7 +495,8 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
         else if (!strcmp(nw, "?"))
         {
             /* process "?="-assignment */
-            app_estr(val_str, infgetcws(inpf));
+            if (!hp->compact)
+                app_estr(val_str, infgetcws(inpf));
             if (parse_eq(hp))
             {
                 app_estr(val_str, "=");
@@ -613,29 +628,20 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
             }
             else
             {
-                if (strcmp(nw, "\n"))
+                /* process attribute */
+                if (check_attrname(hp, nw))
                 {
-                    /* process attribute */
-                    if (check_attrname(hp, nw))
-                    {
-                        BOOL unknown = tag->option & HT_UNKNOWN;
-                        set_tag_arg(hp, varlist, nw, unknown);
-                    }
-                    else
-                    {
-                        /* append empty value */
-#if 0
-                        app_estr(hp->tag_attr_str, "\"\"");
-                        skip_until_eot(hp, NULL);
-#endif
-                        nw = NULL;
-                    }
+                    BOOL unknown = tag->option & HT_UNKNOWN;
+                    set_tag_arg(hp, varlist, nw, unknown);
                 }
                 else
                 {
-                    /* skip blank line */
-                    app_estr(hp->tag_attr_str, infgetcws(inpf));
-                    app_estr(hp->tag_attr_str, infgetcw(inpf));
+                    /* append empty value */
+#if 0
+                    app_estr(hp->tag_attr_str, "\"\"");
+                    skip_until_eot(hp, NULL);
+#endif
+                    nw = NULL;
                 }
 
                 /* read next attribute */
@@ -645,6 +651,9 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
         }
     }
     while (nw);
+
+    /* unset scope */
+    unget_mci(hp);
 
     /* set all undefined bool. attr to FALSE */
     clr_varlist_bool(varlist);

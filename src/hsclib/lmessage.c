@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 10-Sep-1996
+ * updated: 31-Oct-1996
  * created: 10-Mar-1996
  *
  * NOTE: see "hsclib/msgid.h" for message-id's and
@@ -30,6 +30,8 @@
 
 #include "hsclib/inc_base.h"
 
+#include "ugly/returncd.h"
+
 static VOID msg_tag(EXPSTR * msgstr, CONSTRPTR tagname)
 {
     app_estr(msgstr, "tag <");
@@ -39,7 +41,7 @@ static VOID msg_tag(EXPSTR * msgstr, CONSTRPTR tagname)
 
 static VOID msg_endtag(EXPSTR * msgstr, CONSTRPTR tagname)
 {
-    app_estr(msgstr, "end-tag </");
+    app_estr(msgstr, "end tag </");
     app_estr(msgstr, tagname);
     app_estr(msgstr, ">");
 }
@@ -94,7 +96,11 @@ static VOID msg_idname(EXPSTR * msgstr, CONSTRPTR idname)
  */
 VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
 {
+#if 1
+    HSCMSG_CLASS msg_class = hsc_get_msg_class(hp, msg_id);
+#else /* TODO: remove this */
     HSCMSG_CLASS msg_class = msg_id & MASK_MSG_CLASS;
+#endif
     INFILE *msg_inpf = NULL;
     STRPTR msg_fname = "unknown";
     ULONG msg_x = 0;
@@ -106,7 +112,6 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
 
         /* oppress all messages after fatal errors */
         disp_msg = FALSE;
-
     }
     else if (
                 (hsc_get_msg_ignore(hp, msg_id))
@@ -117,6 +122,19 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
         /* oppress message if it is marked as ignored
          * and it is no ERROR/FATAL message
          */
+        D(fprintf(stderr, DHL "ignore msg#%ld: ignore enabled\n",
+                  msg_id & MASK_MESSAGE));
+        disp_msg = FALSE;
+    }
+    else if (((msg_class == MSG_NOTE) && (hp->msg_ignore_notes))
+             || ((msg_class == MSG_STYLE) && (hp->msg_ignore_style))
+             || ((msg_class == MSG_PORT) && (hp->msg_ignore_port))
+        )
+    {
+        /* oppress message if it's class is
+         * marked as to be ignored */
+        D(fprintf(stderr, DHL "ignore msg#%ld: ignore whole class\n",
+                  msg_id & MASK_MESSAGE));
         disp_msg = FALSE;
     }
 
@@ -248,6 +266,14 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                     msg_idname(hp->curr_msg, va_arg(ap, STRPTR));
                     break;
 
+                case 'j':
+                    /* append jerk/prostitute */
+                    if (hp->prostitute)
+                        app_estr(hp->curr_msg, "prostitute");
+                    else
+                        app_estr(hp->curr_msg, "jerk");
+                    break;
+
                 default:
                     /*
                      * append unknown
@@ -353,7 +379,7 @@ VOID hsc_msg_eof(HSCPRC * hp, STRPTR descr)
 
 VOID hsc_msg_illg_whtspc(HSCPRC * hp)
 {
-    hsc_message(hp, MSG_UNEX_EOF, "illegal white-space");
+    hsc_message(hp, MSG_ILLG_WHTSPC, "illegal white space");
 }
 
 VOID hsc_msg_stripped_tag(HSCPRC * hp, HSCTAG * tag, STRPTR why)
@@ -372,11 +398,13 @@ VOID hsc_msg_unkn_attr(HSCPRC * hp, STRPTR attr)
                 "unknown %a", attr);
 }
 
+#if 1                           /* TODO: get rid of this */
 VOID hsc_msg_eol(HSCPRC * hp)
 {
     hsc_message(hp, MSG_UNEX_EOL,
                 "unexpected end of line");
 }
+#endif
 
 VOID hsc_msg_noinput(HSCPRC * hp, STRPTR filename)
 {
@@ -399,5 +427,35 @@ VOID hsc_msg_nouri(HSCPRC * hp, STRPTR filename, STRPTR uriname, STRPTR note)
                     "file %q for URI %q not found",
                     filename, uriname);
     }
+}
+
+/*
+ * show up enforcer hit
+ */
+VOID enforcerHit(VOID)
+{
+    fputs("WORD-WRITE to  00000000        data=0000       PC: 0325B854\n"
+          "USP:  034735C8 SR: 0004 SW: 0729  (U0)(-)(-)  TCB: 03349A28\n"
+        "Name: \"Shell Process\"  CLI: \"hsc\"  Hunk 0000 Offset 00000074\n"
+          "\n"
+          "LONG-READ from AAAA4444                        PC: 0325B858\n"
+          "USP:  034735C8 SR: 0015 SW: 0749  (U0)(F)(-)  TCB: 03349A28\n"
+        "Name: \"Shell Process\"  CLI: \"hsc\"  Hunk 0000 Offset 00000078\n"
+          "\n"
+          "BYTE-WRITE to  00000101        data=11         PC: 0325B862\n"
+          "USP:  034735C8 SR: 0010 SW: 0711  (U0)(F)(D)  TCB: 03349A28\n"
+        "Name: \"Shell Process\"  CLI: \"hsc\"  Hunk 0000 Offset 00000082\n"
+          "\n"
+          "LONG-WRITE to  00000102        data=00000000   PC: 0325B86A\n"
+          "USP:  034735C8 SR: 0014 SW: 0709  (U0)(-)(D)  TCB: 03349A28\n"
+        "Name: \"Shell Process\"  CLI: \"hsc\"  Hunk 0000 Offset 0000008A\n"
+          "\n"
+          "Alert !! Alert 35000000     TCB: 03349A28     USP: 034735C4\n"
+          "Data: 00000000 DDDD1111 DDDD2222 DDDD3333 0325B802 DDDD5555 DDDD6666 35000000\n"
+          "Addr: AAAA0000 AAAA1111 AAAA2222 AAAA3333 AAAA4444 0325B802 00200810 --------\n"
+          "Stck: 0325B878 00000000 00FA06D6 00010000 0334A40C 03F46630 00AC4C20 00000000\n",
+          stderr);
+    strcpy((STRPTR) hsc_message, "die for oil, sucker");        /* crash machine */
+    exit(RC_FAIL);              /* just for the case we are still there.. */
 }
 

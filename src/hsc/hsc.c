@@ -31,18 +31,24 @@
  *
  * hsc/hsc.c
  *
- * updated:  9-Sep-1996
+ * updated:  5-Nov-1996
  * created:  1-Jul-1995
  */
 
+
+#include "hsc/hsc_rev.h"
+
 #include "hsc/global.h"
+#include "ugly/prginfo.h"
 #include "hscprj/project.h"
+#ifndef BETA
+#define BETA 0
+#endif
 
 /*
  * ugly includes
  */
 #include "ugly/uargs.h"
-#include "ugly/prginfo.h"
 #include "ugly/returncd.h"
 
 /*
@@ -52,10 +58,6 @@
 #include "hsc/callback.h"
 #include "hsc/output.h"
 #include "hsc/status.h"
-
-#if !(defined VERSTAG)
-#include "hsc/hsc_rev.h"
-#endif
 
 /* import AmigaOS version string from "hsc/hsc_rev.h" */
 #ifdef AMIGA
@@ -116,10 +118,120 @@ static VOID cleanup(VOID)
 }
 
 /*
+ * hsc_main()
+ */
+int hsc_main(HSCPRC ** hpVar, int argc, char *argv[])
+{
+    BOOL init_hp = FALSE;
+
+    if (!(*hpVar))
+    {
+        hp = new_hscprc();      /* alloc new hsc-process */
+        init_hp = TRUE;
+        *hpVar = hp;
+    }
+    else
+    {
+        hp = *hpVar;
+        reset_hscprc(hp);
+    }
+
+    if (hp
+        && init_global()        /* init global vars */
+        && args_ok(hp, argc, argv)      /* process user args */
+        )
+    {
+        STRPTR inpfname = NULL; /* input-filename */
+        BOOL ok = TRUE;
+
+        /* display programm-info if requested */
+        if (disp_status_version)
+        {
+            fprintf_prginfo(stderr);
+        }
+
+        if (init_msgfile(hp, msgfilename)       /* open message file */
+            && init_output(hp)) /* open output file */
+        {
+            /* init return code; later modified by message() */
+            return_code = RC_OK;
+
+            /* evaluate input-filename; use NULL for stdin */
+            inpfname = estr2str(inpfilename);
+            if (!inpfname[0])
+                inpfname = NULL;
+
+            /*
+             * init process, read preferences and project (for new process)
+             */
+            if (ok && init_hp)
+            {
+                ok = (init_callback(hp)         /* assign callbacks */
+                      && hsc_init_hscprc(hp, prefsfilename)     /* init hsc-process */
+                      && hsc_init_project(hp, prjfilename));    /* read project */
+            }
+
+            /*
+             * process user defines and files, write output
+             */
+            if (ok
+                && user_defines_ok(hp)  /* process user defines */
+                && include_ok(hp)       /* read include files (macros) */
+                && hsc_include_file(hp, inpfname,
+                                    IH_PARSE_END | IH_IS_SOURCE
+                                    | IH_UPDATE_PRJ)    /* read main file */
+                )
+            {
+                if (write_output(hp))   /* write output file */
+                    hsc_project_write_file(hp->project, prjfilename);
+            }
+        }
+    }
+
+    return (return_code);
+}
+
+/*
  *
  * main function
  *
  */
+#if 1
+int main(int argc, char *argv[])
+{
+    int main_return_code = RC_FAIL;
+
+    /* set program information */
+    set_prginfo("hsc", "Tommy-Saftwörx", VERSION, REVISION, BETA,
+                "html sucks completely",
+                "Freeware, type `hsc LICENSE' for details.");
+
+#if DEBUG
+    /* display a memory tracking report
+     * at end of execution */
+    atexit(atexit_uglymemory);
+#endif
+
+    /* install nomem-handler; this one displays a message
+     * and aborts the program */
+    ugly_nomem_handler = hsc_nomem_handler;
+
+    /* use cleanup() as additional exit func
+     * (even called if out-of-memory) */
+    if (!atexit(cleanup))
+    {
+        HSCPRC *hpVar = NULL;
+        main_return_code = hsc_main(&hpVar, argc, argv);
+    }
+    else
+    {
+        status_error("atexit() failed ");
+    }
+
+    return (main_return_code);
+}
+
+#else
 int main(int argc, char *argv[])
 {
     /* set program information */
@@ -191,4 +303,5 @@ int main(int argc, char *argv[])
 
     return (return_code);
 }
+#endif
 

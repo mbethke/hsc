@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 18-Sep-1996
+ * updated: 13-Oct-1996
  * created: 30-Jul-1995
  */
 
@@ -27,12 +27,6 @@
 
 #include "hsclib/parse.h"
 #include "hsclib/skip.h"
-
-/*
- * local includes
- */
-
-UBYTE prev_heading_num = 0;     /* stores previous heading *//* TODO: include in hscprc */
 
 /*
  *
@@ -98,19 +92,13 @@ BOOL handle_heading(HSCPRC * hp, HSCTAG * tag)
     D(fprintf(stderr, DHL "  heading %d\n", num));
 
     if ((hp->prev_heading_num - num) < (-1))
-        if (hp->prev_heading_num)
-        {
-            char hstr[4];
+    {
+        char hstr[4];
 
-            sprintf(hstr, "H%ld", hp->prev_heading_num + 1);
-            hsc_message(hp, MSG_WRONG_HEADING,
-                        "next heading should be %t", hstr);
-        }
-        else
-        {
-            hsc_message(hp, MSG_EXPT_H1,
-                        "first heading should be %t", "H1");
-        }
+        sprintf(hstr, "H%ld", hp->prev_heading_num + 1);
+        hsc_message(hp, MSG_WRONG_HEADING,
+                    "expected heading %t", hstr);
+    }
 
     hp->prev_heading_num = num;
 
@@ -196,7 +184,7 @@ BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
             hsc_msg_illg_whtspc(hp);
 
         if (!strcmp(nw, ">"))   /* zero-comment */
-            hsc_message(hp, MSG_ONEW_COMMENT, "zero SGML comment");
+            hsc_message(hp, MSG_ONEW_COMMENT, "empty sgml comment");
         else if (!comment)
             skip_until_eot(hp, hp->tag_attr_str);       /* unknown "!"-command: skip */
         else
@@ -234,7 +222,7 @@ BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
                         else
                         {
                             hsc_message(hp, MSG_GT_IN_COMMENT,
-                                        "`>'inside SGML-comment");
+                                        "%q inside sgml-comment", ">");
                         }
                     else
                     {
@@ -249,37 +237,37 @@ BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
                         {
                             in_quote = FALSE;
                             hsc_message(hp, MSG_LF_IN_COMMENT,
-                                        "line feed inside SGML-comment");
+                                        "line feed inside sgml-comment");
                         }
-                            /* check for quote */
+                        /* check for quote */
                         else if (!strcmp(nw, "\"") || !strcmp(nw, "'"))
                             in_quote = !in_quote;
                     }
                 }
                 else
-                    hsc_msg_eof(hp, "reading SGML-comment");
+                    hsc_msg_eof(hp, "reading sgml-comment");
 
                 if (end_gt && in_quote)
                 {
                     hsc_message(hp, MSG_CMTEND_QUOTE,
-                                "SGML-comment ends inside quotes");
+                                "sgml-comment ends inside quotes");
                 }
 
                 if (end_gt && oneword)
                     hsc_message(hp, MSG_ONEW_COMMENT,
-                                "one-word SGML comment");
+                                "sgml-comment consists of a single word");
             }
         }
 
         /* check if comment should be stripped */
         if (hp->strip_cmt)
         {
-            hsc_msg_stripped_tag(hp, tag, "SGML comment");
+            hsc_msg_stripped_tag(hp, tag, "sgml-comment");
             not_stripped = FALSE;
         }
     }
     else
-        hsc_msg_eof(hp, "reading SGML-comment");
+        hsc_msg_eof(hp, "reading sgml-comment");
 
     return (not_stripped);
 }

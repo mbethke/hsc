@@ -7,7 +7,7 @@
 **
 ** (W) by Tommy-Saftw&ooml;rx in 1995,96
 **
-** updated:  7-Aug-1996
+** updated: 27-Oct-1996
 ** created:  8-Sep-1995
 *>
 
@@ -118,47 +118,63 @@
 <*****************>
 <* icon entities *>
 <*****************>
-<$DEFICON NAME="ftp">
-<$DEFICON NAME="gopher">
-<$DEFICON NAME="telnet">
-<$DEFICON NAME="archive">
-<$DEFICON NAME="filing.cabinet">
-<$DEFICON NAME="folder">
-<$DEFICON NAME="fixed.disk">
-<$DEFICON NAME="disk.drive">
-<$DEFICON NAME="document">
-<$DEFICON NAME="unknown.document">
-<$DEFICON NAME="text.document">
-<$DEFICON NAME="binary.document">
-<$DEFICON NAME="binhex.document">
-<$DEFICON NAME="audio">
-<$DEFICON NAME="film">
-<$DEFICON NAME="image">
-<$DEFICON NAME="map">
-<$DEFICON NAME="form">
-<$DEFICON NAME="mail">
-<$DEFICON NAME="parent">
-<$DEFICON NAME="next">
-<$DEFICON NAME="previous">
-<$DEFICON NAME="home">
-<$DEFICON NAME="toc">
-<$DEFICON NAME="glossary">
-<$DEFICON NAME="index">
-<$DEFICON NAME="summary">
-<$DEFICON NAME="calculator">
-<$DEFICON NAME="caution">
-<$DEFICON NAME="clock">
-<$DEFICON NAME="compressed.document">
-<$DEFICON NAME="diskette">
-<$DEFICON NAME="display">
-<$DEFICON NAME="fax">
-<$DEFICON NAME="mail.in">
-<$DEFICON NAME="mail.out">
-<$DEFICON NAME="mouse">
-<$DEFICON NAME="printer">
-<$DEFICON NAME="tn3270">
-<$DEFICON NAME="trash">
-<$DEFICON NAME="uuencoded.document">
+<$deficon name="archive">
+<$deficon name="audio">
+<$deficon name="binary.document">
+<$deficon name="binhex.document">
+<$deficon name="calculator">
+<$deficon name="caution">
+<$deficon name="cd.i">
+<$deficon name="cd.rom">
+<$deficon name="clock">
+<$deficon name="compressed.document">
+<$deficon name="disk.drive">
+<$deficon name="diskette">
+<$deficon name="document">
+<$deficon name="fax">
+<$deficon name="filing.cabinet">
+<$deficon name="film">
+<$deficon name="fixed.disk">
+<$deficon name="folder">
+<$deficon name="form">
+<$deficon name="ftp">
+<$deficon name="glossary">
+<$deficon name="gopher">
+<$deficon name="home">
+<$deficon name="html">
+<$deficon name="image">
+<$deficon name="index">
+<$deficon name="keyboard">
+<$deficon name="mail">
+<$deficon name="mail.in">
+<$deficon name="mail.out">
+<$deficon name="map">
+<$deficon name="mouse">
+<$deficon name="new">
+<$deficon name="next">
+<$deficon name="notebook">
+<$deficon name="parent">
+<$deficon name="play.fast.forward">
+<$deficon name="play.fast.reverse">
+<$deficon name="play.pause">
+<$deficon name="play.start">
+<$deficon name="play.stop">
+<$deficon name="previous">
+<$deficon name="printer">
+<$deficon name="sadsmiley">
+<$deficon name="smiley">
+<$deficon name="stop">
+<$deficon name="summary">
+<$deficon name="telephone">
+<$deficon name="telnet">
+<$deficon name="text.document">
+<$deficon name="tn3270">
+<$deficon name="toc">
+<$deficon name="trash">
+<$deficon name="unknown.document">
+<$deficon name="uuencoded.document">
+<$deficon name="work">
+<$deficon name="www">
 
 <****************************>
 <* character level elements *>
@@ -232,7 +248,7 @@
 <$deftag INPUT /MBI="form" /LAZY="cilms" TYPE:string NAME:string VALUE:string DISABLED:bool CHECKED:bool MAXLENGTH:string ALIGN:enum("top|middle|bottom|left|right") ACCEPT:string MIN:string MAX:string SIZE:string>
 <$deftag MENU /CLOSE COMPACT:bool>
 <$deftag META CONTENT:string/r HTTP-EQUIV:string NAME:string>
-<$deftag OPTION /MBI="select" SELECTED:bool DISABLED:bool VALUE:string>
+<$deftag OPTION /MBI="select" SELECTED:bool DISABLED:bool VALUE:string SIZE:num>
 <$deftag SELECT /CLOSE /MBI="form" /LAZY="cil" NAME:string/r MULTIPLE:bool ROWS:string COLS:string DISABLED:bool ERROR:string WIDTH:string HEIGHT:string UNITS:string>
 <$deftag TEXTAREA /MBI="form" /CLOSE ALIGN:enum("top|bottom|middle|left|right") COLS:string NAME:string ROWS:string WRAP:enum("off|soft|hard")>
 

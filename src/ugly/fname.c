@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 30-Jul-1996
+ * updated: 27-Oct-1996
  * created: 24-May-1994
  *
  *-------------------------------------------------------------------
@@ -136,6 +136,7 @@ BOOL get_fsdir(EXPSTR * dest, CONSTRPTR fn)
  */
 BOOL get_fdrive(EXPSTR * dest, CONSTRPTR fn)
 {
+    set_estr(dest, fn);         /* dummy data */
     clr_estr(dest);
     return (ok_fnl_fpath(dest));
 }
@@ -286,6 +287,54 @@ BOOL link_fname(EXPSTR * dest, STRPTR dir, STRPTR fn)
         app_estr(dest, fn);
 
     ok &= ok_fnl_fpath(dest);
+
+    return ok;
+}
+
+/*
+ * link_envfname: link content of an environment variable,
+ *                directory and filename together
+ *
+ * params: dest..where to store result
+ *         env...name of environment variable
+ *         dir...directoryname
+ *         fn....filename to append
+ *
+ * result: FALSE, if envvar could not be found or
+ *         filename got too long
+ */
+BOOL link_envfname(EXPSTR * dest, STRPTR envname, STRPTR dir, STRPTR fn)
+{
+    BOOL ok = FALSE;
+    STRPTR env = getenv(envname);
+
+    if (env)
+    {
+        STRPTR env1 = strclone(env);        /* copy envvar to own memory area */
+        EXPSTR *tmpstr = init_estr(32);
+
+        /* strip linefeeds from hscenv */
+        while (strlen(env1) && (env1[strlen(env1)] == '\n'))
+            env1[strlen(env1)] = '\0';
+
+        if (dir)
+        {
+            link_fname(tmpstr, env1, dir);
+        }
+        else
+        {
+            set_estr(tmpstr, env1);
+        }
+
+        ok = link_fname(dest, estr2str(tmpstr), fn);
+
+        del_estr(tmpstr);
+        ufreestr(env1);
+    }
+    else
+    {
+        clr_estr(dest);
+    }
 
     return ok;
 }

@@ -27,7 +27,7 @@ which you should not strip anyway.</P>
 <P>can be removed if you want to create a NoNet-version of your
 document. Use the switch <op_stripexternal> for this task.
 Tags which are affected by this must have an URI-type attribute,
-which has the <A HREF=":macro/attrib.html#flags">attribute flag</A>
+which has the <A HREF=":macro/attrib.html#modifier">attribute option</A>
 <CODE>/STRIPEXT</CODE> set within <hsc.prefs>.</P>
 
 <P>Currently, this affects only the tags <TG>A</TG>, <TG>IMG</TG>

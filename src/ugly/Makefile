@@ -144,6 +144,12 @@ endif
 #--------------------------------------
 
 #
+# implicit rule for object-file
+#
+%.o : %.c
+	$(COMP) $*.c $(CMODE)
+
+#
 # test files
 #
 all : test_es test_fn test_args test_file test_list test_mem test_str test_time
@@ -151,14 +157,18 @@ all : test_es test_fn test_args test_file test_list test_mem test_str test_time
 clean :
 	delete (#?.o|#?.s|#?.p) quiet
 
+depend :
+	MkDepend #?.c -i/ -v
+
+
 ##
 ## project
 ##
 
-#ugly.o: args.o bntree.o dllist.o memory.o prginfo.o string.o umx.o fname.o infile.o ugly.c
+#ugly.o: uargs.o bntree.o dllist.o memory.o prginfo.o ustring.o umx.o fname.o infile.o ugly.c
 #        $(COMP)  ugly.c
 
-#ugly_dbg.o: args.o bntree.o dllist.o memory.o prginfo.o string.o umx.o fname.o infile.o ugly.c
+#ugly_dbg.o: uargs.o bntree.o dllist.o memory.o prginfo.o ustring.o umx.o fname.o infile.o ugly.c
 #        $(COMP)  ugly.c -DUMEM_TRACKING_DEF -o ugly_dbg.o
 
 #header: #?.h
@@ -168,79 +178,96 @@ all_ugly.o :
 	$(COMP) all_ugly.c $(mode)
 
 ##
-## project files
-##
-
-## not include: types.h
-
-args.o: args.h args.c args_hlp.c args_prp.c args_set.c string.h dllist.h
-	$(COMP)  args.c $(mode)
-
-#bntree.o  : types.h bntree.h bntree.c
-#        $(COMP) $(SYS) bntree.c $(mode)
-
-dllist.o  : types.h dllist.h dllist.c
-	$(COMP) dllist.c $(mode)
-
-expstr.o : types.h expstr.c
-	$(COMP) expstr.c $(mode)
-
-fname.o   : types.h expstr.h string.h fname.h fname.c
-	$(COMP) fname.c $(mode)
-
-memory.o   : types.h memory.c memory.h dllist.h
-	$(COMP) memory.c $(mode)
-
-prginfo.o : types.h prginfo.c
-	$(COMP) prginfo.c $(mode)
-
-string.o  : types.h string.h string.c
-	$(COMP) string.c $(mode)
-
-time.o  : types.h expstr.h memory.h string.h time.h time.c
-	$(COMP) time.c $(mode)
-
-#umx.o : types.h umx.h umx.c
-#	$(COMP) umx.c $(mode)
-
-infile.o : types.h string.h memory.h expstr.h infile.h infile.c
-	$(COMP) infile.c $(mode)
-
-#outfile.o : types.h string.h memory.h expstr.h outfile.h outfile.c
-#	$(COMP) outfile.c $(mode)
-
-##
 ## test files
 ##
 
-test_fn : test_fn.c fname.o memory.o expstr.o
-	$(LINK) $(mode) test_fn.c expstr.o fname.o string.o memory.o
+test_fn : test_fn.c fname.o umemory.o expstr.o
+	$(LINK) $(mode) test_fn.c expstr.o fname.o ustring.o umemory.o
 
-test_args : test_args.c args.o dllist.o prginfo.o memory.o string.o
-	$(LINK) $(mode) test_args.c args.o string.o dllist.o memory.o prginfo.o
+test_args : test_args.c uargs.o dllist.o prginfo.o umemory.o ustring.o
+	$(LINK) $(mode) test_args.c uargs.o ustring.o dllist.o umemory.o prginfo.o
 
-test_es : test_es.c expstr.o memory.o string.o
-	$(LINK) $(mode) test_es.c expstr.o string.o memory.o
+test_es : test_es.c expstr.o umemory.o ustring.o
+	$(LINK) $(mode) test_es.c expstr.o ustring.o umemory.o
 
-test_file : test_file.c infile.o dllist.o expstr.o memory.o
-	$(LINK) $(mode) test_file.c dllist.o expstr.o infile.o string.o memory.o
+test_file : test_file.c infile.o dllist.o expstr.o umemory.o
+	$(LINK) $(mode) test_file.c dllist.o expstr.o infile.o ustring.o umemory.o
 
-test_list : test_list.c dllist.o string.o memory.o
-	$(LINK) $(mode) test_list.c dllist.o string.o memory.o
+test_list : test_list.c dllist.o ustring.o umemory.o
+	$(LINK) $(mode) test_list.c dllist.o ustring.o umemory.o
 
-test_mem : test_mem.c memory.o dllist.o string.o
-	$(LINK) $(mode) test_mem.c dllist.o memory.o string.o
+test_mem : test_mem.c umemory.o dllist.o ustring.o
+	$(LINK) $(mode) test_mem.c dllist.o umemory.o ustring.o
 
-#test_out : test_out.c outfile.o dllist.o expstr.o memory.o
-#	$(LINK) $(mode) test_out.c dllist.o expstr.o outfile.o string.o memory.o
+#test_out : test_out.c outfile.o dllist.o expstr.o umemory.o
+#	$(LINK) $(mode) test_out.c dllist.o expstr.o outfile.o ustring.o umemory.o
 
-test_str : test_str.c memory.o string.o
-	$(LINK) $(mode) test_str.c memory.o string.o
+test_str : test_str.c umemory.o ustring.o
+	$(LINK) $(mode) test_str.c umemory.o ustring.o
 
-test_time.o : test_time.c time.o memory.o string.o expstr.o
+test_time.o : test_time.c utime.o umemory.o ustring.o expstr.o
 	$(COMP) test_time.c $(mode)
 
 test_time : test_time.o 
-	$(LINK) $(mode) test_time.c memory.o string.o expstr.o time.o
+	$(LINK) $(mode) test_time.c umemory.o ustring.o expstr.o utime.o
 
-# EOF
+# --- DO NOT MODIFY THIS LINE -- AUTO-DEPENDS FOLLOW ---
+all_ugly.o : /ugly/prginfo.c /ugly/infile.c /ugly/ustrlist.c /ugly/ufile.c \
+    /ugly/uargs.c /ugly/dllist.c /ugly/fname.c /ugly/expstr.c \
+    /ugly/ustring.c /ugly/umemory.c /ugly/udebug.h utypes.h umemory.h \
+    infile.h fname.h ustring.h expstr.h ustrlist.h ufile.h args_hlp.c \
+    args_prp.c args_set.c args_fre.c uargs.h dllist.h udebug.h
+
+args_fre.o : uargs.h dllist.h ustring.h umemory.h utypes.h udebug.h
+
+args_hlp.o : uargs.h dllist.h ustring.h umemory.h utypes.h udebug.h
+
+args_prp.o : uargs.h dllist.h ustring.h umemory.h utypes.h udebug.h
+
+args_set.o : uargs.h dllist.h ustring.h umemory.h utypes.h udebug.h
+
+dllist.o : dllist.h umemory.h utypes.h udebug.h
+
+expstr.o : expstr.h umemory.h ustring.h utypes.h udebug.h
+
+fname.o : fname.h expstr.h ustring.h umemory.h utypes.h udebug.h
+
+hello.o :
+
+infile.o : umemory.h infile.h fname.h ustring.h expstr.h utypes.h dllist.h \
+    udebug.h
+
+prginfo.o : utypes.h udebug.h
+
+test_args.o : umemory.h prginfo.h dllist.h uargs.h utypes.h udebug.h
+
+test_es.o : expstr.h ustring.h umemory.h utypes.h udebug.h
+
+test_file.o : infile.h umemory.h utypes.h dllist.h expstr.h udebug.h
+
+test_fn.o : fname.h expstr.h ustring.h utypes.h udebug.h
+
+test_list.o : dllist.h ustring.h umemory.h utypes.h udebug.h
+
+test_mem.o : ustring.h umemory.h utypes.h udebug.h
+
+test_prg.o : prginfo.h utypes.h udebug.h
+
+test_str.o : ustring.h umemory.h utypes.h udebug.h
+
+test_time.o : utime.h expstr.h ustring.h umemory.h utypes.h udebug.h
+
+uargs.o : args_hlp.c args_prp.c args_set.c args_fre.c uargs.h dllist.h \
+    ustring.h umemory.h utypes.h udebug.h
+
+ufile.o : ufile.h expstr.h ustring.h umemory.h utypes.h udebug.h
+
+umemory.o : umemory.h utypes.h udebug.h
+
+ustring.o : ustring.h umemory.h utypes.h udebug.h
+
+ustrlist.o : ustrlist.h dllist.h ustring.h utypes.h udebug.h
+
+utime.o : utime.h expstr.h ustring.h umemory.h utypes.h udebug.h
+
+# --- DO NOT MODIFY THIS LINE -- AUTO-DEPENDS PRECEDE ---

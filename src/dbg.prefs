@@ -7,8 +7,8 @@
 <*********************>
 <$deftag LI /AUTOCLOSE /MBI="ul|ol|dir|menu">
 <$deftag ! /SPECIAL>
-<$deftag A /CLOSE /NAW="A" /LAZY="i" /WHTSPC HREF:uri NAME:id REL:string>
-<$deftag B /CLOSE>
+<$deftag A /CLOSE /NAW="A" /LAZY="i" /WHTSPC HREF:uri NAME:id REL:string TITLE:string>
+<$deftag B /CLOSE /WHTSPC>
 <$deftag BODY /CLOSE /ONLYONCE BGCOLOR:color>
 <$deftag BR>
 <$deftag CODE /CLOSE>

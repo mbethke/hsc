@@ -1,6 +1,6 @@
 <HTML><HEAD>
   <$define DESCRIPTION:string=("This is the documentation to hsc, a "
-    +"developer tool for html-projects. It acts as a preprocessors "
+    +"developer tool for html-projects. It acts as a preprocessor "
     +"and supports include files, macros, expressions, conditionals, "
     +" replaces special characters, performs a structure check, tests "
     +" existence of local links and several other things.")>
@@ -32,29 +32,51 @@ Ignore the bold type<BR></I>
 
 <H1>hsc</H1>
 
-<P><STRONG>(Version 0.9.10 <*(PRE-RELEASE#3)*>, 30-Sep-1996)</STRONG></P>
+<P><STRONG>(Version 0.911 <*(PRE-RELEASE#8)*>, 4-Dec-1996)</STRONG></P>
 
 <P><(DESCRIPTION)></P>
 
 <IMG SRC="image/hsc.gif" ALT="..SUCK SUCK SUCK.." ALIGN="right">
 
-<H2>About</H2>
+<P>
+A current version of this document should always be available from
+<A HREF="http://www.giga.or.at/~agi/hsc/docs/index.html"><(HSC.ANCHOR)></A>.</P>
+
+<H2>About the program</H2>
 <UL>
-<LI>What's this all <A HREF="about.html">about</A>?
+<LI><A HREF="about.html">Introduction</A> - What's this all about?
 <LI><A HREF="copy.html">Copyright and disclaimer</A> - the usual legal stuff
+<LI><A HREF="author.html">Author</A> - how to contact me
+<LI><A HREF="../CHANGES">Changes</A> - what's new with this release
+<LI><A HREF="updates.html">Updates</A> - where to find them
+</UL>
+
+<H2>Before you begin</H2>
+<UL>
 <LI><A HREF="require.html">Requirements</A> - what to own and know
 <LI><A HREF="distrib.html">Archive contents</A> - things coming along
-<LI><A HREF="../CHANGES">Changes</A> - what's new with this release
+<LI><A HREF="install.html">Installation</A> - where to put the whole 
+    damn thing
 </UL>
 
 <H2>Usage</H2>
 <UL>
-<LI><A HREF="install.html">Installation</A> - where to put the whole 
-    damn thing
-<LI><A HREF="options.html">Invoking <hsc></A> - Options and swiches
-<LI><A HREF="examples.html">Example usage</A> - how it is supposed to work
+<LI><A HREF="options.html">Invoking <hsc></A>
+    <UL>
+    <LI><A HREF="options.html#options">Options</A> and 
+        <A HREF="options.html#switches">switches</A> - there are lot of them
+    <LI><A HREF="options.html#exitcodes">Exit-code</A> - return to sender
+    <LI><A HREF="examples.html">Example usage</A> - how it is supposed to work
+    </UL>
+<LI><A HREF="fileargs.html">File arguments</A> - specifying input and output
 <LI><A HREF="messages.html">Messages</A> - shit happens
-<LI><A HREF="questions.html">Questions</A> (and maybe some answers)
+    <UL>
+    <LI><A HREF="messages.html#elements">Message elements</A>
+    <LI><A HREF="messages.html#classes">Message classes</A>
+    <LI><A HREF="messages.html#options">Message options</A>
+    <LI><A HREF="messages.html#list">List of messages</A>
+    </UL>
+<LI><A HREF="envvar.html">Environment variables</A> - Save the nature
 </UL>
 
 <H2>Features</H2>
@@ -80,28 +102,55 @@ Ignore the bold type<BR></I>
 
 <H2>Advanced topics</H2>
 <UL>
-<LI><A HREF="macro/macros.html">Macros</A>
-    - create your own shortcuts and templates.
 <LI><A HREF="features/expressions.html">Expressions</A>
     - there's more to life than strings
+    <UL>
+    <LI><A HREF=":features/expressions.html#operators">Operators</A>
+    <LI><A HREF=":features/expressions.html#boolean">Boolean expressions</A>
+    <LI><A HREF=":features/expressions.html#priorities">Priorities</A>
+    </UL>
+<LI><A HREF="macro/macros.html">Macros</A>
+    - create your own shortcuts and templates.
+    <UL>
+    <LI><A HREF=":macro/flag.html">Macro modifiers</A>
+    <LI><A HREF=":macro/attrib.html">Attribute declaration</A>
+    <LI><A HREF=":macro/attrib.html#type">Attribute types</A>
+    <LI><A HREF=":macro/attrib.html#modifier">Attribute modifiers</A>
+    </UL>
 <LI><A HREF="features/if.html">Conditionals</A>
     - what if..?
+    <UL>
+    <LI><A HREF=":features/if.html#general">General syntax</A>
+    <LI><A HREF=":features/if.html#simple">Some simple examples</A>
+    <LI><A HREF=":features/if.html#nesting">Nesting conditionals</A>
+    <LI><A HREF=":features/if.html#macros">Conditionals and macros</A>
+    </UL>
 <LI><A HREF="features/prefs.html">Syntax definition</A>
     - what to do if html-version-17.3 is out
 <LI><A HREF="features/exec.html">Execute shell-commands</A>
     - poor man's pseudo-CGI 
 <LI><A HREF="project/index.html">Project management</A>
     - I'll <make> ya
+    <UL>
+    <LI><A HREF="project/make.html">make</A> - a general purpose tool for project management
+    <LI><A HREF="project/prjfile.html">project files</A> - where <hsc> stores the
+        required information.
+    <LI><A HREF="project/makefile.html">Makefiles</A> - how to adopt them for <hsc>
+    <LI><A HREF="project/hscdepp.html">hscdepp</A> - 
+        <hsc>'s dependency procreator
+    <LI><A HREF="project/hscpitt.html">hscpitt</A> - 
+        <hsc>'s project interfering and trashing tool
+    </UL>
 </UL>
 
-<H2>Stuff</H2>
+<H2>Miscellaneous</H2>
 <UL>
-<LI><A HREF="updates.html">Updates</A> - where to get them and
-    how to reach the author
-<LI>About the <A HREF="source.html">sources</A>
-<LI><A HREF="bugs.html">Known bugs &amp; limitations</A>
+<LI><A HREF="questions.html">Questions</A> - and maybe some answers..
+<LI><A HREF="source.html">Source code</A> - gnugnugnugnugngnugngug
+<LI><A HREF="ports.html">Existing ports</A> - Amiga rulez? Not really.
+<LI><A HREF="bugs.html">Known bugs, problems and limitations</A> - <hsc> sucks completely
 <LI><A HREF="future.html">Future Improvements</A> - what might happen
-<LI><A HREF="related.html">Related tools</A> and further information
+<LI><A HREF="related.html">Related stuff</A> - tools and further information
 </UL>
 
 <HR>

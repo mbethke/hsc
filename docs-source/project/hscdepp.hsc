@@ -16,7 +16,7 @@
 <DD>
 </$MACRO>
 
-<P><STRONG>dependency procreator for hsc-sources</STRONG></P>
+<STRONG>hsc DEPendency Procreator</STRONG>
 
 <P><hscdepp> extracts dependencies from <hsc>'s project-file
 and stores them in a <makefile>. But not all parts of the
@@ -24,7 +24,7 @@ and stores them in a <makefile>. But not all parts of the
 <hscdepp> are marked with taglines, so the next time only
 this part is manipulated and the rest is left untouched.</P>
 
-<P><hscdepp> is part of the hsc-archive and therefor the
+<P><hscdepp> is part of the hsc-distribution and therefor the
 same legal issues apply.</P>
 
 <hscdepp> is dedicated to Johnny Depp.
@@ -32,26 +32,42 @@ same legal issues apply.</P>
 <H2>Options</H2>
 
 <DL>
-<EXPLAN TITLE="HELP">
-Display short help.
+<EXPLAN TITLE="HELP=-h=?/S">
+Display short help message and exit.
 
-<EXPLAN TITLE="FILE=<I>makefile</I>" NAME="file">
+<EXPLAN TITLE="LICENSE/S">    
+Display a short version of <A HREF=":copy.html">Copyright</A>
+and exit.
+
+<EXPLAN TITLE="FILE" NAME="file">
 Specifies makefile to be manipulated. If none given,
 <hscdepp> searches for <FILE>GNUmakefile</FILE>, <FILE>makefile</FILE>
 or <FILE>Makefile</FILE>. If it doesn't succeed in any of
 these, a new one named <FILE>Makefile</FILE> will be
 created.
 
-<EXPLAN TITLE="PRJFILE=<I>project-file</I>" NAME="prjfile">
+<EXPLAN TITLE="PRJFILE/K" NAME="prjfile">
 Specifies project-file to be scanned for dependencies. If
 none given, <FILE>hsc.project</FILE> is used.
 
-<EXPLAN TITLE="VERBOSE">
+<EXPLAN TITLE="NAMEALL/K" NAME="nameall">
+All document rules are collected together in a rule by default
+called <qq><CODE>all_hsc</CODE></qq>. This is used to update
+all documents using a simpe <KBD>make all_hsc</KBD>, or, even
+more useful, to be part of your <CODE>all</CODE> rule, which
+usually depends on all other things that are maintained by
+the <makefile>. This option changes the name of this rule.
+
+<EXPLAN TITLE="VERBOSE/S">
 Verbose output
 
-<EXPLAN TITLE="NOBACKUP">
+<EXPLAN TITLE="NOBACKUP/S">
 Do not create backup of original <makefile>.
 
+<EXPLAN TITLE="NOTAGLINES/S">
+Do not write taglines that identify beginning/ending of
+dependencies. This should only be used if you keep the
+dependencies in a separate file.
 </DL>
 
 <H2>Examples</H2>

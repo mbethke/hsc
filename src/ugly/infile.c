@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 30-Sep-1996
+ * updated: 25-Nov-1996
  * created:  8-Jul-1995
  */
 
@@ -419,11 +419,7 @@ int infclose1(INFILE * inpf)
  */
 INFILE *infopen(CONSTRPTR name, size_t step_size)
 {
-#if CRLF_SHIT
-#define FILEMODE "r"
-#else
 #define FILEMODE "rb"
-#endif
 #define INF_DEFAULT_HUNKSIZE (32*1024)
     INFILE *inpf = NULL;
     FILE *file = NULL;
@@ -467,37 +463,6 @@ INFILE *infopen(CONSTRPTR name, size_t step_size)
     /* read whole file into file lnbuf */
     if (inpf)
     {
-#if CRLF_SHIT
-        STRPTR buf = (STRPTR) umalloc(INF_FGETS_BUFSIZE);       /* alloc buffer */
-        STRPTR restr = buf;     /* result of fgets() (dummy init) */
-        BOOL ok = (buf != NULL);
-
-        /* read file and strip "\r" */
-        while (!feof(inpf->infile) && ok)
-        {
-            restr = fgets(buf, INF_FGETS_BUFSIZE, inpf->infile);
-            if (restr)
-            {
-                /* strip carriage-return */
-                size_t len = strlen(buf);
-                if (len && (buf[len - 1] == '\r'))
-                {
-                    buf[len - 1] = '\n';
-                    buf[len] = 0;
-                    D(fprintf(stderr, "*infile*  removed CR\n"));
-                }
-                ok = app_estr(inpf->lnbuf, restr);
-                D(
-                     {
-                     restr[20] = 0;
-                     fprintf(stderr, "*infile*  line=`%s'\n", restr);
-                     }
-                );
-            }
-        }
-
-        ufree(buf);             /* free buffer */
-#else
         if (file != stdin)
         {
             /* read whole file into buffer directly */
@@ -532,7 +497,6 @@ INFILE *infopen(CONSTRPTR name, size_t step_size)
 
             ufree(buf);         /* free buffer */
         }
-#endif
         D(fprintf(stderr, "*infile*  file read\n"));
     }
 
@@ -636,10 +600,20 @@ int ugly_infgetc(INFILE * inpf)
  */
 int infgetc(INFILE * inpf)
 {
+    /* read char */
+    int ch = ugly_infgetc(inpf);
+
     /* store word position */
     inpf->wpos_x = inpf->pos_x;
     inpf->wpos_y = inpf->pos_y;
-    return (ugly_infgetc(inpf));
+
+    /* TODO: this is shit */
+    if (ch=='\n')
+    {
+        inpf->wpos_y--;
+    }
+
+    return (ch);
 }
 
 /*

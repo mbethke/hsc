@@ -15,7 +15,7 @@ not exist, there has been nothing remarkable about this release.
 If you want to compile hsc yourself, read `source/README'. This
 document is not included in the AmigaOS-binary-archive, you will
 need to download `hsc-source.lha' from the same site you've got the
-binaries.
+binaries from.
 
 Thomas Aglassinger <agi@giga.or.at>
 

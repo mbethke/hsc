@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 12-Sep-1996
+ * updated: 17-Nov-1996
  * created:  1-Jul-1995
  */
 
@@ -33,6 +33,8 @@
 #include "ugly/fname.h"
 #include "ugly/prginfo.h"
 #include "ugly/returncd.h"
+
+#include "hscprj/license.h"
 
 #define DEFAULT_EXTENSION "html"
 
@@ -48,8 +50,8 @@ static BOOL arg_rplc_quote = FALSE;
 static BOOL arg_smart_ent = FALSE;
 static BOOL arg_jens = FALSE;
 static BOOL arg_strip_cmt = FALSE;
+static BOOL arg_strip_badws = FALSE;
 static BOOL arg_strip_ext = FALSE;
-static BOOL arg_pipe_in = FALSE;
 static BOOL arg_license = FALSE;
 static BOOL arg_help = FALSE;
 static BOOL arg_debug = FALSE;
@@ -64,16 +66,19 @@ static HSCPRC *arg_hp = NULL;
 /* contains defines for destination-attributes */
 static EXPSTR *fileattr_str = NULL;
 
+static ARGFILE *argf = NULL;
+
 /*
  * cleanup_hsc_args: free local resources
  */
 VOID cleanup_hsc_args(VOID)
 {
+    del_argfile(argf);
     del_estr(fileattr_str);
 }
 
 /*
- * arg_ignore
+ * arg_ignore_CB
  *
  * argument handler for special values that are passed
  * to "IGNORE=.." several messages are set to be ignored
@@ -82,59 +87,67 @@ VOID cleanup_hsc_args(VOID)
 static STRPTR arg_ignore_CB(STRPTR arg)
 {
     STRPTR errmsg = NULL;
+    STRPTR arg_clone = strclone(arg);   /* copy of arg; written by strtok() */
     HSCPRC *hp = arg_hp;
+    STRPTR nxt_arg = strtok(arg_clone, "|");    /* use "|" to tokenize */
 
-    if (!upstrcmp(arg, IGNORE_ALL_STR))
-    {                           /* all */
-        /* ignore all non-error messages */
-        HSCMSG_ID i;
-
-        for (i = 0; i < MAX_MSGID; i++)
-            hsc_set_msg_ignore(hp, i, TRUE);
-    }
-    else if (!upstrcmp(arg, IGNORE_BADSTYLE_STR))
-    {                           /* bad style */
-        /* ignore bad style messages */
-        hsc_set_msg_ignore(hp, MSG_CLICK_HERE, TRUE);
-        hsc_set_msg_ignore(hp, MSG_SUCC_WHTSPC, TRUE);
-        hsc_set_msg_ignore(hp, MSG_PREC_WHTSPC, TRUE);
-        hsc_set_msg_ignore(hp, MSG_BLINK_SUX, TRUE);
-        hsc_set_msg_ignore(hp, MSG_FRAME_SUX, TRUE);
-    }
-    else if (!upstrcmp(arg, IGNORE_PORTABILITY_STR))
-    {                           /* portability */
-        hsc_set_msg_ignore(hp, MSG_EXPT_H1, TRUE);
-        hsc_set_msg_ignore(hp, MSG_WRONG_HEADING, TRUE);
-        hsc_set_msg_ignore(hp, MSG_ICON_ENTITY, TRUE);
-        hsc_set_msg_ignore(hp, MSG_LF_IN_COMMENT, TRUE);
-        hsc_set_msg_ignore(hp, MSG_GT_IN_COMMENT, TRUE);
-        hsc_set_msg_ignore(hp, MSG_CMTEND_QUOTE, TRUE);
-        hsc_set_msg_ignore(hp, MSG_ONEW_COMMENT, TRUE);
-    }
-    else if (!upstrcmp(arg, IGNORE_JERKS_STR))
-    {                           /* jerks */
-        /* ignore jerk messages */
-        hsc_set_msg_ignore(hp, MSG_TAG_JERK, TRUE);
-    }
-    else if (!upstrcmp(arg, IGNORE_NOTES_STR))
-    {                           /* notes */
-        /* ignore note messages */
-        hsc_set_msg_ignore(hp, MSG_TAG_STRIPPED, TRUE);
-        hsc_set_msg_ignore(hp, MSG_RPLC_ENT, TRUE);
-        hsc_set_msg_ignore(hp, MSG_RPLC_SPCCHR, TRUE);
-    }
-    else
+    while (nxt_arg)
     {
-        /* ignore message # */
-        LONG ignnum;
+        D(fprintf(stderr, DHSC "  ignore `%s'\n", nxt_arg));
+        if (!upstrcmp(nxt_arg, IGNORE_ALL_STR))
+        {
+            /* ignore all non-error messages */
+            HSCMSG_ID i;
 
-        if (!str2long(arg, &ignnum))
-            errmsg = "illegal ignore";
+            for (i = 0; i < MAX_MSGID; i++)
+                hsc_set_msg_ignore(hp, i, TRUE);
+        }
+        else if (!upstrcmp(nxt_arg, IGNORE_NOTES_STR))
+        {
+            /* ignore note messages */
+            hsc_set_msg_ignore_notes(hp, TRUE);
+        }
+        else if (!upstrcmp(nxt_arg, IGNORE_BADSTYLE_STR))
+        {
+            /* ignore bad style messages */
+            hsc_set_msg_ignore_style(hp, TRUE);
+        }
+        else if (!upstrcmp(nxt_arg, IGNORE_PORTABILITY_STR))
+        {
+            /* ignore potability problems */
+            hsc_set_msg_ignore_port(hp, TRUE);
+        }
         else
-            hsc_set_msg_ignore(hp, ignnum, TRUE);
-    }
+        {
+            /* ignore message # */
+            LONG ignnum;
+
+            if (!str2long(nxt_arg, &ignnum))
+                errmsg = "illegal ignore";
+            else
+                hsc_set_msg_ignore(hp, ignnum, TRUE);
+        }
+
+        /* next arg */
+        nxt_arg = strtok(NULL, "|");
+    }                           /* while(nxt_arg) */
+
+    /* cleanup */
+    ufreestr(arg_clone);
 
     return (errmsg);
+}
+
+/*
+ * arg_include_CB
+ *
+ * argument handler for include directory (IDIR=..)
+ */
+static STRPTR arg_incdir_CB(STRPTR arg)
+{
+    HSCPRC *hp = arg_hp;
+    hsc_add_include_directory(hp, arg);
+    return (NULL);
 }
 
 /*
@@ -169,7 +182,6 @@ static STRPTR arg_mode_CB(STRPTR arg)
         arg_ignore_CB(IGNORE_NOTES_STR);
         hsc_set_msg_ignore(hp, MSG_MISS_REQTAG, TRUE);
         hsc_set_msg_ignore(hp, MSG_WRONG_HEADING, TRUE);
-        hsc_set_msg_ignore(hp, MSG_EXPT_H1, TRUE);
         hsc_set_msg_ignore(hp, MSG_LF_IN_COMMENT, TRUE);
     }
     else if (mode == MODE_RELAXED)
@@ -181,7 +193,7 @@ static STRPTR arg_mode_CB(STRPTR arg)
         hsc_set_msg_ignore(hp, MSG_TAG_OBSOLETE, TRUE);
         hsc_set_msg_ignore(hp, MSG_TAG_TOO_OFTEN, TRUE);
         hsc_set_msg_ignore(hp, MSG_CTAG_NESTING, TRUE);
-        hsc_set_msg_ignore(hp, MSG_EXPT_SEMIK, TRUE);
+        hsc_set_msg_ignore(hp, MSG_EXPT_SEMIC, TRUE);
     }
     else
     {
@@ -233,31 +245,6 @@ static STRPTR arg_status_CB(STRPTR arg)
     ufreestr(argold);
 
     return (errmsg);
-}
-
-/*
- * show_license
- *
- * display short description of GNU GPL
- */
-static VOID show_license(VOID)
-{
-    STRPTR license =            /* the usual boring text */
-    "\nThis program is free software; you can redistribute it and/or modify\n"
-    "it under the terms of the GNU General Public License as published by\n"
-    "the Free Software Foundation; either version 2 of the License, or\n"
-    "(at your option) any later version.\n\n"
-
-    "This program is distributed in the hope that it will be useful,\n"
-    "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-    "GNU General Public License for more details.\n\n"
-
-    "You should have received a copy of the GNU General Public License\n"
-    "along with this program; if not, write to the Free Software\n"
-    "Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\n";
-
-    fprintf(stderr, license);
 }
 
 /*
@@ -452,8 +439,55 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     EXPSTR *kack_name = init_estr(0);   /* temp. str for outfilename */
     struct arglist *hsc_args;   /* argument structure */
 
-    arg_hp = hp;
+#if (defined MSDOS && !defined HSC_GUN)
+#define SWAPSIZE     (16*4)     /* 16 MB */
+#define SWAPSIZE_BUF (256*1024)
+#define SWAPNAME     "hsc.swap"
+    /* create swap-file if neccessary */
+    FILE *swapfile = fopen(SWAPNAME, "rb");
+    if (!swapfile)
+    {
+        fprintf(stderr, "Creating swapfile..");
+        fflush(stderr);
+        fclose(swapfile);
+        swapfile = fopen(SWAPNAME, "wb");
+        if (swapfile)
+        {
+            STRPTR buf = (STRPTR) umalloc(SWAPSIZE_BUF);
+            STRPTR swaptext = "swap me up, before you go-go! ";
+            size_t len = strlen(swaptext);
+            size_t i = 0;
 
+            /* init buffer */
+            for (i = 0; i < (SWAPSIZE_BUF - len); i += len)
+            {
+                strcpy(&(buf[i]), swaptext);
+            }
+
+            /* write swapfile */
+            for (i = 0; i < SWAPSIZE; i++)
+            {
+                STRPTR progress = "/-\\|";
+                fprintf(stderr, "%c\b", progress[i % 4]);
+                fflush(stderr);
+                fwrite(buf, 1, SWAPSIZE_BUF, swapfile);
+            }
+            ufree(buf);
+        }
+        fprintf(stderr, "                    \r");
+        fflush(stderr);
+    }
+    if (!swapfile)
+    {
+        fprintf(stderr, "** failed creating swapfile");
+    }
+    else
+    {
+        fclose(swapfile);
+    }
+#endif
+
+    arg_hp = hp;
     arg_mode_CB(DEFAULT_MODE_STR);
 
     /* create arg-table */
@@ -462,7 +496,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
     /* file args */
                      "FROM/M", &incfile,
-                     "include- and input-file(s)",
+                     "include- and input file(s)",
 
                      "TO/K", &arg_outfname,
                      "output file (default: stdout)",
@@ -471,13 +505,13 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "project file (default: none)",
 
                      "PREFSFILE/T/K", &prefsfilename,
-                     "syntax preferences (default: hsc.prefs)",
+                     "syntax definition file",
 
                      "MSGFILE=MF/T/K", &msgfilename,
                      "message file (default: stderr)",
 
                      "MSGFORMAT/T/K", &msg_format,
-                     "how to display message",
+                     "how to display messages",
     /* numeric */
                      "MAXERR/N/K", &max_error,
                      "max. number of errors (default: 20)",
@@ -488,7 +522,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "DEFINE=DEF/T/K/M", &define_list,
                      "define global attribute",
 
-                     "IGNORE=IGN/N/K/M/$", arg_ignore_CB, &ignore_list,
+                     "IGNORE=IGN/K/M/$", arg_ignore_CB, &ignore_list,
                      "ignore message number",
 
                      "MODE/E/K/$", arg_mode_CB, MODE_ENUMSTR, &arg_mode,
@@ -499,10 +533,13 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 #if 0
                      "ENTITYSTYLE=ES/E/K", EMODE_ENUMSTR, &entmode,
                      "defines how special chars. appear (" EMODE_ENUMSTR ")",
-    /* switches */
 #endif
+                     "INCLUDEDIR=IDIR/K/M/$", arg_incdir_CB, &ignore_list,
+                     "add include directory",
+
+    /* switches */
                      "COMPACT=CO/S", &arg_compact,
-                     "strip useless LFs and white-spaces",
+                     "strip useless white spaces",
 
                      "GETSIZE/S", &arg_getsize,
                      "get width and height of images",
@@ -517,12 +554,16 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "replace quotes in text by `&quot;'",
 
                      "SMARTENT=SA/S", &arg_smart_ent,
-                     "replace special entities (`&<>\"')",
+                     "replace special entities (`&<>')",
 
                      "JENS/S", &arg_jens,
                      "don't try this at home",
+
+                     "STRIPBADWS/S", &arg_strip_badws,
+                     "strip bad white spaces",
+
                      "STRIPCOMMENT=SC/S", &arg_strip_cmt,
-                     "strip SGML-comments",
+                     "strip SGML comments",
 
                      "STRIPEXTERNAL=SX/S", &arg_strip_ext,
                      "strip tags with external URIs",
@@ -531,7 +572,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "tags to be stripped",
 
                      "ICONBASE/T/K", &arg_iconbase,
-                     "base-uri for icon-entities",
+                     "base uri for icon entities",
 
                      "STATUS/E/K/$", arg_status_CB,
                      STATUS_ENUM_STR, &disp_status,
@@ -539,7 +580,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
                      "-DEBUG/S", &arg_debug, "enable debugging output",
     /* help */
-                     "HELP=?/S", &arg_help, "display this text",
+                     "HELP=?=-h/S", &arg_help, "display this text",
                      "LICENSE/S", &arg_license, "display license",
 
                      NULL);
@@ -553,13 +594,17 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     if (ok)
     {
         BOOL use_stdout = FALSE;        /* flag: use stdout as output-file */
+        STRPTR argfiles[] =
+        {OPTION_FILE, NULL};
 
-        ok = set_args(argc, argv, hsc_args);
+        argf = new_argfilev(argfiles);
+
+        ok = set_args_file(argf, hsc_args)
+            && set_args(argc, argv, hsc_args);
 
         /* display help, if requested vie HELP switch, or no
          * input to pipe or read is passed */
-        ok &= (!arg_help &&
-               (arg_pipe_in || (incfile && dll_first(incfile))));
+        ok &= (!arg_help && (incfile && dll_first(incfile)));
 
         if (arg_license)
         {
@@ -596,7 +641,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
             /* compute name of input file */
             arg_inpfname = NULL;
-            if (dll_first(incfile) && !arg_pipe_in)
+            if (dll_first(incfile))
             {
                 /* use last FROM as input file */
                 arg_inpfname = dln_data(dll_last(incfile));
@@ -646,6 +691,16 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                 if (arg_outfname)
                 {
                     UBYTE lastch = 0;
+
+#ifdef AMIGA
+                    /* treat `TO ""' and `TO=""' the same for AmigaOS */
+                    if (!strcmp(arg_outfname, "\"\""))
+                    {
+                        arg_outfname = "";
+                        D(fprintf(stderr,
+                         DHSC "AMIGA: use current dir, strange version\n"));
+                    }
+#endif
 
                     /* get last char of outfname to determine
                      * if it's a directory
@@ -701,7 +756,11 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                             {
                                 out_reldir--;
                             }
-                            out_reldir++;
+
+                            if (out_reldir != ou2_reldir)
+                            {
+                                out_reldir++;
+                            }
                         }
                         D(fprintf(stderr, DHSC "corr_inp: `%s'\n"
                                   DHSC "corr_out: `%s'\n",
@@ -768,24 +827,19 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                 }
                 else
                 {
-                    if (!arg_pipe_in)
-                    {
-                        /* no outfilename given */
-                        /* ->outfilename = destdir + inpfilename + ".html" */
+                    /* no outfilename given */
+                    /* ->outfilename = destdir + inpfilename + ".html" */
 
-                        /* link destdir & input filename */
-                        outfilename = init_estr(32);
-                        link_fname(outfilename, estr2str(destdir),
-                                   arg_inpfname);
-                        if (strcmp(arg_extension, "."))
-                            set_fext(outfilename, arg_extension);
-                        D(fprintf(stderr,
+                    /* link destdir & input filename */
+                    outfilename = init_estr(32);
+                    link_fname(outfilename, estr2str(destdir),
+                               arg_inpfname);
+                    if (strcmp(arg_extension, "."))
+                        set_fext(outfilename, arg_extension);
+                    D(fprintf(stderr,
                               DHSC "output: concat destdir+inpfile+`.%s'\n"
-                                  DHSC "output: set to `%s'\n",
-                                  arg_extension, estr2str(outfilename)));
-                    }
-                    else
-                        fnsux = TRUE;
+                              DHSC "output: set to `%s'\n",
+                              arg_extension, estr2str(outfilename)));
                 }
 
                 if (fnsux)
@@ -804,7 +858,6 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
             if (!ok)
                 set_return_code(RC_ERROR);
-
         }
 
         if (ok)
@@ -830,21 +883,21 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
             fileattr_str = init_estr(64);
 
+            /* set HSC.DOCUMENT */
             if (outfilename)
+            {
                 get_fname(tmp_fname, estr2str(outfilename));
+            }
             set_dest_attribs(hp, estr2str(rel_destdir),
                              estr2str(tmp_fname));
-            if (!arg_pipe_in)
-            {
-                if (outfilename)
-                    get_fname(tmp_fname, estr2str(outfilename));
-                else
-                    clr_estr(tmp_fname);
-                set_source_attribs(hp, estr2str(rel_destdir),
-                                   estr2str(tmp_fname));
-            }
+
+            /* set HSC.SOURCE */
+            if (inpfilename)
+                get_fname(tmp_fname, estr2str(inpfilename));
             else
-                set_source_attribs(hp, NULL, NULL);
+                clr_estr(tmp_fname);
+            set_source_attribs(hp, estr2str(rel_destdir),
+                               estr2str(tmp_fname));
 
             D(
                  {
@@ -854,11 +907,11 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                          DHSC "input : `%s'\n", estr2str(inpfilename));
                  fprintf(stderr, DHSC "output: `%s'\n", get_outfilename());
                  fprintf(stderr, DHSC "destdr: `%s'\n", estr2str(destdir));
-                fprintf(stderr, DHSC "reldst: `%s'\n", estr2str(rel_destdir));
+                 fprintf(stderr, DHSC "reldst: `%s'\n", estr2str(rel_destdir));
                  if (prjfilename)
                  fprintf(stderr, DHSC "projct: `%s'\n", prjfilename);
                  if (!use_stdout)
-                fprintf(stderr, DHSC "procss: `%s'\n", estr2str(outfilename));
+                 fprintf(stderr, DHSC "procss: `%s'\n", estr2str(outfilename));
                  fprintf(stderr, DHSC "ignore:");
                  for (i = 0; i < MAX_MSGID; i++)
                  if (hsc_get_msg_ignore(hp, i))
@@ -884,10 +937,12 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
             hsc_set_rplc_ent(hp, arg_rplc_ent);
             hsc_set_rplc_quote(hp, arg_rplc_quote);
             hsc_set_smart_ent(hp, arg_smart_ent);
+            hsc_set_strip_badws(hp, arg_strip_badws);
             hsc_set_strip_cmt(hp, arg_strip_cmt);
             hsc_set_strip_ext(hp, arg_strip_ext);
 
             hsc_set_quote_mode(hp, arg_quotemode);
+            hsc_set_strip_tags(hp, arg_striptags);
 
             /* set directories */
             hsc_set_destdir(hp, estr2str(destdir));
