@@ -97,7 +97,7 @@ static VOID prt_tag(FILE * stream, APTR data)
         fprintf(stream, " <NULL>");
 }
 
-/* function to temporarily disable debuggin output */
+/* function to temporarily disable debugging output */
 static BOOL dbg_old = FALSE;
 
 #define dbg_disable(hp) {dbg_old = hp->debug; hp->debug=FALSE;}
@@ -119,7 +119,8 @@ static BOOL dbg_old = FALSE;
  * result: full path & filename of prefs or NULL if not found
  *
  */
-static STRPTR find_prefs_fname(HSCPRC * hp, EXPSTR *cfgfn) {
+static STRPTR find_prefs_fname(HSCPRC * hp, EXPSTR *cfgfn)
+{
 #define ENV_HOME "HOME"
     STRPTR prefs_fname = NULL;
     STRPTR paths[] =            /* paths to search for config file */
@@ -168,13 +169,28 @@ static STRPTR find_prefs_fname(HSCPRC * hp, EXPSTR *cfgfn) {
     return (prefs_fname);
 }
 
+void add_env_include_dirs(HSCPRC *hp)
+{
+   STRPTR incp = getenv(ENV_HSCINCLUDE);
+   if(NULL != incp) {
+      STRPTR s = strclone(incp);
+      STRPTR t = strtok(s,PATHL_SEPARATOR);
+      hsc_add_include_directory(hp,t);
+      while(NULL != (t = strtok(NULL,PATHL_SEPARATOR))) {
+         hsc_add_include_directory(hp,t);     
+      }
+      freestr(s);
+   }
+}
+
 /*
  * hsc_read_prefs
  *
  * try to open (any) config file and read preferences
  * from it
  */
-BOOL hsc_read_prefs(HSCPRC * hp, STRPTR prefs_fname) {
+static BOOL hsc_read_prefs(HSCPRC * hp, STRPTR prefs_fname)
+{
     BOOL ok = FALSE;
     EXPSTR *prefs_name_buffer = init_estr(32);
 
@@ -210,7 +226,7 @@ BOOL hsc_read_prefs(HSCPRC * hp, STRPTR prefs_fname) {
 /*
  * hsc_set_tagCB
  */
-VOID hsc_set_tagCB(HSCPRC * hp, STRPTR name,
+static void hsc_set_tagCB(HSCPRC * hp, STRPTR name,
                    BOOL(*op_hnd) (HSCPRC * inpf, HSCTAG * tag),
                    BOOL(*cl_hnd) (HSCPRC * inpf, HSCTAG * tag))
 {
@@ -232,7 +248,8 @@ VOID hsc_set_tagCB(HSCPRC * hp, STRPTR name,
  *
  * NOTE: this ones tricky, but a bit perverted somehow
  */
-BOOL hsc_init_tagsNattr(HSCPRC * hp) {
+BOOL hsc_init_tagsNattr(HSCPRC * hp)
+{
 #define INCLUDE_ATTR " PRE:bool SOURCE:bool TEMPORARY:bool" \
                      " INDENT:num TABSIZE:num=\"4\" "
     BYTE i = 0;
@@ -361,7 +378,8 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp) {
  * create internal entities
  * (should be called BEFORE hsc_read_prefs())
  */
-BOOL hsc_init_basicEntities(HSCPRC * hp) {
+BOOL hsc_init_basicEntities(HSCPRC * hp)
+{
    unsigned i;
    
    for(i=0; i < NMEMBERS(HSCInternalEntities); ++i) {
@@ -463,4 +481,4 @@ BOOL hsc_init_hscprc(HSCPRC * hp, STRPTR prefs_fname)
 }
 
 /* $Id$ */
-/* vi: set ts=4: */
+/* vi: set ts=3: */
