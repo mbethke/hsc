@@ -48,7 +48,7 @@
  * CRLF_SHIT         0=OS uses single "\n" for EOL
  */
 
-#ifdef AMIGA                           /* AmigaOS */
+#if defined(AMIGA) || defined(AROS)   /* AmigaOS */
 #define MAX_FPATH 256
 #define MAX_FNAME  31
 #define MAX_FEXT   30

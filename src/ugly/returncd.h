@@ -30,7 +30,7 @@
 /*
  * define values for return code
  */
-#ifdef AMIGA
+#if defined(AMIGA) || defined(AROS)
 
 #define RC_OK     0
 #define RC_WARN   5

@@ -497,7 +497,7 @@ BOOL get_relfname(EXPSTR * dest, STRPTR absn, STRPTR curp)
 BOOL optimize_fname(STRPTR *target_name, STRPTR source_name)
 {
    /* Some system dependent defines */
-#if defined AMIGA
+#if defined(AMIGA) || defined(AROS)
 #define PARENT_DIRECTORY_BEGIN  "/"
 #define PARENT_DIRECTORY_INSIDE "//"
 #elif defined BEOS || defined NEXTSTEP || defined RISCOS || defined UNIX || defined WINNT
@@ -531,7 +531,7 @@ BOOL optimize_fname(STRPTR *target_name, STRPTR source_name)
     size_t parent_inside_index = 0;
 
     /* Skip device name */
-#if defined AMIGA
+#if defined(AMIGA) || defined(AROS)
     STRPTR device_delimiter = strchr(filename_fun_start, ':');
 
     if (device_delimiter != NULL)

@@ -49,24 +49,19 @@ VOID conv_path2uri(EXPSTR * dest, STRPTR path)
 {
     clr_estr(dest);
 
-#ifdef AMIGA
+#if defined(AMIGA) || defined(AROS)
     /* replace leading parent directories by "../" */
-    while (!strncmp(path, PARENT_DIR, strlen(PARENT_DIR)))
-    {
+    while (!strncmp(path, PARENT_DIR, strlen(PARENT_DIR))) {
         app_estr(dest, PARENT_URI);
         path += strlen(PARENT_DIR);
     }
 
-    while (path[0])
-    {
+    while (path[0]) {
         /* replace all "//" by "../" */
-        if ((path[0] == '/') && (path[1] == '/'))
-        {
+        if ((path[0] == '/') && (path[1] == '/')) {
             app_estr(dest, PARENT_URI);
             path += 2;
-        }
-        else
-        {
+        } else {
             app_estrch(dest, path[0]);
             path++;
         }
@@ -90,37 +85,30 @@ VOID conv_uri2path(EXPSTR * dest, STRPTR uri, BOOL weenix)
 {
     clr_estr(dest);
 
-#ifdef AMIGA
-    if (weenix)
-    {
+#if defined(AMIGA) || defined(AROS)
+    if (weenix) {
         /* convert leading "/" to ":" */
         /* convert leading "~" to ":" */
         if (!strncmp(uri, "/", 1)
             || !strncmp(uri, "~/", 2)
-            || !strncmp(uri, "~", 1))
-        {
+            || !strncmp(uri, "~", 1)) {
             app_estr(dest, ":");
             uri++;
         }
     }
 
     /* convert leading "../" to "/" */
-    while (!strncmp(uri, PARENT_URI, strlen(PARENT_URI)))
-    {
+    while (!strncmp(uri, PARENT_URI, strlen(PARENT_URI))) {
         app_estr(dest, PARENT_DIR);
         uri += strlen(PARENT_URI);
     }
 
     /* convert inside "../" to "//" */
-    while (uri[0])
-    {
-        if (!strncmp(uri, PARENT_URI, strlen(PARENT_URI)))
-        {
+    while (uri[0]) {
+        if (!strncmp(uri, PARENT_URI, strlen(PARENT_URI))) {
             app_estrch(dest, '/');
             uri += strlen(PARENT_URI);
-        }
-        else
-        {
+        } else {
             app_estrch(dest, uri[0]);
             uri++;
         }
@@ -141,12 +129,10 @@ URIKIND uri_kind(STRPTR uri)
 {
     URIKIND kind = URI_abs;
 
-    if (upstrncmp(uri, ABSURI_ID, strlen(ABSURI_ID)))
-    {
+    if (upstrncmp(uri, ABSURI_ID, strlen(ABSURI_ID))) {
         if (uri[0] == '/')
             kind = URI_relserv;
-        else
-        {
+        else {
             STRPTR colon_pos = strchr(uri, ':');
             STRPTR slash_pos = strchr(uri, '/');
 
