@@ -30,7 +30,7 @@
 #include "hsclib/css.h"
 
 /* markers for JFIF/JPEG that contain
- * information about image dimension
+ * information about image dimensions
  */
 static UBYTE msof[] =
 {
@@ -85,7 +85,7 @@ static unsigned char id_PNG[] =
  */
 static VOID hsc_msg_img_corrupt(HSCPRC * hp, STRPTR cause)
 {
-    hsc_message(hp, MSG_IMG_CORRUPT, "image corrupt (%s)");
+    hsc_message(hp, MSG_IMG_CORRUPT, "image corrupt (%s)",cause);
 }
 
 /*
@@ -203,63 +203,33 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
             if (errno) {
                 /* read error */
                 hsc_msg_read_error(hp, filename);
-            } else if (buf[0] == 0xff) {
+            } else if((0xff == buf[0]) && (0xd8 == buf[1])){
                 /*
                  * JFIF/JPEG
                  */
                 BOOL found = FALSE;
-                size_t i = 0;
+                long offset = 2;
 
-                while (!found && (i < (bytes_read - 8))) {
-                    if ((buf[i] == 0xff) && (buf[i + 1] != 0xff)) {
-                        BOOL is_msof = FALSE;
-                        int j = 0;
-
-                        DSZ(fprintf(stderr,
-                                    "%04lx: %02x %02x: (%02x%02x %02x%02x) ",
-                                    (ULONG) i, buf[i], buf[i + 1],
-                                    buf[i + 2], buf[i + 3],
-                                    buf[i + 4], buf[i + 5]));
-
-                        /* check if marker is of required type */
-                        while (!is_msof && msof[j]) {
-                            if (buf[i + 1] == msof[j])
-                                is_msof = TRUE;
-                            else
-                                j += 1;
-                        }
-
-                        if (is_msof) {
-                            DSZ(
-                                   {
-                                   for (j = 0; j < 10; j++)
-                                   {
-
-                                   printf("\n  %-2d: $%02x %-3d",
-                                          j, buf[i + j], buf[i + j]);
-                                   if (buf[i + j] >= 32)
-                                   printf(" '%c'", buf[i + j]);
-
-                                   }
-                                   }
-                            );
-
-                            filetype = "JFIF/JPEG";
-                            width = buf[i + 8] + (buf[i + 7] << 8);
-                            height = buf[i + 6] + (buf[i + 5] << 8);
-                            found = TRUE;
-
-                        } else {
-                            DDA(printf("ignore\n"));
-                        }
-                    }
-
-                    i += 1;
+                while(!feof(fref) && !found) {
+                   fseek(fref,offset,SEEK_SET);
+                   fread(buf,1,16,fref);
+                   if(0xff != buf[0])
+                      break;        /* obviously corrupted file */
+                   if(NULL == strchr((char*)msof,(int)buf[1])) {
+                      /* current chunk has no size information, so skip it */
+                      offset += (buf[2]<<8) + buf[3] + 2;
+                      DSZ(fprintf(stderr,"Skipped JFIF chunk 0x%02x, continuing at offset %ld\n",buf[1],offset);)
+                   } else {
+                      /* found size information */
+                      filetype = "JFIF/JPEG";
+                      width = buf[8] + (buf[7] << 8);
+                      height = buf[6] + (buf[5] << 8);
+                      found = TRUE;
+                      DSZ(fprintf(stderr,"Found size info in chunk 0x%02x: %ldx%ld\n",buf[1],width,height);)
+                   }
                 }
-
-                /* check if buffer exeeds */
                 if (!found)
-                    hsc_msg_img_corrupt(hp, "image buffer exeeds");
+                    hsc_msg_img_corrupt(hp, "no size info or illegal marker");
             } else if (!fuck_strncmp("GIF87a", (STRPTR) buf, 6)
                      || !fuck_strncmp("GIF89a", (STRPTR) buf, 6)) {
                 /*
@@ -267,8 +237,7 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                  */
                 ULONG use_global_colormap = (buf[10] & 0x80) >> 7;
                 ULONG pixeldepth = (buf[10] & 0x07) + 1;
-                ULONG startimg =
-                13 + use_global_colormap * 3 * (1 << pixeldepth);
+                ULONG startimg = 13 + use_global_colormap * 3 * (1 << pixeldepth);
                 BOOL fucked_up = FALSE;
 
                 DSZ(fprintf(stderr, DHL "  buf=%d: gcolmap=%ld, pxldep=%ld\n",
