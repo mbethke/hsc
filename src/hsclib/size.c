@@ -32,7 +32,7 @@
 /* markers for JFIF/JPEG that contain
  * information about image dimensions
  */
-static UBYTE msof[] =
+static const UBYTE msof[] =
 {
     /* M_SOF0  */ 0xc0,
     /* M_SOF1  */ 0xc1,
@@ -51,12 +51,10 @@ static UBYTE msof[] =
 };
 
 /* PNG image header */
-#if 0
-static unsigned char id_PNG[] =
+static const unsigned char id_PNG[] =
 {
     137, 80, 78, 71, 13, 10, 26, 10
 };
-#endif
 
 /* file indeces for PNG */
 #define WIDTH_PNG  16
@@ -83,9 +81,9 @@ static unsigned char id_PNG[] =
  *
  * display message that image is corrupt
  */
-static VOID hsc_msg_img_corrupt(HSCPRC * hp, STRPTR cause)
+static VOID hsc_msg_img_corrupt(HSCPRC * hp, STRPTR name, STRPTR cause)
 {
-    hsc_message(hp, MSG_IMG_CORRUPT, "image corrupt (%s)",cause);
+    hsc_message(hp, MSG_IMG_CORRUPT, "image %q is corrupt (%s)",name,cause);
 }
 
 /*
@@ -177,9 +175,6 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
         STRPTR filetype = NULL;
         STRPTR filename = NULL; /* native filename for image-URI */
         FILE *fref = NULL;      /* file link references to */
-        unsigned char id_PNG[] = {
-            137, 80, 78, 71, 13, 10, 26, 10
-        };                      /* PNG image header */
 
         /* convert URI to native filename */
         conv_hscuri2file(hp, srcpath, srcuri);
@@ -199,7 +194,6 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
             /* read buffer from file */
             errno = 0;
             bytes_read = fread(buf, 1, IMAGE_BUFFER_SIZE, fref);
-
             if (errno) {
                 /* read error */
                 hsc_msg_read_error(hp, filename);
@@ -210,7 +204,7 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                 BOOL found = FALSE;
                 long offset = 2;
 
-                while(!feof(fref) && !found) {
+                do {
                    fseek(fref,offset,SEEK_SET);
                    fread(buf,1,16,fref);
                    if(0xff != buf[0])
@@ -227,11 +221,11 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                       found = TRUE;
                       DSZ(fprintf(stderr,"Found size info in chunk 0x%02x: %ldx%ld\n",buf[1],width,height);)
                    }
-                }
+                } while(!(found || feof(fref)));
                 if (!found)
-                    hsc_msg_img_corrupt(hp, "no size info or illegal marker");
+                    hsc_msg_img_corrupt(hp, filename, "no size info or illegal marker");
             } else if (!fuck_strncmp("GIF87a", (STRPTR) buf, 6)
-                     || !fuck_strncmp("GIF89a", (STRPTR) buf, 6)) {
+                    || !fuck_strncmp("GIF89a", (STRPTR) buf, 6)) {
                 /*
                  * GIF
                  */
@@ -269,12 +263,12 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
 
                         /* check if buffer exeeds */
                         if (startimg > (bytes_read - 9)) {
-                            hsc_msg_img_corrupt(hp, "image buffer exeeds");
+                            hsc_msg_img_corrupt(hp, filename, "image buffer exeeds");
                             fucked_up = TRUE;
                         }
 
                     } else {
-                        hsc_msg_img_corrupt(hp, "unknown gif-block");
+                        hsc_msg_img_corrupt(hp, filename, "unknown GIF-block");
                         DSZ(fprintf(stderr, "  id='%x', index=%ld/\n",
                                     buf[startimg], startimg));
                         fucked_up = TRUE;
@@ -284,7 +278,7 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                 if ((buf[startimg] != ',') && !fucked_up) {
                     DSZ(fprintf(stderr, DHL "  %04lx: id=%02x\n",
                                 startimg, buf[startimg]));
-                    hsc_msg_img_corrupt(hp, "image separator expected");
+                    hsc_msg_img_corrupt(hp, filename, "image separator expected");
                 } else {
                     /* been sucessful */
                     DSZ(fprintf(stderr, DHL "  %04lx: id=%02x\n",
