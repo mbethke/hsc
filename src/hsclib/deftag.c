@@ -628,24 +628,28 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
 
    /* for XHTML, normalize boolean attributes */
    if(hp->xhtml && (VT_BOOL == attr->vartype)) {
-      char *s,*t;
+      char *s,*t,*q;
+      /* choose quotes */
+      q = (QMODE_SINGLE == hp->quotemode) ? "'" : "\"";
       /* clone attribute string */ 
       s = t = strclone(estr2str(attr_str));
       /* skip leading blanks */
-      while((' ' ==*t) || ('\t' == *t)) t++;
-      /* turn attr into attr="attr" (screw single quotes!) */
-      app_estr(attr_str,"=\"");
+      while(isspace(*t)) ++t;
+      /* turn attr into attr="attr" or attr='attr' */
+      app_estr(attr_str,"=");
+      app_estr(attr_str,q);
       app_estr(attr_str,t);
-      app_estr(attr_str,"\"");
+      app_estr(attr_str,q);
       ufreestr(s);
    } else if(hp->lctags && (VT_ENUM == attr->vartype)) {
       /* lowercase entire attribute + value for ENUM attributes if req. */
       lowstr(estr2str(attr_str));
    }
-   
 
    /* warn on obsolete attribute */
-   if(attr->varflag & VF_OBSOLETE) {
+   if((attr->varflag & VF_OBSOLETE) &&
+      (strlen(estr2str(val_str)))   &&
+      (strlen(estr2str(attr_str)))) {
       hsc_message(hp,MSG_ATTR_OBSOLETE,"%A is obsolete",attr);
    }
 
@@ -653,7 +657,7 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
    if (attr == &skipvar)
       clr_vartext(attr);
 
-   if(is_styleattr) {
+   if(is_styleattr && strlen(estr2str(val_str)) && strlen(estr2str(attr_str))) {
       /* attr_str contains gibberish here, don't use it */
       BOOL done = FALSE;
       STRPTR cstyle, nstyle, value;
@@ -682,17 +686,7 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
             while(isspace(*value)) ++value;
             /* check whether both property and value are there */
             if(strlen(cstyle) && strlen(value)) {
-               HSCSTYLE *styledef;
-               if(NULL != (styledef = find_stylename(hp->tag_styles,cstyle))) {
-                  hsc_message(hp, MSG_STYLE_REDEFINED,
-                        "CSS property %q redefined, previous value was %q",
-                        cstyle,styledef->value);
-                  ufreestr(styledef->value);
-                  styledef->value = strclone(value);
-               } else {
-                  styledef = new_styleattr(cstyle,value);
-                  app_dlnode(hp->tag_styles,styledef);
-               }
+               add_styleattr(hp,cstyle,value);
             } else {
                hsc_message(hp, MSG_INVALID_STYLE,
                      "invalid CSS style definition `%s:%s'", cstyle,value);
@@ -836,32 +830,6 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
     * append it to the tag call */
    set_tag_defaults(hp, tag);
 
-   /* flush all CSS properties to a STYLE attribute */
-   if(NULL != hp->tag_styles->first) {
-      BOOL semicolon = FALSE;
-      STRPTR quote = (QMODE_SINGLE == hp->quotemode) ? "'" : "\"";
-      HSCSTYLE *stylend;
-      DLNODE *nd;
-
-      /* append attribute and quote */
-      app_estr(hp->tag_attr_str, hp->lctags ? " style=" : " STYLE=");
-      app_estr(hp->tag_attr_str, quote);
-      /* loop over all nodes in styles list */
-      while(NULL != (nd = hp->tag_styles->first)) {
-         stylend = (HSCSTYLE*)(nd->data);
-         /* if there is more than one pair, they have to be separated */
-         if(semicolon) app_estr(hp->tag_attr_str, "; ");
-         /* append <name>:<value> */
-         app_estr(hp->tag_attr_str, stylend->name);
-         app_estr(hp->tag_attr_str, ":");
-         app_estr(hp->tag_attr_str, stylend->value);
-         /* remove node from list */
-         del_dlnode(hp->tag_styles, nd);
-         semicolon = TRUE;
-      }
-      /* closing quote */
-      app_estr(hp->tag_attr_str, quote);
-   }
    /* unset scope */
    unget_mci(hp);
 
