@@ -125,14 +125,20 @@ which came with your Workbench distribution, if you are not sure).
 <P>Another, quite embarrassing, reason is, that most of these resources are kept
 in linked lists. And therefor, if <hsc> has to look for something, it
 sequentially searches these list. Shame on me, I should use some sort of
-balanced binary tree for such things. But the problem with balanced tree is:
-though there are lots of sources around, most of them are perverted
-<qq>real</qq> C-sources perpetrated by some brain-dead Unix-fossils, ignoring
-the fact that memory can run out or that there is a "-Wall" option in most
-compilers; some of these sources also date back to 1863, when no one even
-pretended there is a language definition for <CITE>C</CITE>. Currently I'm too
-lazy to write (and, even more work, test) a balanced tree myself. Maybe in
-another life...</P>
+balanced binary tree for such things.</p>
+
+<p>But the problem with balanced tree is: though there are lots of
+sources around, most of them are perverted <qq>real</qq> C-sources
+perpetrated by some brain-dead Unix-fossils, ignoring the fact that
+memory can run out or that there is a "-Wall" option in most
+compilers; some of these sources also date back to 1863, when no one
+even pretended there is a language definition for <CITE>C</CITE>.</p>
+
+<p>Meanwhile I'm too lazy to change anything, but if you are
+interested in the source code for a quite well done tree
+implementation, check out the Ubiqx library available from <a
+href="http://www.interads.co.uk/~crh/ubiqx/"><(hsc.anchor)></a>. If it
+would have been around in 1995, I would have used it.</p>
 
 <HR>
 

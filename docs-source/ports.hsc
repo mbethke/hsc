@@ -16,6 +16,7 @@ C-compiler.</P>
 differences to the version for AmigaOS. Currently ports exist for
 <A HREF="#riscos">RiscOS</A>,
 <A HREF="#nextstep"><Nextstep></A>,
+<A HREF="#amiga-ppc">AmigaOS with PowerPC</A>,
 <A HREF="#amixemul">AmigaOS with <FILE>ixemul.library</FILE></A>,
 <A HREF="#beos">BeOS</A>
 and <A HREF="#unix">Unixoid systems</A>.
@@ -27,27 +28,29 @@ and <A HREF="#others">other systems</A>.
 
 <H2><A NAME="riscos">RiscOS</A></H2>
 
-The port to RiscOS has been done by Sergio Monesi and Nick Craig-Wood.
-For details, please refer to <A
-HREF="http://www.axis.demon.co.uk/hsc/"><(HSC.Anchor)></A>. Basically,
-it acts like the version for <NextStep> (see below).
+<P>The port to RiscOS has been done by Sergio Monesi and Nick
+Craig-Wood. For details, please refer to <riscos-support>. Basically,
+it acts like the version for <NextStep> (see below), although you will
+have to use a special <make> tool.</P>
 
 <H2><A NAME="nextstep"><Nextstep></A></H2>
 
 <H3>Searching For Syntax Definition</H3>
 
-When searching for the <ln_syntax>, <hsc> will look at
+When searching for the <ln-syntax>, <hsc> will look for the file you've specified using the option <op-prefsfile>.
+If you did not specify any, it will search the
+
 <UL>
-<LI>The file you've specified using the option <op_prefsfile>
-<LI>The current directory
-<LI>The directory you have specified using <env_hscpath>
-<LI>The directory specified in the environment variable
-    <env_home>, with a <qq><FILE>lib/</FILE></qq> added.
-<LI>The directory <qq><FILE>/usr/local/lib/</FILE></qq>
-<LI>The directory <qq><FILE>/usr/lib/</FILE></qq>
+<LI>current directory
+<LI>directory you have specified using <env-hscpath>
+<LI>directory specified in the environment variable
+    <env-home>, with a <qq><FILE>lib/</FILE></qq> added.
+<LI>directory <qq><FILE>/usr/local/lib/</FILE></qq>
+<LI>directory <qq><FILE>/usr/lib/</FILE></qq>
 </UL>
 
-If one of these directories does not exist at all, <hsc> will silently
+for a file named <hsc.prefs>. If one of these directories does not
+contain a <hsc.prefs> or does not exist at all, <hsc> will silently
 proceed with the next one on this list.
 
 <H3>Exit Code</H3>
@@ -55,20 +58,31 @@ proceed with the next one on this list.
 On notes/warnings/errors/fatal errors showing up, <hsc> will
 return an exit code of 0/0/1/2.
 
+<H2><A NAME="amiga-ppc">AmigaOS with PowerPC</A></H2>
+
+<p>There is a port available that compiles with SAS/c. However,
+this was only done to show that it is possible. Although no changes to the
+code are necessary, currently nobody maintains this version so the
+executable might be slightly outdated. Concerning the pathetic mess
+which link format to use: it is the one from p5.</p>
+
+<p>You can find the binary in <aminet file="text/hyper/hscPPC.lha">,
+so you still need the "normal" archive for the documentation.</p>
+
 <H2><A NAME="amixemul">AmigaOS with ixemul.library</A></H2>
 
 <P>Most GNU-tools have been ported to AmigaOS using an additional
 library called <FILE>ixemul.library</FILE>. It is quite successful in
 turning an Amiga in a moldy and dribbling Un*x-box, emulating all
 those idiotic things like the <qqc>..</qqc> and <qqc>/bin</qqc> pretty
-shitty well.</P>
+shitty well. Of course you can also use <hsc> with it.</P>
 
-<P>But if you prefer to rape your machine, you will have to compile it
-yourself using the <EXEC>gcc</EXEC>-port of ADE. If you don't know
-what I'm currently talking about, you don't want to do this anyway.
-Actually the binary of <hsc> included in the archive for AmigaOS is
-able to deal with native filenames and system directories, so why
-bother?</P>
+<P>But if you prefer to rape your machine, you have to compile it
+yourself using the <EXEC>gcc</EXEC>-port from GeekGadgets. If you
+don't know what I'm currently talking about, you don't want to do this
+anyway. Actually the binary of <hsc> included in the archive for
+AmigaOS is able to deal with native filenames and system directories,
+so why bother?</P>
 
 <H2><A NAME="beos">BeOS</A></H2>
 
@@ -78,9 +92,7 @@ bother?</P>
 <P>But currently no one takes care about this port, and I never tried
 it out myself. So there might be problems with newer versions of this
 OS or the <EXEC>mwcc</EXEC> compiler. Most likely there are more
-compiler options that could be specified for better code. So
-suggestions and corrections about how to improve the BeOS-part of the
-<Makefile> are welcome.</P>
+compiler options that could be specified for better code.</P>
 
 <H2><A NAME="unix">Unixoid Systems</A></H2>
 
@@ -96,10 +108,13 @@ IRIX, MkLinux for Power Macintosh and several others.</P>
 
 <P>As <hsc> is more portable than I want it to be, it is even possible
 to make it somehow work with most MS-DOS based systems like Windows
-NT/95 or OS/2. But as the whole philosophy and spirit of these systems
-is a totally fascist one, there is no reason to support them. There is
-no support within these documents or the the <Makefile>s coming with
-the sources for any of these systems.</P>
+NT/95/98/00/.. or OS/2. Of course there is no reason to support them, therefore
+compilation, usage and differences are neither described within these
+documents nor supported by the <Makefile> coming with the source
+code.</P>
+
+<P>If you now ask yourself "why?", then you are pretty
+simpleminded.</p>
 
 <P>You <EM>must not</EM> contact me with problems compiling or using
 <hsc> on <EM>any</EM> of these systems.</P>
@@ -107,16 +122,6 @@ the sources for any of these systems.</P>
 <H2><A NAME="others">Other Systems</A></H2>
 
 <P>Ah, well, there are still systems without <hsc>.</P>
-
-<P>Recently several new operating systems for Amiga-based Hardware
-have been announced or released in alpha versions (usually claiming
-they are already being beta). For those supported by the ADE you
-should have no trouble compiling the same way as for AmigaOS with
-ixemul.library. For others it depends on the C-compilers available.
-Basically it should be possible to make <hsc> work on all these
-systems. As I do not have the nerves to fiddle around with them, I
-probably will not release any ports. However, if someone else manages
-to make it work, I will gracefully include the required changes.</P>
 
 <P>For MacOS, I don't don't have a compiler and maybe one will have to
 write a GUI. Internally <hsc> is <em>not</em> designed to be used from
@@ -126,8 +131,6 @@ ten lines of code. However, you will need to find a tool to do the
 project management - or integrate this part into your GUI. And that's
 probably where it starts to get tough...</P>
 
-
-
 <P>Atari TOS counts as MS-DOS based (see above), especially the
 filename limitations.</P>
 
@@ -135,10 +138,17 @@ filename limitations.</P>
 fault. I'm pretty sure one could do a decent <hsc>-alike program on
 these machines.</P>
 
+<P>Several other systems (like the dreadful <a
+href="http://www.pios.comp">pOS</a> in its eternal alpha-state) should
+have no trouble compiling the same way as for Unixoid systems of
+AmigaOS with ixemul.library. It mostly depends on the C-compilers
+available, basically it should be possible to make <hsc> work on all
+these systems.</P>
+
 <P>I think this should now include all systems of the 80ties and
 90ties worth mentioning. Of course it does not include all those
-esoteric mainframe trash and impotent pseudo-Un*x-alikes. (That's why
+esoteric mainframe trash and impotent pseudo-Un*x-alikes. That's why
 I used the term <qq>worth mentioning</qq> in the previous
-sentence.)</P>
+sentence.</P>
 
 </WEBPAGE>

@@ -218,9 +218,9 @@
 <$deftag BLOCKQUOTE /CLOSE /LAZY="ciklw">
 <$deftag BODY /CLOSE /RECOMMENDED /ONLYONCE /LAZY="cil" BACKGROUND:uri BGCOLOR:color TEXT:color LINK:color VLINK:color ALINK:color>
 <$deftag BR /LAZY="cikl">
-<$deftag DD /LAZY="cikl">
+<$deftag DD /LAZY="cikl" /AUTOCLOSE>
 <$deftag DL /CLOSE /LAZY="cikl" COMPACT:bool>
-<$deftag DT /LAZY="cikl">
+<$deftag DT /LAZY="cikl" /AUTOCLOSE>
 <$deftag HTML /CLOSE /RECOMMENDED /ONLYONCE>
 <$deftag HEAD /CLOSE /RECOMMENDED /ONLYONCE>
 <$deftag H1 /CLOSE /NAW="h1|h2|h3|h4|h5|h6" /LAZY="ciklmsw" /WHTSPC ALIGN:enum("left|right|center|justify") SEQNUM:string SKIP:string DINGBAT:string>

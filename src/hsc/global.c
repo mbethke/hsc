@@ -22,7 +22,7 @@
  *
  * global vars & funs for hsc
  *
- * updated: 29-Nov-1997
+ * updated: 24-Aug-1998
  * created:  8-Jul-1995
  */
 
@@ -51,6 +51,7 @@ int return_code = RC_FAIL;      /* exit code of program */
 
 BOOL msg_ansi = FALSE;          /* use ANIS-sequences in messages */
 STRPTR msg_format = NULL;       /* message format */
+STRPTR msg_browser = NULL;      /* message browser */
 EXPSTR *msgbuf = NULL;          /* buffer for message */
 
 STRARR misc_buffer[6000];       /* misc. buffer (must be >5000) */

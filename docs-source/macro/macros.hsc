@@ -94,9 +94,10 @@ into the specifications, this concepts has been abandoned.</P>
 
 <P>However, it has not been replaced by anything more useful, and
 this has not changed much until today; except that many people are
-waiting for a new holy cow called Style Sheets.</P>
+waiting for a new holy cow called Style Sheets to be implemented in
+a functioning way in at least some of the available browsers.</P>
 
-<P>So makes sense to use container macros as substitute for logical
+<P>So it makes sense to use container macros as substitute for logical
 styles, which will do nothing but enclose the content in a physical
 style. Below a macro <TG>FILE</TG> will be created, which can be used
 to render filenames:</P>
@@ -219,7 +220,7 @@ will result in
 
 <P>At the moment you can call <TG>inner-sepp</TG> even outside of
 <TG>outer-sepp</TG>, as it is defined globally. When calling
-<TG>outer-sepp</TG> another time, you will receive a <ln_msg id="59">,
+<TG>outer-sepp</TG> another time, you will receive a <ln-msg id="59">,
 as this tries to redefine <TG>inner-sepp</TG>.</P>
 
 Obviously this behaviour doesn't make sense, but local macros are not

@@ -1,5 +1,5 @@
 <WEBPAGE chapter="hsc - " title="Environment Variables"
-         PREV="messages.html"
+         PREV="message-list.html"
          NEXT="features/spctags.html">
 
 This section describes several environment variables that
@@ -20,7 +20,7 @@ this also a directory separator (e.g. a <slash>), if necessary.
 <env TITLE="HSCPATH" NAME="hscpath">
 
 This variable specifies the directory where <hsc.prefs> 
-(see also <ln_syntax>) is located.<BR>
+(see also <ln-syntax>) is located.<BR>
 <STRONG>Example:</STRONG> After a
 <PRE>    setenv HSCPATH work:hsc</PRE>
 <hsc> will look for <FILE>work:hsc/hsc.prefs</FILE>.

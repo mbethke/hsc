@@ -26,12 +26,12 @@
 like Pascal, Oberon or E. So attributes are arguments passed to a tag or
 macro.</P>
 
-<P>Additionally, you can create/update attributes using <ln_define>
-and <ln_let> therefor using them like variables.</P>
+<P>Additionally, you can create/update attributes using <ln-define>
+and <ln-let> therefor use them just like variables.</P>
 
 <H2>General Syntax</H2>
 
-Within <ln_macro>, <ln_define> and <ln_deftag>,
+Within <ln-macro>, <ln-define> and <ln-deftag>,
 an  attribute is declared using
 <BLOCKQUOTE>
 <I>name</I> ":" <I>type</I>  [ "/" <I>modifiers</I> ]  [ "=" <I>default value</I> ]
@@ -41,7 +41,7 @@ an  attribute is declared using
 <DL>
 <LITYPE type="STRING"> any text
 <LITYPE type="URI"> references to an URI. Is affected by CLI
-    options like <op_stripexternal>.
+    options like <op-stripexternal>.
 <LITYPE type="BOOL"> boolean flag
 <LITYPE type="ENUM"> enumerator type; accepts only given values (eg the
     <CODE>ALIGN</CODE>
@@ -57,17 +57,17 @@ an  attribute is declared using
 <H2><A NAME="modifier">Attribute Modifiers</A></H2>
 <DL>
 <LIATTR LONG="CONST" SHORT="C">
-    Attribute is read-only; you can't set a new value using <ln_let>.
-    This option is only allowed within <ln_define>
+    Attribute is read-only; you can't set a new value using <ln-let>.
+    This option is only allowed within <ln-define>
 <LIATTR LONG="GLOBAL" SHORT="G">
     Attribute is global. Useful if you want to define an attribute inside
     a macro, that is not removed after macro has been processed.
-    This option is only allowed within <ln_define>.
+    This option is only allowed within <ln-define>.
 <LIATTR long="JERK" short="J">
     Attribute is only used by a <jerk>.
 </DL>
 
-Within <ln_macro> and <ln_deftag>, URIs also can have the following options:
+Within <ln-macro> and <ln-deftag>, URIs also can have the following options:
 
 <DL>
 <LIATTR long="REQUIRED" short="R">
@@ -80,7 +80,7 @@ Within <ln_macro> and <ln_deftag>, URIs also can have the following options:
     At they moment, only tags like <TG>IMG</TG> support this.
 <LIATTR long="STRIPEXT" short="X">
     Strip whole tag, if the attribute references to an external URI
-    and option <op_stripexternal> has been enabled.
+    and option <op-stripexternal> has been enabled.
 </DL>
 
 <H2>Default Value</H2>

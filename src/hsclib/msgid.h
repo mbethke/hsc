@@ -49,13 +49,12 @@
  * next message number
  *=========================
  */
-#define MAX_MSGID (86-1)
+#define MAX_MSGID (87-1)
 
 /*
  * obsolete numbers:
  * - see below
- * #define MSG_WSPC_AROUND_TAG    (MSG_STYLE+  8)  / * white space around tag * /
- *
+ * CURRENTLY NONE
  */
 
 /*
@@ -67,6 +66,7 @@
 #define MSG_READ_ERROR         (MSG_FATAL+  4)  /* read error */
 #define MSG_TOO_MANY           (MSG_FATAL+  5)  /* too many messages/errors */
 #define MSG_NO_INPUT           (MSG_FATAL+  6)  /* can't open input file */
+#define MSG_ARITHMETIC_ERROR   (MSG_FATAL+  8)  /* arithmetic error */
 
 /*
  * information messages
@@ -186,6 +186,7 @@
 #define MSG_REDEFINE_ID        (MSG_WARN + 75)  /* duplicate ID */
 #define MSG_NOEXEC_OUTPUT      (MSG_WARN + 80)  /* no output-file for <$exec>*/
 #define MSG_IOERROR            (MSG_ERROR+ 83)  /* i/o-error */
+#define MSG_REMOVE_FAILED      (MSG_WARN + 86)  /* remove file failed */
 
 
 #endif

@@ -854,7 +854,11 @@ BOOL hsc_parse_amp(HSCPRC * hp)
                 hsc_msg_illg_whtspc(hp);
             }
 
-            if (!strcmp(nxtwd, "\\"))
+            if (nxtwd == NULL)
+            {
+                hsc_msg_eof(hp, "missing entity");
+            }
+            else if (!strcmp(nxtwd, "\\"))
             {
                 /* flush white spaces */
                 clr_estr(hp->whtspc);

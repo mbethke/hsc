@@ -116,21 +116,23 @@ Check XOR (2):
 <$macro checkNumeric2 v1:num/r v2:num/r op:string vu:num/r>
 <$define vc:num>
 <("<$let vc=(v1 "+op+" v2)>")><$stripws type=prev>
+<$if cond=(op="&")><$let op="&amp;"></$if>
 <(v1)> <(op)> <(v2)> = <(vc)> = <(vu)>
 <$if cond=(vc<>vu)><$stripws type=prev>  ERROR!</$if>
 </$macro>
 
 CheckNumeric2: error handling
+<$message text="checking error handling">
 <checkNumeric2 v1=1 v2=2 op="+" vu=17>
 
 <**************************************
  * check numeric with 2 operands      *
  **************************************>
 Check "+" (2):
-<checkNumeric2 v1="1"  v2="2"  op="+" vu="3">
-<checkNumeric2 v1="1"  v2="-2" op="+" vu="-1">
-<checkNumeric2 v1="-1" v2="2"  op="+" vu="1">
-<checkNumeric2 v1="-1" v2="-2" op="+" vu="-3">
+<checkNumeric2 v1="1"  v2="2"  op="&" vu="3">
+<checkNumeric2 v1="1"  v2="-2" op="&" vu="-1">
+<checkNumeric2 v1="-1" v2="2"  op="&" vu="1">
+<checkNumeric2 v1="-1" v2="-2" op="&" vu="-3">
 
 </BODY></HTML>
 

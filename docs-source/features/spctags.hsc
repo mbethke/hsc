@@ -247,7 +247,7 @@ conditionals, include files and lots of other things.</P>
 </$source>
 
 
-    If you do not specify an value, the attribute will
+    If you do not specify a value, the attribute will
     be unset (but still remains defined):
 
 <$source PRE>
@@ -269,11 +269,11 @@ conditionals, include files and lots of other things.</P>
 
 <SPCTAG NAME="message" TITLE="Launch User Message">
 
-    <P>During conversion, messages might show up. But not only <hsc>
-    creates messages, also the user is able to do so using
-    <TG>$message</TG>. Messages created by means of this tag will
-    always show up as <ln_msg id="39">, but the user can set text and
-    class of it.</P>
+    <P>During conversion, <a href=":messages.html">messages</a> might
+    show up. But not only <hsc> creates messages, also the user is
+    able to do so using <TG>$message</TG>. Messages created by means
+    of this tag will always show up as <ln-msg id="39">, but the user
+    can set text and class of it.</P>
 
     <P>For instance this can be useful, if he wants to perform some
     plausibility checks of macro arguments, or for debugging purpose

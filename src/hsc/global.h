@@ -89,10 +89,10 @@
  * special values for ignore
  */
 #define IGNORE_ALL_STR         "all"
-#define IGNORE_BADSTYLE_STR    "badStyle"
+#define IGNORE_BADSTYLE_STR    "style"
 #define IGNORE_PORTABILITY_STR "portability"
-#define IGNORE_JERKS_STR       "jerks"
-#define IGNORE_NOTES_STR       "notes"
+#define IGNORE_JERKS_STR       "jerk"
+#define IGNORE_NOTES_STR       "note"
 
 /* pseudo-name for stdout */
 #define STDOUT_NAME "<stdout>"
@@ -114,6 +114,7 @@ extern STRPTR prefsfilename;
 extern DLLIST *define_list;
 extern DLLIST *incfile;
 extern STRPTR msg_format;
+extern STRPTR msg_browser;
 extern EXPSTR *msgbuf;
 extern int return_code;
 

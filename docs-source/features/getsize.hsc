@@ -13,7 +13,7 @@ after the transfer.</P>
 
 <P>As you usually don't know the exact size of your images, let your
 stupid computer handle this dull task by enabling the switch
-<op_getsize> when invoking <hsc>. This will <hsc> tell to analyse the
+<op-getsize> when invoking <hsc>. This will <hsc> tell to analyse the
 image the attribute <CODE>SRC</CODE> refers to, and append the
 attributes <CODE>WIDTH</CODE> and <CODE>HEIGHT</CODE> with the
 dimensions obtained from the image data.</P>
@@ -41,7 +41,7 @@ the <TG>IMG</TG>-tag seen above will be extended to
 <$source PRE><IMG SRC="image/niceguy.gif" ALT="Picture of some nice guy" WIDTH="64" HEIGHT="64"></$source>
 
 in the html-object. If you do not like the double quotes assigned to the
-size values, use the CLI-option <op_quotestyle> to change this behavior.
+size values, use the CLI-option <op-quotestyle> to change this behavior.
 
 <H2>Supported Image Formats</H2>
 

@@ -48,6 +48,9 @@ have a look at one of the following sources:
     but most likely the slowest. (<(HSC.ANCHOR)>)
 </UL>
 
+<p>To show a document in your browser from the <makefile> once <hsc>
+has written it, you can use <aminet file="comm/www/OpenURL.lha">.</p>
+
 To use <STRONG>Unixoid filenames</STRONG> within AmigaOS, there are numerous tools
 available. For example, you can use
 <UL>

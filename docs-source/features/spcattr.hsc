@@ -13,14 +13,14 @@ include special data or configure the parser.</P>
 <LI><A HREF="#documentattr"><CODE>Hsc.Document.Name</CODE></A> - filename of html-object
 <LI><A HREF="#documentattr"><CODE>Hsc.Document.Path</CODE></A> - directory part of html-object
 <LI><A HREF="#documentattr"><CODE>Hsc.Document.URI</CODE></A> - full relative URI of html-object
-<LI><A HREF="#exec.result"><CODE>Hsc.Exec.Result</CODE></A> - return-code of command invoked by <ln_exec>
+<LI><A HREF="#exec.result"><CODE>Hsc.Exec.Result</CODE></A> - return-code of command invoked by <ln-exec>
 <LI><A HREF="#lf"><CODE>Hsc.LF</CODE></A> - a single linefeed-character
 <LI><A HREF="#sourceattr"><CODE>Hsc.Source.Name</CODE></A> - filename of hsc-source
 <LI><A HREF="#sourceattr"><CODE>Hsc.Source.Path</CODE></A> - directory part of hsc-source
 <LI><A HREF="#sourceattr"><CODE>Hsc.Source.File</CODE></A> - full path and filename of hsc-source
 <LI><A HREF="#system"><CODE>Hsc.System</CODE></A> - value depending on operating system
-<LI><A HREF="#format.filesize"><CODE>Hsc.Format.Filesize</CODE></A> - how to render <ln_getfilesize>
-<LI><A HREF="#format.time"><CODE>Hsc.Format.Time</CODE></A> - how to render <ln_gettime> and <ln_getgmtime>
+<LI><A HREF="#format.filesize"><CODE>Hsc.Format.Filesize</CODE></A> - how to render <ln-getfilesize>
+<LI><A HREF="#format.time"><CODE>Hsc.Format.Time</CODE></A> - how to render <ln-gettime> and <ln-getgmtime>
 <LI><A HREF="#tmp"><CODE>Hsc.TMP.*</CODE></A> - temporary attributes for internal use
 </UL>
 
@@ -106,7 +106,7 @@ destination directory, but only the relative path.
 <SPCATTR NAME="exec.result" TITLE="Hsc.Exec.Result">
 
 This attribute contains the return-code of the command invoked 
-using <ln_exec>. It is updated after every call of this hsc-tag.
+using <ln-exec>. It is updated after every call of this hsc-tag.
 
 <**********************************************************>
 <* Hsc.LF                                                 *>
@@ -205,7 +205,7 @@ system <hsc> is running on.</P>
 </TABLE>
 
 This can be useful if you are executing a shell-command during
-conversion. See <ln_exec> for an example how to include a
+conversion. See <ln-exec> for an example how to include a
 listing of the current directory, working with more then only
 a specific OS.
 
@@ -278,7 +278,7 @@ fit better:</P>
 <SPCATTR NAME="format.filesize" TITLE="Hsc.Format.Filesize">
 
 This attribute contains a template that descibes how the result
-of <ln_getfilesize> should be rendered. Conversion specifications:
+of <ln-getfilesize> should be rendered. Conversion specifications:
 
 <PRE>
     <STRONG>%b</STRONG>    is replaced by the filesize in bytes.
@@ -298,7 +298,7 @@ value <CODE>"%a%u"</CODE>, leading to results like <CODE>"123K"</CODE> or
 <SPCATTR NAME="format.time" TITLE="Hsc.Format.Time">
 
 This attribute contains a template that describes how the result
-of <ln_gettime> and <ln_getgmtime> should be rendered. 
+of <ln-gettime> and <ln-getgmtime> should be rendered.
 Conversion specifications 
 (Techn. Note: These are the same as for ANSI-C's <CODE>strftime()</CODE>):
 <PRE>

@@ -10,11 +10,11 @@ and to utilize some additional tools.<P>
 
 <H2>Overview</H2>
 
-As there are several tools and concepts involved in project
-management. Within the next paragraphs, the basic ideas will be
-roughly described. If you already worked with a command line based
-compiler environment and know how <Makefile>s and a dependency creator
-work, there should not be many new things.
+There are several tools and concepts involved in project management.
+Within the next paragraphs, the basic ideas will be roughly described.
+If you already worked with a command line based compiler environment
+and know how <Makefile>s and a dependency creator work, there should
+not be many new things.
 
 
 <P>If you did not, there is quite some work in front of you. For
@@ -132,24 +132,24 @@ everything else is up to you.
 
 <H2>When To Call Hscdepp</H2>
 
-As all <hsc> and <hscpitt> are completely independent from <make>,
-and <hscdepp> only provides an optional link between them. In other
-words: <hsc> does not care if it is invoked from a <Makefile> or
-not. And <make> does not care about the project-file, but only about
-its own <Makefile>.
+As you just learned, <hsc> and <hscpitt> are completely independent
+from <make>, and <hscdepp> only provides an optional link between
+them. In other words: <hsc> does not care if it is invoked from a
+<Makefile> or not. And <make> does not care about the project-file,
+but only about its own <Makefile>.
 
 <P>Therefor every time something changed in the project-file, it is left
 to the user to invoke <hscdepp> and also reflect these changes in the
 <Makefile>.</P>
 
-In general, it is a good idea to call <hscdepp> after..
+In general, it is a good idea to call <hscdepp>...
 <UL>
-<LI>adding a new document document using <hscpitt> or <hsc>
-<LI>successfully processing new a document with <hsc> the first time
+<LI>after adding a new document using <hscpitt> or <hsc>
+<LI>after successfully processing new a document with <hsc> the first time
     after adding it with <hscpitt>, because then it not only depends
     on its main source, but also on the files included during
     processing.
-<LI>changing the include files of your pattern rule in the <Makefile>
+<LI>after changing the include files of your pattern rule in the <Makefile>
 <LI>once in a while.
 </UL>
 
@@ -161,7 +161,7 @@ invoking <hscdepp> too often should not cause any harm.</P>
 <H2>Checking IDs</H2>
 
 <P>The usage of the project-file also improves the functionality of
-<hsc>. It will now also remember which IDs for link targets inside a
+<hsc>. Now it even can remember which IDs for link targets inside a
 document have been defined (for example using html-code like <TG>A
 NAME="id"</TG>).</P>
 
@@ -178,13 +178,13 @@ the document, but the document <FILE>existing.html</FILE> being in
 place.
 
 <P>Until all documents have been added to the project (either by <hsc>
-or <hscpitt>), <ln_msg id="51"> ("no entry for document .. to check
+or <hscpitt>), <ln-msg id="51"> ("no entry for document .. to check
 id") might show up some times. This can be ignored.</P>
 
 <P>Until all documents have been processed by <hsc> with a
 <CODE>PRJFILE</CODE> set at least once (not only been added by
 <hscpitt>) to the project-file), there will also be some occurrences
-of <ln_msg id="74"> ("unknown id") you can ignore. This is because
+of <ln-msg id="74"> ("unknown id") you can ignore. This is because
 even if the IDs are actually defined in the document, <hsc> does not
 yet know about them because it did not store them in the project-file,
 too.</P>

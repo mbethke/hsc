@@ -1,7 +1,7 @@
 <HTML><HEAD>
-  <$define Version:string="0.916">
+  <$define Version:string="0.917">
   <$define pre-release:string="0">
-  <$define release-date:string="12-Jan-1998">
+  <$define release-date:string="21-Sep-1998">
 
   <$define DESCRIPTION:string=("This is the documentation to hsc, a "
     +"developer tool for html-projects. It acts as a preprocessor "
@@ -43,6 +43,7 @@
 <IMG SRC=":image/noback.gif" ALT="--" ALIGN="middle">
 <IMG SRC=":image/noprev.gif" ALT="--------" ALIGN="middle">
 <A HREF="about.html"><IMG SRC=":image/next.gif" ALT="Next" ALIGN="middle"></A>
+<hr>
 </html-only>
 
 <***************************************************************************
@@ -70,7 +71,7 @@ Ignore the bold type<BR></I>
 
 <* version info *>
 <html-only>
-<P><STRONG>(Version 0.916
+<P><STRONG>(Version <(Version)>
 <$if cond=(pre-release<>"0")>
   (pre-release#<(pre-release)>)
 </$if>
@@ -211,12 +212,7 @@ Oulu, <(gettime())></I></P>
 
 <H2>Usage</H2>
 <UL>
-<LI><A HREF="options.html">Invoking <hsc></A>
-    <UL>
-    <LI><A HREF="options.html#options">Options</A> and 
-        <A HREF="options.html#switches">Switches</A> - there are loads of them
-    <LI><A HREF="options.html#exitcodes">Exit Code</A> - return to sender
-    </UL>
+<LI><A HREF="options.html">Invoking <hsc></A> - options, switches, exit code
 <LI><A HREF="examples.html">Example Usage</A> - how it is supposed to work
 <LI><A HREF="fileargs.html">File Arguments</A> - specifying input and output
 <LI><A HREF="messages.html">Messages</A> - shit happens
@@ -224,7 +220,7 @@ Oulu, <(gettime())></I></P>
     <LI><A HREF="messages.html#elements">Message Elements</A>
     <LI><A HREF="messages.html#classes">Message Classes</A>
     <LI><A HREF="messages.html#options">Message Options</A>
-    <LI><A HREF="messages.html#list">List Of Messages</A>
+    <LI><A HREF="message-list.html">List Of Messages</A>
     </UL>
 <LI><A HREF="envvar.html">Environment Variables</A> - save the nature
 </UL>
@@ -299,13 +295,14 @@ Oulu, <(gettime())></I></P>
 </UL>
 
 <H2>Miscellaneous</H2>
+
 <UL>
 <LI><A HREF="questions.html">Questions</A> - and maybe some answers..
 <LI><A HREF="source.html">Source Code</A> - compiling it
 <LI><A HREF="ports.html">Existing Ports</A> - Amiga rulez? Not really.
 <LI><A HREF="others.html">Other html-Extensions</A> - pre²protranscessingpost
 <LI><A HREF="bugs.html">Known Bugs, Problems and Limitations</A> - don't whizz on the electric fence
-<LI><A HREF="future.html">Future Improvements</A> - what might happen
+<LI><A HREF="future.html">Future?</A> - No future!
 <LI><A HREF="related.html">Related stuff</A> - tools and further information
 </UL>
 

@@ -127,7 +127,7 @@ most platforms and is freeware, there currently is no alternative.</P>
 
 <H2>Where to Get Make</H2>
 
-<P>See also the section about <ln_related> where to obtain the version
+<P>See also the section about <ln-related> where to obtain the version
 of <make> recommended for use with <hsc>.</P>
 
 </WEBPAGE>

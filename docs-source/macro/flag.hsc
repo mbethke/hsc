@@ -9,11 +9,11 @@
 <DD>
 </$macro>
 
-<P>Within  <ln_macro> and <ln_deftag>,
+<P>Within  <ln-macro> and <ln-deftag>,
 you can use several modifiers to tell <hsc> how to handle this macro/tag.</P>
 
 
-Allowed modifiers for both <ln_macro> and <ln_deftag> are:
+Allowed modifiers for both <ln-macro> and <ln-deftag> are:
 <DL>
 <LIFLAG long="CLOSE" short="C">
     macro/tag is a container and requires a corresponding end tag.
@@ -25,7 +25,7 @@ Allowed modifiers for both <ln_macro> and <ln_deftag> are:
     macro/tag is required to appear at least once within a document
 
 <LIFLAG long="RECOMMENDED" short="RCMD">
-    macro/tag ought to appear least once within a document
+    macro/tag ought to appear at least once within a document
 
 <LIFLAG long="MUST_BE_INSIDE" short="MBI">
     Needs a string as argument, that contains a list of container tags,
@@ -41,7 +41,7 @@ Allowed modifiers for both <ln_macro> and <ln_deftag> are:
     is not allowed, therefor <CODE>/NAW="a"</CODE> is used.
 </DL>
 
-Additionally, the following modifiers can be used with <ln_deftag>
+Additionally, the following modifiers can be used with <ln-deftag>
 <DL>
 <LIFLAG long="AUTOCLOSE" short="AC">
     Used for <TG>P</TG> and <TG>LI</TG>, which can be used as container

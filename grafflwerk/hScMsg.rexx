@@ -1,23 +1,9 @@
 /*
  * hScMsg - invoke hsc and send messages to ScMsg
  *
- * $VER: hScMsg 1.0 (30.7.96)
+ * $VER: hScMsg 1.1 (14.9.98)
  *
- * Copyright 1996 Thomas Aglassinger <agi@giga.or.at>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * Written 1996-1998 Thomas Aglassinger <agi@giga.or.at>. Public domain.
  *
  *--------------------------------------------------------------------------
  *
@@ -37,7 +23,7 @@
  * BUGS
  *   o filenames containig blanks won't work
  *   o ScMsg can't handle all message-classes of hsc, therefor only
- *     "Warning" and "Error" are used for display
+ *     "Note", "Warning" and "Error" are used for display
  */
 
 ScMsgPath = "sc:c/ScMsg"
@@ -72,7 +58,7 @@ IF ~Show('ports', 'SC_SCMSG') THEN DO
 END
 
 /* remove old messages in ScMsg-window */
-Address 'SC_SCMSG' DelFile FileName
+Address 'SC_SCMSG DelComp "' || FileName || '"'
 
 /* store return-code of hsc */
 hScMsgRC = RC
@@ -80,20 +66,34 @@ hScMsgRC = RC
 /* process message file, if exists */
 IF Open('File', TmpFile, 'R') THEN DO
 
-    DO UNTIL Eof('File')
+    message_counter = 0
+
+    DO WHILE ~ Eof('File')
         Line = ReadLn('File')
+        IF (Line ~= '') THEN DO
+            message_counter = message_counter + 1
 
-        /* extract information from current message-line */
-        Parse VAR Line File ':::' Line ':::' MsgClass ':::' MsgNum ':::' Msg
-        IF ((MsgClass='Error') | (MsgClass='Fatal Error')) THEN
-            MsgClass='Error'
-        ELSE
-            MsgClass='Warning'
+            /* extract information from current message-line */
+            Parse VAR Line File ':::' Line ':::' MsgClass ':::' MsgNum ':::' Msg
+            IF ((MsgClass='Error') | (MsgClass='Fatal Error')) THEN DO
+                MsgClass='Error'
+            END
+            ELSE IF (MsgClass='Note') THEN DO
+                /* Leave message class as 'Note' */
+            END
+            ELSE DO
+                MsgClass='Warning'
+            END
 
-        /* Send message to ScMsg */
-        Address  'SC_SCMSG' NewMsg '"'||FileName||'"' '"'||FileName||'"' Line '0 "" 0' MsgClass MsgNum Msg
+            /* Send message to ScMsg */
+            Address  'SC_SCMSG' NewMsg '"'||FileName||'"' '"'||FileName||'"' Line '0 "" 0' MsgClass MsgNum Msg
+        END
     END
-    Address 'SC_SCMSG' Show Activate
+
+    IF (message_counter > 0) THEN DO
+        SAY 'message_counter =' message_counter
+        Address 'SC_SCMSG' Show Activate
+    END
 
     /* cleanup */
     Call Close('File')

@@ -34,18 +34,18 @@ all. For example,
 <$source pre><IMG SRC=hugo.gif ALT=hugo></$source>
 
 is also legal. As this can cause problems with (very) old browsers, it
-might result in <ln_msg id="22">, if <hsc> is configured to. However,
+might result in <ln-msg id="22">, if <hsc> is configured to. However,
 the following is not allowed according to the specifications of html:
 
 <$source pre><IMG SRC=image/hugo.gif ALT=hugo></$source>
 
 <P>Because of the <slash> in the value of <CODE>SRC</CODE>, it would
 have been required to put it inside quotes. As this is not the case,
-<ln_msg id="81"> will show up. Although most browsers can cope with
+<ln-msg id="81"> will show up. Although most browsers can cope with
 this, and will use a white space or a <greater-than> as delimiter,
 this behavior is not standard.</P>
 
-<H2><A NAME="cond-assign">Compute Expressions</A></H2>
+<H2><A NAME="expressions">Compute Expressions</A></H2>
 
 <P>When the assigned value starts with a <bracket>, it denotes an
 expression to be computed before its result is used as new value.
@@ -65,7 +65,46 @@ this will result in
 
 For more details on this, see the chapter about <ln-expression PLURAL>.
 
-<H2>Conditional Assignments</H2>
+<H2>Using Quotes Inside Quoted Strings</H2>
+
+<p>There are two kind of quotes you can use for string constants,
+namely single quotes (') and double quotes ("). You can use the one
+inside of the other just as a normal character:</p>
+
+<$source pre>
+<IMG SRC="single.gif" ALT="a single (') quote">
+<IMG SRC='double.gif' ALT='a double (") quote'>
+</$source>
+
+<p>Note that this is no "escape mechanism", the other quote just is
+treated as a normal character. For the normal user, this should be all
+you want to know about "quotes inside quotes". Freaky ones, read
+on.</p>
+
+<p>Because of the limitations of html it is not possible to use both
+kind of quotes in one value. However, in hsc you could use string
+concatenation to push both quotes into one value:</p>
+
+<$source pre><$define sepp:string=("a single (') quote"+' and a double quote (") together')></$source>
+
+<p>The value of sepp then would be &gt;&gt;<code>a single (') quote
+and a double quote (") together</code>&lt;&lt;. Different to html, hsc
+doesn't mind about that internally. The trouble starts when you assign
+the value later on to an attribute of a html tag:</p>
+
+<$source pre><IMG SRC="sepp.gif" ALT=(sepp)></$source>
+
+<p>Now hsc can't use neither single nor double quotes to assign the value
+of <code>sepp</code> to <code>ALT</code>. To solve that problem, it
+uses double quotes to embed the value in and replaces all double quotes inside
+by its entity <code>&amp;quot;</code>, thus resulting in:</p>
+
+<$source pre><IMG SRC="sepp.gif" ALT="a single (') quote and a double quote (&quot;) together"></$source>
+
+<p>Note that several browsers are too stupid to display this
+correctly.</p>
+
+<H2><A NAME="cond-assign">Conditional Assignments</a></H2>
 
 <P>This paragraph deals with a feature you probably do not want to use
 (and understand) before you understood how those macros work. You can
@@ -137,7 +176,7 @@ If you would try to call it without a <CODE>BackGround</CODE> passed,
 this attribute would have been unset, and the attempt to copy the
 value of <CODE>BackGround/MY-BODY</CODE> to
 <CODE>BackGround/BODY</CODE> using
-<CODE>BackGround=(BackGround)</CODE> would result in <ln_msg id="23">
+<CODE>BackGround=(BackGround)</CODE> would result in <ln-msg id="23">
 
 <H2>Complex Conditions</H2>
 
@@ -154,7 +193,7 @@ prevents you from using code like this:
 <MY-BODY TEXT?=TEXT>
 </$source>
 
-This also works for <ln_let>:
+This also works for <ln-let>:
 
 <$source PRE>
 <$define sepp:string>

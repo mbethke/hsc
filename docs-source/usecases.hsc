@@ -40,8 +40,8 @@ and a Finnish one
 Tämä on Hugo.
 </$source>
 
-This can easily be achieved by defined two macro set, one
-begin stored as <FILE>english.hsc</FILE>
+This can easily be achieved by defined two macro sets, one
+being stored as <FILE>english.hsc</FILE>
 
 <$source PRE>
 <$macro english /close><$content></$english>
@@ -88,7 +88,7 @@ basically it refers to most of those 255 characters you can input with
 your Amiga-Keyboard.</P>
 
 <P>For this character set, all functions described herein should work,
-especially the CLI-option <op_rplcent>.</P>
+especially the CLI-option <op-rplcent>.</P>
 
 <P>Although Latin-1 is widely used within most decadent western
 countries, it does not provide all characters some people might need.
@@ -115,7 +115,7 @@ of funny western characters - but not a single funny Japanese one.</P>
 
 <P>Recently an old western approach to these encodings problems has
 gained popularity: Unicode - that's the name of the beast - was
-created as some waste product of the Taligent project around 1998 or
+created as some waste product of the Taligent project around 1988 or
 so, as far as I recall.</P>
 
 <P>Initially created as an unpopular gadget not supported by anything,
@@ -136,7 +136,8 @@ input.</P>
 zero-byte work-around formats for Unicode, most remarkably UTF-8 and
 UTF-7. These work together with <hsc>, although with the same
 limitations you have to care for when using the eastern encodings
-mentioned earlier.</P>
+mentioned earlier. Read: Don't use CLI option
+<code>RplcEnt</code>.</P>
 
 <P>Note that it needs at least five encodings to make Unicode work
 with most software - again in alphabetical order: UCS-2, UCS-4,
@@ -151,10 +152,10 @@ but you must not enable <KBD>RPLCENT</KBD>.
 
 <********************************************************************>
 
-<P>Recently, html-4.0 was released, and it sucks surprisingly less (as
-far as "sucks less" is applicable at all to html). Of course there
-currently is no browser capable of displaying all these things, but
-nevertheless you can use <hsc> to author for it - with some
+<P>Once upon a time, html-4.0 was released, and it sucked surprisingly
+less (as far as "sucks less" is applicable at all to html). Of course
+there still is no browser capable of displaying all these things,
+but nevertheless you can use <hsc> to author for it - with some
 limitations. This will shortly outline how.</P>
 
 <P>As already mentioned, html now supports those extended character
@@ -168,7 +169,7 @@ numeric entities, both in their decimal or hexadecimal representation:
 for example, to insert a Greek Alpha, you can use
 <CODE>&amp;#913</CODE> or <CODE>&amp;#x391</CODE>, <hsc> will accept
 both. However, you still can not define entities beyond 8-bit range
-using <ln_defent>.</P>
+using <ln-defent>.</P>
 
 <P>Some highlights are that the <CODE>ALT</CODE> attribute of <TG>IMG</TG>
 is no required and that there are now loads of <qq>URIs</qq> instead of
@@ -176,8 +177,9 @@ is no required and that there are now loads of <qq>URIs</qq> instead of
 
 <P>Another interesting thing is that the DTD now contains some
 meta-information that was not part of earlier DTDs so it maybe can
-make sense to use the DTD as a base for <hsc.prefs>.</P>
+make sense to use the DTD as a base for a <hsc.prefs> converter.</P>
 
+<*
 <P>Therefor, you can download some shabby ARexx-scripts from the
 support-w3-page for <hsc> that try to do exactly that task. The
 problem is that they are extremely lousy and the sgml-inventors might
@@ -217,6 +219,7 @@ principle could work. The current implementation is near to useless,
 but maybe someone writes a reasonable version. Definitely not me, as
 html-1.0 plus tables is all I ever will need. It's up to you, all you
 self-satisfied, passive and degenerated users.</P>
+*>
 
 <********************************************************************>
 
@@ -254,8 +257,8 @@ file="docs-source/inc/ps.hsc">.</P>
 
 <P>However, there is a small difference to the multi-lingual examples,
 as I do not really want to create two versions all the time. Instead,
-I prefer to create either create a fully hypertext featured version or
-a crippled Postscript-prepared html-document in the same location.</P>
+I prefer to create either a fully hypertext featured version or
+a crippled Postscript-prepared html document in the same location.</P>
 
 <P>You can inspect <link-include file="docs-source/Makefile"> how this
 is done: if <make> is invoked without any special options, the
@@ -328,7 +331,7 @@ ps :
 <P>Note that <EXEC>html2ps</EXEC> is smart enough to follow those
 (normally invisible) <TG>LINK REL="next" ..</TG> tags being part of
 the html-documents, so only the first file is provided as argument,
-and it will automatically convert the other ones.</P>.
+and it will automatically convert the other ones.</P>
 
 <P>Well, it least you see it can be done.</P>
 

@@ -12,6 +12,7 @@
 <IMG SRC="docs/image/noback.gif" ALT="--" ALIGN="middle">
 <IMG SRC="docs/image/noprev.gif" ALT="--------" ALIGN="middle">
 <A HREF="docs/index.html"><IMG SRC="docs/image/next.gif" ALT="Next" ALIGN="middle"></A>
+<hr>
 
 
 <H1>hsc - html Sucks Completely</H1>
@@ -33,14 +34,14 @@ are any).</P>
 
 <P>You can access this information at the following locations:</P>
 
-<IMG SRC="docs/image/austria.gif" ALT="[Austria]">
-<A HREF="http://www.giga.or.at/~agi/hsc/"><(HSC.Anchor)></A><BR>
-<IMG SRC="docs/image/teutsch.gif" ALT="[Germany]">
-<A HREF="http://wwwcip.rus.uni-stuttgart.de/~inf11108/support/hsc/"><(HSC.ANCHOR)></A><BR>
+<p><IMG SRC="docs/image/austria.gif" ALT="[Austria]">
+<A HREF="http://www.giga.or.at/~agi/hsc/"><(HSC.Anchor)></A></p>
+<p><IMG SRC="docs/image/teutsch.gif" ALT="[Germany]">
+<A HREF="http://wwwcip.rus.uni-stuttgart.de/~inf11108/support/hsc/"><(HSC.ANCHOR)></A><BR></p>
 
 <H2>Current Version</H2>
 
-The current version of <hsc> is <STRONG>version 0.916</STRONG>
+The current version of <hsc> is <STRONG>version 0.917</STRONG>
 and should always be available from <AMINET FILE="text/hyper/">. 
 
 <UL>
@@ -64,8 +65,8 @@ and should always be available from <AMINET FILE="text/hyper/">.
 
 <$if COND=(MinorUpdate)>
 
-<STRONG>Version 0.916, pre-release#6</STRONG> is now available.
-Contains some bugfixes that should not cause any problems.
+<STRONG>Version 0.917, pre-release#2</STRONG> is now available.
+It contains some very experimental fixes and improvements.
 
 <UL>
 <LI><A HREF="README">README</A> - short introduction
@@ -87,21 +88,37 @@ The archives below are identical to those available from Aminet:
 
 <H2>Additional Material</H2>
 
-<P>In <ArcH NAME="dtd2hsc.lha">, there is a collection of shabby
+<*<P>In <ArcH NAME="dtd2hsc.lha">, there is a collection of shabby
 ARexx-scripts available which can be used to convert a DTD to
 <hsc.prefs>. But better view <A
-HREF="dtd2hsc.readme"><(hsc.Anchor)></A> befor expecting too much from
-it.</P>
+HREF="dtd2hsc.readme"><(hsc.Anchor)></A> before expecting too much from
+it.</P>*>
 
-<P>If you don't know how to cope with <CODE>*.lha</CODE>-files, the sources
-for a portable version of <CODE>lha</CODE> are available from 
-<A HREF="http://wuarchive.wustl.edu/~aminet/misc/unix/lha_1_00.tar.Z">aminet:misc/unix/lha_1_00.tar.Z</A>
-(84K).</P>
+<ul>
+
+<li>Download <arch name="hsc-vbrowse.lha">. This archive contains
+everything you need to use VBrowse, a public domain message browser by
+Volker Barthelmann, with hsc. It normally is part of the VBCC compiler
+distribution, the full archive can be obtained from <aminet
+file="dev/c/vbcc.lha">.
+
+<li>Download <arch name="make.lha">, an Amiga port of GNUmake,
+includes binary and documentation in AmigaGuide format. You do not
+have to use this particular <make>, but it is the one that works for
+me (at least most of the time). It supports Amiga filenames and does
+not required <code>ixemul.library</code>.
+
+<li>Download <aminet file="misc/unix/lha_1_00.tar.Z"> (84K) if you
+don't know how to cope with <CODE>*.lha</CODE>-files. This contains
+the sources for a portable version of <CODE>lha</CODE>.
+
 <*
 <P>Users who are unfamiliar to <CODE>make</CODE> can download
 <ArcH NAME="make-doc.lha">, which contains the manual
 to <CODE>GNUmake</CODE> in AmigaGuide format.</P>
 *>
+</ul>
+
 <HR>
 <$let hsc.format.time="%d-%b-%Y">
 <ADDRESS><A HREF="docs/author.html">Thomas Aglassinger</A> (agi@giga.or.at),

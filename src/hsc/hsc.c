@@ -31,7 +31,7 @@
  *
  * hsc/hsc.c
  *
- * updated: 17-Dec-1997
+ * updated:  9-Aug-1998
  * created:  1-Jul-1995
  */
 
@@ -184,7 +184,7 @@ static BOOL hsc_init_project(HSCPRC * hp, STRPTR project_fname)
         /*
          * read project-data
          */
-        D(fprintf(stderr, DHL "read project-file `%s'\n", project_fname));
+        D(fprintf(stderr, DHL "read project file `%s'\n", project_fname));
 
         hsc_status_file_begin(hp, project_fname);
 
@@ -200,7 +200,7 @@ static BOOL hsc_init_project(HSCPRC * hp, STRPTR project_fname)
                 /* message about success */
                 EXPSTR *msg = init_estr(32);
                 set_estr(msg, project_fname);
-                app_estr(msg, ": project-file read");
+                app_estr(msg, ": project read");
                 hsc_status_misc(hp, estr2str(msg));
                 del_estr(msg);
             }
@@ -216,7 +216,7 @@ static BOOL hsc_init_project(HSCPRC * hp, STRPTR project_fname)
     }
     else
     {
-        D(fprintf(stderr, DHL "no project-file to load\n"));
+        D(fprintf(stderr, DHL "no project file to load\n"));
         ok = TRUE;
     }
 

@@ -18,14 +18,14 @@ be omitted under certain circumstances.</P>
 
 <P>For referring to the value of another attribute, simply use the
 name of it - without any enclosing quotes. The source attribute must
-exist, either by using <ln_define> or by being part of a macro
+exist, either by using <ln-define> or by being part of a macro
 declaration.</P>
 
 <P>Furthermore it must contain a value, for example by means of
-<ln_let> or by setting it within a macro call. Attributes being
+<ln-let> or by setting it within a macro call. Attributes being
 defined without a default value or not being set within a macro call
 do not contain any data and therefor will have to be updated using
-<ln_let> before using them.</P>
+<ln-let> before using them.</P>
 
 <STRONG>Example:</STRONG><BR>
 <$source PRE>
@@ -42,7 +42,7 @@ do not contain any data and therefor will have to be updated using
 <H3>Unary Operators</H3>
 <DL>
     <DT><A NAME="not"><CODE>not</CODE></A> <I>expression</I>
-    <DD>Negotiate (boolean) expression
+    <DD>Negate (boolean) expression
     <DT><A NAME="set"><CODE>set</CODE></A> <I>attribute</I>
     <DD>True, if attribute has been set (read: passed a value)
         within macro call.

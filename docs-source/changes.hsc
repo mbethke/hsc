@@ -13,6 +13,7 @@
  *>
 <$macro support-link file:string/required>
 <A HREF=(":../"+file)><(file)></A>
+<$depend on=(":../"+file)>
 </$macro>
 
 <*

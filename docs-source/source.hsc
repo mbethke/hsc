@@ -206,7 +206,7 @@ support-w3-page. Some of the tests might file in such releases.</P>
 <P>The <CODE>test</CODE> rule is only declared in <makefile.agi>. This
 <makefile> uses some features not supported by all <make> tools. It
 has been designed to work with <EXEC>GNUmake</EXEC>, which is freely
-available together with it's source code (see <ln_related>).</P>
+available together with it's source code (see <ln-related>).</P>
 
 <P>To initiate the test sequence, simple type</P>
 
@@ -222,7 +222,7 @@ contain the expected output.</P>
 
 <P>For this comparison, <EXEC>diff --brief</EXEC> will used. Make sure
 that such a command is available before starting the test process
-(again, see <ln_related> if you do not have it).</P>
+(again, see <ln-related> if you do not have it).</P>
 
 <P>Additionally, <hsc> will redirect messages to <FILE>.msg</FILE>
 files. These will be compared with <FILE>.mex</FILE>

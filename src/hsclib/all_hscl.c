@@ -67,3 +67,4 @@ BOOL hsc_include_string( HSCPRC *hp, STRPTR filename, STRPTR s, ULONG optn );
 #include "hsclib/tag_hsc.c"
 #include "hsclib/tag_if.c"
 #include "hsclib/tag_macro.c"
+

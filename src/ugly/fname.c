@@ -20,7 +20,7 @@
 /*
  * ugly/fname.c - filename processing functions
  *
- * updated: 22-Sep-1997
+ * updated: 23-Aug-1998
  * created: 24-May-1994
  *
  *-------------------------------------------------------------------
@@ -58,7 +58,9 @@ BOOL get_fext(EXPSTR * dest, CONSTRPTR fn)
 
     /* search string backwards for "." or PATH_SEPARATOR */
     do
+    {
         /* nufin */ ;
+    }
     while ((fn_ext != fn)       /* beginning of name reached? */
            && (fn_ext--)        /* process next char */
            && (fn_ext[0] != '.')
@@ -351,59 +353,77 @@ BOOL link_envfname(EXPSTR * dest, STRPTR envname, STRPTR dir, STRPTR fn)
  * IMPORTANT: you need to copy the filename, if you
  *           call this function frquently
  */
-static size_t adjust_prefixlen(size_t prefixlen)
+static size_t adjust_prefix_length(size_t prefix_length)
 {
 #ifdef MSDOS
-    if (prefixlen > MAX_FNAME - 4)
-        prefixlen = MAX_FNAME - 4;
+    if (prefix_length > MAX_FNAME - 4)
+    {
+        prefix_length = MAX_FNAME - 4;
+    }
 #else
-    if (prefixlen > MAX_FNAME - 8)
-        prefixlen = MAX_FNAME - 8;
+    if (prefix_length > MAX_FNAME - 8)
+    {
+        prefix_length = MAX_FNAME - 8;
+    }
 #endif
 
-    return (prefixlen);
+    return (prefix_length);
 }
 
-STRPTR tmpnamstr(STRPTR prefix)
+STRPTR tmpnamstr(STRPTR suggested_prefix)
 {
     static LONG fileidx = 0;
-    STRARR buf[256 + 32];
+    static STRARR buf[256 + 32];
     STRPTR s = NULL;
+    STRPTR prefix = suggested_prefix;
     FILE *file = NULL;
-    size_t prefixlen = 0;
+    size_t prefix_length = 0;
 
-    if (prefix)
-        /* copy prefix to buffer */
-        prefixlen = adjust_prefixlen(strlen(prefix));
-    else
+    if (prefix == NULL)
+    {
         prefix = "";
+    }
 
     /* copy prefix to buffer */
-    strcpy(buf, prefix);
+    prefix_length = adjust_prefix_length(strlen(prefix));
+    strncpy(buf, prefix, prefix_length);
+    buf[prefix_length] = '\0';
 
     /* add address of buffer to prefix */
-    sprintf(&(buf[strlen(prefix)]), "%p", tmpnamstr);
+    if (MAX_FNAME > 8)
+    {
+        sprintf(&(buf[strlen(buf)]), "%p", tmpnamstr);
+    }
 
-    prefixlen = adjust_prefixlen(strlen(buf));
-    buf[prefixlen] = '\0';
+    prefix_length = strlen(buf);
 
-    /* try to open tmpfile for input until it fails */
+    /* Try to open a file for input until fopen() fails,
+     * which means a file with such a name does not yet exist.
+     *
+     * This still sucks as in multi-tasking systems the file
+     * can be created while this function returns, but already
+     * reduces the likelyhood that a file is reused. */
     do
     {
-        fileidx++;
-        sprintf(&(buf[prefixlen]), "%04lx", fileidx);
-        strcat(buf, ".tmp");
+        fileidx += 1;
+#ifdef RISCOS
+        sprintf(&(buf[prefix_length]), "%04lx", fileidx);
+#else
+        sprintf(&(buf[prefix_length]), "%04lx.tmp", fileidx);
+#endif
         file = fopen(buf, "r");
         if (file)
         {
             fclose(file);
             if (fileidx == 0xffff)
+            {
                 fileidx = 0;    /* ran out of names */
+            }
         }
     }
     while (fileidx && file);
 
-    if (fileidx)
+    if (fileidx != 0)
     {
         s = buf;
     }
@@ -498,5 +518,229 @@ BOOL get_relfname(EXPSTR * dest, STRPTR absn, STRPTR curp)
     del_estr(tmpp2);
 
     return (ok_fnl_fpath(dest));
+}
+
+BOOL optimize_fname(STRPTR *target_name, STRPTR source_name)
+{
+/* Some system dependant defines */
+#if defined AMIGA
+#define PARENT_DIRECTORY_BEGIN  "/"
+#define PARENT_DIRECTORY_INSIDE "//"
+#elif defined BEOS || defined NEXTSTEP || defined RISCOS || defined UNIX
+#define PARENT_DIRECTORY_BEGIN  "../"
+#define PARENT_DIRECTORY_INSIDE "/../"
+#else
+#error "system not supported: parent directory begin/inside"
+#endif
+
+#define mark_for_skip(what)             \
+    {                                   \
+        STRPTR what2 = (what);          \
+        if (what2[0] != SKIP_CHARACTER) \
+        {                               \
+            what2[0] = SKIP_CHARACTER;  \
+            filename_length -= 1;       \
+        }                               \
+    }
+
+/* Set this to 1 for debugging output */
+#if 0
+/* Use asterix to mark characters to be skipped. This can cause problems as
+ * this character might be used in filenames on some systems, but it is
+ * much nicer for debugging. */
+#define SKIP_CHARACTER '*'
+
+/* Show debug output for every remarkable filename manipulation */
+#define PRINT_FILENAME(heading)                          \
+    {                                                    \
+        STRPTR debug_scan = filename;                    \
+                                                         \
+        if (heading[0] != '\0')                          \
+        {                                                \
+            printf(":::-- %s\n", heading);               \
+        }                                                \
+                                                         \
+        printf(":::  `%s'\n", filename);                 \
+        printf(":::   ");                                \
+        while (debug_scan[0] != 0)                       \
+        {                                                \
+            if (debug_scan == next_parent_inside)        \
+            {                                            \
+                printf("n");                             \
+            }                                            \
+            else if (debug_scan == previous_directory)   \
+            {                                            \
+                printf("p");                             \
+            }                                            \
+            else if (debug_scan == filename_fun_start)   \
+            {                                            \
+                printf("f");                             \
+            }                                            \
+            else if (debug_scan == filename_scan)        \
+            {                                            \
+                printf("s");                             \
+            }                                            \
+            else                                         \
+            {                                            \
+                printf(" ");                             \
+            }                                            \
+            debug_scan += 1;                             \
+        }                                                \
+        printf("\n");                                    \
+    }
+#else
+#define SKIP_CHARACTER '\a' /* Use the invisible bell character */
+#define PRINT_FILENAME(heading) /* Do nufin */
+#endif
+
+    STRPTR filename = strclone(source_name);
+    STRPTR filename_fun_start = filename;
+    STRPTR filename_scan = NULL;
+    STRPTR next_parent_inside = NULL;
+    STRPTR previous_directory = NULL;
+    size_t filename_length = strlen(filename);
+    size_t parent_begin_length = strlen(PARENT_DIRECTORY_BEGIN);
+    size_t parent_inside_length = strlen(PARENT_DIRECTORY_BEGIN);
+    size_t parent_inside_index = 0;
+
+    /* Skip device name */
+#if defined AMIGA
+    STRPTR device_delimiter = strchr(filename_fun_start, ':');
+
+    if (device_delimiter != NULL)
+    {
+        filename_fun_start = device_delimiter + 1;
+        PRINT_FILENAME("strip device");
+    }
+
+#elif defined BEOS || defined NEXTSTEP || defined RISCOS || defined UNIX
+    if (filename_fun_start[0] == '/')
+    {
+        STRPTR next_directory = strchr(filename_fun_start+1, '/');
+        if (next_directory != NULL)
+        {
+            filename_fun_start = next_directory+1;
+        }
+        else
+        {
+            /* This is a plain device name, simply move to the end of it */
+            filename_fun_start += strlen(filename_fun_start);
+        }
+        PRINT_FILENAME("strip device");
+    }
+#else
+#error "system not supported: skip device name"
+#endif
+
+    /* Skip leading parent directories */
+    while (!strncmp(filename_fun_start, PARENT_DIRECTORY_BEGIN, parent_begin_length))
+    {
+        filename_fun_start += parent_begin_length;
+    }
+
+    /* Now filename_scan points to the first character where "the fun
+     * starts". Everything before it must not be overwritten by
+     * SKIP_CHARACTER */
+    filename_scan = filename_fun_start;
+
+    do
+    {
+        /* Find parent directory inside filename starting from current
+         * scan position */
+        next_parent_inside = strstr(filename_scan, PARENT_DIRECTORY_INSIDE);
+        if (next_parent_inside != NULL)
+        {
+            /* Now we have a situation like this:
+             *
+             * sepp:///hugo/resi//hinz/kunz.txt
+             * ^       ^        ^
+             * |       |        |
+             * |       |        next_parent_inside
+             * |       filename_fun_start
+             * filename
+             *
+             * Therefor we need to scan backwards for the next "/"
+             */
+            char fun_start_character = filename_fun_start[0];
+
+            previous_directory = next_parent_inside - 1;
+
+            while ((previous_directory > filename_fun_start)
+                   && (previous_directory[0] != PATH_SEPARATOR[0]))
+            {
+                previous_directory -= 1;
+            }
+
+            PRINT_FILENAME("");
+
+            /* Overwrite the previous directory, including the "/" */
+            do
+            {
+                mark_for_skip(previous_directory)
+                previous_directory += 1;
+            }
+            while (previous_directory[0] != PATH_SEPARATOR[0]);
+
+            PRINT_FILENAME("");
+
+
+            /* Overwrite the parent directory, excluding the "/" */
+            for (parent_inside_index = 0;
+                 parent_inside_index < parent_inside_length;
+                 parent_inside_index += 1)
+            {
+                mark_for_skip(&(next_parent_inside[parent_inside_index]));
+            }
+            filename_scan = next_parent_inside + parent_inside_length;
+
+            PRINT_FILENAME("");
+
+            /* If the previous step removed the first directory of the
+             * whole filename, also strip the "/" */
+            if (filename_fun_start[0] != fun_start_character)
+            {
+                mark_for_skip(filename_scan);
+                filename_scan += 1;
+
+                PRINT_FILENAME("strip parent inside at start");
+            }
+        }
+        else
+        {
+            /* Juhuu, the nightmare is over! Copy all characters from
+             * filename to target except those marked as SKIP_CHARACTER */
+            STRPTR target = (STRPTR) umalloc(filename_length + 1);
+            size_t target_index = 0;
+            *target_name = target;
+
+            PRINT_FILENAME("finished");
+
+            filename_scan = filename;
+            while (filename_scan[0] != '\0')
+            {
+                if (filename_scan[0] != SKIP_CHARACTER)
+                {
+                    target[target_index] = filename_scan[0];
+                    target_index += 1;
+                }
+                filename_scan += 1;
+            }
+
+            /* Mark end of string */
+            target[target_index] = '\0';
+
+            if (target_index != filename_length)
+            {
+                panic("bad target_index");
+            }
+
+        }
+    }
+    while (next_parent_inside != NULL);
+
+    /* Cleanup */
+    ufree(filename);
+
+    return TRUE;
 }
 

@@ -45,7 +45,7 @@ every time one accesses the page.</P>
 
 <P>As the ssi-call is done inside a sgml-comment, <hsc> will
 not care about it and simply skip it. Only make sure you did not set
-the command line option <op_stripcomment>. The sgml-comment later will
+the command line option <op-stripcomment>. The sgml-comment later will
 be substituted by your server (if it supports ssi).</P>
 
 <P>Usually ssi-operations result in an increased CPU-load of your

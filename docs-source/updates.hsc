@@ -23,21 +23,24 @@ or ftp.</P>
 
 <P>There is a support-w3-page for <hsc>:</P>
 
-<IMG SRC="image/austria.gif" ALT="[Austria]">
-<A HREF="http://www.giga.or.at/~agi/hsc/"><(HSC.Anchor)></A><BR>
-<IMG SRC="image/teutsch.gif" ALT="[Germany]">
-<A HREF="http://wwwcip.rus.uni-stuttgart.de/~inf11108/support/hsc/"><(HSC.ANCHOR)></A><BR>
+<p><IMG SRC="image/austria.gif" ALT="[Austria]">
+<A HREF="http://www.giga.or.at/~agi/hsc/"><(HSC.Anchor)></A></p>
 
-<P>You can also download the current version from there. Furthermore
+<p><IMG SRC="image/teutsch.gif" ALT="[Germany]">
+<A HREF="http://wwwcip.rus.uni-stuttgart.de/~inf11108/support/hsc/"><(HSC.ANCHOR)></A></p>
+
+<P>You can also download the current version from there. <*Furthermore
 it provides a browsable version of this documentation and maybe a
-pre-release or bugfixes.</P>
+pre-release or bugfixes.*></P>
 
+<*
 <P>However you should think twice before downloading a pre-release.
 Normally I add some notes about the state of it. If it just claims to
 fix some bugs, there should be no problem about it. But if it says it
 contains some new experimental features in an early state or something
 like that, you should probably leave it untouched. In this case, it
 most likely only interesting for people who know what is going on.</P>
+*>
 
 <H2>Stupid-Questions-Support</H2>
 
@@ -61,9 +64,10 @@ also post articles there.)</P>
 <P>And by no means send those questions to me. That's the curse of
 freeware.</P>
 
-<H2>Reasonable-Questions-And-Remarks-Support</H2>
+<H2>Reasonable-Questions-Support</H2>
 
-Contact <A HREF="author.html">author</A> for that, as it will both
-help to improve the program and the manual.
+<p>In some rare cases, so might try to contact the <A
+HREF="author.html">author</A>. But don't expect too much as this
+product is not developed anymore.</p>
 
 </WEBPAGE>

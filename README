@@ -5,7 +5,7 @@ TITLE
 
 VERSION 
 
-  0.916
+  0.917
 
 AUTHOR
 
@@ -33,7 +33,7 @@ FEATURES
   - macros (implemented as additional tags)
   - conditionals (if/else/elseif)
   - expressions, supporting
-    - string concatenation and comparison,
+    - string concatenation and comparison
     - import of environment variables
     - current time
     - size of files
@@ -45,29 +45,29 @@ FEATURES
   - project relative URIs
   - replaces special characters by entities
   - evaluates attributes for image size (PNG/jfif/gif)
-  - strips comments and specified tags
-  - strips useless white spaces
+  - can strip useless white space, comments and tags
   - replaces icon entities by images
   - performs a basic syntax- and structure check
-  - easy to extend syntax definition format
+  - error messages are easier to understand than the esoteric crap
+    tools like sglms vommit
   - maintains a project file
-  - dependency generator for Makefiles included
-  - tool to examine/manipulate project files included
+  - includes hscpitt, a tool to examine/manipulate project files
+  - includes hscdepp, a dependancy generator for makefiles
 
 NEW FEATURES
 
-  - now aborts if a specifiable number of errors occurred
-  - as usually, some minor bugfixes and improvements
-  - made Postscript version of manual available in a separate archive
+  - added internal support for message browsers for AmigaOS and
+    RiscOS
+  - as usual some minor bugfixes and improvements
 
 SPECIAL REQUIREMENTS
 
   AmigaOS 2.04, 2MB of regular memory, 68020, some sort of w3-browser
   and ASCII editor.
 
-  For larger projects, 4MB of memory and 68040 are recommended.
+  For larger projects, 4MB of memory and 68060 are recommended.
 
-  Different to many other html-tools, hsc requires an user-IQ > 50. You
+  Different to many other html-tools, hsc requires a user-IQ > 50. You
   should also know how to work with the CLI and how to write
   Makefiles. You should already have made some experiences with macro
   processors and some programming language (Rexx should suffice).

@@ -163,6 +163,8 @@ extern BOOL link_envfname(EXPSTR * dest, STRPTR env, STRPTR dir, STRPTR fn);
 
 extern STRPTR tmpnamstr(STRPTR prefix);
 
+extern BOOL optimize_fname(STRPTR *target_name, STRPTR source_name);
+
 #endif
 
 #endif

@@ -11,7 +11,7 @@
 
 <P>Usually there should be no need to use sgml-comments, so why not
 remove them at all? You can perform this by enabling the switch
-<op_stripcomment> when invoking <hsc>.</P>
+<op-stripcomment> when invoking <hsc>.</P>
 
 <P>Because of the numerous problems sgml-comments cause, you better use
 <A HREF="spctags.html#comments">hsc-comments</A> anyway (see there also
@@ -19,7 +19,7 @@ for a discussion of these problems).</P>
 
 <H2>Specific Tags</H2>
 
-<P>..can be passed to the option <op_striptags>, separated by a
+<P>..can be passed to the option <op-striptags>, separated by a
 <vbar>. For example, to remove all physical styles, use
 <KBD>STRIPTAG="B|I|U|TT"</KBD> when invoking <hsc>.</P>
 
@@ -31,7 +31,7 @@ internal tags, which you should not strip anyway.</P>
 <H2>Tags With External References</H2>
 
 <P>These can be removed if you want to create a No-Net-version of your
-document. Use the switch <op_stripexternal> for this task. Tags which
+document. Use the switch <op-stripexternal> for this task. Tags which
 are affected by this must have an URI-type attribute, which has the <A
 HREF=":macro/attrib.html#modifier">attribute modifier</A>
 <CODE>/STRIPEXT</CODE> set within <hsc.prefs>.</P>
@@ -44,7 +44,7 @@ HREF=":macro/attrib.html#modifier">attribute modifier</A>
 
 <P>These can be removed, if you heavy use them to structure your
 source, but don't want to waste bandwidth for them. You only need to
-enable the switch <op_compact>.</P>
+enable the switch <op-compact>.</P>
 
 <P>If now someone performs a "View Source" on your html object,it will
 be less readable for him, but browsers won't care and display it the

@@ -200,9 +200,10 @@ sterile : clean all_clean
 
 # --- DO NOT MODIFY THIS LINE -- AUTO-DEPENDS FOLLOW ---
 hsc/all_hsc.o : hsc/args.c hsc/callback.c hsc/global.c hsc/hsc.c \
-    hsc/output.c hsc/status.c hsc/global.h hsc/status.h hscprj/license.h \
-    ugly/fname.h ugly/prginfo.h ugly/returncd.h ugly/uargs.h hsc/callback.h \
-    hsc/output.h hsclib/hsclib.h hsc/args.h hsc/hsc_rev.h hscprj/project.h \
+    hsc/output.c hsc/status.c hsc/callback.h hsc/global.h hsc/status.h \
+    hscprj/license.h ugly/fname.h ugly/prginfo.h ugly/returncd.h \
+    ugly/uargs.h amiga/msgbrowser.c hsc/output.h riscos/msgbrowser.c \
+    hsclib/hsclib.h hsc/args.h hsc/hsc_rev.h hscprj/project.h \
     riscos/unixname.h hsc/hdebug.h ugly/dllist.h ugly/expstr.h \
     ugly/infile.h ugly/umemory.h ugly/ustring.h ugly/utypes.h ugly/expstr.h \
     ugly/utypes.h ugly/umemory.h hsclib/inc_base.h hsclib/include.h \

@@ -1,9 +1,6 @@
 <WEBPAGE chapter="hsc - " title="Messages"
     PREV="fileargs.html"
-    NEXT="envvar.html"
-    QTEXT=("What happened to the attitude you used to have at school<BR>"
-          +"What happened to the attitude when you broke all the rules")
-    QAUTHOR='The Farm, "Groovy Train"'>
+    NEXT="message-list.html">
 
 <$macro MSG_NOTE><A HREF=":messages.html#msg_note">Note</A></$macro>
 <$macro MSG_STYLE><A HREF=":messages.html#msg_style">Bad-style</A></$macro>
@@ -11,25 +8,6 @@
 <$macro MSG_WARN><A HREF=":messages.html#msg_warn">Warning</A></$macro>
 <$macro MSG_ERR><A HREF=":messages.html#msg_err">Error</A></$macro>
 <$macro MSG_FERR><A HREF=":messages.html#msg_ferr">Fatal error</A></$macro>
-<$macro OPTN_IGNORE><CODE><A HREF=":options.html#ignore">IGNORE</A></CODE></$macro>
-
-<$macro msg id:string/r name:string class:enum("note|style|port|warning|error|fatal") undoc:bool>
-<DT><$if COND=(undoc)><STRONG>message <(id)>:</STRONG><DD>Unused or undocumented.
-<$else><A NAME=("message."+id)><STRONG><$if COND=(class="style")>bad style
-<$elseif COND=(class="port")>portability problem
-<$elseif COND=(class="fatal")>fatal error
-<$else><(class)>
-</$if>
-<(id)>: <(name)></STRONG></A><DD></$if>
-</$macro>
-
-<$MACRO insattr>attribute <I>attrib</I></$MACRO>
-<$MACRO insent>entity <I>entity</I></$MACRO>
-<$MACRO instag>tag &lt;<I>tag</I>&gt;</$MACRO>
-<$MACRO insendtag>end tag &lt;<I>tag</I>&gt;</$MACRO>
-<$MACRO insval>value <I>value</I></$MACRO>
-<$MACRO insid>id <I>id</I></$MACRO>
-<$MACRO inssval><I>value</I></$MACRO>
 
 <P><hsc CAP> is able to produce lots of different warnings and errors
 when parsing hsc-sources. The are divided into several classes, and
@@ -37,21 +15,6 @@ there is a possibility to filter out specific messages or whole
 message classes. There are also possibilities to change the appearance
 of messages and redirect them to a file, making it easy to integrate
 <hsc> into existing developer environments.</P>
-
-<*** insert quick-link to messages ***>
-<html-only>
-<P>[ <A HREF="#message.1">1-10</A>
-   | <A HREF="#message.11">11-20</A>
-   | <A HREF="#message.21">21-30</A>
-   | <A HREF="#message.31">31-40</A>
-   | <A HREF="#message.41">41-50</A>
-   | <A HREF="#message.51">51-60</A>
-   | <A HREF="#message.61">61-70</A>
-   | <A HREF="#message.71">71-80</A>
-   | <A HREF="#message.71">81-..</A>
-   ]
-</P>
-</html-only>
 
 <H2><A NAME="elements">Message Elements</A></H2>
 
@@ -69,508 +32,233 @@ with being..<UL>
     messages classes: <MSG_NOTE>, <MSG_STYLE>, <MSG_PORT>, <MSG_ERR> or <MSG_FERR>.
     See below for details about those message classes.
 <LI>..<CODE>11</CODE> the number of the message. You can use this to
-    quickly find the description of the message (see below) or to
-    suppress it in further runs using <op_ignore>.
+    quickly find the description in the <a href="message-list.html">list of
+    message</a> or to suppress it in further runs using <op-ignore>.
 <LI>..<CODE>unknown tag &lt;SEPP&gt;</CODE> the message text, which describes what
     went wrong.
 </UL>
 
+<p>The message about would suggest to load the file
+<file>hugo.hsc</file> in your editor and go to line 17, column 23.</p>
+
 <H2><A NAME="classes">Message Classes</A></H2>
 
 <P><STRONG><A NAME="msg_note">Note</A></STRONG> is a message only for the
-user's information. It can be suppressed using <OPTN_IGNORE>.</P>
+user's information. It can be suppressed using <op-ignore>.</P>
 
 <P><STRONG><A NAME="msg_style">Bad-style</A></STRONG> informs the user
 that his although legal html-code includes constructs that indicate a
-bad style. It can be suppressed using <OPTN_IGNORE>.</P>
+bad style. It can be suppressed using <op-ignore>.</P>
 
 <P><STRONG><A NAME="msg_port">Portability-problem</A></STRONG> informs
 the user that his although legal html-code includes constructs can
 lead to problems on old or buggy browsers. It can be suppressed using
-<OPTN_IGNORE>.</P>
+<op-ignore>.</P>
 
 <P><STRONG><A NAME="msg_warn">Warning</A></STRONG> tells you that your
-source includes some problematic parts, that can lead to problems with
-several browsers. It can be suppressed using <OPTN_IGNORE>.</P>
+source includes some problematic parts that can lead to problems with
+several browsers. It can be suppressed using <op-ignore>.</P>
 
 <P><STRONG><A NAME="msg_err">Error</A></STRONG> indicates that there
 is something wrong with your html-source. Conversion will continue,
 but no output will written be written after finishing it.</P>
 
-<P><STRONG><A NAME="msg_ferr">Fatal error</A></STRONG> tells you that something
-terrible has happened and there is no way to continue the conversion.
-No output will be written.</P>
+<P><STRONG><A NAME="msg_ferr">Fatal error</A></STRONG> tells you that
+something serious is wrong and there is no way for <hsc> to recover
+and continue the conversion. No output will be written.</P>
 
 <P>There is also another class called <STRONG>internal error
-messages</STRONG>, which are used by <hsc> to report that something
-unexpected happened. To find out more about this, look at the chapter
-about <ln_bugs>.</P>
+messages</STRONG>, which are used by <hsc> to report that hsc itself
+is broken. Normally this should not happen, but if you found a bug.
+To find out more what to do in such a case, look at the chapter about
+<ln-bugs>.</P>
 
 <H2><A NAME="options">Message Options</A></H2>
 
-There are several CLI options to modify the behavior of <hsc>'s
-messages:
-
-<UL>
-<LI><op_ignore> can be used to suppress single messages or whole 
-message classes, if you are not interested in them
-<LI><KBD><A HREF="options.html#msgformat">MSGFORMAT</A></KBD>
-specifies the appearance of messages, for example concerning the
-sequence of the elements described before.
-<LI><KBD><A HREF="options.html#msgformat">MSGFILE</A></KBD> can be used to
-redirect messages into a file, from where they can be processed
-for example by some message parser that controls your editor
-<LI><KBD><A HREF="options.html#msgformat">MSGANSI</A></KBD> tells
-<hsc> to insert a few ANSI escape sequences to make messages easier to
-read. This only makes sense if you refuse use a message browser as
-suggested above, and only let them show up on the screen.
-</UL>
-
-<HR>
-
-<H2><A NAME="list">List Of Messages</A></H2>
-
-Below you can find a list of messages that can show up when processing
-hsc sources. Most of them also include a short explanation what could
-have caused the problem and how to fix it.
-However, this is not a html-tutorial. Fully
-understanding these messages requires some experience from the user.
-
-<DL>
-<MSG ID="1" CLASS="warning" NAME="unable to open project-file">
-
-The project-file specified could not been open. This indicates
-no problem, if you specified a project-file using <op_prjfile>
-the first time; it will be created automatically after the
-html-object has successfully been processed.
-
-<MSG ID="2" CLASS="fatal" NAME="project-file corrupt">
-
-The data found in the project file are not of the required
-form. Most likely, the file-format-version is outdated.
-Remove the old file, <hsc> will create a new one next time it
-is invoked.
-
-<MSG ID="3" CLASS="fatal" NAME="unexpected end of file">
-There are still characters to be read from input, but the file
-already ends; <hsc> tells you what it still expects to come.
-
-<MSG ID="4" CLASS="fatal" NAME="error reading <I>file</I>">
-
-On attempting to read from an input file, an error has occured. This
-usually is on a hardware level, and can only be fix by one of those
-tools to validate and repair a disk structure common on every
-platform.
-
-<MSG ID="5" CLASS="error" NAME="" UNDOC>
-
-
-<MSG ID="6" CLASS="fatal" NAME="can not open <I>file</I> for input">
-
-An input file could not be opened. A more detailed description that
-tells you why is displayed, too.
-
-<MSG ID="7" CLASS="note" NAME="stripped <instag>">
-Notifies user that a tag has been removed. This usually happens
-because the user requested this with one of the CLI-options.
-
-<MSG ID="8" CLASS="error" NAME="" UNDOC>
-<MSG ID="9" CLASS="style" NAME="expected heading <TG>Hx</TG>">
-A heading should not be more than one level below the heading
-which preceded it. That is, an <TG>H3</TG> element should not
-follow an <TG>H1</TG> element directly. The first heading
-showing up in a document should be <TG>H1</TG>.
-
-<MSG ID="10" CLASS="style" NAME='"click here" syndrome detected'>
-A keyword defined with the special attribute <CODE>HSC.CLICK-HERE</CODE>
-has been found within the text inside an anchor specification.<P>
-Ok, now again in English: you used some term like "Click here" inside
-the text describing a link. This is very clumsy and should be avoided;
-see <A HREF="http://www.cs.cmu.edu/~tilt/cgh/index.html#linktext">Composing
-Good HTML</A> for details.
-
-<MSG ID="11" CLASS="error" NAME="unknown <instag>">
-You refered to an unknown tag or macro.
-
-<MSG ID="12" CLASS="error" NAME="<instag> occured too often">
-A tag that is expected to occure only once appeared at least twice.
-Remove all unneccessary occurences of the tag.
-
-<MSG ID="13" CLASS="error" NAME="unmatched end-<instag>">
-You called a end-tag without using the corresponding start-tag
-before.
-
-<MSG ID="14" CLASS="warning" NAME="illegal end-tag nesting">
-A end-tag appeared where a different end-tag was expected to
-appear before. Example: instead of
-<$SOURCE PRE>
-<B><I>bold and italic</B></I>
-</$SOURCE>
-you should write
-<$SOURCE PRE>
-<B><I>bold and italic</I></B>
-</$SOURCE>
-
-Note the different location of <TG>/I</TG> in both cases.
-
-<MSG ID="15" CLASS="warning" NAME="required <instag> missing">
-A tag that is required for every document is missing.
-
-<MSG ID="16" CLASS="warning" NAME="end-<instag> missing">
-You called an start-tag, but didn't end it. Insert the required
-end-tag.
-
-<MSG ID="17" CLASS="error" NAME="unknown tag modifier <I>/modifier</I>">
-
-You have used an unknown <A HREF=":macro/flag.html">modifier</A> 
-to define the characteristics of an tag or macro.
-
-<MSG ID="18" CLASS="warning" NAME="unknown entity">
-You used an entity, that <hsc> doesn't know. This can happen if you
-made a typo, or the entity has not been defined within
-<hsc.prefs>.
-
-<MSG ID="19" CLASS="warning" NAME='";" expected after entity'>
-
-Entities require a <semicolon> to end them. For instance, if you try
-to use <qq><CODE>&amp;uuml</CODE></qq> instead of
-<qq><CODE>&amp;uuml<STRONG>;</STRONG></CODE></qq> (to get an
-<qqc>&uuml;</qqc>, this message will show up. Simply append the
-<qqc>;</qqc> to fix it.
-
-<MSG ID="20" CLASS="error" NAME="unknown <insattr>">
-You tried to access an attribute which has not been defined before.
-
-<MSG ID="21" CLASS="warning" NAME="path to URI not found: <I>file</I>">
-
-An attribute refers to a local resource (like another document or
-image) that doesn't exist. Common reasons for that are typos, a
-case-sensitive file system or indeed a missing file.
-
-<MSG ID="22" CLASS="warning" NAME="argument without quote">
-You passed a value to an attribute, but did not embed it into single
-or double quotes. This can lead to problems with older browsers.
-
-<MSG ID="23" CLASS="error" NAME="empty reference to <insattr>">
-An attribute refers to an attribute that has been defined, but no
-value has been set for. Usually, you try to refer to an attribute
-inside a macro, that no value has been passed to within the call
-of the macro.
-
-<MSG ID="24" CLASS="warning" NAME="attribute option <qq><I>option</I></qq> not allowed in this context">
-You have used an <A HREF=":macro/attrib.html#modifier">option</A>
-to define the characteristics of an attribute, which is not allowed to
-appear at this location.
-
-<MSG ID="25" CLASS="style" NAME="<TG>BLINK</TG> sucks">
-Some browser support the non-html-tag <TG>BLINK</TG>. It is used
-to make text blinking, which annoys many users. Additionally, most
-of them don't know how to configure their browser that it doesn't
-blink, so you really should avoid it.
-
-<MSG ID="26" CLASS="error" NAME="default value for <insattr> already set">
-You tried to assign more than one default value within an attribute declaration.
-For instance, like in
-<$source PRE>
-    <$define HUGO:string="hugo"="or sepp?">
-</$source>
-Remove the part corresponding to <qq><CODE>="or sepp?"</CODE></qq>.
-
-<MSG ID="27" CLASS="error" NAME="attempt to modify constant <insattr>">
-You tried to assign a new value to an attribute declared as constant.
-That is, the <A HREF="macro/attrib.html#modifier">attribute option</A>
-<CODE>/CONST</CODE> has been specified when defining it earlier.
-
-<MSG ID="28" CLASS="fatal" NAME="no content within current context">
-You tried to call <ln_content> outside any container macro.
-
-<MSG ID="29" CLASS="error" NAME="tag &lt;A&gt; without HREF or NAME">
-An anchor tag has been specified without one of the required attributes
-<CODE>HREF</CODE> or <CODE>NAME</CODE>.
-
-<MSG ID="30" CLASS="error" NAME='unmatched "&gt;"'>
-A "greater than" sign appeared inside the text. You should write
-"<CODE>&amp;gt;</CODE>" instead. This can also happen, if you made
-an error calling a tag, and <hsc>'s parser couln't recover.
-
-<MSG ID="31" CLASS="error" NAME='expected "<I>element_expected</I>", found "<I>element_found</I>"'>
-A syntax element did not occur where it has been expected.
-
-<MSG ID="32" CLASS="error" NAME="" UNDOC>
-<MSG ID="33" CLASS="warning" NAME="linefeed found inside string">
-
-<MSG ID="34" CLASS="error" NAME="" UNDOC>
-<MSG ID="35" CLASS="error" NAME="unknown <insval> for enumerator <insattr>">
-You tried to set an enumerator to a value it doesn't support.
-
-<MSG ID="36" CLASS="warning" NAME="server relative URI to <I>uri</I>">
-<P>An URI-attribute started with a <slash> (like for example
-<qqc>/image/next.png</qqc>), denoting a so called server relative URI.
-This is a really braindead concept, which might help to save a few
-bytes in your html-object, but will make your documents unreadable
-if stored on your local disk, as they depend on a specific server
-structure.</P>
-
-<P>Normally, <hsc> is unable to validate links or obtain image sizes
-of data referenced using server relative URIs because of reasons that
-should be obvious to everyone.</P>
-
-<P>If you because of some obscure reasons (or simply stupidity) insist
-on using URIs of such kind, you can set the CLI option <op_serverdir>
-to specifiy the root directory for server relative URIs.</P>
-
-<MSG ID="37" CLASS="warning" NAME="<instag> is obsolete">
-The tag was defined within some old html-version, but should
-not be used any more (eg. <TG>LISTING</TG>).
-
-<MSG ID="38" CLASS="warning" NAME="<instag> is only used by jerks">
-This tag is no legal html-tag and is only supported by special
-browsers.
-
-<MSG ID="39" CLASS="error" NAME="<I>custom user message</I>">
-This text and class of this message can be controlled by the
-user using <A HREF="features/spctags.html#message"><TG>$message</TG></A>.
-
-<MSG ID="40" CLASS="fatal" NAME="can not open preferences file">
-The file <hsc.prefs> could not be found at any of the 
-<A HREF="features/prefs.html#search">expected locations</A>.
-
-<MSG ID="41" CLASS="warning" NAME="unknown environment variable <qq><I>envvar</I></qq>">
-The function <ln_GetEnv> 
-could not access the environment variable specified an returned an 
-empty value.
-
-<MSG ID="42" CLASS="error" NAME="missing value for <insattr>">
-Non-boolean attributes require an value set.
-
-<MSG ID="43" CLASS="error" NAME="unknown attribute option <I>option</I>">
-You defined a new attribute, but used an
-<A HREF=":macro/attrib.html#modifier">option</A> that is unknown.
-
-<MSG ID="44" CLASS="error" NAME="required <insattr> missing">
-An attribute that is required has not been set within the call
-of a tag or macro.
-
-<MSG ID="45" CLASS="warning" NAME="unexpected value for <insattr>: expected <qq><inssval></qq>, found <qq><inssval></qq>">
-This message can show up if you have specified <op_getsize> when invoking <hsc>, 
-and have set the attribute <CODE>WIDTH</CODE> and/or <CODE>HEIGHT</CODE> by
-hand. It denotes that the values you have used differ from those <hsc> has
-evaluated from the image data.
-
-<MSG ID="46" CLASS="note" NAME="replaced <I>char</I> by <I>entity</I>">
-Informs you that a special character (non-7-bit-ASCII) has been replaced
-by it's corresponding entity.
-
-<MSG ID="47" CLASS="error" NAME="illegal white space">
-A white space occurred at a place where it was not supposed to.
-
-<MSG ID="48" CLASS="port" NAME="line feed inside sgml-comment">
-<MSG ID="49" CLASS="port" NAME='"&gt;" inside sgml-comment'>
-<MSG ID="50" CLASS="port" NAME="sgml-comment ends inside quotes">
-The messages#48 to #50 point out problems that are known bugs of
-several browsers. A general comment on sgml-comments: Try to avoid
-them, use the <A HREF="features/spctags.html#comments"><TG>* <I>comment</I> *</TG></A>
-tag instead.
-
-<MSG ID="51" CLASS="warning" NAME='no entry for document "<I>document</I>" in project data to check <insid>'>
-
-This message is active only if you specified a project file when
-invoking <hsc> using the option <op_prjfile>. It tells you that a
-reference to an ID inside another document could not be checked
-because the document linked to is not mentioned in the project file.
-
-<P>Usually, this happens when you did not process the above mentioned
-document with a project file specified before. Do not worry about that
-too much, after processing all documents of your project at least
-once, this message usually does not show up any more.</P>
-
-If it still is there, then you are refering to documents that are part
-of none or another project using another project-file; if so, there is
-no work-around for this case.
-
-<MSG ID="52" CLASS="error" NAME="" UNDOC>
-
-<MSG ID="53" CLASS="error" NAME="unmatched conditional <TG>$else|$elseif</TG>">
-An <TG>$else</TG> tag has been at an unexptected position. Usually,
-a single preceding <TG>$if</TG> has two or more corresponding <TG>$else</TG>
-tags assigned.
-
-<MSG ID="54" CLASS="warning" NAME="calling external command returned <I>value</I>">
-You have invoked a shell-command using <ln_exec> and it returned a
-value unequal to zero, which usually denotes an error while processing
-the command. For error analysis, look at the output that the command
-(hopefully) has made.
-
-<MSG ID="55" CLASS="warning" NAME="text outside sgml-comment context">
-This message often shows up, if you are not using an even number of
-hypens (<qqc>-</qqc>) as delimters inside your source. For example,
-<$source PRE><!--------></$source>
-(8 hyphens) works fine, whereas
-<$source PRE><!---------></$source>
-(9 hyphens) will cause problems.
-
-<MSG ID="56" CLASS="error" NAME="" UNDOC>
-<*
-<MSG ID="56" CLASS="port" NAME="sgml-comment consists of a single word">
-A sgml-comment consisting of a single word, for instance 
-<qq><TG>!--sepp--</TG></qq>,
-has been detected. Note that there are no blanks preceding/succeeding
-<qq>sepp</qq>)
-*>
-
-<MSG ID="57" CLASS="error" NAME="no start tag for <insendtag>">
-An end tag has been detected without it's corresponding start tag
-occuring before.
-
-<MSG ID="58" CLASS="port" NAME="icon-<insent> found">
-Icon-entities are not (yet) widely supported.
-
-<MSG ID="59" CLASS="warning" NAME="redefined <instag>">
-You have just redefined a tag or macro that has already been
-declared before. The previous declaration will be thrown away.
-
-<MSG ID="60" CLASS="error" NAME="<instag> must be inside <instag>">
-Before you are allowed to use the first tag, the second tag has to
-occure before. Example: <TG>INPUT</TG> may only occure
-inside <TG>FORM</TG>.
-
-<MSG ID="61" CLASS="error" NAME="<instag> not allowed within <instag>">
-A tag occurs inside another tag that does not allow this. For example,
-you can't recursively use <TG>A</TG> inside <TG>A</TG>.
-
-<MSG ID="62" CLASS="error" NAME="no attributes allowed for end-tags">
-You tried to pass values to a end-tag or macro. If you need an attribute
-for a end-macro only, you still have to define and pass it within the
-start-macro; the end-macro will have access to all these attributes
-and its values.
+<p>There are several CLI options to modify the behavior of <hsc>'s
+messages. You can suppress messages you are not interested in, you can
+redirect them to a file and change the output format (e.g. to pipe
+them to an external message browser). On some systems, you can even
+send them to some selected message browsers without messy piping and
+scripting.</p>
+
+<h3><a name="ignore">Ignore/Enable Certain Messages and Classes</a></h3>
+
+<p>If you think that <hsc> reports too much or too less about problems
+in your source code, you can specify several options to change its
+behavior.</p>
+
+<p>The first one  - and also the one with the most impact - is <kbd>MSGMODE</kbd>.
+This switches <hsc> into one of three possible basic modes for the syntax
+check:</p>
+
+<ul>
+<li><kbd>PEDANTIC</kbd> - Whine about nearly everything, including
+    the whole bunch of bad style and portability problems. Also minor
+    changes to the output like the replacing of entities is reported
+    in this mode.
+<li><kbd>NORMAL</kbd> - This is the default that should give a reasonable
+    cocktail of messages, reporting most problems the average users
+    should understand.
+<li><KBD>RELAXED</KBD> - Perform only a very basic check and ignore
+    nearly everything that might cause problems. This should only be
+    used if you do not care much about your html-code (Read: you are
+    a jerk).
+</ul>
+
+<p>These modes however give only very rough possibility to control the
+amount of messages. For the fine-tuning, the more sophisticated
+<kbd>IGNORE</kbd> and <KBD>ENABLE</KBD> exist.</p>
 
-<MSG ID="63" CLASS="warning" NAME="redefinition of <insattr>">
-You redefined an alredy existing attribute. If this occures during
-the definition of a new macro, you just tried to give two arguments the
-same name.
+<p>Unless <KBD>MSGMODE=NORMAL</KBD> is ok for you, you have to specify
+<kbd>MSGMODE</kbd> in the command line <em>before</em>
+<KBD>IGNORE</KBD> or <KBD>ENABLE</KBD> is used the first time as it
+resets several of the internal data structures.</p>
 
-<MSG ID="64" CLASS="error" NAME='illegal attribute identifier "<I>attribute_name</I>"'>
-You have tried to use an attribute name which contains characters not 
-allowed for that. Legal characters for attribute names are letters, digits, 
-<underscore>, <period> and <hyphen>.
+<p><KBD>IGNORE</KBD> can be used to suppress single messages or whole
+message classes, if you are not interested in them. This option can
+show up in the command line call multiple times, for example:</p>
 
-<MSG ID="65" CLASS="error" NAME='unknown binary operator "<I>operator</I>"'>
-Within an <ln-expression>,
-you have used an binary operator that is not
-one of those mentioned in the 
-<A HREF="features/expressions.html#operators">list of operators</A>.
+<p><KBD>IGNORE=18 IGN=21 IGN 22</KBD> - ignore warnings #18, #21, #22</p>
+
+<p>You can also specify a whole list of messages, separated by a <vbar>, for instance:</p>
+
+<p><KBD>IGNORE=18|21|22</KBD> - same as the above example</p>
+
+<p>(If the vertical bar is used as piping character, you have to quote
+this value: <KBD>IGNORE "18|21|22"</kbd>)</p>
+
+<p>There are some special, non-numeric values you can use to ignore whole
+groups or classes of messages:</p>
+
+    <UL>
+    <LI><KBD>ALL</KBD> - Ignore all non-error messages
+    <LI><KBD>JERK</KBD> - Ignore all stuff perpetrated by jerks only
+    <LI><KBD>NOTE</KBD> - Ignore all notes
+    <li><kbd>PORTABILITY</kbd> - Ignore all portability problems
+    <LI><KBD>STYLE</KBD> - Ignore all bad style warnings
+    </UL>
 
-<MSG ID="66" CLASS="error" NAME="illegal end-tag">
-You tried to use a simple tag as a container, for example <TG>/IMG</TG>
+<p>If you don't care about portability problems and some other
+messages, but still want to have a quite exhaustive check, you could
+use something like this:</p>
+
+<p><kbd>MSGMODE=pedantic IGNORE=portability|46|51</kbd></p>
+
+<p>If on the other hand you are quite satisfied with the
+<KBD>NORMAL</KBD> check but want to see one particular message (e.g.
+replaced icon entities), this should do the trick:</p>
 
-<MSG ID="67" CLASS="style" NAME="recommended <instag> missing">
-A tag that ought to appear is missing.
+<p><kbd>MSGMODE=normal ENABLE=77</kbd></p>
 
-<MSG ID="68" CLASS="note" NAME="unknown filetype">
+<p>You can combine these options to even more complex rules:</p>
 
-<hsc> could not <A HREF="features/getsize.html">determine the size</A>
-of a link destination.
+<p><kbd>MSGMODE=pedantic IGNORE=note ENABLE=77</kbd></p>
 
-<MSG ID="69" CLASS="error" NAME="illegal entity definition">
+<p>This first enables all messages, then disables all notes but
+finally enables again one specific note for <ln-msg id="77">.</p>
 
-Somethings wrong with a <ln_defent> or <ln_deficon> call.
+<p>To find out the number of a certain message to enable, look at the
+<a href="message-list.html">list of messages</a>. To ignore a message,
+simple get the number from the console once an unwanted message shows
+up the first time.</p>
 
-<MSG ID="70" CLASS="warning" NAME="can not strip special <instag>">
-You have tried to strip one of <hsc>'s 
-<A HREF="features/spctags.html">special tags</A> using the CLI-option
-<op_striptags>. This does not make much sense, because all these tags
-will not show up in the output anyway.
 
-<MSG ID="71" CLASS="error" NAME="illegal numeric <insval> for <insattr>/entity">
-A numeric value must only consist of digits. Only integer values are
-allowed, therefor even a <period> must not be used.
+<h3><a name="msgformat">Redirecting Messages and Changing the Message Format</a></h3>
 
-<MSG ID="72" CLASS="warning" NAME="illegal color value">
+<KBD>MSGFORMAT</KBD> specifies the appearance of messages, for example
+concerning the sequence of the elements described before. The message
+format can contain several placeholders that are replaced by the
+message elements described above:
 
-A color value must fit the template <qq><CODE>#rrggbb</CODE></qq> 
-or be one of the values declared in the special attribute
-<A HREF=":features/spcattr.html#colornames"><CODE>HSC.COLOR-NAMES</CODE></A>
-defined in <hsc.prefs>
+    <TABLE BORDER="1">
+    <TR><TD>%f     </TD><TD>filename                           </TD></TR>
+    <TR><TD>%x, %y </TD><TD>location in file (column, line)    </TD></TR>
+    <TR><TD>%c     </TD><TD>message class                      </TD></TR>
+    <TR><TD>%i     </TD><TD>message id (numeric)               </TD></TR>
+    <TR><TD>%m     </TD><TD>message text                       </TD></TR>
+    <TR><TD>%n     </TD><TD>inserts a linefeed                 </TD></TR>
+    <TR><TD>%%     </TD><TD>inserts percent sign (<qqc>%</qqc>)</TD></TR>
+    </TABLE>
 
-<MSG ID="73" CLASS="error" NAME="" UNDOC>
-<MSG ID="74" CLASS="warning" NAME="unknown <insid>">
+<p>To for example get GCC-like messages, use <KBD>MSGFORMAT="%f:%y: %c
+%i: %m"</KBD>.<p>
 
-You forgot to specify the ID mentioned using <TG>A NAME=..</TG>,
-or just made a typo.
+<p>To disable output to the console, specify an empty string:
+<kbd>MSGFORMAT=</kbd>. This is probably useful only if you use a
+message browser (see below).</p>
 
-<MSG ID="75" CLASS="warning" NAME="local <insid> already declared">
+<p><KBD>MSGFILE</KBD> can be used to redirect messages to a file, from
+where they can be processed for example by some message parser that
+controls your editor.</p>
 
-You tried to redefine an ID that has already been declared before within
-the current document.
+<p>For an example script that invokes hsc, redirects its messages and
+sends them to a message browser, see
+<A HREF=":../grafflwerk/hScMsg.rexx"><FILE>grafflwerk/hScMsg.rexx</FILE></A>.</p>
 
-<MSG ID="76" CLASS="style" NAME="frames are disgusting">
 
-This message should need no comment; anyway, read
-<A HREF="http://www.useit.com/alertbox/9612.html">Why Frames Suck (Most of the Time)</A>
-or
-<A HREF="http://www.ummed.edu/pub/i/ijosh/frames/">Why Frames Suck</A>
-for more details.
+<h3><a name="msgbrowser">Using a Message Browser</a></h3>
 
-<MSG ID="77" CLASS="note" NAME="replacing icon-entity">
+<p>By default, <hsc> writes messages to the console where it was
+started from. For the user this means to read the filename and
+position, switch to his editor and go to the line told. Because this
+is pretty troublesome, many people use message browser where all
+messages are listed nicely sorted by file. Clicking on a message puts
+the editor to front and makes it jump to the requested position.</p>
 
-A icon-entity has been found is was replaced by an <TG>IMG</TG>.
-This message will only show up if you have passed the CLI option
-<op_iconbase>.
+<p>With the CLI-option <kbd>MSGBROWSER</kbd> you can specify one of
+the following browsers (case insensitive):</p>
 
-<MSG ID="78" CLASS="style" NAME="succeeding white space for <instag>">
+<ul>
 
-See below.
+<li><KBD>ScMsg</KBD>: The message browser coming with the SAS/c
+compiler for AmigaOS. As ARexx is used to communicate with the
+browser, <exec>RexxMast</exec> has to be running. The browser is
+expected to be in <exec>sc:c/scmsg</exec> and will be started
+automatically if it is not already running.
 
-<MSG ID="79" CLASS="port" NAME="preceding white space for <insendtag>">
+<li><KBD>VBrowse</KBD>: This uses public domain <exec>VBrowse</exec>
+message browser for AmigaOS coming with the freely distributable
+<exec>VBCC</exec> compiler. On the hsc support page there is an
+archive containing this browser and describing how to use it together
+with <hsc>. But you better keep your expectations low - keep in mind
+that it is public domain and the compiler is the main application of
+this package.
 
-These two messages point out that instead of (read the <underscore>)
-as a blank)
+<li><KBD>ThrowBack</KBD>: This uses the throwback mechanism popular
+under RiscOS.
 
-<BLOCKQUOTE>
-<TG>STRONG</TG>__important__<TG>/STRONG</TG>
-</BLOCKQUOTE>
+<li><KBD>ANSI</KBD>: This is no browser but only uses some ANSI codes
+when sending the message to the console. Your console has to support
+ANSI escape sequences (most do nowadays). This is only useful if you
+can not find any more comfortable way to read the messages.
 
-you better should use
+</ul>
 
-<BLOCKQUOTE>
-<TG>STRONG</TG>important<TG>/STRONG</TG>
-</BLOCKQUOTE>
+<p>So to to use <exec>ScMsg</exec>, specify <kbd>MSGBROWSER=SCMSG</KBD>,
+for throwback set <kbd>MSGBROWSER=Throwback</KBD>.</p>
 
-<P>It only affects tags like <TG>A</TG>, <TG>TITLE</TG>, headings and
-physical/locigal styles.</P>
+<p>If you specify a message browser on a system that does not support
+it, e.g. attempting to <kbd>Throwback</kbd> under NeXTStep, no browser
+will be used. That means you do not have to change your <makefile> if
+you want to work on another system for a short time.</p>
 
-<P>This message might seem unreasonable, as according to the
-specifications for html-readers such white spaces should be skipped.
-However, some browsers fail to do so.
+<p>Note that status messages and non-input related error messages are
+still viewed in the console.</p>
 
-<MSG ID="80" CLASS="error" NAME="" UNDOC>
-<MSG ID="81" CLASS="warning" NAME="value for <insattr> requires quotes">
+<h3><a name="limit">Limiting Messages</a></h3>
 
-If a attribute value contains any characters other then letters,
-digits, <period> or <hyphen>, it needs to be quoted.
+<p>By default, <hsc> stops to parse once more than 40 messages or 20
+errors have show up. In such a case, you should either start to
+<op-ignore> messages or fix errors.</p>
 
-<MSG ID="82" CLASS="note" NAME="changed quotes for <insattr> from [<I>style</I>] to [<I>style</I>]">
+<p>If you don't like these numbers, you can change them using
+<kbd>MAXMSG</kbd> respectively <kbd>MAXERR</kbd>. The value <kbd>0</kbd>
+represents an "infinite" amount of messages.</p>
 
-The quote style has been changed for a specific attribute. 
-This message will only show up if you have passed the CLI option
-<op_quotestyle>.
+<p>Note that nested messages with all those <qqc>location of previous
+call</qqc> texts still count as one, independent of the nesting
+level.</p>
 
-<MSG ID="83" CLASS="error" NAME="" UNDOC>
-<MSG ID="84" CLASS="warning" NAME="unknown <insattr> for <instag>">
-
-A tag call contains an unknown attribute, which was not defined with
-the corresponding <ln_deftag>. This does not denote a serious problem,
-as html provides a vast selection of esoteric attributes and browsers
-usually ignore unknown attributes, but you should confirm you did not
-make a typo.
-
-<MSG ID="85" CLASS="error" NAME="unknown <insattr> for <instag>">
-
-A macro call contains an unknown attribute, which was not defined
-with the corresponding <ln_macro>. As it would not make sense to
-pass unknown attributes to macros, this is considered an error.
-Look at the macro declaration which attribute you meant.
-
-</DL>
 
 </WEBPAGE>

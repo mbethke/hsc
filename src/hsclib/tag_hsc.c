@@ -23,7 +23,7 @@
  * tag callbacks for "<$xx>" and related
  * (for macro callbacks, see "tag_macro.c")
  *
- * updated: 16-Dec-1997
+ * updated: 23-May-1998
  * created: 23-Jul-1995
  */
 
@@ -338,8 +338,14 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
         set_estr(cmdstr, cmd);
         if (usetmpfile)
         {
+#ifdef RISCOS
+            app_estr(cmdstr, " { > ");
+            app_estr(cmdstr, filename);
+            app_estr(cmdstr, " }");
+#else
             app_estr(cmdstr, " >");
             app_estr(cmdstr, filename);
+#endif
         }
 
         D(fprintf(stderr, DHL "  command=`%s'\n", estr2str(cmdstr)));
@@ -420,7 +426,15 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
             if (remove_file)
             {
                 D(fprintf(stderr, DHL "  remove `%s'\n", filename));
+                errno = 0;
                 remove(filename);
+                if (errno)
+                {
+                    hsc_message(hp, MSG_REMOVE_FAILED,
+                                "error removing file `%s': %s",
+                                filename, strerror(errno));
+                    errno = 0;
+                }
             }
         }
         else

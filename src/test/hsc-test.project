@@ -2,7 +2,7 @@ HSC_PROJECT
 VERSION 2 
 # Contains all data relevant for project.
 # Maintained by hsc, DO NOT MODIFY!
-# updated: 12-Jan-1998 05:30:53
+# updated: 21-Sep-1998 10:34:41
 DOCUMENT 10 test/simple.html
 SOURCE f test/simple.hsc
 TITLE 0 

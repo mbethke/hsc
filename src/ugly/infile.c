@@ -22,7 +22,7 @@
  *
  * ugly input file functions
  *
- * updated: 18-Dec-1997
+ * updated: 28-Apr-1998
  * created:  8-Jul-1995
  */
 
@@ -50,7 +50,6 @@
 #include "infile.h"
 #include "umemory.h"
 
-#define BOOL short
 /* buffer size for fgets() in ugly_infgetc() */
 #define INF_FGETS_BUFSIZE 1024
 

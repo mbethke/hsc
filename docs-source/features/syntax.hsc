@@ -17,6 +17,6 @@ fault, why not display an error message now..".)
 
 <P>So if <hsc> does not report any syntax errors, it doesn't mean that
 your source is 100% correct. For a more complete and strict test, take
-a look at tools mentioned at <ln_related>.</P>
+a look at tools mentioned at <ln-related>.</P>
 
 </WEBPAGE>

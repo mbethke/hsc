@@ -25,8 +25,7 @@ There are several boolean operators you can use within
 For numeric attributes, you can use operators for integer arithmetic:
 
 <UL>
-<LI><qqc>+</qqc> - addition. As <qqc>+</qqc> is also used for string concatenation, you will have
-to make sure that the type of target attribute is <CODE>NUM</CODE>.
+<LI><qqc>&amp;</qqc> - addition.
 <LI><qqc>-</qqc> - subtraction. As <qqc>-</qqc> is also a legal character in attribute names,
 you must enclose it into two white spaces, so that it will not be interpreted as part
 of the next or previous word.
@@ -73,7 +72,7 @@ file could look like this:
     FROM=include/stdmacros.hsc
     TO=www:sepp/
     COMPACT
-    IGNORE=notes|style
+    IGNORE=note|style
 </PRE>
 
 The options file always has to be named <FILE>hsc.options</FILE>.

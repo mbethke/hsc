@@ -2,15 +2,16 @@
     PREV="spctags.html"
     NEXT="uris.html">
 
-<P>One of the most annoying thing within creating  html pages is to
+<P>One of the most annoying thing within creating html pages is to
 find out if all your links work. Concepts superior to html and http
-usually maintain a database, which automatically is updated if a 
-document is moved or deleted.</P>
+usually maintain a database, which automatically is updated if a
+document is moved or deleted. (And they already did that in they
+seventies.)</P>
 
 <P>For local URIs (those which only refer to files), <hsc> checks
 existence of documents in your html project. When you refer to a
 non-existing local URI within your source, <hsc> will view
-<ln_msg id="21">.</P>
+<ln-msg id="21">.</P>
 
 <P>This can not only be caused by documents which are referred to
 using <TG>A HREF=..</TG>, but also other resources being embedded or

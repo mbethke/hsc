@@ -9,7 +9,18 @@ Every program sucks. Read why this program sucks, too.
 
 <H2>Known Bugs</H2>
 
-Currently everything repairable has been fixed.
+Below you can find a list of currently known bugs. Feel free to fix them yourself.
+
+<ul>
+
+<li>Sometimes the file position for messages does not make sense. One of those
+    bugs when you fix it in one place, it shows up in another.
+
+<li>Skipping macros with comlplex <tg>$if</tg> conditions occasionally leads to
+    an <qqc>unexpted end of context</qqc>. This can probably be solved by improving
+    <code>skip_expression()</code> in <file>hsclib/skip.c</file>.
+
+</ul>
 
 <H2><A NAME="internal">Internal Error Messages</A></H2>
 
@@ -36,6 +47,7 @@ such problems are hard to back-trace.</P>
 <H2>Known Problems</H2>
 
 The problems described below probably won't ever be fixed.
+
 <UL>
 <LI>URI checking is performed via trying to open a file. As AmigaOS
     is <STRONG>case-insensitive dealing with filenames</STRONG>, problems might
@@ -59,7 +71,7 @@ The problems described below probably won't ever be fixed.
     is not converted to
     <qqc><$source><B>hello<!-- xy --></B></$source></qqc>. That means that
     the blank after <qqc>hello</qqc> will remain, but does not display a
-    <ln_msg id="79">, as the <TG>!..</TG> caused all white spaces preceding
+    <ln-msg id="79">, as the <TG>!..</TG> caused all white spaces preceding
     it to be flushed. I already said it several times, and I say it again:
     Do not use those bloody sgml-comments!
 

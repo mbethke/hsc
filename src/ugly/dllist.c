@@ -413,8 +413,8 @@ DLNODE *find_dlnode_bw(DLNODE * start, APTR data,
 BOOL empty_dllist(DLLIST * list)
 {
     if (list->first)
-        return TRUE;
-    else
         return FALSE;
+    else
+        return TRUE;
 }
 

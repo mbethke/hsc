@@ -19,7 +19,7 @@
 #
 #====================================================================
 #
-# This Makefile should work on most Unixoid systems, but no 
+# This Makefile should work on most Unixoid systems, but no
 # optimisation is performed. Feel free to fool around with the
 # compiler-flags.
 #
@@ -28,11 +28,11 @@
 # (2) Copy "hsc/hsc", "hsctools/hscdepp" and "hsctools/hscpitt" to
 #     anywhere in your search-path.
 #
-# (3) Use "make -f Makefile.dodl sterile" for a total cleanup. Maybe 
-#     you also have to pass an option to make to ignore the 
+# (3) Use "make -f Makefile.dodl sterile" for a total cleanup. Maybe
+#     you also have to pass an option to make to ignore the
 #     return-code of the "rm"-command; usually, this is "-i".
 #
-# (4) Read the docs, section "Installation" what to do with 
+# (4) Read the docs, section "Installation" what to do with
 #     "hsc.prefs".
 #
 # IMPORTANT: Don't forget to hit the return-key after typing commands
@@ -75,10 +75,11 @@ CFLAGS	= -Otime
 
 SYS	= -DRISCOS -throwback
 COMP	= $(CC) -o $@ $(SYS) -I. -c
-LINK	= link -o $@ 
+LINK	= link -o $@
 MOVE	= rename
 COPY	= copy
 DELETE	= wipe
+SQUEEZE = squeeze
 
 #--------------------------------------------------------------------
 # do not touch anything below this line
@@ -104,15 +105,15 @@ all : $(EXE_ALL)
 
 hsc/all_hsc : $(OBJ_HSC)
 	$(LINK) $(OBJ_HSC) $(CMODE)
-	$(COPY) hsc.all_hsc ^.hsc ~CF
+	$(SQUEEZE) hsc.all_hsc ^.hsc
 
-hsctools/all_depp : $(OBJ_TOOLS) hsctools.o.all_depp 
+hsctools/all_depp : $(OBJ_TOOLS) hsctools.o.all_depp
 	$(LINK) hsctools.o.all_depp $(OBJ_TOOLS) $(CMODE)
-	$(COPY) hsctools.all_depp ^.hscdepp ~CF
+	$(SQUEEZE) hsctools.all_depp ^.hscdepp
 
 hsctools/all_pitt : $(OBJ_TOOLS) hsctools.o.all_pitt
 	$(LINK) hsctools.o.all_pitt $(OBJ_TOOLS) $(CMODE)
-	$(COPY) hsctools.all_pitt ^.hscpitt ~CF
+	$(SQUEEZE) hsctools.all_pitt ^.hscpitt
 
 ### UnixName stuff ###
 riscos/unixname.o: riscos/unixname.c riscos/unixname.h
@@ -147,16 +148,17 @@ sterile : clean all_clean
 #
 
 # --- DO NOT MODIFY THIS LINE -- AUTO-DEPENDS FOLLOW ---
-hsc/all_hsc.o : hsc/hsc.c hsc/callback.c hsc/output.c hsc/args.c \
-    hsc/status.c hsc/global.c hsc/status.h hsc/output.h hsc/callback.h \
-    hsc/args.h ugly/returncd.h ugly/uargs.h hscprj/project.h ugly/prginfo.h \
-    hsc/global.h hsc/hsc_rev.h hscprj/license.h ugly/fname.h \
-    hsclib/hsclib.h ugly/infile.h ugly/utypes.h ugly/umemory.h \
-    ugly/utypes.h hsc/hdebug.h ugly/ustring.h ugly/umemory.h ugly/expstr.h \
-    ugly/dllist.h ugly/expstr.h hsclib/linit.h hsclib/include.h \
-    hsclib/inc_base.h ugly/dllist.h ugly/udebug.h hsclib/lstatus.h \
-    hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h hsclib/entity.h \
-    hsclib/attrib.h hscprj/document.h hsclib/msgid.h hsclib/ldebug.h
+hsc/all_hsc.o : hsc/args.c hsc/callback.c hsc/global.c hsc/hsc.c \
+    hsc/output.c hsc/status.c hsc/global.h hsc/status.h hscprj/license.h \
+    ugly/fname.h ugly/prginfo.h ugly/returncd.h ugly/uargs.h \
+    amiga/msgbrowser.c hsc/callback.h hsc/output.h riscos/msgbrowser.c \
+    hsclib/hsclib.h hsc/args.h hsc/hsc_rev.h hscprj/project.h \
+    riscos/unixname.h hsc/hdebug.h ugly/dllist.h ugly/expstr.h \
+    ugly/infile.h ugly/umemory.h ugly/ustring.h ugly/utypes.h ugly/expstr.h \
+    ugly/utypes.h ugly/umemory.h hsclib/inc_base.h hsclib/include.h \
+    hsclib/linit.h ugly/dllist.h ugly/udebug.h hsclib/attrib.h \
+    hsclib/entity.h hsclib/hscprc.h hsclib/ldebug.h hsclib/lmessage.h \
+    hsclib/lstatus.h hsclib/msgid.h hsclib/tag.h hscprj/document.h
 
 hsclib/all_hscl.o : hsclib/tag_macro.c hsclib/tag_if.c hsclib/tag_hsc.c \
     hsclib/tag_a.c hsclib/tag_misc.c hsclib/size.c hsclib/linit.c \

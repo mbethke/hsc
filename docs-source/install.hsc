@@ -37,7 +37,7 @@ are required. If you want to utilize the project management capabilities of
 
 <P>Copy the binaries to somewhere in your workbench search path (for 
 example, to <FILE>c:</FILE>) and <hsc.prefs> anywhere else and set
-<env_hscpath> according to this.</P>
+<env-hscpath> according to this.</P>
 
 <H3>Making It Resident</H3>
 
@@ -66,7 +66,7 @@ resident hscpitt
 <CODE>PROGDIR:</CODE> is not defined. You will have to take care that
 <hsc> is able to find <hsc.prefs> before it tries to scan
 <CODE>PROGDIR:</CODE> for it. This can be done by by setting the
-environment variable <env_hscpath> or by placing <hsc.prefs> in the
+environment variable <env-hscpath> or by placing <hsc.prefs> in the
 current directory for every project. Otherwise you will notice an
 annoying requester, which will ask you to <QQ>insert volume
 PROGDIR: into any drive</qq>.</P>

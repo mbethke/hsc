@@ -22,7 +22,7 @@
  *
  * message functions for hsc
  *
- * updated: 16-Dec-1997
+ * updated: 10-Aug-1998
  * created: 10-Mar-1996
  *
  */
@@ -34,7 +34,7 @@
 #include "ugly/returncd.h"
 
 /* forward reference */
-static VOID handle_too_many_messages(HSCPRC *hp);
+static VOID handle_too_many_messages(HSCPRC * hp);
 
 /*
  * NOTE: see "hsclib/msgid.h" for message-id's and
@@ -123,7 +123,7 @@ static BOOL is_child_file(STRPTR filename)
 }
 
 /* decides, if a message should be ignored or display */
-static BOOL really_display_message(HSCPRC *hp, HSCMSG_ID msg_id)
+static BOOL really_display_message(HSCPRC * hp, HSCMSG_ID msg_id)
 {
     HSCMSG_CLASS msg_class = hsc_get_msg_class(hp, msg_id);
     HSCMSG_ID msg_id_unmasked = msg_id & MASK_MESSAGE;
@@ -172,7 +172,6 @@ static BOOL really_display_message(HSCPRC *hp, HSCMSG_ID msg_id)
     return disp_msg;
 }
 
-
 VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
 {
     HSCMSG_CLASS msg_class = hsc_get_msg_class(hp, msg_id);
@@ -181,7 +180,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
     STRPTR msg_fname = "unknown";
     ULONG msg_x = 0;
     ULONG msg_y = 0;
-    BOOL disp_msg = really_display_message(hp, msg_id);         /* display message? */
+    BOOL disp_msg = really_display_message(hp, msg_id);     /* display message? */
 
     if (disp_msg)
     {
@@ -242,7 +241,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                             app_estr(hp->curr_msg, "\\\"");
                             break;
                         default:
-                            if (s[0] < ' ')
+                            if (((unsigned char) s[0]) < ' ')
                             {
                                 app_estrch(hp->curr_msg, '\\');
                                 app_estr(hp->curr_msg,
@@ -454,7 +453,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
 
 /* check if there are already too many errors and view an
  * fatal error "too many messages" */
-static VOID handle_too_many_messages(HSCPRC *hp)
+static VOID handle_too_many_messages(HSCPRC * hp)
 {
     if (hp->max_errors != MAXIMUM_MESSAGE_INFINITE)
     {
@@ -470,8 +469,6 @@ static VOID handle_too_many_messages(HSCPRC *hp)
         hsc_message(hp, MSG_TOO_MANY, "too many errors or messages");
     }
 }
-
-
 
 /*
  *-------------------------------------
@@ -529,7 +526,6 @@ VOID hsc_msg_unkn_attr_macro(HSCPRC * hp, STRPTR attr, STRPTR macro)
     hsc_message(hp, MSG_UNKN_ATTR_MACRO,
                 "unknown %a for %t", attr, macro);
 }
-
 
 VOID hsc_msg_noinput(HSCPRC * hp, STRPTR filename)
 {

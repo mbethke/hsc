@@ -42,34 +42,35 @@
 <$macro AminetReadMe FILE:string TEXT:string><$if COND=(not set TEXT)><$let TEXT=("aminet:"+FILE)></$if><A HREF=("http://wuarchive.wustl.edu/~aminet/dirs/aminet/"+file)><(text)></A></$macro>
 <$macro EMAIL address:string/required><* <A HREF=("mailto:"+address)><(address)></A> *><(address)></$macro>
 <$macro hsc-support><A HREF="http://www.giga.or.at/~agi/hsc/">hsc-support-w3-page</A></$macro>
+<$macro riscos-support><A HREF="http://www.alphawave.ltd.uk/sergio/hsc.html"><(hsc.Anchor)></A></$macro>
 <$macro hsc.prefs><FILE>hsc.prefs</FILE></$macro>
 <$macro ExampleNote><STRONG>Example</STRONG>: </$macro>
 <$macro TechNote><STRONG>Technical note</STRONG>: </$macro>
 <$macro NextStep>NeXTStep</$macro>
 
-<$macro ln_msg id:num/required><A HREF=(":messages.html#message."+id)>message #<(id)></A></$macro>
-<$macro ln_bugs><qq><A HREF=":bugs.html">Known Bugs, Problems And Limitations</A></qq></$macro>
-<$macro ln_define><A HREF=":features/spctags.html#define"><TG>$define</TG></A></$macro>
-<$macro ln_defent><A HREF=":features/prefs.html#defent"><TG>$defent</TG></A></$macro>
-<$macro ln_deficon><A HREF=":features/prefs.html#deficon"><TG>$deficon</TG></A></$macro>
-<$macro ln_deftag><A HREF=":features/prefs.html#deftag"><TG>$deftag</TG></A></$macro>
-<$macro ln_content><A HREF=":features/spctags.html#content"><TG>$content</TG></A></$macro>
-<$macro ln_exec><A HREF=":features/exec.html"><TG>$exec</TG></A></$macro>
-<$macro ln_include><A HREF=":features/spctags.html#include"><TG>$include</TG></A></$macro>
+<$macro ln-msg id:num/required><A HREF=(":message-list.html#message."+id)>message #<(id)></A></$macro>
+<$macro ln-bugs><qq><A HREF=":bugs.html">Known Bugs, Problems And Limitations</A></qq></$macro>
+<$macro ln-define><A HREF=":features/spctags.html#define"><TG>$define</TG></A></$macro>
+<$macro ln-defent><A HREF=":features/prefs.html#defent"><TG>$defent</TG></A></$macro>
+<$macro ln-deficon><A HREF=":features/prefs.html#deficon"><TG>$deficon</TG></A></$macro>
+<$macro ln-deftag><A HREF=":features/prefs.html#deftag"><TG>$deftag</TG></A></$macro>
+<$macro ln-content><A HREF=":features/spctags.html#content"><TG>$content</TG></A></$macro>
+<$macro ln-exec><A HREF=":features/exec.html"><TG>$exec</TG></A></$macro>
+<$macro ln-include><A HREF=":features/spctags.html#include"><TG>$include</TG></A></$macro>
 <$macro ln-skip-verbatim><A HREF=":features/spctags.html#dontparse"><TG>| .. |</TG></A> (skip verbatim data)</$macro>
 <$macro ln-insert-expression><A HREF=":features/spctags.html#expression"><TG>( .. )</TG></A> (insert expression)</$macro>
-<$macro ln_let><A HREF=":features/spctags.html#let"><TG>$let</TG></A></$macro>
-<$macro ln_macro><A HREF=":macro/macros.html"><TG>$macro</TG></A></$macro>
-<$macro ln_make><A HREF=":project/make.html"><make></A></$macro>
-<$macro ln_makefile><A HREF=":project/makefile.html"><makefile></A></$macro>
+<$macro ln-let><A HREF=":features/spctags.html#let"><TG>$let</TG></A></$macro>
+<$macro ln-macro><A HREF=":macro/macros.html"><TG>$macro</TG></A></$macro>
+<$macro ln-make><A HREF=":project/make.html"><make></A></$macro>
+<$macro ln-makefile><A HREF=":project/makefile.html"><makefile></A></$macro>
 <$macro ln-expression CAP:bool PLURAL:bool><A HREF=":features/expressions.html"><$if cond=(cap)>E<$else>e</$if>xpression<$if cond=(plural)>s</$if></A></$macro>
-<$macro ln_related><A HREF=":related.html">Related Stuff</A></$macro>
+<$macro ln-related><A HREF=":related.html">Related Stuff</A></$macro>
 <$macro ln-cond-assigns><A HREF=":features/assign.html#cond-assign">Conditional Assignments</A></$macro>
-<$macro ln_syntax><A HREF=":features/prefs.html">Syntax Definition</A></$macro>
-<$macro ln_getenv><A HREF=":features/expressions.html#getenv"><CODE>GetEnv()</CODE></A></$macro>
-<$macro ln_getfilesize><A HREF=":features/expressions.html#getfilesize"><CODE>GetFileSize()</CODE></A></$macro>
-<$macro ln_getgmtime><A HREF=":features/expressions.html#getgmtime"><CODE>GetGMTime()</CODE></A></$macro>
-<$macro ln_gettime><A HREF=":features/expressions.html#gettime"><CODE>GetTime()</CODE></A></$macro>
+<$macro ln-syntax><A HREF=":features/prefs.html">Syntax Definition</A></$macro>
+<$macro ln-getenv><A HREF=":features/expressions.html#getenv"><CODE>GetEnv()</CODE></A></$macro>
+<$macro ln-getfilesize><A HREF=":features/expressions.html#getfilesize"><CODE>GetFileSize()</CODE></A></$macro>
+<$macro ln-getgmtime><A HREF=":features/expressions.html#getgmtime"><CODE>GetGMTime()</CODE></A></$macro>
+<$macro ln-gettime><A HREF=":features/expressions.html#gettime"><CODE>GetTime()</CODE></A></$macro>
 <$macro ln-existing-ports><A HREF=":ports.html">Existing Ports</A></$macro>
 
 <* features *>
@@ -77,27 +78,27 @@
 <$macro fe_chkuri><A HREF=":features/checkuri.html">Check Existence</A></$macro>
 
 <* options *>
-<$macro op_compact><A HREF=":options.html#compact"><KBD>COMPACT</KBD></A></$macro>
-<$macro op_extension><A HREF=":options.html#extension"><KBD>EXTENSION</KBD></A></$macro>
-<$macro op_from><A HREF=":options.html#from"><KBD>FROM</KBD></A></$macro>
-<$macro op_getsize><A HREF=":options.html#getsize"><KBD>GETSIZE</KBD></A></$macro>
-<$macro op_iconbase><A HREF=":options.html#iconbase"><KBD>ICONBASE</KBD></A></$macro>
-<$macro op_pipein><A HREF=":options.html#pipein"><KBD>PIPEIN</KBD></A></$macro>
-<$macro op_prjfile><A HREF=":options.html#prjfile"><KBD>PRJFILE</KBD></A></$macro>
-<$macro op_prefsfile><A HREF=":options.html#prjfile"><KBD>PREFSFILE</KBD></A></$macro>
-<$macro op_ignore><A HREF=":options.html#ignore"><KBD>IGNORE</KBD></A></$macro>
-<$macro op_includedir><A HREF=":options.html#includedir"><KBD>INCLUDEDIR</KBD></A></$macro>
-<$macro op_quotestyle><A HREF=":options.html#quotestyle"><KBD>QUOTESTYLE</KBD></A></$macro>
-<$macro op_rplcent><A HREF=":options.html#rplcent"><KBD>RPLCENT</KBD></A></$macro>
-<$macro op_stripcomment><A HREF=":options.html#stripcomment"><KBD>STRIPCOMMENT</KBD></A></$macro>
-<$macro op_stripexternal><A HREF=":options.html#stripexternal"><KBD>STRIPEXTERNAL</KBD></A></$macro>
-<$macro op_striptags><A HREF=":options.html#striptags"><KBD>STRIPTAGS</KBD></A></$macro>
-<$macro op_serverdir><A HREF=":options.html#serverdir"><KBD>SERVERDIR</KBD></A></$macro>
+<$macro op-compact><A HREF=":options.html#compact"><KBD>Compact</KBD></A></$macro>
+<$macro op-extension><A HREF=":options.html#extension"><KBD>Extension</KBD></A></$macro>
+<$macro op-from><A HREF=":options.html#from"><KBD>From</KBD></A></$macro>
+<$macro op-getsize><A HREF=":options.html#getsize"><KBD>GetSize</KBD></A></$macro>
+<$macro op-iconbase><A HREF=":options.html#iconbase"><KBD>IconBase</KBD></A></$macro>
+<$macro op-pipein><A HREF=":options.html#pipein"><KBD>PipeIn</KBD></A></$macro>
+<$macro op-prjfile><A HREF=":options.html#prjfile"><KBD>PrjFile</KBD></A></$macro>
+<$macro op-prefsfile><A HREF=":options.html#prjfile"><KBD>PrefsFile</KBD></A></$macro>
+<$macro op-ignore><A HREF=":options.html#ignore"><KBD>Ignore</KBD></A></$macro>
+<$macro op-includedir><A HREF=":options.html#includedir"><KBD>IncludeDir</KBD></A></$macro>
+<$macro op-quotestyle><A HREF=":options.html#quotestyle"><KBD>QuoteStyle</KBD></A></$macro>
+<$macro op-rplcent><A HREF=":options.html#rplcent"><KBD>RplcEnt</KBD></A></$macro>
+<$macro op-stripcomment><A HREF=":options.html#stripcomment"><KBD>StripComment</KBD></A></$macro>
+<$macro op-stripexternal><A HREF=":options.html#stripexternal"><KBD>StripExternal</KBD></A></$macro>
+<$macro op-striptags><A HREF=":options.html#striptags"><KBD>StripTags</KBD></A></$macro>
+<$macro op-serverdir><A HREF=":options.html#serverdir"><KBD>ServerDir</KBD></A></$macro>
 
 <* environment variables *>
-<$macro env_home><A HREF=":envvar.html"><VAR>HOME</VAR></A></$macro>
-<$macro env_hscsalary><A HREF=":envvar.html#hscsalary"><VAR>HSCSALARY</VAR></A></$macro>
-<$macro env_hscpath><A HREF=":envvar.html#hscpath"><VAR>HSCPATH</VAR></A></$macro>
+<$macro env-home><A HREF=":envvar.html"><VAR>HOME</VAR></A></$macro>
+<$macro env-hscsalary><A HREF=":envvar.html#hscsalary"><VAR>HSCSALARY</VAR></A></$macro>
+<$macro env-hscpath><A HREF=":envvar.html#hscpath"><VAR>HSCPATH</VAR></A></$macro>
 
 <* misc references *>
 <$macro jerk><A HREF=":questions.html#jerk">jerk</A></$macro>

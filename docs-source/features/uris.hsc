@@ -23,16 +23,17 @@ the parent directory, you can use <qqc>../</qqc> as prefix.</P>
 <H3><A NAME="prjrel">Project Relative URIs</A></H3>
 
 <P>Sometimes, when your project starts to become rather complex, you
-create subdirectories for to structure the whole thing. As example, I
+create subdirectories to structure the whole thing. As example, I
 prefer to create a directory <CODE>image/</CODE>, where all images for
 buttons and logos are placed.</P>
 
-<P>Creating a link to an image from the project root directory is no
-problem, it's URI simply is <CODE>image/logo.gif</CODE>. But if your
-current page is somewhere deeper in your project path, eg.
-<CODE>people/hugo/hugo.html</CODE>, you need to refer to the same
-image using <CODE>../../image/logo.gif</CODE>. So you always have to
-know the directory level of your current page.</P>
+<P>Creating a link to an image from a document in the project root
+directory is no problem, it's URI simply is
+<CODE>image/logo.gif</CODE>. But if your current page is somewhere
+deeper in your project path, eg. <CODE>people/hugo/hugo.html</CODE>,
+you need to refer to the same image using
+<CODE>../../image/logo.gif</CODE>. So you always have to know the
+directory level of your current page.</P>
 
 <P>One solution would be to define a <TG>BASE HREF="<VAR>path to main
 document</VAR>"</TG>. But then, all your links have to be relative to
@@ -69,7 +70,7 @@ ridiculous linking model like the one of the w3, as this more or less
 only defines a filecopy operation across networks.</P>
 
 <P>For those who really can not live without them, the CLI-option
-<op_serverdir> adds some basic support. With this option set to a
+<op-serverdir> adds some basic support. With this option set to a
 valid directory, such URIs will be converted to relative URIs
 internally, and most features of <hsc> will work with them as usual.
 However they will show up in the html document with their original
@@ -82,7 +83,7 @@ servers. Examples are <qqc>http://www.playboy.com/</qqc> or
 <qqc>ftp://wuarchive.wustl.edu/pub/aminet/</qqc>. As <hsc> acts only
 on objects which can be found on the local disk and does not establish
 any network connections, several features like like link validation or
-the CLI-option <op_getsize> will not work on such URIs.
+the CLI-option <op-getsize> will not work on such URIs.
 
 <H2><A NAME="id">Fragment Identifers</A></H2>
 

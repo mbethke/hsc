@@ -23,7 +23,7 @@ by scripts (eg. Rexx), which of course you have to write yourself.</P>
 
 <DT><CODE>ATTRIBUTE:string</CODE>
 <DD>Using this attribute, you can select an attribute you've
-    created before using <ln_define> to store the data the
+    created before using <ln-define> to store the data the
     command sends to <stdout>.
 
 <DT><CODE>FILE:string</CODE>
@@ -36,7 +36,7 @@ by scripts (eg. Rexx), which of course you have to write yourself.</P>
     <CODE>ATTRIBUTE</CODE>
 
 <DT><CODE>TEMPORARY:bool</CODE>
-<DD>This attribute has the same meaning as within <ln_include>. Note that
+<DD>This attribute has the same meaning as within <ln-include>. Note that
     it can be reasonable to specify it, even if you set a specific 
     output-file, and not only for temporary-files created by <hsc>.
 

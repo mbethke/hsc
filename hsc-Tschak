@@ -1,0 +1,797 @@
+; $VER: hsc-Tschak 1.0 (15.9.98)
+;
+; An Amiga Installer script to setup a new hsc project.
+;
+; Written 1998 Thomas Aglassinger. Public domain.
+
+;----------------------------------------------------------------------------
+; Setup some defaults and constants
+;----------------------------------------------------------------------------
+
+; Filenames created
+(set #welcome.hsc      "welcome.hsc")
+(set #welcome.html     "welcome.html")
+(set #filename-project "hsc.project")
+
+; Makefile options (only indicating if checkmark is enabled)
+(set #show-make-status    1)
+(set #show-command-status 1)
+(set #use-check-html      1)
+(set #use-open-url        1)
+(set #expand-hsc-path     1)
+
+(set #standard-includes "include/standard.hsc include/page.hsc")
+
+(set #temporary-script "t:hsc-tschak.tmp")
+
+(set #command-hsc     "hsc")
+(set #command-hscpitt "hscpitt")
+(set #command-hscdepp "hscdepp")
+
+(set #command-check-html "CheckHTML") ; used if installed
+(set #command-open-url   "OpenURL")   ; used if installed
+
+(set #tschak "hsc-Tschak")
+
+;----------------------------------------------------------------------------
+; Specify minimum installer version
+;----------------------------------------------------------------------------
+(debug "set version")
+(set #minimum-installer-version 43)
+(set #minimum-installer-revision 3)
+(set #minimum-installer-id
+   (+ #minimum-installer-revision
+       (* #minimum-installer-version 65536)
+   )
+)
+(debug "  minimum-installer-id = " #minimum-installer-id)
+(debug "  current-installer-id = " @installer-version)
+
+;----------------------------------------------------------------------------
+; Setup messages, prompts and help text
+;----------------------------------------------------------------------------
+
+(set #message-welcome
+(cat "Welcome to " #tschak ", an Amiga  Installer script to setup a new "
+     "hsc project."
+))
+
+(set #message-overview
+(cat #tschak " is an Amiga Installer script to setup a new hsc-project.\n\n"
+     "By answering a few questions, you can create a new source directory, "
+     "store an empty default hsc source there and create an empty project "
+     "file.\n\n"
+     "Furthermore you get a default Makefile you can easily modify to fit "
+     "your personal needs."
+))
+
+(set #prompt-project-title
+(cat "Select a title for your project\n"
+     "(or press enter to accept the default)"
+))
+(set #help-project-title
+(cat "The project title is a short, meaningful description that will be "
+     "used on the welcome page and in the Makefile.\n\n"
+     "In your own interest you should enter something useful here as this "
+     "text shows up in public. Of course you can change all occurrences "
+     "of it afterwards.\n\n"
+     "But why not think about it right now? This requester is not in a "
+     "hurry...\n\n"
+     "Some examples: \"The Rotz-Tools Support Page\", "
+     "\"Pictures of Paska, My Dog\", \"Homepage of Hugo\", ..."
+))
+
+(set #prompt-source-directory
+(cat "Select the source directory where your hsc sources and the Makefile will "
+     "be stored. A new subdirectory will NOT be created."
+))
+(set #help-source-directory
+(cat "This script will put the following files in the source directory:\n\n"
+     "� A (mostly empty) hsc source for a welcome page\n"
+     "� A Makefile that can already be used to update the welcome page\n"
+     "� A hsc project file already knowing about the welcome page\n"
+     "� A include directory containing some standard include files "
+       "you can modify to fit your needs\n"
+     "\n"
+     "If any of these files already exists, you will be asked for "
+     "confirmation before overwriting them."
+))
+
+(set #prompt-target-directory
+(cat "Enter target directory for html files:\n\n"
+     "(If you just want the html files to end up in the same directory "
+     "as the corresponding hsc sources, leave this field empty.)"
+))
+(set #help-target-directory
+(cat "The target directory is where the hsc will store the html files "
+     "generated from your source code. This can be:\n\n"
+     "� a relative path like \"/Manual/\" (with \"/\" denoting the "
+       "parent directory)\n"
+     "� an absolute path like \"html:\" (Assign or volume)\n"
+     "� an empty string for the same directory as the hsc sources\n"
+))
+
+(set #option-make-status     "Show commands make executes")
+(set #option-command-status  "Show status output of commands")
+(set #option-use-check-html  "Validate documents using CheckHTML")
+(set #option-use-open-url    "Show documents in browser using OpenURL")
+(set #option-expand-hsc-path "Use full path for hsc tools")
+
+(set #prompt-ask-makefile-options "Set Makefile options")
+(set #help-ask-makefile-options
+(cat "These options specify how the Makefile and the pattern rule to update "
+     "html documents behave.\n"
+     "\n"
+     "For beginners, the defaults should be fine.\n"
+     "\n"
+     "You can always modify the Makefile manually later, the options "
+     "specified here do not influence any other files.\n"
+     "\n"
+     "� " #option-make-status "\n"
+     "\n"
+     "If enabled, make displays all commands it executes. This is nice if "
+     "you want to see what is currently going on.\n"
+     "\n"
+     "� " #option-command-status "\n"
+     "\n"
+     "If enabled, hsc and possible other commands being part of the pattern "
+     "rule display what they are currently doing. This is nice if you "
+     "want to see what is going on in even more detail.\n"
+     "\n"
+     "� " #option-use-check-html "\n"
+     "\n"
+     "This is option is only available if CheckHTML is installed. If enabled, "
+     "CheckHTML will validate a document after hsc updated it. This ensures "
+     "a more exhaustive syntax check than the internal one.\n"
+     "\n"
+     "� " #option-use-open-url "\n"
+     "\n"
+     "This is option is only available if OpenURL is installed. If enabled, "
+     "a document is automatically loaded into your browser after hsc updated "
+     "it.\n"
+     "\n"
+     "� " #option-expand-hsc-path "\n"
+     "\n"
+     "If enabled, hsc will not be looked for in the Workbench search path "
+     "but in the directory " #tschak " was started from. This allows you to "
+     "use it even if you did not copy it somewhere into your search path "
+     "but only extracted the hsc-archive to some directory."
+))
+
+
+
+(set #prompt-makefile
+(cat "Writing Makefile to \"%s\""
+))
+(set #help-makefile
+(cat "The makefile contains all information about how to update your "
+     "project once data have changed.\n\n"
+     "A proper make tool needs to be installed."
+))
+
+(set #prompt-welcome-page
+(cat "Writing Welcome page to \"%s\""
+))
+(set #help-welcome-page
+(cat "The Welcome page is the first hsc source for your project.\n\n"
+     "It is added to the project automatically and contains some "
+     "default text you should change once this script is finished."
+))
+
+(set #prompt-copy-includes "Copying standard includes")
+(set #help-copy-includes
+(cat "The standard includes are located in the \"starter-project\" "
+     "drawer at the location where you extracted the hsc archive.\n\n"
+     "It contains project dependant macros that are installed every "
+     "time when you start a new project.\n\n"
+     "Feel free to change them.\n\n"
+     "If you store additional files in \"starter-project/include\" they "
+     "will also be copied the next time you use " #tschak "."
+))
+
+(set #prompt-overwrite-file
+(cat "The file \"%s\" already exists.\n\n"
+     "Do you want to overwrite it?"
+))
+
+(set #prompt-overwrite-directory
+(cat "The directory \"%s\" already exists.\n\n"
+     "Do you want to overwrite its contents?"
+))
+
+
+(set #working-create-welcome-page "Creating default welcome page")
+(set #working-create-makefile     "Creating makefile")
+(set #working-create-project      "Creating new project\n(using hscpitt)")
+(set #working-add-welcome-page    "Adding welcome page to project\n(using hscpitt)")
+(set #working-create-dependencies "Creating dependencies\n(using hscdepp)")
+
+(set #message-hsc-tool-missing
+(cat "The tools coming with the hsc package are not installed within "
+     "the search path. At least \"%s\" could not be found.\n\n"
+     "Please install all tools before using this Installer script."
+))
+
+(set #message-exit
+(cat "The new project has been setup in \"%s\".\n\n"
+     "Open a CLI and \"cd\" to this directory. Then type \"make\" "
+     "to create \"%s\".\n\n"
+     "Use \"hscpitt ADD ...\" to add new documents. Don't forget to "
+     "\"make depend\" after adding or removing documents.\n\n"
+     "And keep in mind: html sucks completely!"
+))
+
+;----------------------------------------------------------------------------
+; Run a command and check for a certain return code
+;----------------------------------------------------------------------------
+(procedure P-run #name #expected-result #command
+(
+   (debug "  name = " #name)
+   (debug "  expt = " #expected-result)
+   (debug "  comd = " #command)
+
+   (set #real-result (run #command))
+   (if (<> #expected-result #real-result)
+      (
+         (abort "Running " #name " returned " #real-result " instead of "
+                #expected-result ":\n\n"
+                #command)
+      )
+   )
+))
+
+;----------------------------------------------------------------------------
+; Execute a script and check for a certain return code
+;----------------------------------------------------------------------------
+(procedure P-execute #name #expected-result #command
+(
+   (debug "  name = " #name)
+   (debug "  expt = " #expected-result)
+   (debug "  comd = " #command)
+
+   (set #real-result (execute #command))
+   (if (<> #expected-result #real-result)
+      (
+         (abort "Executing " #name " returned " #real-result " instead of "
+                #expected-result ":\n\n"
+                #command)
+      )
+   )
+))
+
+;----------------------------------------------------------------------------
+; Execute a command sequence in the source directory
+;----------------------------------------------------------------------------
+(procedure P-execute-in-source #name #expected-result #command-sequence
+(
+   (set #command-sequence
+   (cat "cd \"" #source-directory "\"\n"
+        #command-sequence "\n"
+   ))
+
+   (debug "execute command sequence:")
+   (debug "----------")
+   (debug #command-sequence)
+   (debug "----------")
+   (textfile
+      (dest #temporary-script)
+      (append #command-sequence)
+   )
+   (P-execute #name #expected-result #temporary-script)
+))
+
+;----------------------------------------------------------------------------
+; Write a textfile from a string. If the file already exists, prompt user
+; for confirmation to overwrite it
+;----------------------------------------------------------------------------
+(procedure P-textfile #prompt #help #name #contents
+(
+   (debug "write " #name)
+
+   (set #write-file 1)
+   (if (exists #name)
+      (
+         (set #write-file
+         (askbool
+            (prompt (#prompt-overwrite-file #name))
+            (help #help)
+            (default 1)
+         ))
+      )
+   )
+
+   (if #write-file
+      (
+         (debug "contents of \"" #name "\":")
+         (debug "----------")
+         (debug #contents)
+         (debug "----------")
+
+         (textfile
+            (prompt #prompt)
+            (help #help)
+            (dest #name)
+            (append #contents)
+            (confirm)
+         )
+      )
+   )
+))
+
+;----------------------------------------------------------------------------
+; Check requirements
+;----------------------------------------------------------------------------
+
+; Check installer version to piss people off and make them
+; download a new one or forget about the whole thing - He he he.
+; (The script should work with older versions, but how am I
+; supposed to test this?)
+;
+
+(procedure P-check-requirements
+(
+   (debug "check installer version")
+   (if (< @installer-version #minimum-installer-id)
+     (
+       (debug "installer too old")
+       (abort #message-wrong-installer)
+     )
+   )
+))
+
+
+;----------------------------------------------------------------------------
+; Ensure that a hsc tool is installed.
+;----------------------------------------------------------------------------
+
+(procedure P-check-hsc-tool-installed #name #path
+(
+   (debug "check tool installed : " #name " in \"" #path "\"")
+   (set #command-which
+   (cat "cd \"" #source-directory "\"\n"
+        "which " #path "\n"
+   ))
+
+   (textfile
+      (dest #temporary-script)
+      (append #command-which)
+   )
+
+   (if (execute #temporary-script) (abort (#message-hsc-tool-missing #name)))
+))
+
+;----------------------------------------------------------------------------
+; Welcome user
+;----------------------------------------------------------------------------
+(procedure P-welcome
+(
+   (debug "welcome")
+   (welcome #message-welcome)
+
+   (message #message-overview)
+))
+
+;----------------------------------------------------------------------------
+; Ask for project title
+;----------------------------------------------------------------------------
+(procedure P-ask-project-title
+(
+   (debug "ask project title")
+
+   (set #project-title
+   (askstring
+      (prompt #prompt-project-title)
+      (help #help-project-title)
+      (default "My SM Porno Collection")
+   ))
+))
+
+;----------------------------------------------------------------------------
+; Ask for source directory
+;----------------------------------------------------------------------------
+(procedure P-ask-source-directory
+   (debug "ask source directory")
+
+   (set #source-directory
+   (askdir
+       (prompt #prompt-source-directory)
+       (help #help-source-directory)
+       (default "work:")
+   ))
+)
+
+;----------------------------------------------------------------------------
+; Ask for target directory, ensure it ends in "/" and check if it is an
+; absolute path
+;----------------------------------------------------------------------------
+(procedure P-ask-target-directory
+   (debug "ask target directory")
+
+   (set #target-directory
+   (askstring
+       (prompt #prompt-target-directory)
+       (help #help-target-directory)
+       (default "")
+   ))
+
+   (set #absolute-target-path 0)
+
+   (set #command-check-trailing-slash
+   (cat "rx 'if pos(right(\"" #target-directory "\",1), \":/\")=0 then return 1'"
+   ))
+
+   (if (= 1 (run #command-check-trailing-slash))
+      (
+         (debug "append '/' to target")
+         (set #target-directory (cat #target-directory "/"))
+      )
+   )
+
+   (set #command-check-absolute-target
+   (cat "rx 'if pos(\"" #target-directory "\", \":\")>0 then return 1'"
+   ))
+
+   (if (= 1 (run #command-check-absolute-target))
+      (
+         (debug "is absolute target")
+         (set #absolute-target-path 1)
+      )
+   )
+)
+
+;----------------------------------------------------------------------------
+; Ask for makefile options
+;----------------------------------------------------------------------------
+(procedure P-ask-makefile-options
+(
+   (debug "ask options")
+
+   ; If certain tools are not installed, the corresponding options are hidden
+   ; This is tested using the "which" command that returns a warning if a
+   ; tool is not in the search path
+
+   (if (run "which CheckHTML") ((set #option-use-check-html "") (set #use-check-html 0)))
+   (if (run "which OpenURL")   ((set #option-use-open_url   "") (set #use-open-url   0)))
+
+   (set #default
+   (+(+(+(+
+      (shiftleft #show-make-status    0)
+      (shiftleft #show-command-status 1)
+      (shiftleft #use-check-html      2)
+      (shiftleft #use-open-url        3)
+      (shiftleft #expand-hsc-path     4)
+   )))))
+
+   ; Enable proportional font
+   ; (set #option-show-make-commands (cat "\x1b[2p" #option-show-make-commands))
+
+   (set #options
+   (askoptions
+      (prompt #prompt-ask-makefile-options)
+      (help #help-ask-makefile-options)
+      (choices
+         #option-make-status
+         #option-command-status
+         #option-use-check-html
+         #option-use-open-url
+         #option-expand-hsc-path
+      )
+      (default #default)
+   ))
+
+   (if (IN #options 0) (set #show-make-status "1")    (set #show-make-status "0"))
+   (if (IN #options 1) (set #show-command-status "1") (set #show-command-status "0"))
+   (if (IN #options 2) (set #use-check-html "1")      (set #use-check-html "0"))
+   (if (IN #options 3) (set #use-open-url "1")        (set #use-open-url "0"))
+   (if (IN #options 4) (set #expand-hsc-path "1")     (set #expand-hsc-path "0"))
+))
+
+;----------------------------------------------------------------------------
+; Create Makefile (This is probably the most complex thing in this script)
+;----------------------------------------------------------------------------
+(procedure P-create-makefile
+(
+   (debug "create makefile")
+
+   (working #working-create-makefile)
+
+   (debug "  show-make-status =    " #show-make-status)
+   (debug "  show-command-status = " #show-command-status)
+   (debug "  use-open-url =        " #use-open-url)
+   (debug "  use-check-html =      " #use-check-html)
+   (debug "  expand-hsc-path =     " #expand-hsc-path)
+
+   ; Decide if commands invoked by make should be displayed.
+   ;
+   ; Set command to display URI currently processing. If make should not show
+   ; the commands it invokes, the pattern rule gets a simple "echo" command to
+   ; view the URI currently processing. Otherwise no command is added as the
+   ; progress is described by make itself.
+   (if (= 1 #show-make-status)
+      (
+         (debug " show commands")
+         (set #make-command-prefix "\t")
+         (set #command-echo-uri  "")
+      )
+      (
+         (debug " hide commands")
+         (set #make-command-prefix "\t@")
+         (set #command-echo-uri  (cat "\t@echo \"Processing \"$@\n"))
+      )
+   )
+
+   ; Set CLI options for quiet/normal status output
+   (set #open-url-status-options   "")
+   (set #check-html-status-options "")
+   (set #hsc-status-options        "")
+   (if (= 0 #show-command-status)
+      (
+         (set #check-html-status-options "quiet ")
+         (set #hsc-status-options        "Status=quiet ")
+      )
+   )
+
+   ; Decide if commands for CheckHTML and OpenURL should be invoked
+   (set #command-check-html "")
+   (set #command-open-url   "")
+   (if (= 1 #use-check-html)
+      (set #command-check-html
+      (cat #make-command-prefix "CheckHTML " #check-html-status-options "$@\n"
+      ))
+      ; no else
+   )
+   (if (= 1 #use-open-url)
+      (set #command-open-url
+      (cat #make-command-prefix "OpenURL FILE $@\n"
+      ))
+      ; no else
+   )
+
+   ; Expand path names for hsc tools if requested
+   (if (= 1 #expand-hsc-path)
+      (
+         (set #command-hsc     (expandpath #command-hsc))
+         (set #command-hscpitt (expandpath #command-hscpitt))
+         (set #command-hscdepp (expandpath #command-hscdepp))
+      )
+   )
+
+   ; Check if all hsc tools required for the Makefile are installed
+   (P-check-hsc-tool-installed "hsc"     #command-hsc)
+   (P-check-hsc-tool-installed "hscpitt" #command-hscpitt)
+   (P-check-hsc-tool-installed "hscdepp" #command-hscdepp)
+
+   ; Create the Makefile in a string
+   (set #contents-makefile
+   (cat "#\n"
+        "# Makefile for " #project-title "\n"
+        "#\n"
+        "\n"
+        "# Paths of programs to use\n"
+        "HSC       =" #command-hsc "\n"
+        "HSCDEPP   =" #command-hscdepp "\n"
+        "HSCPITT   =" #command-hscpitt "\n"
+        "\n"
+        "# Options for hsc\n"
+        "HSCTARGET =" #target-directory "\n"
+        "HSCPROJECT=" #filename-project "\n"
+        "HSCINCLUDE=include/page.hsc include/standard.hsc\n"
+        "HSCMSG    =MsgMode=normal\n"
+        "HSCMISC   =" #hsc-status-options "\n"
+        "\n"
+        "HSCOPTS   = $(HSCMSG) $(HSCMISC) \"To=" #target-directory "\" "
+           "PrjFile=$(HSCPROJECT) $(HSCINCLUDE)\n"
+        "\n"
+        "# Pattern rule for hsc\n"
+        "$(HSCTARGET)%html : %hsc \n"
+        #command-echo-uri
+        #make-command-prefix "$(HSC) $(HSCOPTS) $<\n"
+        #command-check-html
+        #command-open-url
+        "\n"
+        "#\n"
+        "# Rules\n"
+        "#\n"
+        "\n"
+        "# Compile everything\n"
+        "all : all_hsc\n"
+        "\n"
+        "# Update dependencies\n"
+        "depend :\n"
+        #make-command-prefix "$(HSCDEPP) PrjFile=$(HSCPROJECT) Verbose\n"
+        "\n"
+   ))
+
+   (debug "source=" #source-directory)
+   (set #filename-makefile (tackon #source-directory "Makefile"))
+
+   ; Write the Makefile
+   (set #prompt-makefile (#prompt-makefile #filename-makefile))
+   (P-textfile
+      #prompt-makefile
+      #help-makefile
+      #filename-makefile
+      #contents-makefile
+   )
+))
+
+;----------------------------------------------------------------------------
+; Create welcome page
+;----------------------------------------------------------------------------
+(procedure P-create-welcome-page
+(
+   (debug "create welcome page")
+
+   (working #working-create-welcome-page)
+
+   (set #filename-welcome-page
+      (tackon #source-directory #welcome.hsc)
+   )
+
+   (set #contents-welcome-page
+   (cat "<page heading=\"" #project-title "\">\n"
+        "<p>Welcome to " #project-title "!</p>\n\n"
+        "<p>Once I figured out how to use this damn hsc package, I will\n"
+        "provide loads of interesting material here. And I will never use\n"
+        "the pathetic term \"under construction\"...</p>\n\n"
+        "</page>\n"
+   ))
+
+   (P-textfile
+      (#prompt-welcome-page #filename-welcome-page)
+      #help-welcome-page
+      #filename-welcome-page
+      #contents-welcome-page
+   )
+))
+
+;----------------------------------------------------------------------------
+; Create new project
+;----------------------------------------------------------------------------
+(procedure P-create-project
+(
+   (debug "create project")
+
+   (working #working-create-project)
+
+   (set #really-create-project 1)
+
+   (if (exists #filename-project)
+      (set #really-create-project
+      (askbool
+         (prompt (#prompt-overwrite-file #filename-project))
+         (help #help-project-file)
+         (default 0)
+      ))
+   )
+
+
+   (if (= 1 #really-create-project)
+      (
+         (set #command-hscpitt-new (cat #command-hscpitt " FORCE NEW"))
+         (P-execute-in-source "#command-hscpitt-new" 0 #command-hscpitt-new)
+      )
+   )
+))
+
+;----------------------------------------------------------------------------
+; Add welcome page to project
+;----------------------------------------------------------------------------
+(procedure P-add-welcome-page
+(
+   (debug "add welcome page")
+
+   (working #working-add-welcome-page)
+
+   (set #command-hscpitt-add
+   (cat #command-hscpitt " ADD FORCE "
+        #target-directory #welcome.html " " ; No tackon required
+        #welcome.hsc
+   ))
+   (P-execute-in-source "#command-hscpitt-add" 0 #command-hscpitt-add)
+))
+
+;----------------------------------------------------------------------------
+; Create project dependencies
+;----------------------------------------------------------------------------
+(procedure P-create-dependencies
+(
+   (debug "create dependencies")
+
+   (working #working-create-dependencies)
+
+   (set #command-hscdepp-update
+   (cat #command-hscdepp " NOBACKUP "
+   ))
+   (P-execute-in-source "#command-hscdepp-update" 0 #command-hscdepp-update)
+))
+
+;----------------------------------------------------------------------------
+; Copy includes
+;----------------------------------------------------------------------------
+(procedure P-copy-includes
+(
+   (debug "copy includes")
+
+   (set #really-copy-includes 1)
+   (debug "  source = " #source-directory)
+
+   (set #source-include-directory (tackon #source-directory "include"))
+
+   (set #source-include-directory-exists (exists #source-include-directory))
+
+   (debug "  include = " #source-include-directory)
+   (debug "  exists  = " #source-include-directory-exists)
+
+   (if #source-include-directory-exists
+      (set #really-copy-includes
+      (askbool
+         (prompt (#prompt-overwrite-directory #source-include-directory))
+         (help #help-copy-includes)
+         (default 0)
+      ))
+   )
+
+   (debug "  copy   = " #really-copy-includes)
+
+   (if #really-copy-includes
+      (copyfiles
+         (prompt #prompt-copy-includes)
+         (help #help-copy-includes)
+         (source "starter-project/include")
+         (dest #source-include-directory)
+         (all)
+      )
+   )
+))
+
+;----------------------------------------------------------------------------
+; Exit
+;----------------------------------------------------------------------------
+(procedure P-exit
+(
+   (debug "exit")
+
+   (message (#message-exit #source-directory (cat #target-directory #welcome.html)))
+   (exit (quiet))
+))
+
+;----------------------------------------------------------------------------
+; "Wollt ihr das totale Programm?"
+;----------------------------------------------------------------------------
+
+(complete   0) (P-check-requirements)
+
+; Ask the user
+;
+; If installer was started with APPNAME set to "debug", most questions will
+; not be asked. Instead, a test project is created in RAM:
+
+(if (<> @app-name "debug")
+   (
+      (complete   0) (P-welcome)
+
+      (complete  10) (P-ask-project-title)
+      (complete  20) (P-ask-source-directory)
+      (complete  30) (P-ask-target-directory)
+      (complete  40) (P-ask-makefile-options)
+   )
+   (
+      (set #project-title "Debugging hsc-Tschak")
+      (set #source-directory "ram:")
+      (set #target-directory "t:")
+      (complete  40) (P-ask-makefile-options)
+   )
+)
+
+; Do the hard work
+
+(complete  50) (P-create-makefile)
+(complete  60) (P-create-welcome-page)
+(complete  65) (P-copy-includes)
+(complete  70) (P-create-project)
+(complete  80) (P-add-welcome-page)
+(complete  90) (P-create-dependencies)
+
+(complete 100) (P-exit)
+

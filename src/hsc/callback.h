@@ -39,6 +39,11 @@ extern BOOL init_callback(HSCPRC * hp);
 extern BOOL init_msgfile(HSCPRC * hp, STRPTR fname);
 extern VOID cleanup_msgfile(VOID);
 
+extern BOOL init_msg_browser(HSCPRC * hp, STRPTR filename);
+extern VOID del_msg_browser(HSCPRC * hp);
+extern VOID send_msg_browser(HSCPRC * hp, HSCMSG_CLASS msg_class,
+                            HSCMSG_ID msg_id, STRPTR fname,
+                            ULONG x, ULONG y, STRPTR msg_text);
+
 #endif /* NOEXTERN_HSC_CALLBACK_H */
 #endif /* HSC_CALLBACK_H */
-

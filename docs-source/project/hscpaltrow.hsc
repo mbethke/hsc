@@ -9,8 +9,8 @@
 the output of <hscpitt LINK> so that you can retrieve all information
 stored in the project file.</P>
 
-<P><hscpaltrow CAP> is part of the hsc-distribution and therefor the same
-legal issues apply.</P>
+<P><hscpaltrow CAP> is placed in the public domain. Use at your own
+risk.</P>
 
 <hscpaltrow CAP> is dedicated to Gwynneth Paltrow.
 
@@ -24,7 +24,7 @@ be displayed.
 
 <P>This script starts <hscpitt LINK> with <KBD>COMMAND=EXTRAXT</KBD>,
 stores the output in a temporary file, and parses it so you can access
-all data fromout the script. For future compatibility, unknown data
+all data from the script. For future compatibility, unknown data
 are ignored.</P>
 
 Basically, you just have to invoke

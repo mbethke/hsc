@@ -22,7 +22,7 @@
  *
  * hsc process functions
  *
- * updated: 16-Dec-1997
+ * updated:  9-Aug-1998
  * created: 11-Feb-1996
  */
 

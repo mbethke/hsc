@@ -10,7 +10,7 @@ attributes</A> are set up there also.</P>
 
 <P>The main advantage of this concept is that it's rather
 easy to add new syntax elements. For this task, the hsc tags
-<ln_deftag>, <ln_defent> and <ln_deficon> can be used.</P>
+<ln-deftag>, <ln-defent> and <ln-deficon> can be used.</P>
 
 <H2><A NAME="default">Default Preferences</A></H2>
 
@@ -31,12 +31,12 @@ rework. This should come with one of the next releases.</P>
 <H2><A NAME="search">Searching For The Preferences</A></H2>
 
 If you do not explicitely specify certain preferences by means of the
-CLI-option <op_prefsfile>, <hsc> will look at several places when
+CLI-option <op-prefsfile>, <hsc> will look at several places when
 trying to open <hsc.prefs>:
 
 <UL>
     <LI>the current directory
-    <LI>the directory specified in the environment variable <env_hscpath> 
+    <LI>the directory specified in the environment variable <env-hscpath>
     <LI>the directory <CODE>PROGDIR:</CODE>, which is automatically
         assigned to the same directory where the <hsc> binary resides
         when <hsc> is invoked
@@ -77,7 +77,7 @@ which declares the name of the icon.</P>
 <SPCTAG NAME="deftag" TITLE="Define a tag">
 
 <P>This tag defines
-a new tag, and is used quite similar to <ln_macro>, exept that a
+a new tag, and is used quite similar to <ln-macro>, exept that a
 tag-definition requires no macro-text and end-tag to be followed.</P>
 
 <STRONG>Example:</STRONG> <TG>$deftag IMG SRC:uri/x/z/r ALT:string ALIGN:enum("top|bottom|middle") ISMAP:bool WIDTH:string HEIGHT:string</TG>
@@ -111,17 +111,17 @@ brain-wanking concept born by some wireheads probably never seriously
 thinking about using it themselves. Even when there is free code
 available to sgml-parse text.</P>
 
-<P>As a result, only less browsers did support this. As it was rather
-easy to write a browser spiting on the sgml-trash, but simply parsing
-the code <qq>tag-by-tag</qq>, developers decided to spend more time on
+<P>As a result, only less browsers did support this because it was too
+easy to write a browser spitting on the sgml-trash, simply parsing the
+code <qq>tag-by-tag</qq>, developers decided to spend more time on
 making their product more user-friendly than computer-friendly (which
-really can understand).</P>
+is really understandable).</P>
 
 <P>These browsers became even more popular when they supported tags
 certain people liked, but were not part of DTDs. As DTDs were
 published by w3c, and w3c did not like those tags, they did not made
-it into DTDs for a long time or even not at all (which I really can
-understand, too).</P>
+it into DTDs for a long time or even not at all (which is really
+understandable, too).</P>
 
 <P>This did work for a certain degree until html-2.0. Several people
 (at least most of the serious w3-authoring people) did prefer to
@@ -161,10 +161,12 @@ So, as a conclusion, reasons not to use DTDs but an own format are:
 </UL>
 
 <P>Quite unexpected, with html-4.0 this has changed for some extent,
-as the DTDs are quite readable and well documented. Although it will
-take them more than this to get back the trust they abused in the
-recent years, at least it is a little signal suggesting there are some
-small pieces of brain intact somewhere in this consortium.</P>
+as the DTDs are quite readable and well documented. The general syntax
+of course still sucks, error handling is unbearable for "normal" users
+and so on. Although it will take them more than this to get back the
+trust they abused in the recent years, at least it is a little signal
+suggesting there are some small pieces of brain intact somewhere in
+this consortium.</P>
 
 <H2>Problems</H2>
 

@@ -22,12 +22,13 @@
  *
  * user argument handling for hsc
  *
- * updated: 29-Nov-1997
+ * updated: 24-Aug-1998
  * created:  1-Jul-1995
  */
 
 #include "hsc/global.h"
 #include "hsc/status.h"
+#include "hsc/callback.h"
 
 /*
  * ugly includes
@@ -44,7 +45,7 @@
 #define DEFAULT_MAXERR    "20"
 #define DEFAULT_MAXMSG    "40"
 
-static STRPTR arg_inpfname = NULL;      /* temp vars for set_args() */
+static STRPTR arg_inpfname = NULL;  /* temp vars for set_args() */
 static STRPTR arg_outfname = NULL;
 static STRPTR arg_extension = NULL;
 static STRPTR arg_server_dir = NULL;
@@ -59,6 +60,7 @@ static BOOL arg_jens = FALSE;
 static BOOL arg_strip_cmt = FALSE;
 static BOOL arg_strip_badws = FALSE;
 static BOOL arg_strip_ext = FALSE;
+static BOOL arg_throwback = FALSE;
 static BOOL arg_weenix = FALSE;
 static BOOL arg_license = FALSE;
 static BOOL arg_help = FALSE;
@@ -83,6 +85,10 @@ VOID cleanup_hsc_args(VOID)
 {
     del_argfile(argf);
     del_estr(fileattr_str);
+    if (msg_browser != NULL)
+    {
+        del_msg_browser(arg_hp);
+    }
 }
 
 /*
@@ -408,7 +414,7 @@ BOOL user_defines_ok(HSCPRC * hp)
     {
         DLNODE *nd = dll_first(define_list);
         EXPSTR *defbuf = init_estr(64);
-#if 0 /* TODO: remove this */
+#if 0                           /* TODO: remove this */
         BOOL old_ignore_quotemsg =
         hsc_get_msg_ignore(hp, MSG_ARG_NO_QUOTE);
 #endif
@@ -531,7 +537,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     BOOL ok;                    /* return value */
     DLLIST *ignore_list = NULL; /* dummy */
     EXPSTR *destdir = init_estr(32);    /* destination dir */
-    EXPSTR *rel_destdir = init_estr(32);        /* relative destination dir */
+    EXPSTR *rel_destdir = init_estr(32);    /* relative destination dir */
     EXPSTR *kack_name = init_estr(0);   /* temp. str for outfilename */
     struct arglist *hsc_args;   /* argument structure */
     LONG maximum_number_of_errors = strtol(DEFAULT_MAXERR, (char **) NULL, 10);
@@ -611,6 +617,9 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
                      "MSGFORMAT/T/K", &msg_format,
                      "how to display messages",
+
+                     "MSGBROWSER/T/K", &msg_browser,
+                     "message browser to use (default:none)",
     /* numeric */
                      "MAXERR/N/K", &maximum_number_of_errors,
                      "max. number of errors (default: " DEFAULT_MAXERR ")",
@@ -630,7 +639,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "ENABLE=ENA/K/M/$", arg_enable_CB, &ignore_list,
                      "enable message number or class",
 
-                     "MODE/E/K/$", arg_mode_CB, MODE_ENUMSTR, &arg_mode,
+                     "MSGMODE/E/K/$", arg_mode_CB, MODE_ENUMSTR, &arg_mode,
                      "mode for syntax check (" MODE_ENUMSTR ")",
 
                      "QUOTESTYLE=QS/E/K", QMODE_ENUMSTR, &arg_quotemode,
@@ -648,18 +657,20 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
                      "GETSIZE/S", &arg_getsize,
                      "get width and height of images",
-
-                     "MSGANSI/S", &msg_ansi,
+#if 0
+                     "MSGANSI/S", &msg_ansi,    /* obsolete */
                      "use ansi-sequences in messages",
+#endif
 
                      "RPLCENT=RE/S", &arg_rplc_ent,
                      "replace special characters",
 
                      "RPLCQUOTE=RQ/S", &arg_rplc_quote,
                      "replace quotes in text by `&quot;'",
-
+#if 0
                      "SMARTENT=SA/S", &arg_smart_ent,
                      "replace special entities (`&<>')",
+#endif
 
                      "JENS/S", &arg_jens,
                      "don't try this at home",
@@ -704,7 +715,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     /* set & test args */
     if (ok)
     {
-        BOOL use_stdout = FALSE;        /* flag: use stdout as output-file */
+        BOOL use_stdout = FALSE;    /* flag: use stdout as output-file */
         BOOL any_input_passed = FALSE;  /* flag: any input specified in args */
         STRPTR argfiles[] =
         {OPTION_FILE, NULL};
@@ -1025,9 +1036,13 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
             /* set HSC.SOURCE */
             if (inpfilename)
+            {
                 get_fname(tmp_fname, estr2str(inpfilename));
+            }
             else
+            {
                 clr_estr(tmp_fname);
+            }
             set_source_attribs(hp, estr2str(rel_destdir),
                                estr2str(tmp_fname));
 
@@ -1113,6 +1128,18 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
             /* set directories */
             hsc_set_destdir(hp, estr2str(destdir));
             hsc_set_reldir(hp, estr2str(rel_destdir));
+
+            if (msg_browser != NULL)
+            {
+                STRPTR compilation_unit = estr2str(inpfilename);
+
+                if (compilation_unit == NULL)
+                {
+                    compilation_unit = "<stdin>";
+                }
+
+                init_msg_browser(hp, compilation_unit);
+            }
         }
         /* release mem used by args */
         free_args(hsc_args);
@@ -1135,4 +1162,3 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     return (FALSE);             /* for arg-debugging */
 #endif
 }
-

@@ -8,6 +8,69 @@ older versions look below.
 
 ---------------------------------------------------------------------
 
+Version 0.917, 21-Sep-1998 (The Good Night Release)
+ (fixes, code cleanup, message browser support)
+
+ hsc:
+ - Fixed bug: checking IDs for project relative URIs did not work if
+   the source file was in a nested directory. In more detail:
+   references like ":sepp.html#hugo" did not find ":sepp.html" in the
+   project data structures if it was expanded to something like
+   "resi//sepp.html" when resolving the actual filename. Now the
+   filename is "optimized", so the above example would give
+   "sepp.html" with the useless "resi//" removed. [Ross Nicoll]
+ - Fixed bug: output of message#46 ("replaced entity") used negative
+   numbers due a problem with signed/unsigned characters [Marc Aurel]
+ - Fixed bug: removed a useless "typedef short BOOL" in one of the
+   source files as the "real" typedef is somewhere else and "short"
+   is an improper value for RiscOS [Sergio Monesi]
+ - Fixed "unintentional" feature for automatic URI expansion when
+   comparing two URIs or an URI with a string [Sergio Monesi]
+ - Fixed enforcer hit if entity after "&" was missing and the file or
+   macro ended afterwards
+ - Added code to support <$exec> under RiscOS [Sergio Monesi]
+ - Added Throwback support for RiscOS, use CLI option
+   MSGBROWSER=THROWBACK to activate [Sergio Monesi]
+ - Added ScMsg support for AmigaOS, use CLI option MSGBROWSER=SCMSG
+   to activate
+ - Added VBrowse support for AmigaOS, use CLI option
+   MSGBROWSER=vbrowse to activate
+ - Added message#86 ("error removing file")
+ - Added format specification "%%" for CLI option MSGFORMAT
+ - Removed CLI option MSGANSI, use MSGBROWSER=ANSI instead
+ - Removed CLI option SMARTENT
+
+ hScMsg.rexx (v1.1):
+ - Added not to show message class "Note" as "Warning" rather than
+   as (surprise) "Note" - ScMsg also supports this
+ - Added not to acticate ScMsg's window if no messages showed up
+ - Changed call to 'DelFile' to 'DelComp' so also messages related
+   to include files are removed
+ - Changed copyright to public domain.
+
+ hscpaltrow.rexx (v1.1):
+ - Changed copyright to public domain.
+
+ SendScMsg.rexx (v1.1):
+ - Changed copyright to public domain.
+
+ SendBrowser.rexx:
+ - Removed. Use OpenURL from Aminet instead.
+
+ documentation:
+ - There is now a port for AmigaOS/PPC (ports.html)
+ - The port for RiscOS has a new support page (ports.html)
+ - Clarified options MAXMSG and MAXERR (messages.html)
+ - Clarified how to use quotes inside string constants (assign.html)
+
+ hsc.prefs:
+ - DD and DT are now /AutoClose
+
+ miscellaneous:
+ - compiled with SAS/c 6.58
+
+---------------------------------------------------------------------
+
 Version 0.916, 12-Jan-1998
  (fixes and code cleanup)
 

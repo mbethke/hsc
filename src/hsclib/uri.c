@@ -22,7 +22,7 @@
  *
  * functions for uri parsing of tag arguments
  *
- * updated:  4-Jul-1997
+ * updated: 23-Aug-1998
  * created: 16-Jul-1995
  */
 
@@ -74,7 +74,7 @@ VOID conv_path2uri(EXPSTR * dest, STRPTR path)
     /* simply copy path */
     set_estr(dest, path);
 
-#elif defined MSDOS /* dos1 */
+#elif defined MSDOS             /* dos1 */
 #elif (defined NEXTSTEP) || (defined BEOS) || (defined UNIX)
     /* simply copy path */
     set_estr(dest, path);
@@ -132,7 +132,7 @@ VOID conv_uri2path(EXPSTR * dest, STRPTR uri, BOOL weenix)
 #elif defined RISCOS
     set_estr(dest, uri);
 
-#elif defined MSDOS /* dos2 */
+#elif defined MSDOS             /* dos2 */
 #elif (defined NEXTSTEP) || (defined BEOS) || (defined UNIX)
     set_estr(dest, uri);
 #else
@@ -176,7 +176,7 @@ URIKIND uri_kind(STRPTR uri)
 /*
  * convert uri to filename in destination-dir
  */
-static VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_fname, STRPTR uri)
+VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_fname, STRPTR uri)
 {
     EXPSTR *rel_path = init_estr(32);   /* relative path */
     URIKIND kind = uri_kind(uri);
@@ -184,7 +184,7 @@ static VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_f
     clr_estr(dest_uri);
     clr_estr(dest_fname);
 
-    if  (kind == URI_relserv)
+    if (kind == URI_relserv)
     {
         /* skip "/" in URI */
         STRPTR uri2 = uri + 1;
@@ -220,7 +220,7 @@ static VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_f
         /* evaluate kind of URI */
         if (kind == URI_abs)
         {
-            uri++;                  /* skip ":" */
+            uri++;              /* skip ":" */
         }
 
         if (kind == URI_abs)
@@ -285,6 +285,15 @@ static VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_f
             set_estr(dest_uri, uri);
             set_estr(dest_fname, "");
         }
+    }
+
+    /* If there is a filename, optimize it */
+    if (estrlen(dest_fname) > 0)
+    {
+        STRPTR optimized_name = NULL;
+        optimize_fname(&optimized_name, estr2str(dest_fname));
+        set_estr(dest_fname, optimized_name);
+        ufree(optimized_name);
     }
 
     /* debug */
@@ -409,15 +418,14 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
 #if 1
                     cgiargs = NULL;
 #else
-                    cgiargs = strchr(uri, '?'); /* TODO: conformant? */
+                    cgiargs = strchr(uri, '?');     /* TODO: conformant? */
 #endif
                     if (cgiargs)
                     {
                         /* blank out '?' */
                         cgiargs[0] = '\0';
-                        cgiargs++;
+                        cgiargs += 1;
                     }
-
                 }
             }
 
@@ -506,4 +514,3 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
         }                       /* else (rsrc) */
     }                           /* if (uri) */
 }
-

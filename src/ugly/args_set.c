@@ -806,7 +806,7 @@ BOOL set_args(int argc, char *argv[], ARGLIST * al)
  */
 BOOL set_args_file(ARGFILE *argf, ARGLIST *argl)
 {
-    return(set_args((argf)->argc, (argf)->argv, argl));
+    return(set_args_argv((argf)->argc, (argf)->argv, argl));
 }
 
 

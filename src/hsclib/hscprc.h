@@ -59,7 +59,7 @@
 #endif
 
 /* utilise POSIX-layer of BEOS */
-#if defined BEOS
+#if defined BeOS
 #define UNIX 1
 #endif
 
@@ -222,7 +222,6 @@ struct hsc_process
     BOOL compact;               /* flag: create compact output */
     BOOL debug;                 /* flag: display debuging info */
     BOOL getsize;               /* flag: get size of images/embedded docs */
-
     BOOL htmlonly;              /* flag: disable hsc-extensions */
     BOOL jens;                  /* flag: enable some experimental features */
     BOOL jerkvalues;            /* flag: interpret jerk values */

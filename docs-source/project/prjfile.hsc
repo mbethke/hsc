@@ -11,7 +11,7 @@ just processed. This includes
 <UL>
 <LI>name of the document (html-object) created
 <LI>name of the main hsc-source used
-<LI>names of all files include (both via user arguments or <ln_include>)
+<LI>names of all files include (both via user arguments or <ln-include>)
 <LI>local IDs defined in this document (using <TG>A NAME="id"</TG>
     or <TG><I>tag</I> ID="id"</TG>)
 </UL>
@@ -39,7 +39,7 @@ launch warnings or create incomplete dependencies.</P>
 <H2>Using The Project-File</H2>
 
 <P>To create an empty project-file, you have to <hscpitt> with the command
-<CODE>ADD</CODE>. To make <hsc> maintain it, you have to specify the
+<CODE>NEW</CODE>. To make <hsc> maintain it, you have to specify the
 CLI-option <CODE>PRJFILE</CODE> when invoking it.</P>
 
 <P>If you want to utilize the information stored in the project-file

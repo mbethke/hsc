@@ -23,7 +23,7 @@
 
 #include "hsc/global.c"
 #include "hsc/status.c"
+#include "hsc/callback.c"
 #include "hsc/args.c"
 #include "hsc/output.c"
-#include "hsc/callback.c"
 #include "hsc/hsc.c"

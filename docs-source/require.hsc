@@ -61,6 +61,6 @@ coming with this archive are not linked with any stack-check or
 <P><STRONG>AmigaOS and CPU:</STRONG> Basically, it works on an A2000
 with AmigaOS 2.04 and a plain 68000, but as this isn't much fun, the
 binaries are compiled for 68020. As <hsc> is not one of the fastest, a
-68040 is recommended.</P>
+68060 is recommended.</P>
 
 </WEBPAGE>

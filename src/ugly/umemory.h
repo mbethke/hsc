@@ -57,8 +57,8 @@ typedef struct uglymem UGLYMEM;
 /* ugly function calls with memory tracking ENABLED */
 #define umalloc(size) ugly_malloc_tracking( size, __FILE__, __LINE__ )
 #define ufree(ptr)    if ( ptr ) { ugly_free( ptr, __FILE__, __LINE__ ); ptr = NULL; }
-#define urealloc(ptr,size) ugly_realloc( ptr, size, __FILE, __LINE__ );
-#define ucalloc(count,size) ugly_calloc( count,size,__FILE__,__LINE );
+#define urealloc(ptr,size) ugly_realloc( ptr, size, __FILE__, __LINE__ );
+#define ucalloc(count,size) ugly_calloc( count,size,__FILE__,__LINE__ );
 
 #define umem_report(msg) uglymem_report( msg, __FILE__, __LINE__, __DATE__, __TIME__ )
 #define umem_stats(msg) uglymem_stats( msg, __FILE__, __LINE__, __DATE__, __TIME__ )

@@ -1,15 +1,46 @@
-<WEBPAGE chapter="hsc - " title="Future Improvements"
+<WEBPAGE chapter="hsc - " title="Future?"
     PREV="bugs.html"
     NEXT="related.html"
     QTEXT=("My future is static<BR>"
-          +"It's already had it<BR>"
-          +"I could tuck you in<BR>"
-          +"And we can talk about it")
+          +"It's already had it")
     QAUTHOR='Sonic Youth, "Schizophrenia"'>
 
-Basically, I consider <hsc> finished. However, some people have
+<p>Except for bufixes, there will not be any further updates for <hsc>.</p>
+
+<p>Ok, that was a bit rude, so now less brutal: I've abandoned this
+project, but basically I'm still around and read your email. So minor
+bugfixes will still happen, although more complicated problems will
+simply end up on the known bugs list. Possible minor fixes relate
+especially to the quite a lot of Amiga-specific features introduced in
+version 0.917.</p>
+
+<p>For the religious part: I still use my crappy Amiga 2000, I still
+don't own a PC and I still have a Macintosh rotting in the attic. This
+is not going to change in near future. Especially because none of the
+ultra-alternative systems like pOS ever left alpha stage or stalled
+like the BeBox, which meanwhile degenerated to BeOS, mostly used as
+toy by Windiots who want to pretend they are different. If somebody
+would create a reasonable computer, I would buy it. Currently it
+doesn't look like this is going to happen in near future, therefor:
+Amiga forever. (Shit! How I hate this outdated piece of crap, but
+still it is the least useless I know.)</p>
+
+<p>As <hsc> comes with full source code, somebody else might take over
+the project. However, I hope this is not going to happen. It's
+probably more efficient to start such a project from the scratch,
+trying to learn from the mistakes that were made in <hsc>. You better
+leave the source as it is, because the plain ANSI-C portability is one
+of its main features - at least in my opinion.</p>
+
+<p>Currently I don't think about starting to code a new <hsc>.</p>
+
+<p>Anyway, as also html and browser development has stalled, <hsc>
+should remain useful for quite some time to come.</p>
+
+<*
+<p>Basically, I consider <hsc> finished. However, some people have
 convinced me that there are some things that should be implemented
-before I release the final version.
+before I release the final version.</p>
 
 <H2>Minor Enhancements</H2>
 
@@ -131,5 +162,6 @@ ever be implemented.
     are converters around for this task, and several people smarter than me
     have already failed to introduce the ultimate hypertext authoring tool.
 </UL>
+*>
 
 </WEBPAGE>

@@ -7,6 +7,63 @@ complete list of improvements and bug-fixes, refer to `CHANGES'.
 
 ---------------------------------------------------------------------
 
+Version 0.917
+
+- This is the last release of hsc. Probably there still will be a
+  couple of bugfix releases, but no further enhancements are planned.
+
+- There is finally a somewhat more official release of the RiscOS
+  port with a new support page (still done by the same people) at
+  `http://www.alphawave.ltd.uk/sergio/hsc.html'.
+
+- When validating URIs the corresponding filenames are "optimized".
+  That means useless parent directories in the middle of the filename
+  are stripped. This fixes a bug and also results in more legible
+  message texts.
+
+  The only problem is that this optimization fails on AmigaOS if you
+  use paths with ".." for parent directory and a system patch (e.g.
+  `DosWedge' or `ixpath') to make the filesystem support it. Use the
+  AmigaOS/ixemul version of hsc if this is a problem for you.
+
+- Comparing two URIs using the `=' operator now works again, even with
+  project relative URIs. This was an unintentional feature of version
+  0.915 I was not aware of, and accidentally it was gone in 0.916.
+
+- The CLI option MODE has been renamed to MSGMODE
+
+- Some special values for IGNORE and ENABLE have changed:
+  BADSTYLE -> STYLE
+  JERKS    -> JERK
+  NOTES    -> NOTE
+
+- The CLI option MSGANSI has been removed. Use MSGBROWSER=ANSI
+  instead.
+
+- The CLI option SMARTENT has been removed. It was too inconsistent.
+
+- Due lack of interest, `dtd2hsc.rexx' and the resulting
+  `hsc-html-40.prefs' have been removed.
+
+- The list of messages has moved from `docs/messages.html' to
+  `docs/message-list.html'.
+
+- Those who never really could figure out how to use all these
+  message options like IGNORE and ENABLE might want to read
+  `docs/messages.html' again as it explains some details that
+  weren't there in previous versions of the manual.
+
+- The undocumented arithmetic `+' operator does no more work as the
+  autodetection  wheter to use string concatenation or arithmetic
+  addition did not work in some expression. Use `&' for arithmetic
+  addition (which is still undocumented, of course).
+
+- There are some maybe useful features that (because of good reason)
+  never made it into the official documentation described in
+  `docs/undocumented.html'.
+
+---------------------------------------------------------------------
+
 Version 0.916
 
 - Hsc does no more create a new project file if you specify a

@@ -52,22 +52,22 @@ to a directory and determine the filename by itself. Usually, it
 will use (<CODE>input filename</CODE>, without <qqc>.hsc</qqc>,
 but a <qqc>.html</qqc> appended), resulting into <FILE>www:sepp/hugo.html</FILE>
 as before. You can change the default extension using the CLI option
-<op_extension>.</P>
+<op-extension>.</P>
 
 <H2>Using Sub Directories</H2>
 
-<P>For complex project, usually not all documents are located at the
-same directory. For example, <FILE>hugo.hsc</FILE> is no more
-placed in the current directory, but in 
-<FILE>people/hugo.hsc</FILE>.</P>
+<P>For complex project, usually not all documents are located in the
+same directory. For example, <FILE>hugo.hsc</FILE> is no more placed
+in the current directory, but in <FILE>people/hugo.hsc</FILE>.</P>
 
 Invoking hsc like
 
 <PRE>hsc FROM people/hugo.hsc TO www:sepp/</PRE>
 
-<P>will now output to <FILE>www:sepp/people/hugo.html</FILE>. Note that you
-have to take care that the directory <FILE>www:sepp/people/</FILE>
-exists, <hsc> will not create any new directories by itself.</P>
+<P>will now output to <FILE>www:sepp/people/hugo.html</FILE>. Note
+that you have to take care that the directory
+<FILE>www:sepp/people/</FILE> exists, <hsc> will not create any new
+directories by itself.</P>
 
 If you now want to embed an image located at
 <FILE>www:sepp/image/back.gif</FILE> into this document, you have to
@@ -114,9 +114,9 @@ works this way are: I hate to check for I/O errors,
 memory mapped files are not supported by the standard ANSI
 library.)</P>
 
-<P>Additionally, it impossible for <hsc> to maintain a project file
-without knowledge of the filenames for document and source, so 
-several features will be disabled.</P>
+<P>Additionally, it is impossible for <hsc> to maintain a project file
+without knowledge of the filenames for document and source, so several
+features will be disabled.</P>
 
 <P>If <hsc> needs to access relative URIs, it will have to use the
 current directory as starting point.</P>

@@ -30,10 +30,9 @@
 # environment will be asumed
 #
 
-AMIGA_GCC	= 1	# amiga & gcc
-#AMIGA_SASC	= 1	# amiga & sas/c 6.x
+#AMIGA_GCC	= 1	# amiga & gcc
+AMIGA_SASC	= 1	# amiga & sas/c 6.x
 #AMIGA_VBCC 	= 1	# amiga & vbcc (experimental)
-#POSIX_GCC	= 1	# posix & gcc
 
 #--------------------------------------------------------------------
 # Selection of compiler mode
@@ -46,21 +45,6 @@ COMPILER_MODE	= opt	# create optimised version
 #COMPILER_MODE	= dbg	# create debugging version
 
 #--------------------------------------------------------------------
-# Setup for Unix-Installation
-#
-# INSTALL	`install' command to be used
-# INSTDIR	base destination-directory 
-#		("/bin" and "/lib" will be added)
-#
-
-INSTALL		= install
-#INSTALL_DATA	= $(INSTALL)	# to be supported...
-#INSTALL_PROGRAM	= $(INSTALL)
-
-INSTDIR		= /usr
-#INSTDIR	= $(HOME)
-
-#--------------------------------------------------------------------
 #
 # normally, there should be no need to change anything below this line
 #
@@ -71,7 +55,7 @@ INSTDIR		= /usr
 # symbols for revision numbers
 #
 #--------------------------------------------------------------------
-REV_HSC  = 916
+REV_HSC  = 917
 REV_DEPP = 3
 REV_PITT = 2
 
@@ -125,7 +109,7 @@ OBJ_HSC =\
 	hsc/callback.o \
 	hsc/global.o \
 	hsc/output.o \
-	hsc/status.o
+	hsc/status.o \
 
 OBJ_HSCDEPP =\
 	hsctools/hscdepp.o
@@ -196,30 +180,6 @@ LNK_HSC		= $(LIB_HSC)
 GSTFILE		=
 
 else
-ifdef POSIX_GCC
-#
-# gcc UNIX
-#
-SYS	= -DUNIX
-DEBUG	= -DDEBUG -DDEBUG_UGLY -ggdb
-NORM	=
-OPTIM	= -O2 -fstrength-reduce -s
-MISC	= -Wall -W -ansi -Wno-unused -I.
-COMP	= gcc -o $@ $(MISC) $(SYS) -c
-LINK	= gcc -o $@ $(MISC) $(SYS)
-# other commands and options
-AR	= ar
-ARFLAGS = rs
-COPY	= cp
-DEL	= rm -f
-# libraries
-LNK_UGLY	= $(LIB_UGLY)
-LNK_HSCPRJ	= $(LIB_HSCPRJ)
-LNK_HSCLIB	= $(LIB_HSCLIB)
-LNK_HSC		= $(LIB_HSC)
-GSTFILE		=
-
-else
 ifdef AMIGA_SASC
 #
 # sas/c AMIGA
@@ -268,8 +228,6 @@ LNK_HSCLIB	= $(OBJ_HSCLIB)
 LNK_HSC		= $(OBJ_HSC)
 GSTFILE		=
 
-else
-
 #
 # cc (should work on most unixoid systems)
 #
@@ -294,7 +252,6 @@ GSTFILE		=
 
 endif	# AMIGA_VBCC
 endif	# AMIGA_SASC
-endif	# POSIX_GCC
 endif	# AMIGA_GCC
 
 #
@@ -327,7 +284,7 @@ GSTSOURCE	= hscgst.c
 .PHONY : all all_all clean clean_all clean_test sterile install	\
 	ugly hsclib hscprj					\
 	hsc hscdepp hscpitt test test_expected autodocs		\
-	test							\
+	test rebuild						\
 	msg_test_html_begin msg_test_html_end 			\
 	msg_test_msg_begin msg_test_msg_end 			\
 	msg_test_finished
@@ -346,6 +303,8 @@ all : $(GSTFILE) hsc hscdepp hscpitt
 
 all_all: ugly/all_ugly.o hsclib/all_hscl.o hscprj/all_hscp.o hsc/all_hsc \
 	hsctools/all_depp hsctools/all_pitt
+
+rebuild : clean all
 
 #
 # libraries
@@ -419,7 +378,7 @@ install : all_all
 
 TESTDIR		= test/
 TESTHSC		= hsc/hsc
-TESTFLAGS	= mode=pedantic status=quiet to=$@ \
+TESTFLAGS	= msgmode=pedantic status=quiet to=$@ \
 	prjfile=test/hsc-test.project prefsfile=../hsc.prefs
 
 TESTHTML	= \
@@ -462,13 +421,13 @@ TESTMEX		= \
 # test specific command line options
 test/opt_rplcent.html : test/simple.hsc
 	@echo testing $< ".. (option RPLCENT)"
-	-@$(TESTHSC) $(TESTFLAGS) $< MSGFILE=test/opt_rplcent.msg RPLCENT MODE=pedantic
+	-@$(TESTHSC) $(TESTFLAGS) $< MSGFILE=test/opt_rplcent.msg RPLCENT
 	-@diff --brief $@ test/opt_rplcent.expected
 	-@diff --brief test/opt_rplcent.msg test/opt_rplcent.mex
 
 test/opt_getsize.html : test/opt_getsize.hsc
 	@echo testing $< ".. (option GETSIZE)"
-	-@$(TESTHSC) $(TESTFLAGS) $< MSGFILE=test/opt_getsize.msg GETSIZE MODE=pedantic
+	-@$(TESTHSC) $(TESTFLAGS) $< MSGFILE=test/opt_getsize.msg GETSIZE
 	-@diff --brief $@ test/opt_getsize.expected
 	-@diff --brief test/opt_getsize.msg test/opt_getsize.mex
 
@@ -614,7 +573,6 @@ dist :
 	$(COPY) hsctools/hscdepp $(DISTDIR)
 	$(COPY) hsctools/hscpitt $(DISTDIR)
 	$(COPY) rexx/hScMsg.rexx $(DISTDIR)grafflwerk
-	$(COPY) rexx/SendBrowser.rexx $(DISTDIR)grafflwerk
 	$(COPY) rexx/SendScMsg.rexx $(DISTDIR)grafflwerk
 	$(COPY) rexx/hscpaltrow.rexx $(DISTDIR)grafflwerk
 	$(COPY) rexx/StripNastyChars.rexx $(DISTDIR)grafflwerk
@@ -640,11 +598,13 @@ wc :
 
 depend :
 	MkDepend ugly/#?.c hsclib/#?.c hsc/#?.c hsctools/#?.c hscprj/#?.c \
-	-iugly -ihsclib -ihsc -ihscprj -iriscos -x ugly/test#? -v
+	-iugly -ihsclib -ihsc -ihscprj -iriscos -v \
+	except ugly/test#? 
 	MkDepend MAKE=Makefile.dodl \
 	ugly/all_ugly.c hsclib/all_hscl.c hsc/all_hsc.c hscprj/all_hscp.c \
 	hsctools/all_depp.c hsctools/all_pitt.c \
-	-iugly -ihsclib -ihsc -ihscprj -ihsctools -iriscos -v
+	-iugly -ihsclib -ihsc -ihscprj -ihsctools -iriscos -v \
+	except ugly/test#? 
 
 #
 # create GST for hsclib
@@ -703,16 +663,12 @@ pittvers :
 	@move hscpitt_rev.h hsctools/pitt_rev.h quiet clone
 	@type hsctools/pitt_rev.h
 
-#
-# the dependencies below are created using `MkDepend' by Lars Düning,
-# available from amient:dev/c/MkDepend.lha
-#
-
 # --- DO NOT MODIFY THIS LINE -- AUTO-DEPENDS FOLLOW ---
 hsc/all_hsc.o : hsc/args.c hsc/callback.c hsc/global.c hsc/hsc.c \
-    hsc/output.c hsc/status.c hsc/global.h hsc/status.h hscprj/license.h \
-    ugly/fname.h ugly/prginfo.h ugly/returncd.h ugly/uargs.h hsc/callback.h \
-    hsc/output.h hsclib/hsclib.h hsc/args.h hsc/hsc_rev.h hscprj/project.h \
+    hsc/output.c hsc/status.c hsc/callback.h hsc/global.h hsc/status.h \
+    hscprj/license.h ugly/fname.h ugly/prginfo.h ugly/returncd.h \
+    ugly/uargs.h amiga/msgbrowser.c hsc/output.h riscos/msgbrowser.c \
+    hsclib/hsclib.h hsc/args.h hsc/hsc_rev.h hscprj/project.h \
     riscos/unixname.h hsc/hdebug.h ugly/dllist.h ugly/expstr.h \
     ugly/infile.h ugly/umemory.h ugly/ustring.h ugly/utypes.h ugly/expstr.h \
     ugly/utypes.h ugly/umemory.h hsclib/inc_base.h hsclib/include.h \
@@ -720,8 +676,8 @@ hsc/all_hsc.o : hsc/args.c hsc/callback.c hsc/global.c hsc/hsc.c \
     hsclib/entity.h hsclib/hscprc.h hsclib/ldebug.h hsclib/lmessage.h \
     hsclib/lstatus.h hsclib/msgid.h hsclib/tag.h hscprj/document.h
 
-hsc/args.o : hsc/global.h hsc/status.h hscprj/license.h ugly/fname.h \
-    ugly/prginfo.h ugly/returncd.h ugly/uargs.h hsc/hdebug.h \
+hsc/args.o : hsc/callback.h hsc/global.h hsc/status.h hscprj/license.h \
+    ugly/fname.h ugly/prginfo.h ugly/returncd.h ugly/uargs.h hsc/hdebug.h \
     hsclib/hsclib.h ugly/dllist.h ugly/expstr.h ugly/infile.h \
     ugly/umemory.h ugly/ustring.h ugly/utypes.h ugly/expstr.h ugly/utypes.h \
     ugly/umemory.h hsclib/inc_base.h hsclib/include.h hsclib/linit.h \
@@ -729,13 +685,15 @@ hsc/args.o : hsc/global.h hsc/status.h hscprj/license.h ugly/fname.h \
     hsclib/entity.h hsclib/hscprc.h hsclib/ldebug.h hsclib/lmessage.h \
     hsclib/lstatus.h hsclib/msgid.h hsclib/tag.h hscprj/document.h
 
-hsc/callback.o : hsc/callback.h hsc/global.h hsc/output.h hsc/status.h \
-    ugly/returncd.h hsc/hdebug.h hsclib/hsclib.h ugly/dllist.h \
-    ugly/expstr.h ugly/infile.h ugly/umemory.h ugly/ustring.h ugly/utypes.h \
-    hsclib/inc_base.h hsclib/include.h hsclib/linit.h hscprj/project.h \
-    ugly/utypes.h ugly/dllist.h ugly/expstr.h ugly/udebug.h hsclib/attrib.h \
-    hsclib/entity.h hsclib/hscprc.h hsclib/ldebug.h hsclib/lmessage.h \
-    hsclib/lstatus.h hsclib/msgid.h hsclib/tag.h hscprj/document.h
+hsc/callback.o : amiga/msgbrowser.c hsc/callback.h hsc/global.h \
+    hsc/output.h hsc/status.h riscos/msgbrowser.c ugly/returncd.h \
+    ugly/fname.h hsc/hdebug.h hsclib/hsclib.h ugly/dllist.h ugly/expstr.h \
+    ugly/infile.h ugly/umemory.h ugly/ustring.h ugly/utypes.h \
+    riscos/unixname.h ugly/expstr.h ugly/utypes.h hsclib/inc_base.h \
+    hsclib/include.h hsclib/linit.h hscprj/project.h ugly/dllist.h \
+    ugly/udebug.h hsclib/attrib.h hsclib/entity.h hsclib/hscprc.h \
+    hsclib/ldebug.h hsclib/lmessage.h hsclib/lstatus.h hsclib/msgid.h \
+    hsclib/tag.h hscprj/document.h
 
 hsc/global.o : hsc/global.h hsclib/hsclib.h ugly/returncd.h hsc/hdebug.h \
     ugly/dllist.h ugly/expstr.h ugly/infile.h ugly/umemory.h ugly/ustring.h \
