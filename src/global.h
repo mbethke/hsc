@@ -87,6 +87,7 @@ extern BOOL insanch;
 extern BOOL need_help;
 extern BOOL pipe_in;
 extern BOOL rplc_ent;
+extern BOOL smart_ent;
 extern BOOL stripuri;
 extern BOOL statusmsg;
 extern BOOL verbose;
@@ -99,6 +100,8 @@ extern STRPTR destfname;
 extern STRPTR rel_destdir;
 
 extern EXPSTR *tmpstr;
+extern EXPSTR *IF_stack;
+extern BOOL    suppress_output;
 
 /*
 ** global funcs

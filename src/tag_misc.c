@@ -3,7 +3,7 @@
 **
 ** misc tag handles
 **
-** updated: 12-Sep-1995
+** updated:  5-Oct-1995
 ** created: 30-Jul-1995
 */
 
@@ -11,7 +11,7 @@
 ** ansi includes
 */
 #include <stdio.h>
-#include <time.h>
+#include <string.h>
 
 /*
 ** ugly includes
@@ -26,11 +26,13 @@
 ** local includes
 */
 #include "global.h"
-#include "output.h"
-#include "tagargs.h"
-#include "parse.h"
 #include "error.h"
 #include "msgid.h"
+#include "output.h"
+#include "parse.h"
+#include "skip.h"
+#include "tagargs.h"
+
 
 #include "tag.h"
 
@@ -90,13 +92,97 @@ BOOL handle_heading( INFILE *inpf, HSCTAG *tag )
 **
 **
 */
-BOOL handle_sgml_comment( INFILE *inpf, HSCTAG *TAG )
+BOOL handle_sgml_comment( INFILE *inpf, HSCTAG *tag )
 {
     /*
     ** TODO: - correct abort
     **       - copy chars
     */
-    skip_until_gt( inpf );
+    STRPTR nw = infgetw( inpf );
+
+    if ( nw ) {
+
+            /* check for whitespace after "!" */
+            if ( strlen( infgetcws( inpf ) ) ) {
+
+                message( MSG_ILLG_WHTSPC, inpf );
+                errstr( "illegal white space" );
+                errlf();
+
+            }
+
+        if ( strncmp( nw, "--", 2 ) )
+            skip_until_eot( inpf );     /* unknown "!"-command: skip */
+        else {
+
+            /* handle comment */
+            BOOL end_min  = FALSE;
+            BOOL end_gt   = FALSE;
+            BOOL in_quote = FALSE;
+
+            while ( !fatal_error && !end_gt ) {
+
+                nw = infgetw( inpf );
+                if ( nw ) {
+
+                    size_t slen = strlen( nw );
+
+                    /*
+                    **check for "--"
+                    */
+                    if ( slen >= 2 )
+                        end_min =
+                            ( (nw[slen-1]=='-') && (nw[slen-1]=='-') );
+
+                    /*
+                    ** check for end-of-comment
+                    */
+                    if ( !strcmp( nw , ">" ) )
+                        if ( end_min )
+                            end_gt = TRUE;
+                        else {
+
+                            message( MSG_GT_IN_COMMENT, inpf );
+                            errstr( "\">\"inside SGML-comment" );
+                            errlf();
+
+                        }
+
+
+                    /*
+                    ** check for LF
+                    */
+                    else if ( !strcmp( nw, "\n" ) ) {
+
+                        in_quote = TRUE;
+                        message( MSG_LF_IN_COMMENT, inpf );
+                        errstr( "line feed inside SGML-comment" );
+                        errlf();
+
+                    /*
+                    ** check for quote
+                    */
+                    } else if ( !strcmp( nw, "\"" ) || !strcmp( nw, "'" ) )
+                        in_quote = !in_quote;
+
+
+                } else
+                    err_eof( inpf );
+
+                if ( end_gt && in_quote ) {
+
+                    message( MSG_CMTEND_QUOTE, inpf );
+                    errstr( "SGML-comment ends inside quotes" );
+                    errlf();
+
+                }
+            }
+
+
+
+        }
+    } else
+        err_eof( inpf );
 
     return (TRUE);
 }

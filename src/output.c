@@ -3,7 +3,7 @@
 **
 ** output functions for hsc
 **
-** updated: 10-Sep-1995
+** updated:  8-Oct-1995
 ** created:  1-Jul-1995
 */
 
@@ -73,7 +73,11 @@ int outch( char ch )
 {
     int this_ch = EOF;
     if ( !fatal_error ) {
-        this_ch = fputc( ch, outfile );
+
+        if ( suppress_output )
+            this_ch = ch;
+        else
+            this_ch = fputc( ch, outfile );
         if ( this_ch == EOF )
              err_write( outfile );
    }
@@ -86,38 +90,13 @@ int outch( char ch )
 */
 int outstr( CONSTRPTR str )
 {
-    return ( fputs( str, outfile ) );
+    int ch_written = 0;
+
+    if ( suppress_output )
+        ch_written = strlen( str );
+    else
+        ch_written = fputs( str, outfile );
+
+    return( ch_written );
 }
-
-/*
-** copy_until_gt
-*/
-BOOL copy_until_gt( INFILE *inpf )
-{
-    char nxtch = '\0';
-
-    while ( (!infeof(inpf)) && (nxtch!='>') ) {
-        nxtch = infgetc(inpf);
-        outch( nxtch );
-        /* TODO: eof */
-    }
-
-    return (BOOL)(fatal_error);
-}
-
-
-/*
-** skip_until_gt
-*/
-BOOL skip_until_gt( INFILE *inpf )
-{
-    char nxtch = '\0';
-
-    while ( (!infeof(inpf)) && (nxtch!='>') ) {
-        nxtch = infgetc(inpf);
-    }
-
-    return (BOOL)(fatal_error);
-}
-
 

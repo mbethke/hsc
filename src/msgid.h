@@ -3,7 +3,7 @@
 **
 ** defines for message-ids (warnings, errors,..)
 **
-** updated:  3-Oct-1995
+** updated:  8 -Oct-1995
 ** created: 30-Jul-1995
 */
 
@@ -26,7 +26,7 @@
 
 /*
 **=========================
-** next message number: 47
+** next message number: 54
 **=========================
 **
 ** obsolete numbers:
@@ -69,6 +69,7 @@
 #define MSG_UNKN_TAG_OPTION    (ERROR+ 17)  /* unknown tag option */
 #define MSG_TAG_OBSOLETE       (WARN + 37)  /* obsolete tag */
 #define MSG_TAG_JERK           (WARN + 38)  /* jerk tag */
+#define MSG_ILLG_WHTSPC        (ERROR+ 47)  /* illegal whitespace */
 
 /*
 ** messages within entities
@@ -76,6 +77,7 @@
 #define MSG_UNKN_ENTITY        (WARN + 18)  /* unknown entity */
 #define MSG_EXPT_SEMIK         (ERROR+ 19)  /* ";" expected */
 #define MSG_RPLC_ENT           (MSG  + 46)  /* replaced entity */
+#define MSG_RPLC_SPCCHR        (MSG  + 52)  /* replaced special char */
 
 /*
 ** messages within attributes
@@ -102,6 +104,14 @@
 #define MSG_EXPT_H1            (STYLE+ 28)  /* Hx: first heading H1 */
 #define MSG_ANCH_NO_NMHR       (ERROR+ 29)  /* A : no NAME or HREF */
 #define MSG_CL_MACR_ARG        (ERROR+ 46)  /* args for closing macro */
+#define MSG_LF_IN_COMMENT      (WARN + 48)  /* LF within comment */
+#define MSG_GT_IN_COMMENT      (WARN + 49)  /* GT within comment */
+#define MSG_CMTEND_QUOTE       (WARN + 50)  /* SGML-comment ends in quotes */
+
+/*
+** messages from hsc-tag handles
+*/
+#define MSG_UNMA_ELSE          (ERROR+ 53)  /* unmatched $ELSE */
 
 /*
 ** misc. messages
@@ -111,13 +121,13 @@
 #define MSG_ILLEGAL_NUM        (ERROR+ 32)  /* illegal numeric value */
 #define MSG_STR_EOL            (ERROR+ 33)  /* string exeeds line */
 #define MSG_UNEX_EOL           (ERROR+ 34)  /* unexpected eol */
-
+#define MSG_UNMA_QUOTE         (WARN + 51)  /* quote inside text */
 
 /*
 ** soon obsolete errors (hopefully)
 */
-#define FATAL_LONG_STR      (FATAL+999) /* string too long */
-#define MSG_HSC_ERR         (ERROR+998) /* error within hsc-tag */
+#define FATAL_LONG_STR      (FATAL+300) /* string too long */
+#define MSG_HSC_ERR         (ERROR+301) /* error within hsc-tag */
 
 
 #endif

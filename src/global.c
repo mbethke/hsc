@@ -3,7 +3,7 @@
 **
 ** global vars & funs for hsc
 **
-** updated: 26-Sep-1995
+** updated:  7-Oct-1995
 ** created:  8-Jul-1995
 */
 
@@ -35,6 +35,7 @@ BOOL insanch   = FALSE;                /* flag: insert text of anchor */
 BOOL need_help = FALSE;                /* flag: display help text */
 BOOL pipe_in   = FALSE;                /* flag: use stdin as input file */
 BOOL rplc_ent  = FALSE;                /* replace entities */
+BOOL smart_ent = FALSE;                /* replace special entities (&<>") */
 BOOL stripuri  = FALSE;                /* flag: strip external URIs */
 BOOL statusmsg = FALSE;                /* flag: status message (line num) */
 BOOL verbose   = FALSE;                /* flag: verbose output */
@@ -49,7 +50,10 @@ time_t now;                            /* used to store current time */
 STRPTR destfname   = NULL;             /* filename part of outfilename */
 STRPTR rel_destdir = NULL;             /* dir part of input filename */
 
-EXPSTR *tmpstr = NULL;                 /* temp. string used by several fncs */
+EXPSTR *tmpstr   = NULL;               /* temp. string used by several fncs */
+                                       /* parse.c   - parse_text() */
+EXPSTR *IF_stack = NULL;               /* IF-stack pointer */
+BOOL    suppress_output = TRUE;        /* flag checked by outch() */
 
 /*
 **

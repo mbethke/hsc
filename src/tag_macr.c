@@ -3,7 +3,7 @@
 **
 ** tag handles for "<$MACRO>" and "<macro>"
 **
-** updated:  2-Oct-1995
+** updated:  8-Oct-1995
 ** created:  5-Aug-1995
 */
 
@@ -27,11 +27,22 @@
 #include "cleanup.h"
 #include "error.h"
 #include "msgid.h"
-#include "output.h"
-#include "tagargs.h"
 #include "parse.h"
+#include "output.h"
+#include "skip.h"
+#include "tagargs.h"
 
 EXPSTR *rmt_str = NULL;      /* temp. buffer to read macro text */
+
+/* states for read_macro_text */
+#define MAST_TEXT   0 /* inside text      */
+#define MAST_LT     1 /* after "<"        */
+#define MAST_SLASH  2 /* after "</"       */
+#define MAST_CMACRO 3 /* after "</$MACRO" */
+#define MAST_TAG    8 /* inside a tag     */
+#define MAST_ERR   99 /* error occured    */
+
+extern BOOL parse_wd( INFILE *inpf, STRPTR expstr ); /* TODO: what a pervert! */
 
 /*
 **-------------------------------------
@@ -145,7 +156,7 @@ BOOL handle_cl_macro( INFILE *inpf, HSCTAG *tag )
 **-------------------------------------
 */
 
-
+#if 0
 /*
 ** rmt_check_for
 **
@@ -168,6 +179,7 @@ BOOL rmt_check_for( INFILE *inpf, STRPTR cmpstr )
 
     return( eq );
 }
+#endif
 
 /*
 ** read_macro_text
@@ -188,6 +200,12 @@ BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
     }
 
     if ( macstr ) {                    /* init sucessfull? */
+#if 0
+        BOOL   quote     = FALSE;    /* TRUE, if between single quotes */
+        BOOL   dquote    = FALSE;    /* TRUE, if between double quotes */
+#endif
+        STRPTR nw        = NULL;     /* word read from input */
+        BYTE   state     = MAST_TEXT;/* current state */
 
         /* skip first LF if any */
         skip_lf( inpf );
@@ -197,8 +215,101 @@ BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
         if ( !rmt_str )
             err_mem( inpf );
 
-        while ( !(ok || fatal_error) ) {
 
+        while ( !(fatal_error || (state==MAST_CMACRO) ) ) {
+
+            /* read next word */
+            if ( state == MAST_SLASH )
+                nw = infget_tagid( inpf  );
+            else if ( state != MAST_TAG )
+                nw = infgetw( inpf  );
+
+            if ( nw ) {
+
+                if ( state == MAST_TAG ) {
+
+                    /*
+                    ** skip inside tags
+                    */
+                    BYTE   tag_state = TGST_TAG; /* state var passe to */
+                                                 /*     eot_reached() */
+
+                    do {
+
+                        if ( eot_reached( inpf, &tag_state ) );
+                            state = MAST_TEXT;
+
+                        if ( !( app_estr( macstr, infgetcws( inpf ) )
+                                && app_estr( macstr, infgetcw( inpf ) )
+                        ) )
+                            err_mem( inpf );
+
+                    } while ( (tag_state!=TGST_END) && !fatal_error );
+
+                } else {
+
+                    switch ( state ) {
+
+                        case MAST_TEXT:
+                            if ( !strcmp( nw, "<" ) )
+                                state = MAST_LT;
+                            break;
+
+                        case MAST_LT:
+                            if ( !strcmp( nw, "/" ) )
+                                state = MAST_SLASH;
+                            else
+                                state = MAST_TAG;
+
+                            break;
+
+                        case MAST_SLASH:
+                            if ( !upstrcmp( nw, HSC_MACRO_STR ) )
+                                state = MAST_CMACRO;
+                            else
+                                state = MAST_TAG;
+                            break;
+
+                    }
+
+
+                    if ( state == MAST_TEXT ) {
+                        /* add current white spaces & word to macstr */
+                        if ( !( app_estr( macstr, infgetcws( inpf ) )
+                                && app_estr( macstr, infgetcw( inpf ) )
+                        ) )
+                            err_mem( inpf );
+
+                    } else if ( state != MAST_TAG ) {
+
+                        /* add current white spaces & word to rmt_str */
+                        if ( !( app_estr( rmt_str, infgetcws( inpf ) )
+                                && app_estr( rmt_str, infgetcw( inpf ) )
+                        ) )
+                            err_mem( inpf );
+
+                    } else {
+
+                        /* append rmt_str to macstr, clear rmt_str,
+                        ** append current word to macstr
+                        */
+                        if ( !( app_estr( macstr, estr2str(rmt_str) )
+                                && set_estr( rmt_str, "" )
+                                && app_estr( macstr, infgetcws( inpf ) )
+                                && app_estr( macstr, infgetcw( inpf ) )
+                        ) )
+                            err_mem( inpf );
+
+                    }
+                }
+            } else {
+
+                err_eof( inpf );
+                state = MAST_ERR;
+
+            }
+
+#if 0
             if ( rmt_check_for( inpf, "<" )
                  &&  rmt_check_for( inpf, "/" )
                  &&  rmt_check_for( inpf, HSC_TAGID )
@@ -213,12 +324,24 @@ BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
 
                 if ( !app_estr( macstr, estr2str(rmt_str) ) )
                     err_mem( inpf );
-                set_estr( rmt_str, "" );
+                if ( !set_estr( rmt_str, "" )
+                    err_mem( inpf );
 
             }
+#endif
+
+        } /* while */
+
+        /* check for legal end state */
+        if ( state == MAST_CMACRO ) {
+
+            ok = parse_wd( inpf, ">" );
+
         }
+
     } else
         err_mem( inpf );
+
 
     /* release rmt_str */
     del_estr( rmt_str );

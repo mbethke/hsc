@@ -22,7 +22,5 @@ extern BOOL parse_eq( INFILE *inpf );
 extern BOOL parse_gt( INFILE *inpf );
 extern char parse_quote( INFILE *inpf );
 
-extern BOOL skip_lf( INFILE *inpf );
-
 #endif /* HSC_TAGARGS_H */
 

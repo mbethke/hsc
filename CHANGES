@@ -2,5 +2,25 @@
                    hsc version history
                    ===================
 
+Version 0.9.1,  9-Oct-1995
+ - featuring "hsc.prefs"! (Gott, lass Hirn vom Himmel fallen)
+ - improved docs (a bit)
+ - removed loads of typos
+ - writing output to stdout if no filename or
+   destination directory passed
+ - writing to output starts after first non-hsc-tag
+   (skip empty lines and white-spaces in config)
+ - replaced <$INSERT TEXT STRING=".."> by
+   <$INSERT TEXT="..">
+ - improved handler for SGML comments (and "!"-tags)
+ - support numeric entities (eg "&#123;")
+ - "quot" entity
+ - whines about quotes found within text
+ - replace "&","<",">" by its entities, if surounded
+   by white-spaces (switch SMARTENT)
+ - replace quotes by "&quot;" (switch SMARTENT)
+ - added "Reading config" status message
+ - still compiled with gcc 2.6.3
+
 Version 0.9,   4-Oct-1995 (first public release)
  - still compiled with gcc 2.6.3

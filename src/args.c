@@ -3,7 +3,7 @@
 **
 ** user argument handling for hsc
 **
-** updated:  3-Oct-1995
+** updated:  7-Oct-1995
 ** created:  1-Jul-1995
 */
 
@@ -32,8 +32,9 @@
 #include "msgid.h"
 
 /*
-** TODO:
-** - AppExt: add ".html" to outfilename
+** TODO: OutExt: add extension (eg ".html") to outfilename
+** TODO: PipeIn: doesn't work cause outfilename is set before
+** TODO: use stdout as default
 */
 
 /*
@@ -47,7 +48,6 @@
 BOOL args_ok( int argc, char *argv[] )
 {
     BOOL   ok; /* return value */
-    char outfnbuf[ MAX_PATH ]; /* buffer to create output filename *//* TODO: use expstr */
     STRPTR destdir_arg = NULL; /* temp vars for set_args() */
     STRPTR projdir_arg = NULL;
     struct arglist *my_args;
@@ -57,9 +57,7 @@ BOOL args_ok( int argc, char *argv[] )
               /* file args */
               "From"            , &inpfilename, "input file",
               "To"              , &outfilename, "output file (default: stdout)",
-#if 0
               "ErrFile=ef/T/K"  , &errfilename, "error file (default: stderr)",
-#endif
               "DestDir/K"       , &destdir_arg, "destination directory",
 #if 0
               "ProjDir/K"       , &projdir_arg, "project main directory (rel.path)",
@@ -75,6 +73,7 @@ BOOL args_ok( int argc, char *argv[] )
               "PipeIn=pi/S"     , &pipe_in    , "read input file from stdin",
 #endif
               "RplcEnt=re/S"    , &rplc_ent   , "replace entities",
+              "SmartEnt=sa/S"   , &smart_ent  , "replace special entities",
 #if 0
               "StripUri=su/S"   , &stripuri   , "strip external URIs",
 #endif
@@ -98,6 +97,9 @@ BOOL args_ok( int argc, char *argv[] )
     /* set & test args */
     if ( ok ) {
 
+        EXPSTR *outfnbuf = init_estr( MAX_PATH );
+                                        /* buffer to create output filename */
+
         ok = set_args( argc, argv, my_args );
         ok &= ( !need_help && ( inpfilename || pipe_in ) );
 
@@ -106,6 +108,10 @@ BOOL args_ok( int argc, char *argv[] )
             /* display help, if error in args or HELP-switch set */
             fprintf_prginfo( stderr );
             fprintf_arghelp( stderr, my_args );
+
+        } else if ( !outfnbuf ) {
+
+            err_mem( NULL );
 
         } else {
 
@@ -130,79 +136,83 @@ BOOL args_ok( int argc, char *argv[] )
             if ( inpfilename )
                 rel_destdir = strclone( get_fpath( inpfilename ) );
 
-            /* copy destination directory and */
-            /* add "/" if neccessary */
-            destdir = strclone( app_fname( destdir_arg, NULL ) );
-            projdir = strclone( app_fname( projdir_arg, NULL ) );
+            /*
+            ** if no destdir or output-filename given,
+            ** outfilename stays NULL. this let open_output
+            ** open stdout as output-file
+            */
+            if ( destdir_arg || outfilename ) {
 
-            if ( destdir ) {
+                /* copy destination directory and */
+                /* add "/" if neccessary */
+                /* compute project directory */
+                projdir = strclone( app_fname( projdir_arg, NULL ) );
+                if ( !projdir )
+                    err_mem( NULL );
 
-                if ( outfilename ) {
+                /* compute destination directory */
+                destdir = strclone( app_fname( destdir_arg, NULL ) );
+                if ( destdir ) {
 
-                    UBYTE lastch = outfilename[ strlen(outfilename)-1 ];
+                    if ( outfilename ) {
 
-                    D( fprintf( stderr, "** lastch(%s): \"%c\"\n",
-                       outfilename, lastch ) );
+                        UBYTE lastch = outfilename[ strlen(outfilename)-1 ];
 
-                    if ( strchr( PATH_SEPARATOR, lastch ) ) {
+                        if ( strchr( PATH_SEPARATOR, lastch ) ) {
 
-                        /* use outfilename as destdir */
-                        if ( destdir_arg )
-                            fnsux = TRUE;
-                        else {
+                            /* use outfilename as destdir */
+                            if ( destdir_arg )
+                                fnsux = TRUE;
+                            else {
 
-                            ufreestr( destdir );
-                            destdir = strclone( outfilename );
-                            outfilename = NULL;
+                                ufreestr( destdir );
+                                destdir = strclone( outfilename );
+                                outfilename = NULL;
 
+                            }
                         }
                     }
-                }
 
-                if ( outfilename ) {
+                    if ( outfilename ) {
 
-                    outfilename = strclone( app_fname( destdir, outfilename ) );
-                    if ( !outfilename )
-                        err_mem( NULL );
-
-
-                } else {
-
-                    if ( !pipe_in ) {
-
-
-
-                        /* only destdir, but no outfilename given */
-                        /* ->outfilename = destdir + inpfilename + ".html" */
-
-                        /* link destdir & input filename */
-                        strcpy( outfnbuf, set_fext( inpfilename, "html" ) );
-
-                        outfilename = strclone( app_fname( destdir, outfnbuf ) );
+                        outfilename = strclone( app_fname( destdir, outfilename ) );
                         if ( !outfilename )
                             err_mem( NULL );
 
-                    } else
-                        fnsux = TRUE;
+
+                    } else {
+
+                        if ( !pipe_in ) {
+
+                            /* only destdir, but no outfilename given */
+                            /* ->outfilename = destdir + inpfilename + ".html" */
+
+                            /* link destdir & input filename */
+                            if ( !set_estr( outfnbuf, set_fext( inpfilename, "html" ) ) )
+                                err_mem( NULL );
+
+                            outfilename = strclone( app_fname( destdir, estr2str( outfnbuf ) ) );
+                            if ( !outfilename )
+                                err_mem( NULL );
+
+                        } else
+                            fnsux = TRUE;
+
+                    }
+
+                } else
+                    err_mem( NULL );
+
+                if ( fnsux ) {
+
+                    /* no way to find out output filename */
+                    message( MSG_NO_OUTFNAME, NULL );
+                    errstr( "Can't evaluate output filename\n" );
+                    outfilename = NULL;
+                    ok = FALSE;
 
                 }
-
-            } else
-                err_mem( NULL );
-
-            if ( !projdir )
-                err_mem( NULL );
-
-            if ( fnsux ) {
-
-                /* no way to find out output filename */
-                message( MSG_NO_OUTFNAME, NULL );
-                errstr( "Can't evaluate output filename\n" );
-                outfilename = NULL;
-                ok = FALSE;
-
             }
-
         }
 
         /* display argument error message */
@@ -218,6 +228,7 @@ BOOL args_ok( int argc, char *argv[] )
 
         /* release mem used by args */
         free_args( my_args );
+        del_estr( outfnbuf );
 
     } else
         /* only for developer */

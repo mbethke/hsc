@@ -1,16 +1,18 @@
 <*
 ** this is the config file for hsc
 **
+** it defines all tags of HTML2.0, but only some entities.
+**
 ** (W) by Tommy-Saftwörx in 1995
 **
-** updated: 15-Sep-1995
+** updated:  9-Oct-1995
 ** created:  8-Sep-1995
 **
 **----------------------------------------------------------------------------
 **
 ** syntax to define a new tag:
 **
-**   <$DEFTAG [flag] [variable]>
+**   <$DEFTAG [flag] [attribute]>
 **
 **   flag:
 **       CLOSE     tag requires closing tag (<UL>)
@@ -20,12 +22,10 @@
 **       ONLYONCE  tag can appear at the most once (<HEAD>)
 **       REQUIRED  tag is required at least once per document (<HEAD>)
 **
-**
-**
-**   variable: <name>:<type>
+**   attribute: <name>:<type>
 **
 **       name:
-**           name of variable, consists of chars
+**           name of attribute, consists of chars
 **                 ('A'..'Z', 'a'..'z', '0'..'9', '_')
 **       type:
 **           bool....boolean switch
@@ -37,11 +37,13 @@
 **
 ** syntax to define a new entity:
 **
-** <$DEFENT name>
+** <$DEFENT NAME=name [RPLC=replace]>
+**
+**   name   : name of entity, eg "Uuml"
+**   replace: special character that should be replaced
+**            if found, eg "Ü"
 **
 ** NOTE: entities &amp; ("&"), &gt; (">") and &lt; ("<") are defined by hsc.
-**
-** NOTE: <$DEFENT> still sux a bit. Don't fool around too much.
 **
 **----------------------------------------------------------------------------
 **
@@ -69,7 +71,7 @@
 <*********************>
 <*** HTML 1.0 tags ***>
 <*********************>
-<$deftag ! IGNOREARGS>
+<$deftag ! IGNOREARGS><* do not edit *>
 <$deftag A CLOSE NOCOPY NONESTING HREF:uri NAME:string REL:string>
 <$deftag ADDRESS CLOSE>
 <$deftag B CLOSE>
@@ -110,14 +112,18 @@
 <$deftag VAR CLOSE>
 <*********************>
 <*** HTML 2.0 tags ***>
-<*** (lazy version) **>
 <*********************>
+<*
+** NOTE: I haven't found a reference that discribes only
+** the HTML 2.0 tags, therefor these $deftags might
+** define some attributes that are proposed for 3.0.
+*>
 <$deftag FORM CLOSE ACTION:string METHODE:enum(get|post) ENCTYPE:string SCRIPT:string>
-<$deftag INPUT IGNOREARGS><* too lazy for that one *>
+<$deftag INPUT TYPE:string NAME:string VALUE:string DISABLED:bool CHECKED:bool SRC:string MD:string MAXLENGTH:string ALIGN:enum(top|middle|bottom|left|right) ACCEPT:string><* clumsy *>
 <$deftag MENU CLOSE COMPACT:bool>
-<$deftag META IGNOREARGS><* "HTTP-EQUIV" sux because of "-" *>
-<$deftag OPTION IGNOREARGS><* lazy.. *>
-<$deftag SELECT IGNOREARGS><* lazy.. *>
+<$deftag META CONTENT:string/r HTTP-EQUIV:string NAME:string>
+<$deftag OPTION SELECTED:bool DISABLED:bool VALUE:string>
+<$deftag SELECT CLOSE NAME:string/r MULTIPLE:bool>
 <$deftag TEXTAREA CLOSE ALIGN:enum(top|bottom|middle|left|right) COLS:string NAME:string ROWS:string>
 <*********************>
 <*** OBSOLETE tags ***>
@@ -131,6 +137,6 @@
 <$deftag BASEFONT JERK SIZE:enum(1|2|3|4|5|6|7)>
 <$deftag BLINK CLOSE JERK>
 <$deftag CENTER CLOSE JERK>
-<$deftag FONT CLOSE JERK SIZE:enum(|1|2|3|4|5|6|7|+1|+2|+3|+4|+5|+6|+7|-1|-2|-3|-4|-5|-6|-7)><* looks rather stupid, eh? *>
+<$deftag FONT CLOSE JERK SIZE:enum(1|2|3|4|5|6|7|+1|+2|+3|+4|+5|+6|+7|-1|-2|-3|-4|-5|-6|-7)><* looks rather stupid, eh? *>
 <$deftag NOBR CLOSE JERK>
 <$deftag WBR JERK>

@@ -5,7 +5,7 @@
 **
 ** (for macro handles, see "tag_macr.c")
 **
-** updated: 17-Sep-1995
+** updated:  8-Oct-1995
 ** created: 23-Jul-1995
 */
 
@@ -26,12 +26,14 @@
 #include "output.h"
 #include "tagargs.h"
 #include "parse.h"
+#include "skip.h"
 
 #include "entity.h"
 #include "tag.h"
 #include "vars.h"
 
 #include "tag_macr.h"
+#include "tag_if.h"
 
 #define TIMEBUF_SIZE 40
 
@@ -95,6 +97,48 @@ BOOL hsc_insert_text( STRPTR text )
     return (ok);
 }
 
+/*
+**-------------------------------------
+** pseudo-handle for closing hsc-tag
+**-------------------------------------
+*/
+
+/*
+** handle_hsc_close
+**
+** handle closing hsc-tag (after </$.. >
+*/
+BOOL handle_hsc_close( INFILE *inpf, HSCTAG *tag )
+{
+    BOOL ok = TRUE;
+    STRPTR nw = infgetw( inpf );
+
+    if ( !nw )
+        err_eof( inpf );
+    else if ( !upstrcmp( nw, HSC_IF_STR ) )
+        handle_hsc_cif( inpf, tag );
+    else if ( !upstrcmp( nw, HSC_MACRO_STR ) ) {
+
+        message( MSG_UNMA_CTAG, inpf );
+        errstr( "Unmatched closing hsc-tag <$" );
+        errstr( nw );
+        errstr( ">" );
+        errlf();
+
+    } else {
+
+        message( MSG_UNKN_TAG, inpf );
+        errstr( "Unknown closing hsc-tag <$" );
+        errstr( nw );
+        errstr( ">" );
+        errlf();
+
+    }
+
+    return ( ok );
+}
+
+
 
 /*
 **-------------------------------------
@@ -111,25 +155,7 @@ BOOL hsc_insert_text( STRPTR text )
 */
 BOOL handle_hsc_comment( INFILE *inpf, HSCTAG *tag )
 {
-    int ch;                            /* current char */
-    int prev_ch = 'x';                 /* prev char read (dummy init) */
-    BOOL abort = FALSE;
-    ULONG nesting = 1;
-
-    do {
-
-        ch = infgetc( inpf );
-        if ( (prev_ch=='<') && (ch=='*') ) nesting++;
-        if ( (prev_ch=='*') && (ch=='>') ) nesting--;
-        abort = ( (nesting==0) || infeof(inpf) );
-        prev_ch = ch;
-
-    } while ( !abort );
-
-    if ( infeof(inpf) && nesting )
-        err_eof(inpf);
-
-    return (TRUE);
+    return ( skip_hsc_comment( inpf, FALSE ) );
 }
 
 /*
@@ -230,7 +256,7 @@ BOOL handle_hsc_time( INFILE *inpf, HSCTAG *tag )
 */
 BOOL handle_hsc_text( INFILE *inpf, HSCTAG *tag )
 {
-    STRPTR text = get_vartext( tag->op_args, "STRING" );
+    STRPTR text = get_vartext( tag->op_args, "TEXT" );
 
     /* include text */
     include_hsc_string( "[insert TEXT]", text, outfile, IH_PARSE_HSC );
@@ -246,8 +272,11 @@ BOOL handle_hsc_text( INFILE *inpf, HSCTAG *tag )
 */
 BOOL handle_hsc_insert( INFILE *inpf, HSCTAG *tag )
 {
-    BOOL insert_text = get_varbool( tag->op_args, HSC_TEXT_STR );
+    BOOL insert_text = FALSE;
     BOOL insert_time = get_varbool( tag->op_args, HSC_TIME_STR );
+
+    if ( get_vartext( tag->op_args, HSC_TEXT_STR ) )
+        insert_text = TRUE;
 
     if ( insert_text )
         handle_hsc_text( inpf, tag );
@@ -406,4 +435,32 @@ BOOL handle_hsc_defent( INFILE *inpf, HSCTAG *tag )
 
     return ( ok );
 }
+
+/*
+**-------------------------------------
+** <$LET> set a new global attribute
+**        or overwrite a defined one
+**-------------------------------------
+*/
+BOOL handle_hsc_let( INFILE *inpf, HSCTAG *tag )
+{
+    STRPTR varname = infgetw( inpf );
+    BOOL   ok = FALSE;
+
+    if ( varname ) {
+
+        ok = parse_ch( inpf, ':' );
+        if ( ok || define_var( varname, vars, inpf, 0 ) )
+            ok = TRUE;
+        if ( ok )
+            ok = parse_gt( inpf );
+    }
+
+    /* if error occured, skip rest of tag */
+    if ( !ok )
+        skip_until_eot( inpf );
+
+    return ( ok );
+}
+
 

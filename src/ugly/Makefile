@@ -58,7 +58,8 @@ comp = sc
 #**   norm...create developer version (mem tracking, debugging code)
 #**   optim..official release (optimised)
 #**
-mode = $(optim)
+#mode = $(optim)
+mode = $(norm)
 
 #
 # test files

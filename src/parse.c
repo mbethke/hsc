@@ -3,7 +3,7 @@
 **
 ** parse file: handle for entities & tags
 **
-** updated:  3-Oct-1995
+** updated:  8-Oct-1995
 ** created:  1-Jul-1995
 **
 */
@@ -32,6 +32,7 @@
 #include "output.h"
 #include "error.h"
 #include "msgid.h"
+#include "skip.h"
 #include "status.h"
 #include "tagargs.h"
 
@@ -42,10 +43,14 @@
 #define NOEXTERN_PARSE_H
 #include "parse.h"
 
-/* TODO: remove this */
-/*#include "tag_a.h" */
-
 INFILE *parse_end_file; /* file for do_list-methods called in parse_end() */
+
+/*
+**---------------------------
+** overloaded methods for
+** INFILE class
+**---------------------------
+*/
 
 /*
 ** hsc_normch
@@ -65,6 +70,46 @@ BOOL hsc_normch( int ch )
     else return FALSE;
 }
 
+/*
+** hsc_whtspc
+**
+** decides if an char is a white-space
+**
+** params: ch...char to test
+** result: TRUE, if ch is a 'normal' ch
+**
+** NOTE: this function is used as is_ws-methode
+**       for the infile class
+*/
+BOOL hsc_whtspc( int ch )
+{
+    if ( strchr(" \t",ch) != NULL )
+        return TRUE;
+    else return FALSE;
+}
+
+/*
+**---------------------------
+** misc. functions
+**---------------------------
+*/
+
+/*
+** message_rplc
+**
+** message that tells user that a special char
+** was replaced by its entity
+*/
+
+void message_rplc( STRPTR what, STRPTR by, INFILE *inpf )
+{
+    message( MSG_RPLC_ENT, inpf );
+    errstr( "replaced " );
+    errqstr( what );
+    errstr( " by " );
+    errqstr( by );
+    errlf();
+}
 
 /*
 **---------------------------
@@ -87,33 +132,50 @@ BOOL parse_tag( INFILE *inpf)
     BOOL   (*hnd)(INFILE *inpf, HSCTAG *tag) = NULL;
     BOOL    open_tag;
     DLLIST *taglist = deftag;
+    BOOL    rplc_lt = FALSE;  /* TRUE, if replace spc. char "<" */
 
-    /* get tag id */
-    nxtwd = infgetw( inpf );                 /* get tag id */
-    if ( !nxtwd )
-        err_eof( inpf );
+    if ( smart_ent && strlen( infgetcws( inpf ) ) ) {
 
-    if ( !fatal_error ) {
+        /*
+        ** check for special char "<"
+        */
+        int ch = infgetc( inpf );
 
-        if ( debug )                             /* debug msg */
-            fprintf( stderr, "** tag <" );
+        if ( hsc_whtspc( ch ) ) {
 
-        /* check for hsctag */
-        if ( !upstrcmp( nxtwd, HSC_TAGID ) ) {
+            rplc_lt = TRUE;
 
-            if ( debug )                         /* debug msg */
-                fprintf( stderr, "%s", nxtwd );
-            nxtwd = infgetw( inpf );             /* get hsc-tag id */
-            taglist = hsctags;
+            /* write "&lt;" and white spaces */
+            message_rplc( "<", "&lt;", inpf );
+            outstr( infgetcws( inpf ) );
+            outstr( "&lt;" );
+            outch( ch );
 
-        }
-
-        if ( !nxtwd )
-            err_eof( inpf );
+        } else
+            inungetc( ch, inpf );
 
     }
 
-    if ( !fatal_error ) {
+    if ( !rplc_lt ) {
+
+        /* get tag id */
+        nxtwd = infget_tagid( inpf );
+
+        if ( !fatal_error ) {
+
+
+            /* check for hsctag; if not, enable output */
+            if ( upstrncmp( nxtwd, HSC_TAGID, strlen(HSC_TAGID) ) )
+                suppress_output = FALSE;         /* enable output */
+            if ( !suppress_output )
+                D( fprintf( stderr, "** tag <" ) );
+
+        }
+    }
+
+    if ( !fatal_error && !rplc_lt ) {
+
+        BOOL write_tag = FALSE; /* flag: write tag text & attrs to output? */
 
         if ( strcmp( "/", nxtwd ) ) {            /* is it a closing tag? */
 
@@ -124,8 +186,8 @@ BOOL parse_tag( INFILE *inpf)
             */
 
             open_tag = TRUE;
-            if ( debug )                         /* debug msg */
-                fprintf( stderr, "%s>\n", nxtwd );
+            if ( !suppress_output )
+                D( fprintf( stderr, "%s>\n", nxtwd ) );
 
             /* search for tag in list */
             nd = find_dlnode( taglist->first, (APTR) nxtwd, cmp_strtag );
@@ -136,7 +198,7 @@ BOOL parse_tag( INFILE *inpf)
                 errtag( nxtwd );
                 errlf();
 
-                skip_until_gt( inpf );
+                skip_until_eot( inpf );
 
             } else {
 
@@ -186,7 +248,7 @@ BOOL parse_tag( INFILE *inpf)
 
                 /* closing tag required? */
                 if ( tag->option & HT_CLOSE ) {
-                    /* TODO: handle out of mem */
+
                     if ( !app_dlnode( cltags, (APTR) tag->name ) )
                         err_mem( inpf );
                 }
@@ -201,11 +263,11 @@ BOOL parse_tag( INFILE *inpf)
             */
 
             /* get tag id */
-            nxtwd = infgetw( inpf );           /* get tag id */
+            nxtwd = infget_tagid( inpf );           /* get tag id */
             open_tag = FALSE;
 
-            if ( debug )                         /* debug msg */
-                fprintf( stderr, "/%s>\n", nxtwd );
+            if ( !suppress_output )
+                D( fprintf( stderr, "/%s>\n", nxtwd ) );
 
             /* search for tag in taglist */
             /* (see if it exists at all) */
@@ -218,7 +280,7 @@ BOOL parse_tag( INFILE *inpf)
                 errctag( nxtwd );
                 errlf();
 
-                skip_until_gt( inpf );
+                skip_until_eot( inpf );
 
             } else {
 
@@ -227,6 +289,9 @@ BOOL parse_tag( INFILE *inpf)
                 /* set closing handle */
                 hnd = tag->c_handle;
 
+                /* remove closing tag from stack */
+                remove_ctag( tag, inpf );
+#if 0
                 /* search for tag on stack of occured tags */
                 nd = find_dlnode( cltags->first, (APTR) nxtwd, cmp_strctg );
                 if ( nd == NULL ) {
@@ -265,7 +330,7 @@ BOOL parse_tag( INFILE *inpf)
 
                 /* remove node for closing tag from cltags-list */
                 del_dlnode( cltags, nd );
-
+#endif
             }
         }
 
@@ -277,14 +342,16 @@ BOOL parse_tag( INFILE *inpf)
         if ( tag && !(tag->option & HT_IGNOREARGS) )
             tci = set_tag_args( tag, inpf, open_tag );
         else if ( !hnd )
-            skip_until_gt( inpf );
+            skip_until_eot( inpf );
 
-        /* call closing handle if available */
+        write_tag = ( !(tag) || !(tag->option & HT_NOCOPY) );
+
+        /* call handle if available */
         if ( hnd && !fatal_error )
             (*hnd)( inpf, tag );
 
         /* write whole tag out */
-        if ( !(tag) || !(tag->option & HT_NOCOPY) )
+        if ( write_tag )
             outstr( infget_log( inpf ) );
 
         /* skip LF if requested */
@@ -309,38 +376,98 @@ BOOL parse_tag( INFILE *inpf)
 BOOL parse_amp( INFILE *inpf )
 {
     if ( !fatal_error ) {
-        char *nxtwd;
-        char nxtch;
-        DLNODE *nd;
 
-        /* get entity id */
-        nxtwd = infgetw( inpf );
+        BOOL   rplc = smart_ent;       /* TRUE, if "&" should be replaced */
+        STRPTR txtout = NULL;          /* text to write to output */
 
-        /* search for entity in list */
-        nd = find_dlnode( defent->first, (APTR) nxtwd, cmp_strent );
-        if ( nd == NULL ) {
+        suppress_output = FALSE;
 
-            message( MSG_UNKN_ENTITY, inpf );
-            errstr( "Unknown entity " );
-            errqstr( nxtwd );
-            errlf();
+        if ( rplc ) {
+
+            /*
+            ** test if char before and
+            ** after ">" is white-space
+            */
+            int ch = infgetc( inpf );
+
+            inungetc( ch, inpf );
+
+            if ( !( hsc_whtspc( ch ) && strlen( infgetcws( inpf ) ) ) )
+                rplc = FALSE;
 
         }
 
-        /* check for closing ';' */
-        nxtch = infgetc( inpf );
-        if ( nxtch != ';' ) {
+        if ( rplc ) {
 
-            message( MSG_EXPT_SEMIK, inpf );
-            errqstr( ";" );
-            errstr( " expected (found: " );
-            errqstr( ch2str( nxtch ) );
-            errstr( ")\n" );
+            /* replace ampersand */
+            message_rplc( "&", "&amp;", inpf );
+            txtout = "&amp;";
+
+        } else {
+
+            /*
+            ** get entity-id, test for unknwon entity
+            */
+            char *nxtwd;
+            char nxtch;
+            DLNODE *nd;
+
+            /* get entity id */
+            nxtwd = infgetw( inpf );
+
+            if ( !strcmp( nxtwd, "#" ) ) {
+
+                /*
+                ** process numeric entity
+                */
+                nxtwd = infgetw( inpf );
+                errno = 0;
+                strtoul( nxtwd, NULL, 0 );
+                if ( errno || strlen( infgetcws( inpf ) ) ) {
+
+                    message( MSG_ILLEGAL_NUM, inpf );
+                    errstr( "Illegal numeric entity " );
+                    errqstr( nxtwd );
+                    errlf();
+
+                }
+
+            } else {
+
+                /*
+                ** process text entity
+                */
+
+                /* search for entity in list */
+                nd = find_dlnode( defent->first, (APTR) nxtwd, cmp_strent );
+                if ( nd == NULL ) {
+
+                    message( MSG_UNKN_ENTITY, inpf );
+                    errstr( "Unknown entity " );
+                    errqstr( nxtwd );
+                    errlf();
+
+                }
+            }
+
+            /* check for closing ';' */
+            nxtch = infgetc( inpf );
+            if ( nxtch != ';' ) {
+
+                message( MSG_EXPT_SEMIK, inpf );
+                errqstr( ";" );
+                errstr( " expected (found: " );
+                errqstr( ch2str( nxtch ) );
+                errstr( ")\n" );
+            }
+
+            /* set output text */
+            txtout = infget_log( inpf );
 
         }
 
         /* output whole entity */
-        outstr( infget_log( inpf ) );
+        outstr( txtout );
     }
 
     return (BOOL)( !fatal_error );
@@ -353,42 +480,91 @@ BOOL parse_text( INFILE *inpf )
 {
     STRPTR  nw = infgetcw( inpf );
 
-    /* output whtspc */
-    outstr( infgetcws( inpf ) );                 
+    suppress_output = FALSE;
 
-    if ( !strcmp(nw, ">") ) {          /* unmatched ">"? */
+    /*
+    ** check unmatched ">"
+    */
+    if ( !strcmp(nw, ">") ) {          
 
-        message( MSG_UNMA_GT, inpf );            /* Y->error message */
-        errstr( "unmatched \">\"\n" );
+        BOOL rplc = smart_ent; /* TRUE, if ">" should be replaced */
 
+        if ( rplc ) {
+
+            /*
+            ** test if char before and
+            ** after ">" is white-space
+            */
+            int ch = infgetc( inpf );
+
+            inungetc( ch, inpf );
+
+            if ( !( hsc_whtspc( ch ) && strlen( infgetcws( inpf ) ) ) )
+                rplc = FALSE;
+
+        }
+
+        if ( rplc ) {
+
+            /* replace gt */
+            message_rplc( nw, "&gt;", inpf );
+            nw = "&gt;";
+
+        } else {
+
+            message( MSG_UNMA_GT, inpf );
+            errstr( "unmatched \">\"\n" );
+
+        }
+
+    /*
+    ** check for quote
+    */
+    } else if ( !strcmp( nw, "\"" ) ) {
+
+        if ( smart_ent ) {
+
+            /* replace quote */
+            message_rplc( nw, "&quot;", inpf );
+            nw = "&quot;";
+
+        } else {
+
+            message( MSG_UNMA_QUOTE, inpf );
+            errstr( "quote found inside text" );
+            errlf();
+
+        }
+
+
+    /*
+    ** check for entities to replace
+    */
     } else if ( rplc_ent ) {
 
         DLNODE *nd = find_dlnode( defent->first, (APTR) nw, cmp_rplcent );
 
         if ( nd ) {
 
-            STRARR  entbuf[ 30 ]; /* TODO: replace with expstr */
+            BOOL ok = TRUE;
 
             /* copy replaced entity to buffer */
-            strcpy( entbuf, "&" );
-            strncat( entbuf, ((HSCENT*)nd->data)->name, 30 );
-            strncat( entbuf, ";", 30 );
+            ok &= set_estr( tmpstr, "&" );
+            ok &= app_estr( tmpstr, ((HSCENT*)nd->data)->name );
+            ok &= app_estr( tmpstr, ";" );
 
-            /* message */
-            message( MSG_RPLC_ENT, inpf );
-            errstr( "replaced " );
-            errqstr( nw );
-            errstr( " by " );
-            errqstr( entbuf );
-            errlf();
+            if ( ok ) {
 
-            nw = entbuf;
+                /* replace-message */
+                message_rplc( nw, estr2str( tmpstr ), inpf );
+                nw = estr2str( tmpstr );
 
+            }
         }
     }
 
-
-    outstr( nw );                /* output word */
+    if ( nw )
+        outstr( nw );                  /* output word */
 
     return (BOOL)( !fatal_error );
 }
@@ -404,18 +580,25 @@ BOOL parse_text( INFILE *inpf )
 */
 BOOL parse_hsc( INFILE *inpf )
 {
-    /* clear and enable log */
-    if ( !inflog_clear( inpf ) )
-        err_mem( inpf );
-    else
-        inflog_enable( inpf );
-
     if ( !fatal_error ) {
         char *nxtwd;
 
         nxtwd = infgetw( inpf );
 
         if ( nxtwd ) {
+
+            /* write white-spaces */
+            outstr( infgetcws( inpf ) );
+
+            /*
+            ** clear and enable log,
+            ** append current word WITHOUT white-spaces to log
+            */
+            if ( !inflog_clear( inpf ) || !inflog_app( inpf, nxtwd ) )
+                err_mem( inpf );
+            else
+                inflog_enable( inpf );
+
 
             if ( !strcmp(nxtwd, "<") )                     /* parse tag */
                 parse_tag( inpf );
@@ -528,6 +711,7 @@ BOOL include_hsc( STRPTR filename, INFILE *inpf, FILE *outf, ULONG optn )
     if ( inpf ) {                                /* file opened? */
 
         inpf->is_nc = hsc_normch;                /*    set is_nc-methode */
+        inpf->is_ws = hsc_whtspc;                /*    set is_ws-methode */
 
         while ( !infeof(inpf) && ok ) {          /*    parse file */
 

@@ -3,7 +3,7 @@
 **
 ** hsc-tag funcs for hsc
 **
-** updated:  3-Oct-1995
+** updated:  8-Oct-1995
 ** created:  8-Sep-1995
 **
 */
@@ -189,6 +189,56 @@ int cmp_strctg( APTR cmpstr, APTR tagstr )
 
 
 /*
+**---------------------------
+** remove closing tag
+**---------------------------
+** params: tagname..tag to remove
+**         check....show messages
+*/
+VOID remove_ctag( HSCTAG *tag, INFILE *inpf )
+{
+    /* search for tag on stack of occured tags */
+    DLNODE *nd = find_dlnode( cltags->first, (APTR) tag->name, cmp_strctg );
+    if ( nd == NULL ) {
+
+        /* closing tag not found on stack */
+        /* ->unmatched closing tag without previous opening tag */
+        message( MSG_UNMA_CTAG, inpf );
+        errstr( "Unmatched closing tag " );
+        errctag( tag->name );
+        errlf();
+
+    } else {
+
+        /* closing tag found on stack */
+        STRPTR foundnm = (STRPTR) nd->data;
+        STRPTR lastnm  = (STRPTR) cltags->last->data;
+
+        /* check if name of closing tag is -not- equal
+        /* to the name of the last tag last on stack */
+        /* ->illegal tag nesting */
+        if ( upstrcmp(lastnm, foundnm)
+             && !(tag->option | HT_MACRO)
+             && !(is_hsc_tag( tag )) )
+        {
+
+            message( MSG_CTAG_NESTING, inpf );
+            errstr( "Illegal closing tag nesting (expected " );
+            errctag( lastnm );
+            errstr( ", found " );
+            errctag( tag->name );
+            errch( ')' );
+            errlf();
+
+        }
+
+        /* remove node for closing tag from cltags-list */
+        del_dlnode( cltags, nd );
+
+    }
+}
+
+/*
 **-------------------------------------
 ** append tag functions
 **-------------------------------------
@@ -223,18 +273,73 @@ HSCTAG *app_tag( DLLIST *taglist, STRPTR tagid )
 
 /*
 **-------------------------------------
+** read a tag-name from input file
+**-------------------------------------
+*/
+
+/*
+** hsc_normch_tagid
+**
+** decides if an char is an 'normal' char for tagnames
+**
+** params: ch...char to test
+** result: TRUE, if ch is a 'normal' ch
+**
+** NOTE: this function is used as is_nc-methode
+**       for the infile class
+*/
+BOOL hsc_normch_tagid( int ch )
+{
+    extern BOOL hsc_normch( int ch ); /* what a pervert! -> input.c */
+    BOOL found = hsc_normch(ch);
+
+    if ( !found )
+        if ( strchr( HSC_TAGID, ch) )
+            found = TRUE;
+
+    return( found );
+}
+
+/*
+** infget_tagid
+**
+** read next word from input, but with a
+** different is_nc-methode that also handles
+** the id for hsc-tags (usually "$")
+*/
+STRPTR infget_tagid( INFILE *inpf )
+{
+    STRPTR tagid = NULL;
+
+    BOOL  (*old_is_nc)( int ch );
+
+    old_is_nc = inpf->is_nc;           /* remember old is_nc-methode */
+    inpf->is_nc = hsc_normch_tagid;
+    tagid = infgetw( inpf );           /* read tagid */
+    if ( !tagid )
+        err_eof( inpf );
+    inpf->is_nc = old_is_nc;           /* remember old is_nc-methode */
+
+    return( tagid );
+}
+
+/*
+**-------------------------------------
 ** define a new tag from input file
 **-------------------------------------
 */
 
 /*
-** get_tag_name
+** def_tag_name
 **
 */
 HSCTAG *def_tag_name( DLLIST *taglist, INFILE *inpf, BOOL *open_tag )
 {
-    STRPTR  nw = infgetw( inpf );
+    STRPTR  nw  = NULL;
     HSCTAG *tag = NULL;
+
+    /* get tag name */
+    nw = infget_tagid( inpf );
 
     /* create new tag */
     if ( nw ) {
@@ -243,7 +348,7 @@ HSCTAG *def_tag_name( DLLIST *taglist, INFILE *inpf, BOOL *open_tag )
         if ( !*open_tag ) {
 
             /* add closing tag */
-            nw = infgetw( inpf );
+            nw = infget_tagid( inpf );
             if ( nw ) {
 
                 tag = find_strtag( taglist, nw );

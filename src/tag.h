@@ -30,11 +30,14 @@
 #define HSC_TAGID        "$"
 #define HSC_COMMENT_STR  "*"
 #define HSC_ONLYCOPY_STR "|"
-#define HSC_DEFENT_STR   "DEFENT"
-#define HSC_DEFTAG_STR   "DEFTAG"
-#define HSC_MACRO_STR    "MACRO"
-#define HSC_INCLUDE_STR  "INCLUDE"
-#define HSC_INSERT_STR   "INSERT"
+#define HSC_DEFENT_STR   HSC_TAGID "DEFENT"
+#define HSC_DEFTAG_STR   HSC_TAGID "DEFTAG"
+#define HSC_ELSE_STR     HSC_TAGID "ELSE"
+#define HSC_IF_STR       HSC_TAGID "IF"
+#define HSC_INCLUDE_STR  HSC_TAGID "INCLUDE"
+#define HSC_INSERT_STR   HSC_TAGID "INSERT"
+#define HSC_LET_STR      HSC_TAGID "LET"
+#define HSC_MACRO_STR    HSC_TAGID "MACRO"
 
 #define HSC_TEXT_STR     "TEXT"
 #define HSC_TIME_STR     "TIME"
@@ -103,7 +106,8 @@ typedef struct hsctag {
 #define TO_VERS_STR        "VERS"
 #define TO_VERS_SHT        "V"
 
-
+/* decides if a tag is a hsc-tag */
+#define is_hsc_tag( tag ) (!upstrncmp((tag->name),HSC_TAGID,strlen(HSC_TAGID)))
 
 /*
 **
@@ -132,6 +136,7 @@ extern void del_tag( APTR data );
 extern int     cmp_strtag( APTR cmpstr, APTR tagdata );
 extern HSCTAG *find_strtag( DLLIST *taglist, STRPTR name );
 extern int     cmp_strctg( APTR cmpstr, APTR tagstr );
+extern VOID    remove_ctag( HSCTAG *tag, INFILE *inpf );
 
 extern HSCTAG *app_tag( DLLIST *taglist, STRPTR tagid );
 
@@ -140,6 +145,7 @@ extern BOOL def_tag_args( DLLIST *taglist, HSCTAG *tag, INFILE *inpf, BOOL *open
 
 extern ULONG set_tag_args( HSCTAG *tag, INFILE *inpf, BOOL open_tag );
 
+extern STRPTR infget_tagid( INFILE *inpf );
 
 #endif /* NOEXTERN_HSC_TAG_H */
 

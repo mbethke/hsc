@@ -7,21 +7,21 @@
 
 /*
 ** TODO:
-** - BUG: write whspc twice after (opening?) tag
-** - support " > ", " < " and " & "
-** - <$defent>
+** - skip_in_tag();
+** - input.c, skip.c
 ** - options for attributes
+** - check for comments inside $macro and $if
+** - execute external prog <$EXEC "..">
+** - set error messages <$ERROR "..">
+** - set configurable error string
+** - handler for break signal
 ** - HT_NOBP. HT_NOAP (no <P> before/after tag allowd)
 ** - HT_SMART_CLOSE for <P> and <LI>
 ** - HT_STRIP_EXTERNAL to strip whole tag
 **   if it references to an external URI
-** - set error messages
-** - set configurable error string
-** - ignore warnings
-** - also skip arg after unknown attribute
-** - handler for break signal
 **
-** - <$IF>
+** - <$GOTO> and <$LABEL>
+** - <$WHILE> (??)
 ** - check "NAME" with <A>
 ** - hsc.refs
 */
@@ -61,12 +61,12 @@
 int main( int argc, char *argv[] )
 {
 #ifdef AMIGA
-    static STRPTR version_string = "$VER: 0.9.0 hsc (4.10.1995)";
+    static STRPTR version_string = "$VER:hsc 0.9.1 (9.10.1995)";
 #endif
     BOOL ok = FALSE;
 
     /* set program information */
-    set_prginfo( "hsc", "Tommy-Saftwörx", 0, 9, 0,
+    set_prginfo( "hsc", "Tommy-Saftwörx", 0, 9, 1,
         "HTML Sucks Completely", "This is FreeWare." );
 
 #ifdef UMEM_TRACKING

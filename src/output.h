@@ -15,7 +15,5 @@
 extern BOOL open_output( void );
 extern int  outch( char ch );
 extern int  outstr( CONSTRPTR str );
-extern BOOL copy_until_gt( INFILE *inpf );
-extern BOOL skip_until_gt( INFILE *inpf );
 
 #endif /* HSC_OUTPUT */

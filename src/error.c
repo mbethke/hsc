@@ -3,12 +3,11 @@
 **
 ** error vars & funs for hsc
 **
-** updated: 17-Sep-1995
+** updated:  6-Oct-1995
 ** created:  9-Jul-1995
 **
-** TODO:
-** - programable desription string to format error messages
-** - redirect error output to error-file
+** TODO: programable desription string to format error messages
+** TODO: redirect error output to error-file
 **
 ** NOTE: see "msgid.h" for message-id's and
 **       how a message-id is build.
@@ -92,7 +91,31 @@ int errqstr( CONSTRPTR str )
     int ctr = 2;
 
     errch( '\"' );
-    ctr += errstr( str );
+
+    while ( str[0] ) {
+
+        switch ( str[0]) {
+
+            case '\n':
+                errstr( "\n" );
+                break;
+            case '\"':
+                errstr( "\\\"" );
+                break;
+            default:
+                if ( str[0] < ' ' ) {
+
+                    errch ( '\\' );
+                    errstr( long2str( (LONG) str[0] ) );
+
+                } else
+                    errch( str[0] );
+
+        }
+        str++; /* process next char */
+        ctr++;
+    }
+
     errch( '\"' );
 
     return (ctr);
@@ -236,7 +259,7 @@ int msg_prt( ULONG id, STRPTR s, INFILE *f )
             ctr += errstr( " (" );
             ctr += errlong( infget_y(f) );
             ctr += errstr( "," );
-            ctr += errlong( infget_x(f) );
+            ctr += errlong( infget_x(f)-1 ); /* TODO: why "-1"? */
             ctr += errstr( ") " );
 
         }

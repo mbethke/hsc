@@ -103,24 +103,6 @@ BOOL parse_gt( INFILE *inpf )
     return ( parse_ch(inpf,'>') );
 }
 
-/*
-** skip_lf
-**
-** ignore '\n'
-**
-** params: inpf...input file to read char from
-** result: -1 if successful, 0 if wrong char found
-*/
-BOOL skip_lf( INFILE *inpf )
-{
-    int nc = infgetc( inpf );
-
-    if ( nc != '\n' )
-        inungetc( nc, inpf );
-
-    return ( (BOOL) (nc==EOF) );
-}
-
 
 /*
 **-------------------------------------
@@ -158,6 +140,7 @@ STRPTR parse_tagoptn( INFILE *inpf )
     return (optn);
 }
 
+#if 0
 /*
 ** parse_quote
 **
@@ -167,9 +150,9 @@ STRPTR parse_tagoptn( INFILE *inpf )
 ** result: quote char ('\'' or '\"') or EOF
 **
 */
-char parse_quote( INFILE *inpf )
+int parse_quote( INFILE *inpf )
 {
-    char   quote = EOF;
+    int    quote = EOF;
     STRPTR nxtwd = infgetw( inpf );
 
     if ( nxtwd ) {
@@ -189,6 +172,7 @@ char parse_quote( INFILE *inpf )
     return ( quote );
 
 }
+#endif
 
 /*
 ** parse_strarg

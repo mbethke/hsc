@@ -3,7 +3,7 @@
 **
 ** config handling for hsc; reads "hscdef.cfg"
 **
-** updated: 17-Sep-1995
+** updated:  8-Oct-1995
 ** created: 12-Jul-1995
 */
 
@@ -144,6 +144,11 @@ BOOL read_config_file( void )
     /* status message */
     if ( cfgf ) {
 
+        char msg[ 2*MAX_PATHLEN ];
+        /* status message */
+        sprintf( msg, "Reading prefs from \"%s\"", cfgfn );
+        status_msg( msg );
+
         ok = include_hsc( "[config]", cfgf, outfile, IH_PARSE_HSC );
 
     } else {
@@ -196,13 +201,22 @@ BOOL read_hsctags( void )
 
     /* string to define hsc tags */
     STRPTR hsc_prefs[] = {
-        "DEFENT  NOCOPY SKIPLF NAME:string/r RPLC:string>",
-        "DEFTAG  NOCOPY SKIPLF IGNOREARGS>",
-        "INSERT  NOCOPY SKIPLF TEXT:bool STRING:string TIME:bool FORMAT:string>",
-        "INCLUDE NOCOPY SKIPLF FILE:string/r>",
-        "MACRO   NOCOPY SKIPLF IGNOREARGS>",
+        HSC_DEFENT_STR  " NOCOPY SKIPLF NAME:string/r RPLC:string>",
+        HSC_DEFTAG_STR  " NOCOPY SKIPLF IGNOREARGS>",
+        HSC_ELSE_STR    " NOCOPY SKIPLF>",
+        HSC_IF_STR      " NOCOPY SKIPLF IGNOREARGS CLOSE>",
+        HSC_INSERT_STR  " NOCOPY TEXT:string PRE:bool TIME:bool FORMAT:string>",
+        HSC_INCLUDE_STR " NOCOPY SKIPLF FILE:string/r>",
+        HSC_LET_STR     " NOCOPY SKIPLF IGNOREARGS>",
+        HSC_MACRO_STR   " NOCOPY SKIPLF IGNOREARGS>",
         NULL
     };
+
+    /*
+    ** NOTE: the tags <|> and <*> are NOT added with
+    ** the other hsc-tags above simpy because they
+    ** do not require a leading "$"
+    */
 
     /* create coment tag */
     tag = app_tag( deftag, HSC_COMMENT_STR );
@@ -224,12 +238,12 @@ BOOL read_hsctags( void )
     while ( !fatal_error && hsc_prefs[i] ) {
 
         INFILE *inpf =
-            infopen_str( "[init]", hsc_prefs[i], 32 );
+            infopen_str( "[init]", hsc_prefs[i], 60 );
 
         if ( inpf ) {
 
-            tag = def_tag_name( hsctags, inpf, &open_tag );
-            ok = ( tag && def_tag_args( hsctags, tag, inpf, &open_tag ) );
+            tag = def_tag_name( deftag, inpf, &open_tag );
+            ok = ( tag && def_tag_args( deftag, tag, inpf, &open_tag ) );
             infclose( inpf );
 
         } else
@@ -242,13 +256,16 @@ BOOL read_hsctags( void )
     /* add tag handles for hsc-tags */
     if ( ok ) {
 
-        add_tag_handle( hsctags, HSC_COMMENT_STR , handle_hsc_comment , NULL );
-        add_tag_handle( hsctags, HSC_ONLYCOPY_STR, handle_hsc_onlycopy, NULL );
-        add_tag_handle( hsctags, HSC_DEFENT_STR  , handle_hsc_defent  , NULL );
-        add_tag_handle( hsctags, HSC_DEFTAG_STR  , handle_hsc_deftag  , NULL );
-        add_tag_handle( hsctags, HSC_INCLUDE_STR , handle_hsc_include , NULL );
-        add_tag_handle( hsctags, HSC_INSERT_STR  , handle_hsc_insert  , NULL );
-        add_tag_handle( hsctags, HSC_MACRO_STR   , handle_hsc_macro   , NULL );
+        add_tag_handle( deftag, HSC_COMMENT_STR , handle_hsc_comment , NULL );
+        add_tag_handle( deftag, HSC_DEFENT_STR  , handle_hsc_defent  , NULL );
+        add_tag_handle( deftag, HSC_DEFTAG_STR  , handle_hsc_deftag  , NULL );
+        add_tag_handle( deftag, HSC_ELSE_STR    , handle_hsc_else    , NULL );
+        add_tag_handle( deftag, HSC_IF_STR      , handle_hsc_if      , handle_hsc_cif );
+        add_tag_handle( deftag, HSC_INCLUDE_STR , handle_hsc_include , NULL );
+        add_tag_handle( deftag, HSC_INSERT_STR  , handle_hsc_insert  , NULL );
+        add_tag_handle( deftag, HSC_LET_STR     , handle_hsc_let     , NULL );
+        add_tag_handle( deftag, HSC_MACRO_STR   , handle_hsc_macro   , NULL );
+        add_tag_handle( deftag, HSC_ONLYCOPY_STR, handle_hsc_onlycopy, NULL );
 
     }
 
@@ -279,6 +296,7 @@ BOOL config_tag_handles( void )
     ok &= add_ent( "amp", NULL, 0 );      /* & */
     ok &= add_ent( "lt", NULL, 0 );       /* < */
     ok &= add_ent( "gt", NULL, 0 );       /* > */
+    ok &= add_ent( "quot", NULL, 0 );     /* q */
 
     return (ok);
 }
@@ -306,14 +324,17 @@ BOOL config_ok( void )
     defent  = init_dllist( del_entity);
     deftag  = init_dllist( del_tag );
     cltags  = init_dllist( NULL );
-    vars    = init_dllist( del_var );
     hsctags = init_dllist( del_tag );
+    vars    = init_dllist( del_var );
 
     /* init vararg (defined in "vars.c") */
-    vararg = init_estr( ES_STEP_VARARG );
-    tmpstr = init_estr( 0 );
+    IF_stack = init_estr( 0 );
+    vararg   = init_estr( ES_STEP_VARARG );
+    tmpstr   = init_estr( 0 );
 
-    if ( defent && deftag && cltags && hsctags && vararg && tmpstr ) {
+    if ( cltags && defent && deftag && hsctags && IF_stack
+         && tmpstr && vararg )
+    {
 
         ok = read_hsctags();
         if ( ok ) ok = read_config_file();
