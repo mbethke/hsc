@@ -22,7 +22,7 @@
  *
  * misc. filename functions
  *
- * updated:  6-Jan-1997
+ * updated: 23-Mar-2003
  * created: 14-Oct-1996
  *
  */
@@ -34,6 +34,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <time.h>
+
+#ifdef AMIGA
+/* SAS/C's stat handling is weird, so use dos.library :-( */
+#include <dos/dos.h>
+#include <proto/dos.h>
+#endif
 
 #include "utypes.h"
 #include "umemory.h"
@@ -64,14 +71,31 @@ BOOL fexists(STRPTR filename)
 /*
  * fgetentrytype
  *
- * check whether a filesystem object is a file of a directory
+ * check whether a filesystem object is a file or a directory
  *
  * result: see fentrytype_t definition
  *
  */
 fentrytype_t fgetentrytype(const STRPTR name) {
-   struct stat sbuf;
    fentrytype_t type = FE_NONE;
+#ifdef AMIGA
+   struct FileInfoBlock *fib;
+   BPTR lock = Lock(name,ACCESS_READ);
+      
+   if(lock) {
+      if((fib = AllocDosObjectTagList(DOS_FIB,NULL))) {
+         if(Examine(lock,fib)) {
+            /* this will barf on softlinks, but on AmigaOS these suck anyway */
+            type = (fib->fib_DirEntryType > 0) ? FE_DIR : FE_FILE;
+         }
+         FreeDosObject(DOS_FIB,fib);
+      }
+      UnLock(lock);
+   }
+#else
+   /* Does this work on RiscOS? Does anyone use HSC on RiscOS? Does anyone use
+    * RiscOS...? */
+   struct stat sbuf;
    
    if(-1 != stat(name,&sbuf)) {
       if(S_ISDIR(sbuf.st_mode))
@@ -79,7 +103,49 @@ fentrytype_t fgetentrytype(const STRPTR name) {
       else if(S_ISREG(sbuf.st_mode) || S_ISLNK(sbuf.st_mode))
          type = FE_FILE;
    }
+#endif
    return type; 
+}
+
+/*
+ * fgetmtime
+ *
+ * Get the date/time of last modification from a file and return it as a
+ * pointer to an internal struct tm or NULL on failure.
+ *
+ */
+const struct tm *fgetmtime(const STRPTR name) {
+   struct tm *time = NULL;
+#ifdef AMIGA
+   struct FileInfoBlock *fib;
+   BPTR lock = Lock(name,ACCESS_READ);
+      
+   if(lock) {
+      if((fib = AllocDosObjectTagList(DOS_FIB,NULL))) {
+         if(Examine(lock,fib)) {
+            time_t tt;
+            /* convert struct DateStamp to time_t format */
+            /* TODO: test this */
+            tt = 1149112800 +
+               fib->fib_Date.ds_Days * 86400 +
+               fib->fib_Date.ds_Minute * 60 +
+               fib->fib_Date.ds_Tick / 50;
+            time = localtime(&tt);
+         }
+         FreeDosObject(DOS_FIB,fib);
+      }
+      UnLock(lock);
+   }
+#else
+   /* Does this work on RiscOS? Does anyone use HSC on RiscOS? Does anyone use
+    * RiscOS...? */
+   struct stat sbuf;
+   
+   if(-1 != stat(name,&sbuf)) {
+      time = localtime(&sbuf.st_mtime);
+   }
+#endif
+   return time; 
 }
 
 /*
