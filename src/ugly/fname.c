@@ -247,25 +247,21 @@ BOOL set_fnameIdx(EXPSTR * dest, int idx)
  *         fn....filename to append
  *
  * NOTE: a PATHSEPARATOR[0] is append to dir, if none exists
- * NOTE: dir and fn MUST NOT be part of dest,
- *       when invoking this funtion
  */
 BOOL link_fname(EXPSTR * dest, STRPTR dir, STRPTR fn)
 {
     BOOL anydir;                /* TRUE, if any dir passed as arg */
     BOOL ok = TRUE;
 
-    /* is a dir passed? */
-    anydir = (dir != NULL);
-    if (anydir)
-        anydir = (strlen(dir) != 0);
+    /* was a dir passed? */
+    anydir = ((dir != NULL) && (strlen(dir) != 0));
 
     if (anydir)
     {
         /* clone dir, if any
          *
          * NOTE: it's neccesarry to work with a copy do `dir',
-         * because if `dir' is part or `dest', this could lead
+         * because if `dir' is part of `dest', this could lead
          * to a mungwall hit */
         STRPTR dir_clone = strclone(dir);       /* clone of `dir' */
 
