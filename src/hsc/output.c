@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2004 Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +23,6 @@
  *
  * output functions for hsc
  *
- * updated: 20-Mar-1996
- * created:  1-Jul-1995
  */
 
 #include <errno.h>
@@ -125,7 +124,7 @@ BOOL write_output(HSCPRC * hp)
 
             DLNODE *nd = dll_first(outlist);
 
-            status_msg("writing output..");
+            status_msg("writing output...");
             errno = 0;
 
             /* write whole list of output-strings */
@@ -140,14 +139,11 @@ BOOL write_output(HSCPRC * hp)
 
             /* handle write-error, display message */
             if (errno) {
-
                 strncpy(buf, "error writing `", MAX_ERRORLEN);
-                strncat(buf, estr2str(outfilename),
-                        MAX_ERRORLEN - strlen(buf));
+                strncat(buf, outfilenm, MAX_ERRORLEN - strlen(buf));
                 strncat(buf, "': ", MAX_ERRORLEN - strlen(buf));
                 strncat(buf, strerror(errno), MAX_ERRORLEN - strlen(buf));
                 status_error(buf);
-
             } else
                 written = TRUE;
 
@@ -204,3 +200,5 @@ VOID append_output(STRPTR text)
     app_estr(outstr, text);
 }
 
+/* $Id$ */
+/* vi: set ts=4: */
