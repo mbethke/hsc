@@ -26,6 +26,7 @@
 
 #ifndef HSCPRJ_PROJECT_H
 #define HSCPRJ_PROJECT_H
+#include "hscprj/document.h"
 
 /*
  * project-structure
