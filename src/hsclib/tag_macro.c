@@ -182,8 +182,9 @@ static BOOL handle_cl_macro(HSCPRC * hp, HSCTAG * tag)
  */
 static BOOL handle_content_macro(HSCPRC * hp, HSCTAG * tag)
 {
-    EXPSTR *macro_content = init_estr(1024);    /* contains macro contents */
-    HSCATTR *macro_content_attr = find_varname(hp->defattr, CONTENT_ATTR);      /* attribute that contains contents, too */
+    EXPSTR *macro_content = init_estr(2048);    /* contains macro contents */
+    /* attribute that contains contents, too */
+    HSCATTR *macro_content_attr = find_varname(hp->defattr, CONTENT_ATTR);
     HSCTAG *end_macro = NULL;
     STRPTR old_content = NULL;  /* to store old value of content attr */
 
@@ -193,9 +194,7 @@ static BOOL handle_content_macro(HSCPRC * hp, HSCTAG * tag)
     DMC(fprintf(stderr, DHL "--BEGIN content macro <%s>\n", tag->name));
 
     if (!macro_content_attr)
-    {
         panic("no content attribute");
-    }
 
     /* skip macro content until corresponding end macro is found; store
      * content in macro_content, but without the tag call for the end macro */
@@ -206,9 +205,7 @@ static BOOL handle_content_macro(HSCPRC * hp, HSCTAG * tag)
     {
         STRPTR old = get_vartext(macro_content_attr);
         if (old)
-        {
             old_content = strclone(old);
-        }
     }
 
     /* set content attribute with current macro content */
@@ -259,35 +256,29 @@ static BOOL handle_content_macro(HSCPRC * hp, HSCTAG * tag)
  * handle content inside a content macro
  * (insert text of attribute HSC.CONTENT)
  */
-static VOID hsc_msg_no_content(HSCPRC *hp)
-{
+static VOID hsc_msg_no_content(HSCPRC *hp) {
     hsc_message(hp, MSG_NO_CONTENT,
                 "no content within current context");
 }
 
-BOOL handle_hsc_content(HSCPRC * hp, HSCTAG * tag)
-{
-    HSCATTR *content_attr = find_varname(hp->defattr, CONTENT_ATTR);    /* attribute that contains content */
+BOOL handle_hsc_content(HSCPRC * hp, HSCTAG * tag) {
+    HSCATTR *content_attr = find_varname(hp->defattr, CONTENT_ATTR);
     HSCTAG *macro = find_end_container_macro(hp);
 
     /* use current fileposition as base for including content */
     INFILEPOS *fpos = new_infilepos(hp->inpf);
 
-    if (!macro)
-    {
+    if (!macro) {
         DMC(fprintf(stderr, DHL "  no container macro on stack\n"));
         hsc_msg_no_content(hp);
-    }
-    else if (content_attr)
-    {
+    } else if (content_attr) {
         /* position where content text started */
         INFILEPOS *start_content_fpos = macro->end_fpos;
 
         /* first node on content stack contains current content text */
         DLNODE *first_content_text_node = dll_first(hp->content_stack);
 
-        if (first_content_text_node)
-        {
+        if (first_content_text_node) {
             /* pull first entry from content stack */
             STRPTR content = (STRPTR) detach_dlnode(hp->content_stack,
                                                     first_content_text_node);
@@ -302,9 +293,11 @@ BOOL handle_hsc_content(HSCPRC * hp, HSCTAG * tag)
 
 #ifndef EXPERIMENTAL_CONTAINER
             /* move local attributes from global list to buffer list */
-            copy_local_varlist(old_attribs, hp->defattr, scope_id);
-            remove_local_varlist(hp->defattr, scope_id);
-
+            move_local_varlist(old_attribs, hp->defattr, scope_id);
+/*
+            DDA(prt_varlist(hp->defattr, "attributes after move_local_varlist"));
+            DDA(prt_varlist(old_attribs, "moved attributes"));
+*/
             /* switch back to above scope */
             unget_mci(hp);
 #endif
@@ -321,8 +314,11 @@ BOOL handle_hsc_content(HSCPRC * hp, HSCTAG * tag)
 
 #ifndef EXPERIMENTAL_CONTAINER
             /* restore local attribs and scope from before */
-            copy_local_varlist(hp->defattr, old_attribs, scope_id);
+            move_local_varlist(hp->defattr, old_attribs, scope_id);
             get_mci(hp);
+/*
+            DDA(prt_varlist(hp->defattr, "attributes after move_local_varlist/restore"));
+*/
 #endif
             /* restore content attribute */
             set_vartext(content_attr, old_content);
@@ -330,15 +326,11 @@ BOOL handle_hsc_content(HSCPRC * hp, HSCTAG * tag)
             /* free resources */
             del_dllist(old_attribs);
             ufreestr(old_content);
-        }
-        else
-        {
+        } else {
             DMC(fprintf(stderr, DHL "  no content\n"));
             hsc_msg_no_content(hp);
         }
-    }
-    else
-    {
+    } else {
         panic("no content attribute");
     }
 
@@ -435,8 +427,7 @@ BOOL handle_hsc_macro(HSCPRC * hp, HSCTAG * tag)
 
     /* get name and argumets */
     tag = def_tag_name(hp, &is_start_macro);
-    if (tag)
-    {
+    if (tag) {
         /* enable macro-flag */
         tag->option |= HT_MACRO;
         DDT(fprintf(stderr, DHL "def macro %s\n", tag->name));
@@ -444,19 +435,15 @@ BOOL handle_hsc_macro(HSCPRC * hp, HSCTAG * tag)
 
     ok = (tag && def_tag_args(hp, tag));
 
-    if (ok)
-    {
+    if (ok) {
         /* assign macro text to tag structure */
         ok = read_macro_text(hp, tag, is_start_macro);
-        if (ok)
-        {
+        if (ok) {
             /* set tag handles & flags */
             tag->option |= HT_NOCOPY;
 
-            if (is_start_macro)
-            {
-                if (tag->option & HT_CLOSE)
-                {
+            if (is_start_macro) {
+                if (tag->option & HT_CLOSE) {
                     /* if macro is declared using a name not starting with "/",
                      * it must be a content macro; therfor, assign callback
                      * for content macros */
@@ -468,9 +455,7 @@ BOOL handle_hsc_macro(HSCPRC * hp, HSCTAG * tag)
                     tag->option &= ~HT_CLOSE;
                     tag->option |= HT_CONTENT;
                     DMC(fprintf(stderr, DHL "  kind: container macro\n"));
-                }
-                else
-                {
+                } else {
                     /* assign callback which processed macro text for
                      * start macros; this is the same for container macros
                      * and non-containers that have not been declared as
@@ -478,9 +463,7 @@ BOOL handle_hsc_macro(HSCPRC * hp, HSCTAG * tag)
                     tag->o_handle = handle_op_macro;
                     DMC(fprintf(stderr, DHL "  kind: simple macro (for now)\n"));
                 }
-            }
-            else
-            {
+            } else {
                 /* assign callback which processes the macro text
                  * for the end macro */
                 tag->c_handle = handle_cl_macro;
