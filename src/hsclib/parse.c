@@ -275,7 +275,7 @@ HSCTAG *append_end_tag(HSCPRC * hp, HSCTAG * tag) {
  * params: hp....hsc process
 *         tag...tag to be removed
 */
-VOID remove_end_tag(HSCPRC * hp, HSCTAG * tag) {
+void remove_end_tag(HSCPRC * hp, HSCTAG * tag) {
    /* search for tag on stack of occured tags */
    DLNODE *nd = find_dlnode_bw(dll_last(hp->container_stack),
          (APTR) tag->name, cmp_strtag);
@@ -296,7 +296,7 @@ VOID remove_end_tag(HSCPRC * hp, HSCTAG * tag) {
       end_tag = (HSCTAG*) dln_data(nd);
       foundnm = (STRPTR) end_tag->name;
       lastnm = ((HSCTAG*)dln_data(dll_last(hp->container_stack)))->name;
-
+      
       /* check if name of closing tag is -not- equal
        * to the name of the last tag last on stack
        * ->illegal tag nesting
@@ -304,10 +304,18 @@ VOID remove_end_tag(HSCPRC * hp, HSCTAG * tag) {
       if(upstrcmp(lastnm, foundnm) &&
             !(tag->option & HT_MACRO) && !is_hsc_tag(tag)) {
          if(NULL != (last_tag = find_named_tag(hp->deftag,lastnm))) {
-            if(!is_hsc_tag(last_tag))
+            if(!is_hsc_tag(last_tag)) {
                hsc_message(hp, MSG_CTAG_NESTING,
                      "illegal end tag nesting (expected %c, found %C)",
                      lastnm, tag);
+               /* if there is only one node left at the top of the stack, remove it as
+                * well to avoid ugly followup errors from a single forgotten closing tag
+                * TODO: find out if this was a good decision
+                */
+               if(nd->next == dll_last(hp->container_stack)) {
+                  del_dlnode(hp->container_stack,dll_last(hp->container_stack));
+               }
+            }
          }
       }
 
