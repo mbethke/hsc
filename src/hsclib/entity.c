@@ -1,5 +1,5 @@
 /*
- * This source code is part of hsc, a html-preprocessor,
+ * This source code is part of hsc, an html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
  * Copyright (C) 2001-2003  Matthias Bethke
  *
@@ -43,32 +43,28 @@
  *
  * alloc & init a new hscentity
  */
-HSCENT *new_hscent(STRPTR newid)
-{
-    HSCENT *newent = (HSCENT *) umalloc(sizeof(HSCENT));
+HSCENT *new_hscent(STRPTR newid) {
+    HSCENT *newent = (HSCENT*) umalloc(sizeof(HSCENT));
 
 #if DEBUG_ENTITY
     fprintf(stderr, DHL "   new_enty %s\n", newid);
 #endif
 
-    if (newent)
-    {
-        /* init new entity item */
-        newent->name = strclone(newid);         /* set id */
-        newent->replace[0] = newent->replace[1] = '\0';
-        newent->numeric = 0;
+    if (newent) {
+       /* init new entity item */
+       newent->name = strclone(newid);
+       newent->replace[0] = newent->replace[1] = '\0';
+       newent->numeric = 0;
+       newent->prefnum = FALSE;
     }
-
     return (newent);
-
 }
 
 /*
  * del_entity
  */
-VOID del_entity(APTR data)
-{
-    HSCENT *ent = (HSCENT *) data;
+VOID del_entity(APTR data) {
+    HSCENT *ent = (HSCENT*)data;
 
 #if DEBUG_ENTITY
     fprintf(stderr, DHL "   del_enty %s\n", ent->name);
@@ -85,15 +81,13 @@ VOID del_entity(APTR data)
  *
  * create a copy of an already existing entity
  */
-HSCENT *cpy_hscent(HSCENT * oldent)
-{
+HSCENT *cpy_hscent(HSCENT * oldent) {
     HSCENT *newent = new_hscent(oldent->name);
 
     if (newent) {
         newent->replace[0] = oldent->replace[0];
         newent->numeric = oldent->numeric;
     }
-
     return (newent);
 }
 
@@ -109,12 +103,11 @@ HSCENT *cpy_hscent(HSCENT * oldent)
  * compares a entity-string with the name
  * of a HSCENT-entry
  */
-int cmp_strent(APTR cmpstr, APTR entdata)
-{
+int cmp_strent(APTR cmpstr, APTR entdata) {
     STRPTR entstr = NULL;
 
     if (entdata)
-        entstr = ((HSCENT *) entdata)->name;
+        entstr = ((HSCENT*)entdata)->name;
 
     if (entstr) {
         if (!strcmp(cmpstr, entstr))
@@ -131,8 +124,7 @@ int cmp_strent(APTR cmpstr, APTR entdata)
  * compares an entity-string with the numeric
  * data of an HSCENT-entry
  */
-int cmp_nument(APTR cmpstr, APTR entdata)
-{
+int cmp_nument(APTR cmpstr, APTR entdata) {
     LONG num = -1;
     LONG cmpnum = (LONG) cmpstr;
 
@@ -148,12 +140,11 @@ int cmp_nument(APTR cmpstr, APTR entdata)
  * compares an entity-string with the replace-item
  * of an HSCENT-entry
  */
-int cmp_rplcent(APTR cmpstr, APTR entdata)
-{
+int cmp_rplcent(APTR cmpstr, APTR entdata) {
     STRPTR entstr = NULL;
 
     if (entdata)
-        entstr = ((HSCENT *) entdata)->replace;
+        entstr = ((HSCENT*)entdata)->replace;
 
     if (entstr) {
         if (!strcmp(cmpstr, entstr))
@@ -182,11 +173,11 @@ HSCENT *app_entnode(DLLIST * entlist, STRPTR entid) {
     HSCENT *newent;
 
     newent = new_hscent(entid);
-    if (newent) {
-        if (app_dlnode(entlist, newent) == NULL) {
-            del_entity((APTR) newent);
-            newent = NULL;
-        }
+    if(NULL != newent) {
+       if (app_dlnode(entlist, newent) == NULL) {
+          del_entity((APTR) newent);
+          newent = NULL;
+       }
     }
     return (newent);
 }
@@ -194,11 +185,13 @@ HSCENT *app_entnode(DLLIST * entlist, STRPTR entid) {
 /*
  * add_ent
  */
-void add_ent(DLLIST * entlist, STRPTR entid, char entreplace, short num) {
+void add_ent(DLLIST * entlist, STRPTR entid, char entreplace, short num, BOOL prefnum) {
     HSCENT *newent = app_entnode(entlist, entid);
 
-    if (entreplace)
-        newent->replace[0] = entreplace;
-    newent->numeric = num;
+    if(NULL != newent) {
+       newent->replace[0] = entreplace;
+       newent->numeric = num;
+       newent->prefnum = prefnum;
+    }
 }
 
