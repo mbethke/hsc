@@ -31,6 +31,9 @@
 HSCSTYLE *new_styleattr(CONSTRPTR name, CONSTRPTR value);
 extern BOOL add_styleattr(HSCPRC *hp, CONSTRPTR property, CONSTRPTR value);
 extern VOID del_styleattr(APTR data);
+extern int cmp_style_node(ubi_btItemPtr item, ubi_btNodePtr node);
+extern void free_style_node(ubi_btNode *node);
+extern HSCSTYLE *add_styledef(hsctree *styles, CONSTRPTR name, CONSTRPTR value);
 extern BOOL add_width_height_attrs(HSCPRC *hp, ULONG width, ULONG height);
 #endif /* NOEXTERN_CSS_H */
 

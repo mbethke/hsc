@@ -1,7 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
- * Copyright (C) 2001 Matthias Bethke
+ * Copyright (C) 2001-2004 Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -303,7 +303,7 @@ VOID remove_end_tag(HSCPRC * hp, HSCTAG * tag) {
        */
       if(upstrcmp(lastnm, foundnm) &&
             !(tag->option & HT_MACRO) && !is_hsc_tag(tag)) {
-         if(NULL != (last_tag = find_strtag(hp->deftag,lastnm))) {
+         if(NULL != (last_tag = find_named_tag(hp->deftag,lastnm))) {
             if(!is_hsc_tag(last_tag))
                hsc_message(hp, MSG_CTAG_NESTING,
                      "illegal end tag nesting (expected %c, found %C)",
@@ -338,13 +338,13 @@ VOID remove_end_tag(HSCPRC * hp, HSCTAG * tag) {
 BOOL hsc_parse_tag(HSCPRC * hp) {
    INFILE *inpf = hp->inpf;
    STRPTR nxtwd = NULL;
-   DLNODE *nd = NULL;
+   ubi_trNode *nd = NULL;
    HSCTAG *tag = NULL;
    HSCTAG *now_tag_strip_whtspc = NULL;
    ULONG tci = 0;              /* tag_call_id returned by set_tag_args() */
    BOOL(*hnd) (HSCPRC * hp, HSCTAG * tag) = NULL;
    BOOL open_tag;
-   DLLIST *taglist = hp->deftag;
+   hsctree *tags = hp->deftag;
    BOOL rplc_lt = FALSE;       /* TRUE, if replace spc. char "<" */
    BOOL hnd_result = TRUE;     /* result returned by handle */
    BOOL unknown_tag = FALSE;   /* TRUE, if tag has not been defined before */
@@ -407,15 +407,15 @@ BOOL hsc_parse_tag(HSCPRC * hp) {
             D(fprintf(stderr, "%s>\n", nxtwd));
 
          /* search for tag in list */
-         nd = find_dlnode(taglist->first, (APTR) nxtwd, cmp_strtag);
-         if(NULL == nd) {
+         nd = ubi_trFind(tags, (APTR)nxtwd);
+         if(!nd) {
             /* tag not found */
             hsc_message(hp, MSG_UNKN_TAG, "unknown %t", nxtwd);
             tag = new_hsctag(nxtwd);
             tag->option |= HT_UNKNOWN;
             unknown_tag = TRUE;
          } else {
-            tag = (HSCTAG *) nd->data;
+            tag = *HSCTREENODEDP(nd,HSCTAG*);
          }
 
          /* set handle-function */
@@ -539,14 +539,13 @@ BOOL hsc_parse_tag(HSCPRC * hp) {
 
          /* search for tag in taglist */
          /* (see if it exists at all) */
-         nd = find_dlnode(taglist->first, (APTR) nxtwd, cmp_strtag);
-         if (nd == NULL) {
+         nd = ubi_trFind(tags, (APTR)nxtwd);
+         if (!nd) {
             /* closing tag is absolutely unknown */
-            hsc_message(hp, MSG_UNKN_TAG,   /* tag not found */
-                  "unknown %c", nxtwd);
+            hsc_message(hp, MSG_UNKN_TAG, "unknown %c", nxtwd);
             skip_until_eot(hp, hp->tag_attr_str);
          } else {
-            tag = (HSCTAG *) nd->data;      /* fitting tag in taglist */
+            tag = *HSCTREENODEDP(nd,HSCTAG*);      /* fitting tag in taglist */
 
             /* check for preceding white-spaces */
             if ((tag->option & HT_WHTSPC) && anyWhtspc(hp)) {
@@ -1168,6 +1167,8 @@ BOOL hsc_parse_end(HSCPRC * hp)
       del_infilepos(infpos);
 
       /* check for required and recommended tags missing */
+      /* TODO: convert this to ubiTrees! */
+#if 0
       nd = dll_first(hp->deftag);
       while (nd)
       {
@@ -1187,8 +1188,9 @@ BOOL hsc_parse_end(HSCPRC * hp)
          }
          nd = dln_next(nd);
       }
+#endif
 
-      /* output last white spaces at eof */
+      /* output last whitespace at EOF */
       hsc_output_text(hp, "", "");
    }
    return (BOOL) (!hp->fatal);

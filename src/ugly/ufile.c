@@ -22,7 +22,7 @@
  *
  * misc. filename functions
  *
- * updated: 23-Mar-2003
+ * updated: 31-May-2004
  * created: 14-Oct-1996
  *
  */
@@ -33,8 +33,11 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <time.h>
+
+#ifndef WINNT
+#include <unistd.h>
+#endif
 
 #ifdef AMIGA
 /* SAS/C's stat handling is weird, so use dos.library :-( */
@@ -49,6 +52,16 @@
 
 #define NOEXTERN_UGLY_UFILE_H
 #include "ufile.h"
+
+/* Windoze doesn't have those S_IS* macros for struct stat */
+#ifdef WINNT
+#define	__S_ISTYPE(mode, mask)	(((mode) & _S_IFMT) == (mask))
+#define S_ISDIR(mode) __S_ISTYPE(mode, _S_IFDIR)
+#define S_ISCHR(mode) __S_ISTYPE(mode, _S_IFCHR)
+#define S_ISFIFO(mode) __S_ISTYPE(mode, _S_IFIFO)
+#define S_ISREG(mode) __S_ISTYPE(mode, _S_IFREG)
+#define S_ISLNK(mode) __S_ISTYPE(mode, _S_IFREG)  /* no symbolic links either */
+#endif
 
 /*
  * fexists
@@ -126,7 +139,7 @@ const struct tm *fgetmtime(const STRPTR name) {
             time_t tt;
             /* convert struct DateStamp to time_t format */
             /* TODO: test this */
-            tt = 1149112800 +
+            tt = 252432000 +
                fib->fib_Date.ds_Days * 86400 +
                fib->fib_Date.ds_Minute * 60 +
                fib->fib_Date.ds_Tick / 50;

@@ -921,7 +921,7 @@ BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STRPTR tag
                       skip_sgml_special(hp, content,&dummy_stripped);
                       state = STATE_TEXT;
                    } else {
-                      HSCTAG *tag = find_strtag(hp->deftag, nw);
+                      HSCTAG *tag = find_named_tag(hp->deftag, nw);
                       DS(fprintf(stderr, DHLS "tag <%s>\n", nw));
 
                       /* check, if nesting-tag should be incr. */

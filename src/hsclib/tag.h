@@ -29,6 +29,7 @@
 #ifndef HSCLIB_TAG_H
 #define HSCLIB_TAG_H
 #include "ugly/dllist.h"
+#include "ugly/hsctrees.h"
 #include "hsclib/attrib.h"
 
 /*
@@ -179,10 +180,13 @@ extern VOID del_hsctag(APTR data);
 extern HSCTAG *cpy_hsctag(HSCTAG * oldtag);
 
 extern int cmp_strtag(APTR cmpstr, APTR tagdata);
-extern HSCTAG *find_strtag(DLLIST * taglist, STRPTR name);
+extern HSCTAG *find_strtag(DLLIST *tags, STRPTR name);
+extern HSCTAG *find_named_tag(hsctree *tags, STRPTR name);
 extern int cmp_strctg(APTR cmpstr, APTR tagstr);
 
-extern HSCTAG *app_tag(DLLIST * taglist, STRPTR tagid);
+extern HSCTAG *app_tag(hsctree* tags, STRPTR tagid);
+extern void free_tag_node(ubi_btNodePtr node);
+extern int cmp_tag_node(ubi_btItemPtr item, ubi_btNodePtr node);
 
 extern BOOL is_hsc_tag(HSCTAG * tag);
 extern BOOL is_macro_tag(HSCTAG * tag);

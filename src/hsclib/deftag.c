@@ -47,70 +47,49 @@ HSCTAG *def_tag_name(HSCPRC * hp, BOOL * start_tag)
 {
    STRPTR nw = NULL;
    HSCTAG *tag = NULL;
-   DLLIST *taglist = hp->deftag;
+   hsctree *tags = hp->deftag;
 
    /* get tag name */
    nw = infget_tagid(hp);
 
    /* create new tag */
-   if (nw)
-   {
+   if (nw) {
       *start_tag = (BOOL) (strcmp(nw, "/"));
-      if (!(*start_tag))
-      {
+      if (!(*start_tag)) {
          /* add closing tag */
          nw = infget_tagid(hp);
-         if (nw)
-         {
-            tag = find_strtag(taglist, nw);
-            if (tag)
-            {
+         if (nw) {
+            tag = find_named_tag(tags, nw);
+            if (tag) {
                if ((tag->option & HT_CLOSE)
                      ||
                      (tag->option & HT_CONTENT))
                {
                   /* tried to redefine end tag */
                   tag = NULL;
-                  hsc_message(hp, MSG_REDEFINE_ENDTAG,
-                        "redefined %c", nw);
-               }
-               else
-               {
+                  hsc_message(hp, MSG_REDEFINE_ENDTAG, "redefined %c", nw);
+               } else {
                   /* mark macro as a container */
                   tag->option |= HT_CLOSE;
                }
-            }
-            else
-            {
+            } else {
                /* tried to define end tag without previous start tag */
                tag = NULL;
-               hsc_message(hp, MSG_DEFTAG_NO_OPEN,
-                     "no start tag for %c", nw);
+               hsc_message(hp, MSG_DEFTAG_NO_OPEN, "no start tag for %c", nw);
             }
          }                   /* err_eof already called in infget_tagid() */
-      }
-      else
-      {
-         tag = find_strtag(taglist, nw);
-         if (tag)
-         {
-            /* find tag-node in list to delete it
-             * NOTE: this is rather stupid, 'cause the list
-             * has to be searched twice this way; but who cares? */
-            DLNODE *nd = find_dlnode(hp->deftag->first,
-                  (APTR) nw, cmp_strtag);
+      } else {
+         ubi_trNode *tagnode = ubi_trFind(tags,nw);
 
+         if(tagnode) {
             /* new tag/macro replaces old tag/macro */
             tag->occured = FALSE;
-
             hsc_message(hp, MSG_REDEFINE_TAG, "redefined %T", tag);
-
-            del_dlnode(hp->deftag, nd);
-
+            ubi_trRemove(tags,tagnode);
          }
 
          /* create a new opening tag */
-         tag = app_tag(taglist, nw);
+         tag = app_tag(tags, nw);
       }
    }                           /* err_eof already called in infget_tagid() */
 
@@ -414,7 +393,7 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag) {
             /* insert attribute list */
             STRPTR name = infget_tagid(hp);
             if (nw) {
-               HSCTAG *lazy = find_strtag(hp->deflazy, name);
+               HSCTAG *lazy = find_named_tag(hp->deflazy, name);
                if (lazy)
                   copy_local_varlist(tag->attr, lazy->attr, MCI_GLOBAL);
                else

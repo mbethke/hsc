@@ -74,7 +74,7 @@
     __DATE__, __TIME__, info, copy )
 #endif
 
-#define UGLY_AUTHOR "T.Aglassinger/Tommy-Saftwörx, Matthias Bethke"
+#define UGLY_AUTHOR "Matthias Bethke, T. Aglassinger"
 
 /*
  * extern vars & functions

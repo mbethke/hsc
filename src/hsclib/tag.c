@@ -40,10 +40,8 @@
 /*
  * del_hsctag
  */
-void del_hsctag(APTR data)
+void del_hsctag(HSCTAG *tag)
 {
-    HSCTAG *tag = (HSCTAG *) data;
-
     /* release mem */
     ufreestr(tag->name);
     ufreestr(tag->name);
@@ -201,13 +199,17 @@ int cmp_strtag(APTR cmpstr, APTR tagdata)
  */
 HSCTAG *find_strtag(DLLIST * taglist, STRPTR name)
 {
-    DLNODE *nd = find_dlnode(taglist->first, (APTR) name, cmp_strtag);
-    HSCTAG *tag = NULL;
+   DLNODE *nd = find_dlnode(taglist->first, (APTR) name, cmp_strtag);
+   return nd ? (HSCTAG *)nd->data : NULL;
+}
 
-    if (nd)
-        tag = (HSCTAG *) nd->data;
-
-    return (tag);
+/*
+ * find_named_tag
+ */
+HSCTAG *find_named_tag(hsctree *tags, STRPTR name)
+{
+    ubi_trNode *node = ubi_trFind(tags, name);
+    return node ? *HSCTREENODEDP(node,HSCTAG*) : NULL;
 }
 
 /*
@@ -219,23 +221,41 @@ HSCTAG *find_strtag(DLLIST * taglist, STRPTR name)
 /*
  * app_tag
  *
- * create a new tag and append it to tag-list
+ * create a new tag and add it to tag tree
  *
  * params: tagid..name of the new tag (eg "IMG")
  * result: ptr to the new tag or NULL if no mem
  */
-HSCTAG *app_tag(DLLIST * taglist, STRPTR tagid)
+HSCTAG *app_tag(hsctree *tags, STRPTR tagid)
 {
-    HSCTAG *newtag;
+   HSCTAG *newtag = new_hsctag(tagid);
+   if(newtag) {
+      ubi_trNode *oldnd, *node =  new_hsctreenode(newtag);
+      if(node) {
+         if(ubi_sptInsert(&tags->r, node, newtag->name, &oldnd)) {
+            if(oldnd) {
+               tags->delfunc(oldnd);
+            }
+            return newtag;
+         }
+         ufree(node);
+      }
+      del_hsctag(newtag);
+   }
+   return NULL;
+}
 
-    newtag = new_hsctag(tagid);
-    if (app_dlnode(taglist, newtag) == NULL)
-    {
-        del_hsctag((APTR) newtag);
-        newtag = NULL;
-    }
+/* free a tag linked into a tree */
+void free_tag_node(ubi_btNode *node)
+{
+   del_hsctag(*HSCTREENODEDP(node,HSCTAG*));
+   ufree(node);
+}
 
-    return (newtag);
+/* ubiqx-tree comparison function for finding tags given a name */
+int cmp_tag_node(ubi_btItemPtr item, ubi_btNodePtr node)
+{
+   return upstrcmp((STRPTR)item, (*HSCTREENODEDP(node,HSCTAG*))->name);
 }
 
 /* decides if a tag is a hsc-tag */

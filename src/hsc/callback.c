@@ -133,10 +133,10 @@ static VOID message(HSCPRC * hp,
          msg_class_str = "Note";
          break;
       case MSG_STYLE:
-         msg_class_str = "Bad style";
+         msg_class_str = "Style";
          break;
       case MSG_PORT:
-         msg_class_str = "Portability problem";
+         msg_class_str = "Portability";
          break;
       case MSG_WARN:
          msg_class_str = "Warning";
@@ -146,7 +146,7 @@ static VOID message(HSCPRC * hp,
          msg_class_seq = ANSI_BOLD ANSI_TEXT_HILITE;
          break;
       case MSG_FATAL:
-         msg_class_str = "Fatal error";
+         msg_class_str = "Fatal";
          msg_class_seq = ANSI_BOLD ANSI_TEXT_HILITE;
          break;
 

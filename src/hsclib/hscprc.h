@@ -29,7 +29,7 @@
 #define HSC_HSCPRC_H
 
 #include <time.h>
-
+#include "ugly/hsctrees.h"
 #include "hsclib/ldebug.h"
 #include "hsclib/tag.h"
 
@@ -191,11 +191,11 @@ struct hsc_process
 {
     INFILE *inpf;               /* current input file */
     DLLIST *inpf_stack;         /* stack of nested input files */
-    DLLIST *deftag;             /* defined tags and macros */
+    hsctree *deftag;            /* defined tags and macros */
     DLLIST *defattr;            /* defined attributes */
     DLLIST *defent;             /* defined special charcters & entities */
-    DLLIST *deflazy;            /* defined lazy attribute lists */
-    DLLIST *defstyle;           /* defined CSS styles */
+    hsctree *deflazy;           /* defined lazy attribute lists */
+    hsctree *defstyle;          /* defined CSS styles */
     DLLIST *container_stack;    /* stack of container-tags currently open */
     DLLIST *content_stack;      /* stack of contents of container macros */
     DLLIST *include_dirs;       /* include directories */

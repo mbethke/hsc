@@ -134,10 +134,8 @@ BOOL write_output(HSCPRC * hp)
                 EXPSTR *outstring = (EXPSTR *) dln_data(nd);
 
                 nd = dln_next(nd);
-#if 1
                 fwrite(estr2str(outstring), sizeof(char),
                        estrlen(outstring), outfile);
-#endif
             }
 
             /* handle write-error, display message */

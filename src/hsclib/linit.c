@@ -230,7 +230,7 @@ static void hsc_set_tagCB(HSCPRC * hp, STRPTR name,
                    BOOL(*op_hnd) (HSCPRC * inpf, HSCTAG * tag),
                    BOOL(*cl_hnd) (HSCPRC * inpf, HSCTAG * tag))
 {
-    HSCTAG *tag = find_strtag(hp->deftag, name);
+    HSCTAG *tag = find_named_tag(hp->deftag, name);
 
     if (tag && !(tag->option & HT_NOHANDLE)) {
         /* set handles */
@@ -416,6 +416,14 @@ BOOL hsc_assign_tagCBs(HSCPRC * hp)
     return (TRUE);
 }
 
+DC(
+/* print a tag attached to a tree node -- for ubi_btTraverse() */
+static void print_tag_node(ubi_btNode *nd)
+{
+   prt_tag(stderr, HSCTREENODEDP(nd,HSCTAG*));
+}
+  )
+
 /*
  * hsc_init_hscprc
  *
@@ -456,17 +464,9 @@ BOOL hsc_init_hscprc(HSCPRC * hp, STRPTR prefs_fname)
               fprintf(stderr, "\n");
               }
 
-              nd = hp->deftag->first;
-              if (nd)
-              {
               fprintf(stderr, DHL "Known tags:");
-              while (nd)
-              {
-              prt_tag(stderr, nd->data);
-              nd = nd->next;
-              }
+              ubi_trTraverse(&hp->deftag->r,(ubi_btActionRtn)&print_tag_node,NULL);
               fprintf(stderr, "\n");
-              }
 
               }
         );                      /* DC */
@@ -479,6 +479,7 @@ BOOL hsc_init_hscprc(HSCPRC * hp, STRPTR prefs_fname)
 
     return (ok);
 }
+
 
 /* $Id$ */
 /* vi: set ts=3: */

@@ -23,7 +23,7 @@
 /*
  * dllist.h
  *
- * doubel linked list functions, header
+ * doubly linked list functions
  *
  * (W) by Tommy-Saftwörx in 1994,95
  *

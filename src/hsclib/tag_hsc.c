@@ -657,7 +657,7 @@ BOOL handle_hsc_defstyle(HSCPRC *hp, HSCTAG *tag) {
          (!strchr(VALID_FORMATS,val[1]) || (('\0' != val[2]) && ('|' != val[2])))))
       msg_illegal_defstyle(hp, "bad VAL format, must use one of \"" VALID_FORMATS "\" for specials");
    else
-      app_dlnode(hp->defstyle, new_styleattr(get_vartext_byname(tag->attr, "NAME"), val));
+      add_styledef(hp->defstyle, get_vartext_byname(tag->attr, "NAME"), val);
    return FALSE;
 }
 
@@ -703,19 +703,18 @@ BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag) {
 static HSCTAG *def_lazy_name(HSCPRC *hp) {
    STRPTR nw = NULL;
    HSCTAG *lazy = NULL;
-   DLLIST *lazy_list = hp->deflazy;
 
    /* get lazy name */
    nw = infget_tagid(hp);
 
    /* create new lazy */
    if (nw) {
-      lazy = find_strtag(lazy_list, nw);
+      lazy = find_named_tag(hp->deflazy, nw);
       if (lazy)
          hsc_message(hp, MSG_REDEFINE_LAZY, "redefined lazy ", lazy);
       else
          /* create a new opening lazy */
-         lazy = app_tag(lazy_list, nw);
+         lazy = app_tag(hp->deflazy, nw);
    }                           /* err_eof already called in infget_tagid() */
    return (lazy);
 }

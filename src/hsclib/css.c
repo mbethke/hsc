@@ -39,16 +39,22 @@ static int cmp_stylename(const APTR cmpstr, const APTR vardata)
 }
 
 /*
- * find_stylename
+ * find_style_in_tree
+ */
+static HSCSTYLE *find_style_in_tree(hsctree *styles, CONSTRPTR name)
+{
+   ubi_trNode *node = ubi_trFind(styles, name);
+   return node ? *HSCTREENODEDP(node,HSCSTYLE*) : NULL;
+}
+
+/*
+ * find_stylename: find named style in linked list
  */
 static HSCSTYLE *find_stylename(DLLIST *stylelist, CONSTRPTR name)
 {
    DLNODE *nd = find_dlnode(stylelist->first, (APTR) name, cmp_stylename);
-
-   if(nd) return (HSCSTYLE*)nd->data;
-   return NULL;
+   return nd ? (HSCSTYLE*)nd->data : NULL;
 }
-
 
 /*
  * new_styleattr
@@ -84,6 +90,38 @@ VOID del_styleattr(APTR data)
    ufreestr(((HSCSTYLE*)data)->name);
    ufreestr(((HSCSTYLE*)data)->value);
    ufree(data);
+}
+
+/* ubiqx-tree comparison function for finding styles given a name */
+int cmp_style_node(ubi_btItemPtr item, ubi_btNodePtr node)
+{
+   return upstrcmp((STRPTR)item, (*HSCTREENODEDP(node,HSCSTYLE*))->name);
+}
+
+/* free a style linked into a tree */
+void free_style_node(ubi_btNode *node)
+{
+   del_styleattr(*HSCTREENODEDP(node,HSCSTYLE*));
+   ufree(node);
+}
+
+HSCSTYLE *add_styledef(hsctree *styles, CONSTRPTR name, CONSTRPTR value)
+{
+   HSCSTYLE *newstyle = new_styleattr(name,value);
+   if(newstyle) {
+      ubi_trNode *oldnd, *node =  new_hsctreenode(newstyle);
+      if(node) {
+         if(ubi_sptInsert(&styles->r, node, newstyle->name, &oldnd)) {
+            if(oldnd) {
+               styles->delfunc(oldnd);
+            }
+            return newstyle;
+         }
+         ufree(node);
+      }
+      del_styleattr(newstyle);
+   }
+   return NULL;
 }
 
 
@@ -347,7 +385,7 @@ BOOL add_styleattr(HSCPRC *hp, CONSTRPTR property, CONSTRPTR value)
    } else {
       /* check if this is a valid property unless check was disabled */
       if(hp->validate_css) {
-         if(NULL == (styledef = find_stylename(hp->defstyle,property))) {
+         if(NULL == (styledef = find_style_in_tree(hp->defstyle,property))) {
             /* this property is unknown */
             hsc_message(hp, MSG_INVALID_STYLE,
                   "unknown CSS property %q", property);

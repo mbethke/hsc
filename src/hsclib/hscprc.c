@@ -52,18 +52,17 @@ static VOID del_inpf_stack_node(APTR data)
 /*
  * del_hscprc
  *
- * remove hsc process and all it's resources
+ * Remove HSC process and all its resources
  */
-VOID del_hscprc(HSCPRC * hp)
+VOID del_hscprc(HSCPRC *hp)
 {
-    if (hp)
-    {
+    if (hp) {
         /* remove list */
-        del_dllist(hp->defstyle);
+        del_hsctree(hp->defstyle);
         del_dllist(hp->defent);
-        del_dllist(hp->deftag);
+        del_hsctree(hp->deftag);
         del_dllist(hp->defattr);
-        del_dllist(hp->deflazy);
+        del_hsctree(hp->deflazy);
         del_dllist(hp->container_stack);
         del_dllist(hp->content_stack);
         del_dllist(hp->inpf_stack);
@@ -178,10 +177,10 @@ HSCPRC *new_hscprc(void)
 
         /* init lists */
         hp->defent = init_dllist(del_entity);
-        hp->deftag = init_dllist(del_hsctag);
+        hp->deftag = init_hsctree(free_tag_node, cmp_tag_node, ubi_trOVERWRITE);
         hp->defattr = init_dllist(del_hscattr);
-        hp->deflazy = init_dllist(del_hsctag);
-        hp->defstyle = init_dllist(del_styleattr);
+        hp->deflazy = init_hsctree(free_tag_node, cmp_tag_node, ubi_trOVERWRITE);
+        hp->defstyle = init_hsctree(free_style_node, cmp_style_node, ubi_trOVERWRITE);
         hp->container_stack = init_dllist(del_hsctag);
         hp->content_stack = init_dllist(del_string_node);
         hp->inpf_stack = init_dllist(del_inpf_stack_node);

@@ -31,16 +31,18 @@
  * defines
  */
 
-/* convert numeric representation to text. pass an array as "buffer", not a pointer! */
-#ifdef __SASC
-/* SAS/C doesn't have snprintf. Thus, we will just assume (yuck!) the buffer to
- * be large enough and not bother to provide an own snprintf implementation */
+/* convert numeric representation to text. pass an array as "buffer", not a
+ * pointer! */
+#if defined __SASC || defined WINNT
+/* SAS/C doesn't have snprintf, and neither does M$VC++. Thus, we will just
+ * assume (yuck!) the buffer to be large enough and not bother to provide an
+ * own snprintf implementation */
 #define ENTITY_NUM2TEXT(buffer,num) \
-   (sprintf((buffer), "&%d;",(int)(unsigned short)(num)))
+		(sprintf((buffer), "&%d;",(int)(unsigned short)(num)))
 #else
 /* yes, this is a proper compiler */
 #define ENTITY_NUM2TEXT(buffer,num) \
-   (snprintf((buffer), sizeof(buffer), "&%d;",(int)(unsigned short)(num)))
+		(snprintf((buffer), sizeof(buffer), "&%d;",(int)(unsigned short)(num)))
 #endif
 
 /* value for hscent.numeric to mark icon entities */

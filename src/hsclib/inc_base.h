@@ -40,6 +40,7 @@
 
 #include "ugly/utypes.h"
 #include "ugly/dllist.h"
+#include "ugly/hsctrees.h"
 #include "ugly/expstr.h"
 #include "ugly/umemory.h"
 #include "ugly/infile.h"

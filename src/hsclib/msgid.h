@@ -96,8 +96,8 @@
 #define MSG_MBI                (MSG_ERROR+ 60)  /* must be inside */
 #define MSG_NAW                (MSG_ERROR+ 61)  /* not allowed with */
 #define MSG_ILLG_CTAG          (MSG_ERROR+ 66)  /* illegal end-tag */
-#define MSG_SUCC_WHTSPC        (MSG_PORT + 78)  /* succeeding white-space */
-#define MSG_PREC_WHTSPC        (MSG_PORT + 79)  /* preceeding white-space */
+#define MSG_SUCC_WHTSPC        (MSG_PORT + 78)  /* REMOVED: succeeding white-space */
+#define MSG_PREC_WHTSPC        (MSG_PORT + 79)  /* REMOVED: preceeding white-space */
 #define MSG_XHTML_NOTCLOSED    (MSG_WARN + 88)  /* EMPTY tag not closed in
                                                    XHTML mode */
 

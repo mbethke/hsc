@@ -70,7 +70,7 @@ typedef struct uglymem UGLYMEM;
 
 /* ugly function calls with memory tracking disabled */
 #define umalloc(size) ugly_malloc_notracking(size)
-#define ufree(ptr)    if ( ptr ) { free(ptr); ptr=NULL; }       /* TODO: use only free() */
+#define ufree(ptr) free(ptr)
 #define urealloc(ptr,size)  realloc( ptr, size );
 #define ucalloc(count,size) calloc( count,size )
 
