@@ -86,12 +86,11 @@
 /*
  * modes for special characters/entity extraction
  */
-#define EMODE_KEEP     1        /* do not replace */
-#define EMODE_REPLACE  2        /* replace by prefered value */
-                                /*   (depends wheter if a PREFNUM was used */
-                                /*   within $DEFENT) */
-#define EMODE_NUMERIC  3        /* always replace by numeric (&#123;) */
-#define EMODE_SYMBOLIC 4        /* always replace by symbolic (&uuml;) */
+#define EMODE_KEEP     (1)        /* do not replace */
+#define EMODE_REPLACE  (2)        /* replace by preferred value (numeric/symbolic) */
+#define EMODE_NUMERIC  (3)        /* always replace with numeric entity (&#123;) */
+#define EMODE_SYMBOLIC (4)        /* always replace with symbolic entity (&uuml;) */
+#define EMODE_UTF8     (5)        /* always replace with UTF-8 representation */
 
 /*
  * misc. defines for files & envvars
@@ -230,7 +229,6 @@ struct hsc_process
     BOOL debug;                 /* flag: display debuging info */
     BOOL getsize;               /* flag: get size of images/embedded docs */
     BOOL htmlonly;              /* flag: disable hsc-extensions */
-    BOOL jens;                  /* flag: enable some experimental features */
     BOOL jerkvalues;            /* flag: interpret jerk values */
     BOOL rplc_ent;              /* flag: replace special chars */
     BOOL rplc_quote;            /* flag: replace quotes in text by "&quot;" */
@@ -256,7 +254,7 @@ struct hsc_process
     LONG tag_call_id;
     ULONG prev_status_line;
     LONG prev_heading_num;      /* number of previous heading */
-    LONG entmode;               /* entity replace mode */
+    LONG entitymode;            /* entity replace mode */
     LONG quotemode;             /* quotes to use as output quotes */
 
     STRPTR click_here_str;      /* keywords for click-here syndrome */
@@ -355,9 +353,7 @@ extern VOID hsc_set_chkuri(HSCPRC * hp, BOOL new_chkuri);
 extern VOID hsc_set_compact(HSCPRC * hp, BOOL new_compact);
 extern VOID hsc_set_debug(HSCPRC * hp, BOOL new_debug);
 extern VOID hsc_set_getsize(HSCPRC * hp, BOOL new_getsize);
-extern VOID hsc_set_htmlonly(HSCPRC * hp, BOOL new_jens);
-extern VOID hsc_set_jens(HSCPRC * hp, BOOL new_jens);
-extern VOID hsc_set_jerkvalues(HSCPRC * hp, BOOL new_jens);
+extern VOID hsc_set_jerkvalues(HSCPRC * hp, BOOL new_jerkvalues);
 extern VOID hsc_set_rplc_ent(HSCPRC * hp, BOOL new_rplc_ent);
 extern VOID hsc_set_rplc_quote(HSCPRC * hp, BOOL new_rplc_quote);
 extern BOOL hsc_set_server_dir(HSCPRC * hp, STRPTR dir);
@@ -393,7 +389,6 @@ extern BOOL hsc_get_debug(HSCPRC * hp);
 extern BOOL hsc_get_getsize(HSCPRC * hp);
 extern BOOL hsc_get_htmlonly(HSCPRC * hp);
 extern BOOL hsc_get_jerkvalues(HSCPRC * hp);
-extern BOOL hsc_get_jens(HSCPRC * hp);
 extern BOOL hsc_get_rplc_ent(HSCPRC * hp);
 extern BOOL hsc_get_rplc_quote(HSCPRC * hp);
 extern BOOL hsc_get_smart_ent(HSCPRC * hp);
