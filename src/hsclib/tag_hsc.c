@@ -642,11 +642,22 @@ BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag) {
  * <$DEFSTYLE> define a new CSS style
  *-------------------------------------
  */
+static VOID msg_illegal_defstyle(HSCPRC * hp, STRPTR msg) {
+   hsc_message(hp, MSG_ILLG_DEFSTYLE, "error in <$DEFSTYLE> (%s)", msg);
+}
+
 BOOL handle_hsc_defstyle(HSCPRC *hp, HSCTAG *tag) {
-   app_dlnode(hp->defstyle,
-         new_styleattr(
-            get_vartext_byname(tag->attr, "NAME"),
-            get_vartext_byname(tag->attr, "VAL")));
+   CONSTRPTR val = get_vartext_byname(tag->attr, "VAL");
+#define VALID_FORMATS "dnNpPcuhr"
+
+   /* check special format: if first char is '%', second must be in list of
+    * style formats and third either '\0' or '|'
+    */
+   if((NULL != val) && (('%' == val[0]) &&
+         (!strchr(VALID_FORMATS,val[1]) || (('\0' != val[2]) && ('|' != val[2])))))
+      msg_illegal_defstyle(hp, "bad VAL format, must use one of \"" VALID_FORMATS "\" for specials");
+   else
+      app_dlnode(hp->defstyle, new_styleattr(get_vartext_byname(tag->attr, "NAME"), val));
    return FALSE;
 }
 
