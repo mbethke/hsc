@@ -122,8 +122,8 @@ static BOOL eval_boolstr(STRPTR s)
       return (FALSE);
 }
 
-/* check for empty brakets (after GetTime/GetGmTime) */
-static VOID check_brakets(HSCPRC * hp)
+/* check for empty brackets (after GetTime/GetGmTime) */
+static VOID check_brackets(HSCPRC * hp)
 {
    if (parse_wd(hp, "("))
       parse_wd(hp, ")");
@@ -132,7 +132,7 @@ static VOID check_brakets(HSCPRC * hp)
 /*
  * gettimestr
  */
-static EXPSTR *gettimestr(HSCPRC * hp, struct tm *time)
+static EXPSTR *gettimestr(HSCPRC * hp, const struct tm *time)
 {
 #define TIMEBUF_INC 20
    STRPTR timefmt = get_vartext_byname(hp->defattr, TIMEFORMAT_ATTR);
@@ -142,12 +142,9 @@ static EXPSTR *gettimestr(HSCPRC * hp, struct tm *time)
 
    /* set default time format */
    if (!timefmt)
-   {
       timefmt = "%d-%b-%Y, %H:%M";
-   }
 
-   while (!(hp->fatal) && !strftrc)
-   {
+   while (!(hp->fatal) && !strftrc) {
       /* expand timebuffer */
       for (i = 0; i < TIMEBUF_INC; i++)
          app_estrch(timebuf, '.');
@@ -159,8 +156,7 @@ static EXPSTR *gettimestr(HSCPRC * hp, struct tm *time)
                          timefmt, time);
    }
 
-   if (!strftrc)
-   {
+   if (!strftrc) {
       del_estr(timebuf);
       timebuf = NULL;
    }
@@ -332,7 +328,7 @@ BOOL ok=FALSE;
          else set_vartext(dest,src);
       } else {
    		if(ext) ok = set_estr(tmp,end+1);
-	   	else ok = set_estrn(tmp,src,end-src);
+	   	else ok = set_estrn(tmp,src,(size_t)(end-src));
 		   if(ok) set_vartext(dest,estr2str(tmp));
    		del_estr(tmp);
       }
@@ -594,48 +590,37 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
    tmpdest->vartype = VT_STRING;
 
    *err = FALSE;
-   if (nw)
-   {
-      if (!upstrcmp(nw, "NOT"))
-      {
+   if (nw) {
+      if (!upstrcmp(nw, "NOT")) {
          /* TODO: this part looks a bit stupid... */
          STRPTR nw = infgetw(inpf);
 
-         if (nw)
-         {
+         if (nw) {
             BOOL err_rec = FALSE;   /* error var for recursive call */
             STRPTR endstr = NULL;
 
-            if (strcmp(nw, "("))
-            {
+            if (strcmp(nw, "(")) {
                /* try to process another unary operator */
                inungetcw(inpf);
                eval_result = try_eval_unary_op(hp, dest, &err_rec);
-            }
-            else
+            } else
                endstr = ")";
 
             /* if not, process another expression */
             if (!eval_result && !err_rec)
                eval_result = eval_expression(hp, dest, endstr);
-         }
-         else
+         } else
             hsc_msg_eof(hp, "after NOT");
 
          /* set result or return error */
-         if (eval_result)
-         {
+         if (eval_result) {
             set_varbool(dest, (BOOL)!get_varbool(dest));
             eval_result = get_vartext(dest);
-         }
-         else
+         } else
             *err = TRUE;
-      }
-      else if (!upstrcmp(nw, "DEFINED"))
-      {
+      } else if (!upstrcmp(nw, "DEFINED")) {
          nw = eval_attrname(hp,eadest);
-         if (nw)
-         {
+         if (nw) {
             HSCATTR *attr = find_varname(hp->defattr, nw);
 
             if (attr)
@@ -644,12 +629,9 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
                set_varbool(dest, FALSE);
             eval_result = get_vartext(dest);
          }
-      }
-		else if (!upstrcmp(nw, "ORD"))
-		{
+      } else if (!upstrcmp(nw, "ORD")) {
          eval_result = eval_expression(hp, tmpdest, NULL);
-         if (eval_result)
-         {
+         if (eval_result) {
             char ts[4];
             D(fprintf(stderr, DHL "  ORD(`%s')\n", eval_result));
             sprintf(ts,"%d",(int)eval_result[0]);
@@ -657,12 +639,9 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
 				eval_result = get_vartext(dest); 
             D(fprintf(stderr, DHL "  =`%s'\n", eval_result));
 			}
-		}
-  		else if (!upstrcmp(nw, "CHR"))
-		{
+		} else if (!upstrcmp(nw, "CHR")) {
          eval_result = eval_expression(hp, tmpdest, NULL);
-         if (eval_result)
-         {
+         if (eval_result) {
             char ts[2];
             D(fprintf(stderr, DHL "  CHR(`%s')\n", eval_result));
             check_integer(hp,tmpdest,eval_result);
@@ -672,13 +651,10 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
 				eval_result = get_vartext(dest); 
             D(fprintf(stderr, DHL "  =`%s'\n", eval_result));
 			}
-		}
-      else if (!upstrcmp(nw, "EXISTS"))
-      {
+		} else if (!upstrcmp(nw, "EXISTS")) {
          /* check existence of file (relative to destination dir) */
          eval_result = eval_expression(hp, tmpdest, NULL);
-         if (eval_result)
-         {
+         if (eval_result) {
             FILE *file = NULL;
             EXPSTR *dest_fname = init_estr(64);
 
@@ -686,53 +662,42 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
 
             conv_hscuri2file(hp, dest_fname, eval_result);
             file = fopen(estr2str(dest_fname), "r");
-            if (file)
-            {
+            if (file) {
                fclose(file);
                set_varbool(dest, TRUE);
-            }
-            else
+            } else
                set_varbool(dest, FALSE);
 
             del_estr(dest_fname);
             eval_result = get_vartext(dest);
          }
-      }
-      else if (!upstrcmp(nw, "FEXISTS"))
-      {
+      } else if (!upstrcmp(nw, "FEXISTS")) {
          /* check existence of file */
          eval_result = eval_expression(hp, tmpdest, NULL);
-         if (eval_result)
-         {
+         if (eval_result) {
             FILE *file = NULL;
             EXPSTR *dest_fname = init_estr(64);
 
             D(fprintf(stderr, DHL "  EXISTS(`%s')\n", eval_result));
 
             file = fopen(eval_result, "r");
-            if (file)
-            {
+            if (file) {
                fclose(file);
                set_varbool(dest, TRUE);
-            }
-            else
+            } else
                set_varbool(dest, FALSE);
 
             del_estr(dest_fname);
             eval_result = get_vartext(dest);
          }
-      }
-      else if (!upstrcmp(nw, "GETENV"))
-      {
+      } else if (!upstrcmp(nw, "GETENV")) {
          /* get environment variable */
          eval_result = eval_expression(hp, dest, NULL);
-         if (eval_result)
-         {
+         if (eval_result) {
             STRPTR env_value = getenv(get_vartext(dest));
 
             D(fprintf(stderr, DHL "  GETENV(`%s')\n", eval_result));
-            if (!env_value)
-            {
+            if (!env_value) {
                hsc_message(hp, MSG_UNKN_ENVVAR,
                            "unknown environment variable %q",
                            get_vartext(dest));
@@ -743,9 +708,7 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
             eval_result = get_vartext(dest);
             D(fprintf(stderr, DHL "  =`%s'\n", eval_result));
          }
-      }
-      else if (!upstrcmp(nw, "GETFILESIZE"))
-      {
+      } else if (!upstrcmp(nw, "GETFILESIZE")) {
          /* retrieve size of a file */
          EXPSTR *filesizestr = init_estr(0);
          HSCATTR *filedestattr = new_hscattr(PREFIX_TMPATTR "get.filesize");
@@ -755,98 +718,88 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
          filedestattr->vartype = VT_STRING;
          filename = eval_expression(hp, filedestattr, NULL);
          if (filename)
-         {
             eval_result = getfilesize(hp, filesizestr, filename);
-         }
-         if (eval_result)
-         {
+         if (eval_result) {
             set_vartext(dest, eval_result);
             eval_result = get_vartext(dest);
          }
          del_hscattr(filedestattr);
          del_estr(filesizestr);
-      }
-      else if (!upstrcmp(nw, "GETTIME"))
-      {
+      } else if (!upstrcmp(nw, "GETFILEDATE")) {
+         EXPSTR *filedatestr = NULL;
+         HSCATTR *filedestattr = new_hscattr(PREFIX_TMPATTR "get.filedate");
+         STRPTR filename = NULL;
+         const struct tm *time;
+
+         eval_result = NULL;
+         filedestattr->vartype = VT_STRING;
+         if((NULL != (filename = eval_expression(hp, filedestattr, NULL))) &&
+            (NULL != (time = fgetmtime(filename))) &&
+            (NULL != (filedatestr = gettimestr(hp, time)))) {
+            set_vartext(dest, estr2str(filedatestr));
+            eval_result = get_vartext(dest);
+         }
+         del_hscattr(filedestattr);
+         del_estr(filedatestr);
+      } else if (!upstrcmp(nw, "GETTIME")) {
          /* get local time */
          EXPSTR *timestr = gettimestr(hp, localtime(&(hp->start_time)));
 
          D(fprintf(stderr, DHL "  GETTIME\n"));
-         if (timestr)
-         {
+         if (timestr) {
             set_vartext(dest, estr2str(timestr));
             del_estr(timestr);
             eval_result = get_vartext(dest);
          }
-         check_brakets(hp);
-      }
-      else if (!upstrcmp(nw, "GETGMTIME"))
-      {
+         check_brackets(hp);
+      } else if (!upstrcmp(nw, "GETGMTIME")) {
          /* get greenwich mean time */
          EXPSTR *timestr = gettimestr(hp, gmtime(&(hp->start_time)));
 
          D(fprintf(stderr, DHL "  GETGMTIME\n"));
-         if (timestr)
-         {
+         if (timestr) {
             set_vartext(dest, estr2str(timestr));
             del_estr(timestr);
             eval_result = get_vartext(dest);
          }
-         check_brakets(hp);
-      }
-      else if (!upstrcmp(nw, "SET"))
-      {
+         check_brackets(hp);
+      } else if (!upstrcmp(nw, "SET")) {
          nw = eval_attrname(hp,eadest);
-         if (nw)
-         {
+         if (nw) {
             HSCATTR *attr = find_varname(hp->defattr, nw);
 
-            if (attr)
-            {
+            if (attr) {
                if (attr->vartype == VT_BOOL)
-               {
                   set_varbool(dest, get_varbool(attr));
-               }
                else if (get_vartext(attr))
                   set_varbool(dest, TRUE);
                else
                   set_varbool(dest, FALSE);
                eval_result = get_vartext(dest);
-            }
-            else
-            {
+            } else {
                hsc_msg_unkn_attr_ref(hp, nw);
                *err = TRUE;
             }
          }
-      }
-		else if (!upstrcmp(nw, "BASENAME"))
-		{
+      } else if (!upstrcmp(nw, "BASENAME")) {
          eval_result = eval_expression(hp, tmpdest, NULL);
-         if (eval_result)
-         {
+         if (eval_result) {
             D(fprintf(stderr, DHL "  BASENAME(`%s')\n", eval_result));
 				set_var_basename_ext(eval_result,dest,FALSE);
 				eval_result = get_vartext(dest); 
             D(fprintf(stderr, DHL "  =`%s'\n", eval_result));
 			}
-		}
- 		else if (!upstrcmp(nw, "EXTENSION"))
-		{
+		} else if (!upstrcmp(nw, "EXTENSION")) {
          eval_result = eval_expression(hp, tmpdest, NULL);
-         if (eval_result)
-         {
+         if (eval_result) {
             D(fprintf(stderr, DHL "  EXTENSION(`%s')\n", eval_result));
 				set_var_basename_ext(eval_result,dest,TRUE);
 				eval_result = get_vartext(dest); 
             D(fprintf(stderr, DHL "  =`%s'\n", eval_result));
 			}
-		}
-		else if (!upstrcmp(nw, "URIKIND"))
-		{
+		} else if (!upstrcmp(nw, "URIKIND")) {
          eval_result = eval_expression(hp, tmpdest, NULL);
-         if (eval_result)
-         {
+         if (eval_result) {
 				static const STRPTR kinds[] = {"abs","ext","rel","rsv"};
 
             D(fprintf(stderr, DHL "  URIKIND(`%s')\n", eval_result));
@@ -854,8 +807,7 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
 				eval_result = get_vartext(dest); 
             D(fprintf(stderr, DHL "  =`%s'\n", eval_result));
 			}
-		}
-      else
+		} else
          inungetcw(inpf);
    }
 
@@ -968,7 +920,7 @@ static BYTE eval_op(HSCPRC * hp)
       hsc_msg_eof(hp, "operator expected");
    }
 
-   return (op);
+   return (BYTE)op;
 }
 
 /*
