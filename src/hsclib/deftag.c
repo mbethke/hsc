@@ -312,7 +312,7 @@ static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
       ok |= check_tag_option(hp, option, tag,
             TO_JERK_STR, TO_JERK_SHT, HT_JERK);
       ok |= check_tag_option(hp, option, tag,
-            TO_AUTOCLOSE_STR, TO_AUTOCLOSE_SHT, HT_AUTOCLOSE);
+            TO_AUTOCLOSE_STR, TO_AUTOCLOSE_SHT, hp->xhtml ? HT_CLOSE : HT_AUTOCLOSE);
       ok |= check_tag_option(hp, option, tag,
             TO_EMPTY_STR, TO_EMPTY_SHT, HT_EMPTY);
       ok |= check_tag_option(hp, option, tag,
@@ -490,12 +490,9 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
    if(!strcmp(varname,"/")) return TRUE;
 
    /* append attribute name to attr_str */
-   if (hp->compact)
-   {
+   if (hp->compact) {
       app_estr(attr_str, compactWs(hp, infgetcws(inpf)));
-   }
-   else
-   {
+   } else {
       app_estr(attr_str, infgetcws(inpf));
    }
    app_estr(attr_str, infgetcw(inpf));
@@ -505,8 +502,7 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
       lowstr(estr2str(attr_str));
    }
 
-   if (!attr)
-   {
+   if (!attr) {
       /* attribute not found: assign to dummy-attribute */
       attr = &skipvar;
       attr->name = varname;
@@ -521,14 +517,10 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
        * if the whole tag is unknown, no message is launched;
        * if it is a normal tag, this causes a warning
        * if it is a macro tag, it causes an error */
-      if (!tag_unknown)
-      {
-         if (is_macro_tag)
-         {
+      if (!tag_unknown) {
+         if (is_macro_tag) {
             hsc_msg_unkn_attr_macro(hp, varname, tagname);
-         }
-         else
-         {
+         } else {
             hsc_msg_unkn_attr_tag(hp, varname, tagname);
          }
       }
@@ -537,15 +529,8 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
    /* get argument */
    nw = infgetw(inpf);
    if (nw) {
-      if (!strcmp(nw, "="))
-      {
+      if (!strcmp(nw, "=")) {
          /* append "=" to log - always strips WS b/w attribute and value */
-         /*
-         if (!hp->compact)
-         {
-            app_estr(val_str, infgetcws(inpf));
-         }
-         */
          app_estr(val_str, infgetcw(inpf));
 
          /* parse expression */
@@ -777,26 +762,19 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
    clr_estr(hp->tag_attr_str);
 
    /* read args */
-   do
-   {
-      if (!nw)
-      {
+   do {
+      if (!nw) {
          hsc_msg_eof(hp, "read attributes");
-      }
-      else
-      {
+      } else {
          /*
           * process next attribute
           */
-         if (!strcmp(nw, ">"))
-         {
+         if (!strcmp(nw, ">")) {
             nw = NULL;
             ok = TRUE;
-         }
-         else
-         {
-            /* if in XHTML compatibility mode, ensure there is no
-               attribute after the closing slash */
+         } else {
+            /* if in XHTML mode, ensure there is no attribute after
+             * the closing slash */
             if(hp->xhtml && (tag->option & HT_EMPTY) && !hp->xhtml_emptytag) {
                hsc_message(hp, MSG_ATTR_AFTER_SLASH,
                      "%a after closing slash in empty tag",
@@ -810,9 +788,7 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
 
                set_tag_arg(hp, varlist, nw, tag->name,
                      tag_unknown, is_macro_tag);
-            }
-            else
-            {
+            } else {
                /* append empty value */
 #if 0
                app_estr(hp->tag_attr_str, "\"\"");
