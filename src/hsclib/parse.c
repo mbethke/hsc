@@ -532,9 +532,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
              * remembered */
             append_end_tag(hp, tag);
          }
-      }
-      else
-      {
+      } else {
          /*
           *
           * process end-tag
@@ -628,13 +626,11 @@ BOOL hsc_parse_tag(HSCPRC * hp)
        */
       write_tag = (!(tag) || !(tag->option & HT_NOCOPY));
 
-      if (tag)
-      {
+      if (tag) {
          /*
           * check if tag should be stripped
           */
-         if (!postprocess_tagattr(hp, tag, open_tag))
-         {
+         if (!postprocess_tagattr(hp, tag, open_tag)) {
             /* stripped tag with external reference */
             if (open_tag)
             {
@@ -642,10 +638,8 @@ BOOL hsc_parse_tag(HSCPRC * hp)
             }
             hnd = NULL;     /* don't call handle */
             write_tag = FALSE;      /* don't output tag */
-         }
-         else if (hp->strip_tags
-               && strenum(tag->name, hp->strip_tags, '|', STEN_NOCASE))
-         {
+         } else if (hp->strip_tags &&
+                    strenum(tag->name, hp->strip_tags, '|', STEN_NOCASE)) {
             /* strip tag requested by user */
             if (!(tag->option & HT_SPECIAL))
             {
@@ -665,9 +659,36 @@ BOOL hsc_parse_tag(HSCPRC * hp)
             /*
              * get values for size from reference
              */
-         }
-         else if (tag->uri_size && get_vartext(tag->uri_size))
+         } else if (tag->uri_size && get_vartext(tag->uri_size))
             get_attr_size(hp, tag);
+
+         /* flush all CSS properties to a STYLE attribute */
+         if(NULL != hp->tag_styles->first) {
+            BOOL semicolon = FALSE;
+            STRPTR quote = (QMODE_SINGLE == hp->quotemode) ? "'" : "\"";
+            HSCSTYLE *stylend;
+            DLNODE *nd;
+
+            /* append attribute and quote */
+            app_estr(hp->tag_attr_str, hp->lctags ? " style=" : " STYLE=");
+            app_estr(hp->tag_attr_str, quote);
+            /* loop over all nodes in styles list */
+            while(NULL != (nd = hp->tag_styles->first)) {
+               stylend = (HSCSTYLE*)(nd->data);
+               /* if there is more than one pair, they have
+                * to be separated */
+               if(semicolon) app_estr(hp->tag_attr_str, "; ");
+               /* append <name>:<value> */
+               app_estr(hp->tag_attr_str, stylend->name);
+               app_estr(hp->tag_attr_str, ":");
+               app_estr(hp->tag_attr_str, stylend->value);
+               /* remove node from list */
+               del_dlnode(hp->tag_styles, nd);
+               semicolon = TRUE;
+            }
+            /* closing quote */
+            app_estr(hp->tag_attr_str, quote);
+         }
       }
 
       /* call handle if available */
@@ -681,19 +702,13 @@ BOOL hsc_parse_tag(HSCPRC * hp)
                STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close) = NULL;
 
          if (open_tag)
-         {
             tag_callback = hp->CB_start_tag;
-         }
          else
-         {
             tag_callback = hp->CB_end_tag;
-         }
 
          /* enable output if necessary */
          if (hp->suppress_output)
-         {
             hp_enable_output(hp, "non-internal tag occured");
-         }
 
          /* write (flush) white spaces */
          hsc_output_text(hp, "", "");
@@ -709,9 +724,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
 
       /* skip LF if requested */
       if (tag && (tag->option & HT_SKIPLF))
-      {
          skip_next_lf(hp);
-      }
 
       /* if tag should check for succeeding white spaces,
        * tell this hscprc now */
@@ -723,9 +736,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
 
       /* remove temporary created tag */
       if (unknown_tag)
-      {
          del_hsctag(tag);
-      }
 
    }
 
@@ -900,7 +911,7 @@ BOOL hsc_parse_amp(HSCPRC * hp)
                if ((nd == NULL) && (attr == NULL)) {
                   hsc_message(hp, MSG_UNKN_ENTITY,
                         "unknown %e", nxtwd);
-               } else {
+               } else if(NULL != nd) {
                   /* check for icon-entity and warn about */
                   /* portability problem */
                   HSCENT *entity = dln_data(nd);
