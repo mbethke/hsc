@@ -385,7 +385,7 @@ HSCATTR *define_var(HSCPRC * hp, DLLIST * varlist, ULONG unmasked_flags)
  *
  * copies a local attribute to the global attribute list
  *
- * NOTE: the VF_MACRO-flag of the copy is enabled!
+ * NOTE: the VF_MACRO-flag of the copy is disabled!
  */
 static HSCATTR *copy_local_var(DLLIST * destlist, HSCATTR * locvar, ULONG mci)
 {

@@ -1,0 +1,21 @@
+IMPORTANT
+=========
+
+For a short general information, read `README'.
+
+For a complete list of fixes and improvements, read `CHANGES'.
+
+To read the docs, start Your w3-browser and open the file
+`docs/index.html'.
+
+Users of previous versions should read `Hmpf_Grmbl_Wrcks' which
+tells you how to cope with incompatibilities. If this document does
+not exist, there has been nothing remarkable about this release.
+
+If you want to compile hsc yourself, read `source/README'. This
+document is not included in the AmigaOS-binary-archive, you will
+need to download `hsc-source.lha' from the same site you've got the
+binaries.
+
+Thomas Aglassinger <agi@giga.or.at>
+

@@ -38,7 +38,6 @@
  * #define MSG_NO_OUTPUT          (MSG_FATAL+  4)   / * can't open output file * /
  * #define MSG_NO_OUTFNAME        (MSG_FATAL+  5)   / * can't evaluate outp-filenm. * /
  * #define MSG_WSPC_AROUND_TAG    (MSG_STYLE+  8)   / * white space around tag * /
- * #define MSG_UNMA_QUOTE         (MSG_NOTE + 51)   / * quote inside text * /
  *
  */
 
@@ -161,5 +160,6 @@
 #define MSG_REDEFINE_ID        (MSG_WARN + 75)  /* duplicate ID */
 #define MSG_NOEXEC_OUTPUT      (MSG_WARN + 80)  /* no output-file for <$exec>*/
 #define MSG_IOERROR            (MSG_ERROR+ 83)  /* i/o-error */
+#define MSG_NO_DOCENTRY        (MSG_WARN + 51)  /* no document-entry for id */
 #endif
 

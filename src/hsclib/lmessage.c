@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 23-Jul-1996
+ * updated: 10-Sep-1996
  * created: 10-Mar-1996
  *
  * NOTE: see "hsclib/msgid.h" for message-id's and
@@ -60,7 +60,9 @@ static VOID msg_entity(EXPSTR * msgstr, CONSTRPTR entname)
 static VOID msg_idname(EXPSTR * msgstr, CONSTRPTR idname)
 {
     app_estr(msgstr, "id ");
+    app_estr(msgstr, "\"#");
     app_estr(msgstr, idname);
+    app_estrch(msgstr, '"');
 }
 
 /*
@@ -242,7 +244,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                     break;
 
                 case 'i':
-                    /* append entity */
+                    /* append ID */
                     msg_idname(hp->curr_msg, va_arg(ap, STRPTR));
                     break;
 

@@ -98,7 +98,10 @@ STRPTR upstr(STRPTR s)
  */
 int upstrcmp(CONSTRPTR s1, CONSTRPTR s2)
 {
+#define QUICKY 1
+#if !QUICKY
     int equal;                  /* result of _strcp() */
+#endif
     unsigned char c1, c2;       /* chars currently comparing */
     size_t i = 0;               /* string index counter */
 
@@ -108,6 +111,9 @@ int upstrcmp(CONSTRPTR s1, CONSTRPTR s2)
         i++;
     } while (c1 && c2 && (c1 == c2));
 
+#if QUICKY
+    return(c2-c1);
+#else
     if (c1 < c2)
         equal = -1;             /* s1 < s2 */
     else if (c1 > c2)
@@ -116,6 +122,7 @@ int upstrcmp(CONSTRPTR s1, CONSTRPTR s2)
         equal = 0;              /* s1 = s2 */
 
     return (equal);             /* return result */
+#endif
 }
 
 /*

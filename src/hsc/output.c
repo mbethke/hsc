@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 26-Jul-1996
+ * updated:  9-Sep-1996
  * created:  1-Jul-1995
  */
 
@@ -177,7 +177,7 @@ VOID append_output(STRPTR text)
         /* if so, append a new output-string to the list
          * and make use this one */
 #if DEBUG_HSC_OUTPUT
-        fprintf(stderr, DHP "new string after %lu/%lu chars\n",
+        fprintf(stderr, DHSC "new string after %lu/%lu chars\n",
                 estrlen(outstr), OUTPUT_STEPSIZE);
 #endif
         outstr = init_estr(OUTPUT_STEPSIZE);

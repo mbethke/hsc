@@ -1,10 +1,37 @@
 Hmpf... Grmbl... Wrcks...
 =========================
 
-This file is of no use for new users of hsc and just
-describes the in-combat-ibilities of this release to
-the previous one. For improvements and bugfixes,
-refer to "CHANGES".
+This file is of no use for new users of hsc and just describes the
+in-combat-ibilities of this release to the previous one. For a 
+complete list of improvements and bugfixes, refer to "CHANGES".
+
+For users of hsc 0.9.9
+----------------------
+
+- The old if-syntax is no more supported.
+- Plain 68000-CPUs are no more supported; at least a 68020 is
+  required now. Flame me, if this is a problem for you, but I
+  don't think hsc is usefull on a plain 68k, and a single 
+  binary makes the archive significantly smaller.
+
+For users of hsc 0.9.10pr*
+--------------------------
+
+- CLI-option QUOTEMODE has been renamed to QUOTESTYLE
+- Unix-version now (again) returns "0" if only warnings occured
+
+For those who want to compile hsc
+---------------------------------
+
+- OLDIFCOND is no more supported
+
+---------------------------------------------------------------------
+Below you can find the "Hmpf_Grmbl_Wrcks" for hsc 0.9.8, just for the
+case you missed this release during the summer.
+---------------------------------------------------------------------
+
+Hmpf... Grmbl... Wrcks... (for hsc 0.9.8)
+=========================================
 
 For those who want to compile hsc
 ---------------------------------

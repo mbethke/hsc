@@ -15,14 +15,17 @@
 # HSCDEPP  - shell command that invokes hscdepp
 #
 
-DESTDIR =/docs/
+#PARENT	= ../
+PARENT	= /
+DESTDIR = $(PARENT)docs/
 IGNORE  =ign=46
 PRJFILE =hsc.project
 STDINC  =inc/macro.hsc inc/webpage.hsc
 HSCMISC	=rplcent getsize compact mode=pedantic #quotemode=double
 
-HSC     =/hsc
-HSCFLAGS=$(HSCMISC) $(IGNORE) prjfile=$(PRJFILE) to=$(DESTDIR) $(STDINC)
+HSC     =$(PARENT)hsc
+HSCFLAGS=$(HSCMISC) $(IGNORE) prjfile=$(PRJFILE) to=$(DESTDIR) $(STDINC) \
+		prefsfile=$(PARENT)hsc.prefs msgansi status=quiet
 
 HSCDEPP =/hscdepp
 
@@ -35,7 +38,8 @@ all : all_hsc /index.html
 # implicit rule for html-files
 #
 $(DESTDIR)%.html : %.hsc
-	$(HSC) $(HSCFLAGS) $< 
+	@echo $@
+	@$(HSC) $(HSCFLAGS) $< 
 
 #
 # update dependencies
@@ -59,12 +63,12 @@ endif
 #
 # main page
 #
-/index.html : main_index.hsc
+$(PARENT)index.html : main_index.hsc
 	$(HSC) to=$@ $(HSCMISC) $<
 
 # --- DO NOT MODIFY THIS LINE -- hsc-dependencies follow ---
 
-# dependencies updated: Thursday 01-Aug-1996 01:42:53
+# dependencies updated: Thursday 12-Sep-1996 11:33:29
 
 all_hsc : /docs/features/spctags.html /docs/features/exec.html \
     /docs/index.html /docs/updates.html /docs/features/expressions.html \

@@ -20,7 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  8-Jul-1995
+ * updated:  6-Sep-1995
  * created:  7-Jul-1995
  */
 
@@ -30,7 +30,7 @@
 
 #include "hsclib/inc_base.h"
 
-#include "hsclib/document.h"
+#include "hscprj/document.h"
 #include "hsclib/idref.h"
 #include "hsclib/uri.h"
 
@@ -56,7 +56,8 @@ BOOL postprocess_tagattr(HSCPRC * hp, HSCTAG * tag, BOOL open_tag)
 {
     BOOL dontstrip = TRUE;
 
-    if (tag->attr) {
+    if (tag->attr)
+    {
 
         /*
          * find out, if list should be refused
@@ -65,31 +66,40 @@ BOOL postprocess_tagattr(HSCPRC * hp, HSCTAG * tag, BOOL open_tag)
             && tag->uri_stripext
             && get_vartext(tag->uri_stripext)
             && (uri_kind(get_vartext(tag->uri_stripext)) == URI_ext)
-            ) {
+            )
+        {
             D(fprintf(stderr, DHL "strip external\n"));
             dontstrip = FALSE;
-        } else if (open_tag) {
+        }
+        else if (open_tag)
+        {
             /*
              * search for new IDs and references
              */
             DLNODE *nd = dll_first(tag->attr);
-            while (nd) {
+            while (nd)
+            {
                 HSCATTR *attrib = (HSCATTR *) dln_data(nd);
                 STRPTR value = get_vartext(attrib);
 
-                if (value) {
-                    if (attrib->vartype == VT_URI) {
+                if (value)
+                {
+                    if (attrib->vartype == VT_URI)
+                    {
                         /* new reference */
-                        INFILEPOS *fpos = new_infilepos( hp->inpf);
-                        CALLER *newcaller = fpos2caller( fpos);
-                        HSCREF *newref = app_reference(hp->document, value);
+                        INFILEPOS *fpos = new_infilepos(hp->inpf);
+                        CALLER *newcaller = fpos2caller(fpos);
+                        HSCREF *newref =
+                        app_reference(hp->project->document, value);
 
                         newref->caller = newcaller;
 
                         del_infilepos(fpos);
                         D(fprintf(stderr, DHL "new REFERENCE: `%s'\n", value));
 
-                    } else if (attrib->vartype == VT_ID) {
+                    }
+                    else if (attrib->vartype == VT_ID)
+                    {
                         /* new id defined */
                         D(fprintf(stderr, DHL "new ID: `%s'\n", value));
                         add_local_iddef(hp, value);

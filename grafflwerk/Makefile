@@ -51,7 +51,7 @@ depend :
 #
 NEW :
 ifndef FILE
-        @echo *** pleaese specify variable FILE (and on your option INCLUDE)
+        @echo *** please specify variable FILE (and on your option INCLUDE)
 else
 	$(HSC) $(HSCFLAGS) $(INCLUDE) from=$(FILE) 
 endif

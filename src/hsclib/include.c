@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 15-Jul-1996
+ * updated:  6-Sep-1996
  * created: 19-Feb-1996
  */
 
@@ -163,7 +163,6 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
 
     if (inpf)
     {
-
         /* include opened file */
         ok = hsc_include(hp, inpf, optn, base_pos);
 
@@ -171,20 +170,25 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
          * or an include-file and update project-data
          * if neccessary
          */
-        if (ok && hp->document)
+        if (ok && hp->project)
         {
             if (optn & IH_IS_SOURCE)
             {
                 if (!filename)
                     filename = FILENAME_STDIN;
                 D(fprintf(stderr, DHL "INCLUDE source: `%s'\n", filename));
-                reallocstr(&(hp->document->sourcename), filename);
+                hsc_project_set_source(hp->project, filename);
+                /*reallocstr(&(hp->document->sourcename), filename); */
             }
 
             /* check if this file is an include-file
              * and update project-data if neccessary */
             if (filename && (optn & IH_IS_INCLUDE))
             {
+                D(fprintf(stderr, DHL "INCLUDE subfile: `%s'\n", filename));
+#if 1
+                hsc_project_add_include(hp->project, filename);
+#else /* TODO: remove */
                 HSCINC *inc = app_include(hp->document, filename);
                 INFILEPOS *fpos = NULL;
                 if (hp->inpf)
@@ -192,7 +196,7 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
                 inc->caller = fpos2caller(fpos);
                 if (fpos)
                     del_infilepos(fpos);
-                D(fprintf(stderr, DHL "INCLUDE subfile: `%s'\n", filename));
+#endif
             }
         }
     }

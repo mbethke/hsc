@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  3-Aug-1996
+ * updated: 31-Aug-1996
  * created:  1-Jul-1995
  *
  */
@@ -35,7 +35,7 @@
 #include "hsclib/input.h"
 #include "hsclib/parse.h"
 #include "hsclib/posteval.h"
-#include "hsclib/project.h"
+#include "hscprj/project.h"
 #include "hsclib/skip.h"
 #include "hsclib/size.h"
 #include "hsclib/uri.h"

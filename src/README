@@ -9,13 +9,30 @@ directory).
 IMPORTANT: If you've compiled older versions of hsc before, remove 
 all files of the old sources before you continue.
 
-There are two makefiles:
+There are two makefiles, but only one is required to create the 
+binaries:
 
-"Makefile.dodl" is designed to compile with CC under an Unix-esh 
-environment without any special options or debugging-features enabled.
+=====================
+USING "MAKEFILE.DODL"
+=====================
 
-"Makefile", which uses conditionals for figuring out the compiler and
-environment, 
+"Makefile.dodl" is designed to compile with CC under an Unixoid
+environment without any special options or debugging-features
+enabled.
+
+Use
+
+    make -f Makefile.dodl
+
+to start the compilation-sequence.
+
+================
+USING "MAKEFILE"
+================
+
+"Makefile" uses conditionals for figuring out the compiler and
+environment. You can change the environment commenting-out the
+required symbol. GNUmake v3.74 is recommended.
 
 At the moment, only AmigaOS and Unix are supported. For AmigaOS, you
 require GCC or SAS/c, for Unix,  GCC and CC are supported.
@@ -23,21 +40,58 @@ require GCC or SAS/c, for Unix,  GCC and CC are supported.
 This makefile supports three compilation modes: "debug" for a
 debugging version that includes all debugging information, supports
 a source-level memory-tracking and enables some additional output
-and plausibility checks. "norm" links only some debugging information,
-and "optim" strips all debugging information and creates an optimized
-executable; with some compilers, "optim" migth cause problems.
+and plausibility checks. "norm" links only some debugging
+information, and "optim" strips all debugging information and
+creates an optimized executable.
 
-Normally, no warnings should show up, expect about ununsed functions
+After having done this, use
+
+    make
+
+to start the compilation-sequence.
+
+-----------------
+COMPILER WARNINGS
+-----------------
+Normally, no warnings should show up, exept about ununsed functions
 and parameters. This is because some parameters and functions are
 only used by the debugging-version.
 
-Problems might occure, if your compiler does not support ANSI-C
-(as "cc" under SunOS on my university - Pfthuahuhahua!), but I won't
+------------
+OPTIMISATION
+------------
+If you set the compilation mode to "optim", the binary will be 
+optimised for small code.
+
+If the optimised version causes serious problems, try to compile
+with compilation mode set to "norm". There are loads of buggy
+optimisers out there..
+
+========
+PROBLEMS
+========
+
+If you modify the Makefile, make sure that your editor does not
+convert TABs to blanks.
+
+Make sure that you didn't extract the source-archive to a path where
+an old source-archive has already been located; remove older 
+versions before you extract the sources.
+
+Problems might occure, if your compiler does not support ANSI-C (as
+"cc" under SunOS on my university - Pfthuahuhahua!), but I won't
 care about this.
 
-If nothing went wrong, you now should have created two files called
-"hsc/hsc" and "hscdepp/hscdepp" which are the executables. Now follow
-the installation instructions of the documentation that came with the 
-main-archive.
+============
+THE BINARIES
+============
+
+If nothing went wrong, you now should have created two files:
+
+    hsc/hsc
+    hscdepp/hscdepp
+
+These are the executables. Now follow the installation-instructions 
+of the documentation that came with the main-archive.
 
 Thomas Aglassinger <agi@giga.or.at>

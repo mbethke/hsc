@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  9-Aug-1995
+ * updated: 17-Aug-1995
  * created: 11-Oct-1995
  */
 
@@ -119,9 +119,9 @@ static BOOL eval_boolstr(STRPTR s)
 }
 
 /* check for empty brakets (after GetTime/GetGmTime) */
-static VOID check_brakets( HSCPRC *hp)
+static VOID check_brakets(HSCPRC * hp)
 {
-    if ( parse_wd(hp, "("))
+    if (parse_wd(hp, "("))
         parse_wd(hp, ")");
 }
 
@@ -354,16 +354,16 @@ STRPTR quotestr(int quote)
 {
     STRPTR s = "UNKNOWN";
 
-    if (quote=='\"')
-        s= "[double]";
-    else if (quote=='\'')
-        s="[single]";
+    if (quote == '\"')
+        s = "[double]";
+    else if (quote == '\'')
+        s = "[single]";
     else if (quote == VQ_NO_QUOTE)
-        s="[none]";
+        s = "[none]";
     else
         panic("unknown quote-kind");
 
-    return(s);
+    return (s);
 }
 
 /*
@@ -410,7 +410,7 @@ static VOID choose_quote(HSCPRC * hp, HSCATTR * attr)
 
     if (qm == QMODE_KEEP)
     {
-#if 0 /* TODO: enable this */
+#if 0                           /* TODO: enable this */
         /* check, if quote is missing */
         if ((attr->quote == VQ_NO_QUOTE)
             && nasty_char)
@@ -1288,7 +1288,7 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
             }
 #else
             if ((dest->vartype != VT_BOOL)
-                && !(dest->varflag & (VF_MACRO|VF_KEEP_QUOTES)))
+                && !(dest->varflag & (VF_MACRO | VF_KEEP_QUOTES)))
             {
                 choose_quote(hp, dest);
             }
@@ -1422,5 +1422,47 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
     del_estr(vararg);
 
     return (exprstr);
+}
+
+/*
+ * eval_cloneattr
+ *
+ * read name of attribute, check if it has been set;
+ * if so, return value of attribute.
+ * all possible errors are handled by this function.
+ *
+ * params: hp.....hsc-process
+ *         dest...detination attribute where to store value
+ * result: value of attribute, if it has been set, or NULL
+ *         if attribute is empty or unknown or other error
+ *         has occured.
+ */
+STRPTR eval_cloneattr(HSCPRC * hp, HSCATTR *dest)
+{
+    STRPTR nw = eval_attrname(hp);
+    STRPTR attrval = NULL;
+
+    if (nw)
+    {
+        HSCATTR *attr = find_varname(hp->defattr, nw);
+
+        if (attr)
+        {
+            attrval = get_vartext(attr);
+            dest->quote = attr->quote;
+        }
+        else
+            hsc_msg_unkn_attr(hp, nw);
+    }
+
+    /* update attribute value and quotes */
+    if (attrval)
+    {
+        set_vartext(dest, attrval);
+        attrval = get_vartext(dest);
+        choose_quote(hp, dest);
+    }
+
+    return( attrval);
 }
 

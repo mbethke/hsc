@@ -1,4 +1,4 @@
-<WEBPAGE chapter="hsc - " title="Options and switches"
+<WEBPAGE chapter="hsc - " title="Invoking hsc"
     PREV="install.html"
     NEXT="examples.html"
     QTEXT=("shoulder, bicep, elbow, arm<BR>"
@@ -31,19 +31,25 @@
 <DD>
 </$MACRO>
 
+<H2>General rules</H2>
+
+<P>As <hsc> is an tool developed under AmigaOS and I never liked
+the cryptic "cmd -cvf -osepp.x"-way of invoking commands comming
+from Unix, <hsc> uses a syntax like most commands of AmigaOS;
+even for ports on other operating-systems.</P>
+
 <P>All options and swiches are case-insensitive. If you start <hsc>
 without any options, a short help message will be displayed.</P>
 
 <P>Options require an additional argument, for example a file.
-All of the below terms are treated as the same:</P>
-<PRE>
-        FILE hugo.hsc
-        file hugo.hsc
-        file=hugo.hsc
-</PRE>
+All of the below terms are treated as the same: 
+<KBD>FILE hugo.hsc</KBD>, <KBD>file hugo.hsc</KBD> or 
+<KBD>file=hugo.hsc</KBD>.
 
 <P>Switches are enabled if their keyword is detected within
 the command-line.</P>
+
+<P>If you still don't understand this, get a manual for AmigaOS.</P>
 
 <H2>Options</H2>
 
@@ -53,30 +59,32 @@ the command-line.</P>
 <EXPLAN TITLE="LICENSE" NAME="license">
     Display a short version of the <A HREF="../COPYING">GNU General
     Public License</A> and exit.
-<EXPLAN TITLE="[FROM=]<I>inputfile_name</I>" NAME="from">
+<EXPLAN TITLE="[FROM=]<I>inputfile-name</I>" NAME="from">
     Specifies the input filename. To use <stdin> as
     input file, the peudo-filename <CODE>STDIN</CODE> (case sensitive)
     should be specified. If you specify more than one file,
     the last file is taken as mainfile, and all previous files are
     included before it. This is useful to include macro-definitions
     within the command-line instead of an <ln_include> in the hsc-source.
-<EXPLAN TITLE="TO=<I>output_filename|destination_directory</I>" NAME="to">
+<EXPLAN TITLE="TO=<I>output-filename|destination-directory</I>" NAME="to">
     Specifies the output filename or the destination directory.
     If the argument ends with a "<KBD>/</KBD>" (or also "<KBD>:</KBD>"),
     it is interpreted as a directory. In this case, the name of the
     outputfile is created from the name of the input file, with an
     extension specified (see below).<BR>
     If no output file is set, <stdout> is used instead.
-<EXPLAN TITLE="EXTENSION=<I>output_extension</I>" NAME="extension">
+<EXPLAN TITLE="EXTENSION=<I>output-extension</I>" NAME="extension">
     If you specify a directory for output, the output-filename
     will depend on the input-filename and the extension specified
     with this options. If you do not set an extension, "<CODE>html</CODE>"
     will be used. A period (`<CODE>.</CODE>') will be added automatically.
+    Setting <KBD>EXTENSION=.</KBD> will ommit this and result into exactly 
+    the same filename as the input.
     If you specify a complete filename for output, this option has no
     effect.
-<EXPLAN TITLE="MSGFILE=<I>message_filename</I>" NAME="msgfile">
+<EXPLAN TITLE="MSGFILE=<I>message-filename</I>" NAME="msgfile">
     Redirects messages to a file. By default, <stderr> ist used.
-<EXPLAN TITLE="MSGFORMAT=<I>format_description</I>" NAME="msgformat">
+<EXPLAN TITLE="MSGFORMAT=<I>format-description</I>" NAME="msgformat">
     Describes how messages should be displayed. Legal placeholders:
     <PRE>
         %f      filename
@@ -88,18 +96,22 @@ the command-line.</P>
     </PRE>
     Example: To get GCC-like messages, use
     <CODE>MSGFORMAT="%f:%y: %c %i: %m"</CODE>.
-<EXPLAN TITLE="PRJFILE=<I>project_filename</I>" NAME="prjfile">
+<EXPLAN TITLE="PREFSFILE=<I>preferences-filename</I>" NAME="prefsfile">
+    Specifies filename for <A HREF=":features/prefs.html">sytax-definition</A>
+    to be used, if you don't want to use the defaults.
+
+<EXPLAN TITLE="PRJFILE=<I>project-filename</I>" NAME="prjfile">
     Stores some information about the document currently processing
     in a seperate file to extend functionality. Read the section
     about <A HREF="project/index.html">Project managment</A> for more
     details. Note that all documents within a project should use the
     same project-file.
-<*
+
 <EXPLAN TITLE="DEFINE" NAME="define">
     Defines a global attribute. The syntax is equal to <ln_define>, exept
     that you need no quotes surrounding the value.<BR>
     Example: <CODE>DEFINE "hugo:string=hugo was here"</CODE>
-*>
+
 <EXPLAN TITLE="IGNORE" NAME="ignore">
     Ignore warning message number. Usually, <KBD>IGNORE</KBD> needs a numeric
     argument and can occure multiple. Example:
@@ -122,6 +134,16 @@ the command-line.</P>
     NORMAL</KBD> and <KBD>RELAXED</KBD>. Default is <KBD>NORMAL</KBD>.
     This only disables several messages and warnings from the beginning.
     Any <KBD>IGNORE</KBD>s passed before are reseted.
+
+<EXPLAN TITLE="QUOTESTYLE" NAME="quotestyle">
+    Specifies which kind of quotes should be used to surround 
+    attribute-values. <KBD>KEEP</KBD> keeps the user-kind, 
+    <KBD>DOUBLE</KBD> tries to assign double quotes 
+    (eg. <CODE>"value"</CODE>), 
+    <KBD>SINGLE</KBD> tries to assign single quotes 
+    (eg. <CODE>'value'</CODE>) and <KBD>NONE</KBD> will remove
+    quotes if possible.
+
 <EXPLAN TITLE="STATUS" NAME="status">
     Display several status messages (output goes to stderr). Legal
     flags are:
@@ -137,25 +159,25 @@ the command-line.</P>
         enabled.
     <LI><KBD>FULL</KBD>: enable all status messages
     </UL>
-    The above flags can be combined by separating them with a "<KBD>|</KBD>",
+    The above flags can be combined by separating them with a <vbar>,
     eg <KBD>STATUS=line|version</KBD>, exept for <KBD>QUIET</KBD>
     and <KBD>FULL</KBD>
-<EXPLAN TITLE="STRIPTAGS=<I>tag_list</I>" NAME="striptags">
-    Strip some specific tags from document. <I>tag_list</I> is a string,
+<EXPLAN TITLE="STRIPTAGS=<I>tag-list</I>" NAME="striptags">
+    Strip some specific tags from document. <I>tag-list</I> is a string,
     that contains all tags that should be stripped, sepparated by a
-    vertical bar ("<KBD>|</KBD>").<BR>
+    <vbar>.<BR>
     See also <op_stripcomment> and <op_stripexternal>.
-<EXPLAN TITLE="ICONBASE=<I>base_uri</I>" NAME="iconbase">
+<EXPLAN TITLE="ICONBASE=<I>base-uri</I>" NAME="iconbase">
     Replace all icon-entities by images that must be available in
-    <I>base_uri</I>. For
-    example, with <CODE>ICONBASE=:icons</CODE>, the entity
+    <I>base-uri</I>. For
+    example, with <KBD>ICONBASE=:icons</KBD>, the entity
     <CODE>&amp;back;</CODE>
     is replaced by <TG>IMG SRC=":icons/back.gif" ALT="back"</TG>. Note
     that this argument does not denote a directory, but an URI. It's
     recommended to use an <fe_absuri>. If you don't want to use 
-    <CODE>*.gif</CODE>-files for your icon-entities, you can use an asterisk
-    (`<CODE>*'</CODE>) to be replaced by the name of the icon-entity;
-   eg. <CODE>ICONBASE=:icons/*.png</CODE>.
+    <KBD>*.gif</KBD>-files for your icon-entities, you can use an asterisk
+    (`<KBD>*'</KBD>) to be replaced by the name of the icon-entity;
+   eg. <KBD>ICONBASE=:icons/*.png</KBD>.
 </DL>
 
 <H2>Switches</H2>
@@ -171,6 +193,8 @@ the command-line.</P>
     <A HREF="features/getsize.html">Get width and height of images</A>
      and set corresponding attributes
     <CODE>WIDTH</CODE> and <CODE>HEIGHT</CODE> with these values;
+<EXPLAN TITLE="MSGANSI" NAME="msgansi">
+    Uses ansi-sequences to make messages more readable.
 <EXPLAN TITLE="RPLCENT" NAME="rplcent">
     <A HREF="features/rplcent.html">Replace special characters</A> with
     its entity (eg `<CODE>&uuml;</CODE>' becomes `<CODE>&amp;uuml</CODE>').

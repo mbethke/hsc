@@ -32,7 +32,7 @@ Ignore the bold type<BR></I>
 
 <H1>hsc</H1>
 
-<P><STRONG>(Version 0.9.9 <*(PRE-RELEASE#6)*>, 9-Aug-1996)</STRONG></P>
+<P><STRONG>(Version 0.9.10 <*(PRE-RELEASE#3)*>, 30-Sep-1996)</STRONG></P>
 
 <P><(DESCRIPTION)></P>
 
@@ -51,7 +51,7 @@ Ignore the bold type<BR></I>
 <UL>
 <LI><A HREF="install.html">Installation</A> - where to put the whole 
     damn thing
-<LI><A HREF="options.html">Options and swiches</A> - invoking <hsc>
+<LI><A HREF="options.html">Invoking <hsc></A> - Options and swiches
 <LI><A HREF="examples.html">Example usage</A> - how it is supposed to work
 <LI><A HREF="messages.html">Messages</A> - shit happens
 <LI><A HREF="questions.html">Questions</A> (and maybe some answers)

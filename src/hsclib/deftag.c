@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  4-Aug-1996
+ * updated: 18-Aug-1996
  * created: 13-Oct-1995
  */
 
@@ -237,7 +237,7 @@ static BOOL parse_lazy_option(HSCPRC * hp, HSCTAG * tag, STRPTR lazy)
 static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
 {
     BOOL ok = FALSE;
-    HSCATTR *attr = new_hscattr( PREFIX_TMPATTR "mbi.naw");
+    HSCATTR *attr = new_hscattr(PREFIX_TMPATTR "mbi.naw");
 
     attr->vartype = VT_STRING;
 
@@ -424,8 +424,9 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
     INFILE *inpf = hp->inpf;
     STRPTR arg = NULL;
     BOOL ok = FALSE;
+    BOOL inheritage_failed = FALSE; /* flag: set, if "?=" failed */
     STRPTR nw;
-    HSCATTR skipvar;            /* dummy attribute to skip unkown */
+    HSCATTR skipvar;            /* dummy-attribute to skip unknown */
     EXPSTR *attr_str = init_estr(40);   /* string for attribute name */
     EXPSTR *val_str = init_estr(40);    /* string for "=" and value */
 
@@ -436,8 +437,8 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
     app_estr(attr_str, infgetcw(inpf));
 
     if (!var)
-    {                           /* attribute not found */
-        /* assign to pseudo-attribute */
+    {
+        /* attribute not found: assign to dummy-attribute */
         var = &skipvar;
         var->name = varname;
         var->deftext = NULL;
@@ -477,10 +478,43 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
                 ok = TRUE;
             }
         }
+        else if (!strcmp(nw, "?"))
+        {
+            /* process "?="-assignment */
+            app_estr(val_str, infgetcws(inpf));
+            if (parse_eq(hp))
+            {
+                app_estr(val_str, "=");
+
+                arg = eval_cloneattr(hp, var);
+
+                /* append value to log */
+                if (var->quote != VQ_NO_QUOTE)
+                    app_estrch(val_str, var->quote);
+                if (get_vartext(var))
+                    app_estr(val_str, get_vartext(var));
+                if (var->quote != VQ_NO_QUOTE)
+                    app_estrch(val_str, var->quote);
+
+                if (arg)
+                {
+                    DAV(fprintf(stderr, DHL "  inherited `%s'\n", arg));
+                }
+                else
+                {
+                    DAV(fprintf(stderr, DHL "  inheritage failed\n"));
+                    inheritage_failed = TRUE;
+                }
+                ok = TRUE;
+            }
+        }
         else
         {
+            /* handle boolean attribute */
             arg = NULL;
             inungetcwws(inpf);
+            if (var == &skipvar)
+                var->vartype = VT_BOOL;
             ok = TRUE;
         }
     else
@@ -495,14 +529,21 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
                 set_varbool(var, get_varbool(var));
 
                 /* if the expression returned FALSE, remove
-                 * the boolean  switch from the call
+                 * the boolean  switch from tag-call
                  */
                 if (!get_varbool(var))
                     clr_estr(attr_str);
             }
-            else
+            else if (!inheritage_failed)
                 /* append value to attribute string */
-                app_estr(attr_str, estr2str(val_str));
+                estrcat(attr_str, val_str);
+        }
+        else if (inheritage_failed)
+        {
+            /* if attribute to inherit from was empty,
+             * remove the attribute from tag-call
+             */
+            clr_estr(attr_str);
         }
         else
         {

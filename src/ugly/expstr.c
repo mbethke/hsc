@@ -574,23 +574,35 @@ BOOL get_left_estr(EXPSTR * dest, EXPSTR * src, size_t num)
  *-------------------------------------
  */
 
-STRPTR estr2str(EXPSTR * es)
+/*
+ * ugly_estr2str: convert EXPSTR to conventional string
+ *
+ * NOTE: this function is replaced by a macro with DEBUG undefined
+ */
+STRPTR ugly_estr2str(EXPSTR * es)
 {
     return (es->es_data);
 }
 
+/*
+ * ugly_estrstrlen: return length of an EXPSTR
+ *
+ * NOTE: this function is replaced by a macro with DEBUG undefined
+ */
+size_t ugly_estrlen(EXPSTR * es)
+{
+    return (es->es_len - 1);
+}
+
+/* estrcpy: clone EXPSTR */
 BOOL estrcpy(EXPSTR * dest, EXPSTR * src)
 {
     return (set_estr(dest, estr2str(src)));
 }
 
+/* estrcat: concat two EXPSTRs */
 BOOL estrcat(EXPSTR * dest, EXPSTR * src)
 {
     return (app_estr(dest, estr2str(src)));
-}
-
-size_t estrlen(EXPSTR * es)
-{
-    return (es->es_len - 1);
 }
 

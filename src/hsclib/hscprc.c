@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  3-Aug-1996
+ * updated:  8-Sep-1996
  * created: 11-Feb-1996
  */
 
@@ -30,8 +30,10 @@
 #include "ugly/fname.h"
 #include "ugly/returncd.h"
 
+#include "hscprj/project.h"
+
 #include "hsclib/idref.h"
-#include "hsclib/project.h"
+#include "hsclib/tag_if.h"
 
 /*
  * del_inpf_stack_node
@@ -58,14 +60,14 @@ VOID del_hscprc(HSCPRC * hp)
         del_dllist(hp->defattr);
         del_dllist(hp->container_stack);
         del_dllist(hp->inpf_stack);
-        del_dllist(hp->documents);
         del_dllist(hp->idrefs);
+        del_dllist(hp->select_stack);
 
         /* remove strings */
         del_estr(hp->destdir);
         del_estr(hp->reldir);
         del_estr(hp->iconbase);
-        del_estr(hp->IF_stack);
+        del_estr(hp->if_stack);
         del_estr(hp->tag_name_str);
         del_estr(hp->tag_attr_str);
         del_estr(hp->tag_close_str);
@@ -74,14 +76,16 @@ VOID del_hscprc(HSCPRC * hp)
         del_estr(hp->curr_msg);
         del_estr(hp->curr_ref);
 
+#if 0                           /* TODO:remove */
         ufreestr(hp->filename_project);
-        ufreestr(hp->filename_process);
+#endif
+        ufreestr(hp->filename_document);
+
+        /* remove project-data */
+        del_project(hp->project);
 
         /* close input files */
         infclose(hp->inpf);
-
-        /* remove document data */
-        del_document(hp->document);
 
         /* remove message arrays */
         ufree(hp->msg_ignore);
@@ -106,7 +110,7 @@ static VOID reset_hscprc(HSCPRC * hp)
     /* reset strings */
     clr_estr(hp->destdir);
     clr_estr(hp->reldir);
-    clr_estr(hp->IF_stack);
+    clr_estr(hp->if_stack);
 
     hp->suppress_output = TRUE;
     hp->fatal = FALSE;
@@ -148,15 +152,15 @@ HSCPRC *new_hscprc(void)
         hp->defattr = init_dllist(del_hscattr);
         hp->container_stack = init_dllist(del_hsctag);
         hp->inpf_stack = init_dllist(del_inpf_stack_node);
-        hp->document = NULL;
-        hp->documents = init_dllist(del_document);
+        hp->project = NULL;
         hp->idrefs = init_dllist(del_idref);
+        hp->select_stack = init_dllist(del_select_stack_node);
 
         /* init strings */
         hp->destdir = init_estr(0);
         hp->reldir = init_estr(0);
         hp->iconbase = init_estr(0);
-        hp->IF_stack = init_estr(0);
+        hp->if_stack = init_estr(0);
         hp->tag_name_str = init_estr(128);
         hp->tag_attr_str = init_estr(128);
         hp->tag_close_str = init_estr(0);
@@ -165,8 +169,10 @@ HSCPRC *new_hscprc(void)
         hp->curr_msg = init_estr(64);
         hp->curr_ref = init_estr(64);
 
+#if 0                           /* TODO:remove */
         hp->filename_project = NULL;
-        hp->filename_process = NULL;
+        hp->filename_document = NULL;
+#endif
 
         /* alloc message arrays */
         hp->msg_ignore = (BOOL *)
@@ -384,28 +390,25 @@ BOOL hsc_set_iconbase(HSCPRC * hp, STRPTR uri)
     return (TRUE);
 }
 
+#if 0 /* TODO: remove */
 BOOL hsc_set_filename_project(HSCPRC * hp, STRPTR filename)
 {
     BOOL ok = FALSE;
-    if (!hp->filename_project)
-    {
-        D(fprintf(stderr, DHL "project =`%s'\n", filename));
-        hp->filename_project = strclone(filename);
-        ok = TRUE;
-    }
+
+    D(fprintf(stderr, DHL "project =`%s'\n", filename));
+    ok = hsc_project_set_filename(hp->project, filename);
+
     return (ok);
 }
+#endif
 
-BOOL hsc_set_filename_process(HSCPRC * hp, STRPTR filename)
+BOOL hsc_set_filename_document(HSCPRC * hp, STRPTR filename)
 {
     BOOL ok = FALSE;
-    if (!hp->filename_process)
-    {
-        D(fprintf(stderr, DHL "process =`%s'\n", filename));
-        hp->filename_process = strclone(filename);      /* TODO: remove */
-        hp->document = new_document(filename);
-        ok = TRUE;
-    }
+
+    D(fprintf(stderr, DHL "document=`%s'\n", filename));
+    hp->filename_document = strclone( filename );
+
     return (ok);
 }
 
@@ -670,17 +673,6 @@ BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text)
 /*
  * misc. functions
  */
-
-/*
- * call_panic
- *
- * panic message; called by "panic()"-macro
- */
-VOID call_panic(STRPTR text, STRPTR file, ULONG line)
-{
-    fprintf(stderr, "\n##\n## illegal state in `%s' (%lu): %s\n##\n",
-            file, line, text);
-}
 
 /*
  * nomem-handler

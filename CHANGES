@@ -1,51 +1,72 @@
+CHANGES
+=======
 
-                   hsc version history
-                   ===================
+Version 0.9.10, 30-Sep-1996
+ (minor update, mostly bugfixes and code-cleanup)
+ - fixed Enforcer-Hits if no project-file has been specified and
+   external URIs have been referenced (reported by Jens T. Berger 
+   Thielemann)
+ - fixed bug that caused trashed relative URIs, if a <BASE>-tag 
+   occured (reported by Alois Kastner-Maresch)
+ - fixed bug that allowed attributes of type URI being parsed
+   more then once if they've been declared using <$define>,
+   usually resulting into wrong paths for existence-check
+   (reported by Alois Kastner-Maresch)
+ - fixed bug that caused the relative destination-dir to be ommited
+   for the output-filename, if a full input-filename has been passed
+   (reported by Alois Kastner-Maresch)
+ - fixed a minor bug in grafflwerk/hScMsg.rexx, which could lead to
+   a wrong return-code if ScMsg had to be invoked from the script
+ - stopped supporting plain 68000 CPUs; now at least a 68020 is
+   required for hsc and hscdepp
+ - added CLI option DEFINE
+ - added CLI-option MSGANSI
+ - added CLI-option PREFSFILE
+ - added CLI-option QUOTEMODE
+ - improved id-checking that it now also works if current document
+   is referenced indirectly via it's own filename.
+ - improved handling of input-files (speed increase for files >100k)
+ - improved code-sharing for hscdepp (smaller executable)
+ - improved help; it now also shows argument-type and -flags
+ - cleaned-up "Makefile.dodl" so that it only contains the
+   dependencies really required.
+ - compiled with gcc 2.7.0 and libnix 1.1
 
 Version 0.9.9,  9-Aug-1996
- - fixed bug: option RPLCENT didn't work as expected
-   due to a strange behavior of GCC's isalpha(),
-   which declared eg `ü' as an alphanumeric char
-   (only AmigaOS; reported by Stefan Gybas)
- - fixed bug: absolute URIs lead to wrong URIs, if
-   they exeeded two nested directories (reported by
-   Stefan Gybas)
- - fixed some minor bugs that prevented you from
-   oppressing certain messages (reported by Armin
-   Obersteiner)
- - fixed bug: for Amiga-version, there has been no
-   reasonable way to specify the current directory
-   as destination-dir; now you can use the usual
-   (strange) `TO ""'
- - fixed bug: for required attributes missing, the
-   parser had some (minor) problems to recover and
-   skipped everything until the next `>'. In the
-   worst case, this could lead to an `unexpected
+ - fixed bug: option RPLCENT didn't work as expected due to a
+   strange behavior of GCC's isalpha(), which declared eg. `ü' as an
+   alphanumeric char (only AmigaOS; reported by Stefan Gybas)
+ - fixed bug: absolute URIs lead to wrong URIs, if they exeeded two
+   nested directories (reported by Stefan Gybas)
+ - fixed some minor bugs that prevented you from oppressing certain
+   messages (reported by Armin Obersteiner)
+ - fixed bug: for Amiga-version, there has been no reasonable way to
+   specify the current directory as destination-dir; now you can use
+   the usual (strange) `TO ""'
+ - fixed bug: for required attributes missing, the parser had some
+   (minor) problems to recover and skipped everything until the next
+   `>'. In the worst case, this could lead to an `unexpected
    end-of-file'
- - fixed a bug that lead to infinite loop when trying
-   to set the value of a numeric attribute (somehow
-   reported by Marcel Offermans)
+ - fixed a bug that lead to infinite loop when trying to set the
+   value of a numeric attribute (somehow reported by Marcel
+   Offermans)
  - fixed some minor bugs
- - renamed all special attributes; instead of eg
-   `__ANCHOR__' you now have to use `HSC.ANCHOR'
- - improved some internal string-functions (speed
-   increase)
- - improved creation of output-string: hsc doesn't
-   any more create on single (huge) output-string,
-   but maintains a list of strings which are 
-   concatenated to a file. This improves performance
-   for huge input-files and also fixes a problem
-   with the malloc()-function of libnix (unreasonable
-   high memory usage)
- - improved handling for unknown tags; expressions
-   are now processed for their attributes, too.
- - improved handling of Error 64 (illegal attribute
-   identifier); now the parser immediatly stops
-   processing attributes
- - improved <$exec> to include output immediatly or
-   store it in an attribute
- - improved CLI-option ICONBASE to replace an
-   asterisk ("*") by the name of the icon-entity
+ - renamed all special attributes; instead of eg. `__ANCHOR__' you
+   now have to use `HSC.ANCHOR'
+ - improved some internal string-functions (speed increase)
+ - improved creation of output-string: hsc doesn't any more create
+   one single (huge) output-string, but maintains a list of strings
+   which are concatenated to a file. This improves performance for
+   huge input-files and also fixes a problem with the
+   malloc()-function of libnix (unreasonable high memory usage)
+ - improved handling for unknown tags; expressions are now processed
+   for their attributes, too.
+ - improved handling of Error 64 (illegal attribute identifier); now
+   the parser immediatly stops processing attributes
+ - improved <$exec> to include output immediatly or store it in an
+   attribute
+ - improved CLI-option ICONBASE to replace an asterisk ("*") by the
+   name of the icon-entity
  - added CLI-option RPLCQUOTE
  - added CLI-option EXTENSION
  - added attribute HSC.EXEC.RESULT
@@ -56,74 +77,63 @@ Version 0.9.9,  9-Aug-1996
  - added functions GetTime() and GetGmTime()
  - added loads of silly quotes to the docs
  - added "grafflwerk"-drawer to archive
- - added simple ARexx-Scripts to communicate with
-   ScMsg and AWeb
+ - added simple ARexx-Scripts to communicate with ScMsg and AWeb
  - now using dullest icons ever for the executables
- - played around a bit with compiler-flags, resulting
-   in a smaller executable
- - imcluded a 68020-compiled version for AmigaOS
+ - played around a bit with compiler-flags, resulting in a smaller
+   executable
+ - included a 68020-compiled version for AmigaOS
  - compiled with gcc 2.7.0 and libnix 1.1
 
 Version 0.9.8, 29-May-1996
  (reads rather embarrasing this time)
- - fixed hsc's most distressing bug (so far): when
-   setting `TO=dir/', for URI-checking, under certain
-   circumstances (better: nearly always), another `/'
-   has been appended to the destination path
-   (reported first by Jörg Plate)
- - fixed bug that caused URIs to be checked in
-   source-path if `TO=xy' didn't end with `/' (which
-   specified a file explicitely)
+ - fixed hsc's most distressing bug (so far): when setting
+   `TO=dir/', for URI-checking, under certain circumstances (better:
+   nearly always), another `/' has been appended to the destination
+   path (reported first by Jörg Plate)
+ - fixed bug that caused URIs to be checked in source-path if
+   `TO=xy' didn't end with `/' (which specified a file explicitely)
    (reported by Stefan Gybas)
- - fixed bug: GETSIZE for transparent GIFs didn't set
-   correct size (reported by Neil Bothwick). Actually,
-   hsc couldn't handle GIF89a-extensions at all.
- - fixed bug that could lead to wrong message position
-   when inserting expressions with `<(expr)>'; now,
-   only the position where the `)>' has appeard is
-   used
- - fixed bug that lead to wrong message position for
-   messages launched during scan of string-constants
-   (always used start of string as position)
- - fixed bug: URIs like `:../parent.html' are now
-   handled correctly
+ - fixed bug: GETSIZE for transparent GIFs didn't set correct size
+   (reported by Neil Bothwick). Actually, hsc couldn't handle
+   GIF89a-extensions at all.
+ - fixed bug that could lead to wrong message position when
+   inserting expressions with `<(expr)>'; now, only the position
+   where the `)>' has appeard is used
+ - fixed bug that lead to wrong message position for messages
+   launched during scan of string-constants (always used start of
+   string as position)
+ - fixed bug: URIs like `:../parent.html' are now handled correctly
  - fixed bug: `.' has been handled as word-delimiter
- - fixed bug: for tags that had the /SKIPLF switch set,
-   immediately following white-spaces have been
-   stripped
- - fixed bug: errors in CLI-args didn't set a proper
-   returncode; requesting help or license now sets
-   a warning-returncode
- - fixed some minor bugs in check for inconsistencies
-   within <$DEFENT>
- - fixed a minor bug that suppressed white-spaces
-   in tag-calls immediatly preceeding a linefeed
- - fixed some typos and missing attribute in hsc.prefs
-   (reported by Marcel Offermans)
- - added "location of previous call"-messages if a
-   message is launched during processing a marco or
-   an include-file
+ - fixed bug: for tags that had the /SKIPLF switch set, immediately
+   following white-spaces have been stripped
+ - fixed bug: errors in CLI-args didn't set a proper returncode;
+   requesting help or license now sets a warning-returncode
+ - fixed some minor bugs in check for inconsistencies within
+   <$DEFENT>
+ - fixed a minor bug that suppressed white-spaces in tag-calls
+   immediatly preceeding a linefeed
+ - fixed some typos and missing attribute in hsc.prefs (reported by
+   Marcel Offermans)
+ - added "location of previous call"-messages if a message is
+   launched during processing a marco or an include-file
  - added tag <$DEFICON> to define icon-entity
- - added CLI-option ICONBASE to denote a base-uri
-   where icon images are located and replace all
-   icon-entities with <IMG>-tags
- - added global attribute __COLOR_NAMES__ to declare
-   color constants to be used with attribute-type
-   `COLOR'
- - added several global attributes to get path and
-   name of destination-uri/source-file: __DEST_PATH__,
-   __DEST_NAME_ and __DEST_URI__ respectively
-   __SOURCE_NAME__, __SOURCE_PATH and __SOURCE_FILE__
-   (as suggested by several people)
- - added special attribute __ANCHOR__ to contain last
-   anchor referend to
+ - added CLI-option ICONBASE to denote a base-uri where icon images
+   are located and replace all icon-entities with <IMG>-tags
+ - added global attribute __COLOR_NAMES__ to declare color constants
+   to be used with attribute-type `COLOR'
+ - added several global attributes to get path and name of
+   destination-uri/source-file: __DEST_PATH__, __DEST_NAME_ and
+   __DEST_URI__ respectively __SOURCE_NAME__, __SOURCE_PATH and
+   __SOURCE_FILE__ (as suggested by several people)
+ - added special attribute __ANCHOR__ to contain last anchor referend
+   to
  - added messages #78 and  #79, which whine about
-   preceding/succeeding white-spaces on some
-   containers; I didn't count these style-lacks in
-   hsc's own docs.. (now fixed, of course)
- - added support for server-relativ URIs (starting
-   with a `/'); they are now handled like external
-   URIs and can't be checked for existence
+   preceding/succeeding white-spaces on some containers; I didn't
+   count these style-lacks in hsc's own docs.. (now fixed, of
+   course)
+ - added support for server-relativ URIs (starting with a `/'); they
+   are now handled like external URIs and can't be checked for
+   existence
  - added placeholder `%n' in MSGFORMAT for linefeed
  - allowed tags to be redefined by macros
  - added hsc-logo on mainpage of docs
@@ -131,10 +141,9 @@ Version 0.9.8, 29-May-1996
  - compiled with gcc 2.7.0 and libnix 1.1
 
 Version 0.9.7, 15-May-1996
- - fixed a nasty bug that could cause enforcer-hits
-   inside macros
- - fixed bug: for GETSIZE within GIFs, now the size
-   of the first image is used (before: size of screen)
+ - fixed a nasty bug that could cause enforcer-hits inside macros
+ - fixed bug: for GETSIZE within GIFs, now the size of the first
+   image is used (before: size of screen)
  - MAJOR CHANGE:
    - changed CLI option TO that it requires keyword `TO'
      and decides if TO decribes a directory or file
@@ -143,42 +152,40 @@ Version 0.9.7, 15-May-1996
      only the filename with no preceeding keyword
    - declaration of an enumerator-type now supports
      expressions as argument.
- - renamed CLI option ERRFILE to MSGFILE ('cause not all
-   messages are errors..)
- - removed CLI option CHECKURI; now use IGNORE=21 if you
-   don't want your URIs to be checked for existence
- - added CLI option MSGFORMAT to describe output format
-   of messages
+ - renamed CLI option ERRFILE to MSGFILE ('cause not all messages
+   are errors..)
+ - removed CLI option CHECKURI; now use IGNORE=21 if you don't want
+   your URIs to be checked for existence
+ - added CLI option MSGFORMAT to describe output format of messages
  - added useful file location for messages within macros
- - changed message for missing end tags that it now
-   reports location of corresponding start tag
+ - changed message for missing end tags that it now reports location
+   of corresponding start tag
  - added check for existence of IDs inside same file
- - added CLI option PRJFILE for project-file that
-   maintains data about IDs globaly
+ - added CLI option PRJFILE for project-file that maintains data
+   about IDs globaly
  - added check for existence of IDs inside same file
- - added check for existence of IDs for all files
-   included into project file
+ - added check for existence of IDs for all files included into
+   project-file
  - added attribute types `ID' and `COLOR'
  - added tag "<(..)>" to insert values of expressions
  - added JFIF/JPEG-support for GETSIZE
  - added support for some html3-tags within "hsc.prefs"
  - added new message type "portability problem"
  - added def's for most proposed html30-tags
- - removed string-arrays for parsing & checking URIs;
-   there should be no more "normal" C-strings within
-   the whole source now (exept some message buffers,
-   which get truncated if too small)
- - now compiles fine with gcc's "-Wall -W"-options
-   (exept some warnings about unused variables/functions)
- - using that stupid AmigaGuide-like buttons for the
-   navigation bar within the docs
+ - removed string-arrays for parsing & checking URIs; there should
+   be no more "normal" C-strings within the whole source now (exept
+   some message buffers, which get truncated if too small)
+ - now compiles fine with gcc's "-Wall -W"-options (exept some
+   warnings about unused variables/functions)
+ - using that stupid AmigaGuide-like buttons for the navigation bar
+   within the docs
  - compiled with gcc 2.7.0 and libnix 1.1
 
 Version 0.9.6, 12-Jan-1996
- - fixed bug: white spaces after boolean attributes
-   have been stripped, if no expression followed
- - fixed bug: "click-here" checking has only been
-   done, if RPLCENT has been set
+ - fixed bug: white spaces after boolean attributes have been
+   stripped, if no expression followed
+ - fixed bug: "click-here" checking has only been done, if RPLCENT
+   has been set
  - MAJOR CHANGE: improved concept for attributes:
    - added tag <$DEFINE> to create new attributes
    - changed <$LET> to only update already existing
@@ -192,52 +199,46 @@ Version 0.9.6, 12-Jan-1996
      and /STRIPEXT
    - removed attribute flags /NOQUOTE, /NOCOPY and
      /NOHANDLE (they've been undocumented anyway)
- - added COMPACT option to strip useless linefeeds
-   and white spaces
- - added QUOTEMODE option to use same kind of quotes
-   for all attributes
- - added STRIPEXTERNAL option to strip tags that
-   contain a reference to an external URI
+ - added COMPACT option to strip useless linefeeds and white spaces
+ - added QUOTEMODE option to use same kind of quotes for all
+   attributes
+ - added STRIPEXTERNAL option to strip tags that contain a reference
+   to an external URI
  - added STRIPCOMMENT to strip SGML comments
  - added STRIPTAGS to strip specific tags
  - added support for linefeeds inside expressions
  - added support for linefeeds inside strings
  - Amiga version now also searches "env:" for prefs
  - added more subtile STATUS option
- - status message string is no more done via
-   sprintf() and is stripped if it gets too long
+ - status message string is no more done via sprintf() and is
+   stripped if it gets too long
  - added some plausibility checking for <$DEFENT>
  - rewrote ReadMe for example-project
- - fixed dead links in docs (used IGNORE=21 when
-   converting docs..)
+ - fixed dead links in docs (used IGNORE=21 when converting docs..)
 
 Version 0.9.5, 21-Dec-1995
  - included source into distribution
  - example project now compiles again (Hmpf..)
  - added boolean expressions
  - added default values for boolean attributes
- - added GETENV operator to import values of
-   environment variables
+ - added GETENV operator to import values of environment variables
 
 Version 0.9.4, 14-Dec-1995
- - distributing archive under GNU General public
-   license (read "GNU_GPL" for details)
+ - distributing archive under GNU General public license (read
+   "GNU_GPL" for details)
  - renamed "hsc.html" to "index.html" (docs)
- - MAJOR CHANGE: introducing new concept for
-   handling of arguments to attributes (see
-   docs, chapter "Expressions"); references to
-   other attributes MUST NOT be enclosed in "<"
-   and ">" anymore.
+ - MAJOR CHANGE: introducing new concept for handling of arguments
+   to attributes (see docs, chapter "Expressions"); references to
+   other attributes MUST NOT be enclosed in "<" and ">" anymore.
  - added message for "click here" syndrome
- - added global attribute "__CLICK_HERE__" for
-   keywords that should envoke a "click here"
-   warning if found in anchor text.
- - added global attribute "__SYSTEM__", that
-   contains an ID for the used operating system.
- - fixed bug: using an end tag for a non-container
-   caused enforcer hit
- - fixed bug that lead to wrong file positions in
-   error messages after some line-feeds
+ - added global attribute "__CLICK_HERE__" for keywords that should
+   invoke a "click here" warning if found in anchor text.
+ - added global attribute "__SYSTEM__", that contains an ID for the
+   used operating system.
+ - fixed bug: using an end tag for a non-container caused enforcer
+   hit
+ - fixed bug that lead to wrong file positions in error messages
+   after some line-feeds
  - several minor bugs fixed
 
 Version 0.9.3,  20-Nov-1995 (internal release only)
@@ -246,68 +247,61 @@ Version 0.9.3,  20-Nov-1995 (internal release only)
  - added <$SOURCE> to support inline sources
  - added tag <$LET> to create/update attributes
  - added tag <$MESSAGE> for user messages
- - container usage of <P> and <LI> is now supported
-   (altough, in a quite clumsy way; see AUTOCLOSE)
+ - container usage of <P> and <LI> is now supported (altough, in a
+   quite clumsy way; see AUTOCLOSE)
  - writes output only if no error occured
  - improved handling of comments inside macros
  - improved speed for reading macros
- - fixed bug: values for attributes of a tag have not
-   been reset before processing it
+ - fixed bug: values for attributes of a tag have not been reset
+   before processing it
  - fixed bug within nested <$ELSE>
  - fixed bug: <BASE> called handler for <Hx>
- - fixed bug: trailing white spaces of a file have
-   not been processed
- - buffer for <$INSERT TIME> automatically expands
-   to required size (before: limited to 40 chars)
+ - fixed bug: trailing white spaces of a file have not been processed
+ - buffer for <$INSERT TIME> automatically expands to required size
+   (before: limited to 40 chars)
 
 Version 0.9.2, 23-Oct-1995
  - improved docs
- - changed concept for absolute URIs: switch ABSURI
-   does no more exist, abs. URIs now start with ":"
-   and can be mixed with relative URIs (suggested
-   by Arno Hollosi)
+ - changed concept for absolute URIs: switch ABSURI does no more
+   exist, abs. URIs now start with ":" and can be mixed with
+   relative URIs (suggested by Arno Hollosi)
  - <$IF>..<$ELSE>..</$IF> for conditional conversion
  - <$EXEC COMMAND=".."> to start shell commands
  - added SOURCE option for <$INCLUDE>
- - closing macro now not only inherits attributes
-   passed to the opening macro, but also its values
-   (kick me for that!)
+ - closing macro now not only inherits attributes passed to the
+   opening macro, but also its values (kick me for that!)
  - check for redefinance of tag/macro
- - writing to output starts after useful data
-   (skip empty lines, white-spaces, comments and
-   hsc-tags in config/include files)
- - removed bug in handler for SGML comments, if "\n"
-   was found inside comment
+ - writing to output starts after useful data (skip empty lines,
+   white-spaces, comments and hsc-tags in config/include files)
+ - removed bug in handler for SGML comments, if "\n" was found
+   inside comment
  - Zero-SGML comments now work ( "<!>" only)
  - support JERK-attributes
- - more information displayed if unexpected end of
-   file reached
+ - more information displayed if unexpected end of file reached
  - removed enforcer-hit when writing to stdout
  - several minor bugs fixed
  - speed up for dynamic string handling
- - not compiled with gcc 2.6.3; compiled with a friend's
-   sas/c because I got silly enforcer hits when compiling
-   with gcc; even more strange, they only occure with
-   Amiga-version of gcc; compiling hsc under Linux or
-   FreeBSD (x86) causes no problems; I really should get
-   gcc 2.7.0 for my Amiga..
+ - not compiled with gcc 2.6.3; compiled with a friend's sas/c
+   because I got silly enforcer hits when compiling with gcc; even
+   more strange, they only occure with Amiga-version of gcc;
+   compiling hsc under Linux or FreeBSD (x86) causes no problems; I
+   really should get gcc 2.7.0 for my Amiga..
 
 Version 0.9.1,  9-Oct-1995
  - featuring "hsc.prefs"! (Gott, lass Hirn vom Himmel fallen)
  - improved docs (a bit)
  - removed loads of typos
- - writing output to stdout if no filename or
-   destination directory passed
- - writing to output starts after first non-hsc-tag
-   (skip empty lines and white-spaces in config)
- - replaced <$INSERT TEXT STRING=".."> by
-   <$INSERT TEXT="..">
+ - writing output to stdout if no filename or destination directory
+   passed
+ - writing to output starts after first non-hsc-tag (skip empty
+   lines and white-spaces in config)
+ - replaced <$INSERT TEXT STRING=".."> by <$INSERT TEXT="..">
  - improved handler for SGML comments (and "!"-tags)
  - support numeric entities (eg "&#123;")
  - "quot" entity
  - whines about quotes found within text
- - replace "&","<",">" by its entities, if surounded
-   by white-spaces (switch SMARTENT)
+ - replace "&","<",">" by its entities, if surounded by white-spaces
+   (switch SMARTENT)
  - replace quotes by "&quot;" (switch SMARTENT)
  - added "Reading config" status message
  - still compiled with gcc 2.6.3

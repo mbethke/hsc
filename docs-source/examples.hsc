@@ -10,7 +10,7 @@
 
 <DL>
 <EXAMPLE exmp="hsc FROM hugo.html &gt;NIL:">
-    Simly performs a syntax check on <FILE>hugo.html</FILE> and passes
+    Simply performs a syntax check on <FILE>hugo.html</FILE> and passes
     the output to the null-device.<P>
 <EXAMPLE exmp="hsc hugo.html TO t: STATUS=QUIET RPLCENT">
     Same as above, but does not display status messages during conversion.
@@ -22,10 +22,9 @@
     <P>Process subfile <FILE>people/hugo.hsc</FILE>. The current directory is the
     main directory of the project. The html-object is created in
     <FILE>/pub_html/people/hugo.html</FILE>.</P>
-    <STRONG>Note</STRONG>: Also mind that the HSC-source ends with ".hsc", but
+    <STRONG>Note</STRONG>: Also mind that the hsc-source ends with ".hsc", but
     the html-object automatically gets the extension ".html". Therefor, all
     references must end with ".html".
 </DL>
 
 </WEBPAGE>
-

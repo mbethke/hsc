@@ -1,10 +1,10 @@
-                         Example Project
-                        -----------------
+Example Project
+===============
 
 This directory contains a small example project.
 
 The sources are collected in "source_hsc/" and should be converted to
-"object_html/". This will be the directory where the "browsable" data
+"object_html/". This is the directory where the "browsable" data
 will be located.
 
 This text asumes that your current directory is
@@ -35,7 +35,7 @@ As the picture is of no real use in the source-dir, you should move
 it to the object-dir:
 
     rename hugo/hugo.gif /object_html/hugo/      ; AmigaOS
-    mv hugo/hugo.gif /object_html/hugo/          ; Unix
+    mv hugo/hugo.gif ../object_html/hugo/        ; Unix
 
 Note that every file, that is not a hsc-source or include-file has
 to be located somewhere in the object-dir. This especially concerns
@@ -45,11 +45,11 @@ hsc-source.
 Starting the conversion:
 ------------------------
 
-Now you are ready to start 'make':
+Now you are ready to start `make':
 
     make
 
-Of course, you need to have a 'make' command installed in your search
+Of course, you need to have a `make' command installed in your search
 path. For AmigaOS, search "aminet:dev/*" for fitting a program.
 
 After that, all html-objects in "object_html/" should be ready.
@@ -60,5 +60,5 @@ because "macro.hsc" is never converted alone, but only included by
 the other files. Additionally, "macro.hsc" contains no readable text
 or tags.
 
-Take a look at the "makefile" to understand the basic concept of hsc.
+Take a look at the "Makefile" to understand the basic concept of hsc.
 

@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  5-Jul-1996
+ * updated: 12-Sep-1996
  * created: 12-Apr-1995
  *
  */
@@ -28,7 +28,7 @@
 
 #include <stdarg.h>
 
-#include "hsclib/document.h"
+#include "hscprj/document.h"
 #define NOEXTERN_HSCLIB_ID_H
 #include "hsclib/idref.h"
 
@@ -195,7 +195,7 @@ VOID prt_idref(FILE * stream, APTR data)
 BOOL add_local_iddef(HSCPRC * hp, STRPTR id)
 {
     INFILEPOS *fpos = new_infilepos(hp->inpf);
-    HSCIDD *iddef = find_iddef(hp->document, id);
+    HSCIDD *iddef = find_iddef(hp->project->document, id);
 
     DIHP(fprintf(stderr, DHL "add ref to id `%s' at `%s' (%lu,%lu)\n",
                  id, ifp_get_fname(fpos),
@@ -205,7 +205,7 @@ BOOL add_local_iddef(HSCPRC * hp, STRPTR id)
 
     if (iddef) {
         /* duplicate definition */
-        DIHP(fprintf(stderr, DHL "    duplicate definition\n", id));
+        DIHP(fprintf(stderr, DHL "    duplicate definition\n"));
 
         hsc_message(hp, MSG_REDEFINE_ID,
                     "local id %q already declared", id);
@@ -218,11 +218,11 @@ BOOL add_local_iddef(HSCPRC * hp, STRPTR id)
         del_infilepos(fpos);
     } else {
         /* remember new local id */
-        iddef = app_iddef(hp->document, id);
+        iddef = app_iddef(hp->project->document, id);
         iddef->caller = fpos2caller(fpos);
         iddef->fpos = fpos;
 
-        DIHP(fprintf(stderr, DHL "    append to local iddefs\n", id));
+        DIHP(fprintf(stderr, DHL "    append to local iddefs\n"));
     }
 
     return (TRUE);
@@ -239,7 +239,7 @@ VOID add_local_idref(HSCPRC * hp, STRPTR id)
     INFILEPOS *fpos = new_infilepos(hp->inpf);
 
     DIHP(fprintf(stderr, DHL "  check id: `#%s' (local)\n", id));
-    DIHP(fprintf(stderr, DHL "    append to idref\n", id));
+    DIHP(fprintf(stderr, DHL "    append to idref\n"));
     app_dlnode(hp->idrefs, new_idref(id, fpos));
 }
 
@@ -248,7 +248,7 @@ VOID add_local_idref(HSCPRC * hp, STRPTR id)
  */
 static BOOL check_local_idref(HSCPRC * hp, IDREF * idref)
 {
-    HSCIDD *iddef = find_iddef(hp->document, idref->name);
+    HSCIDD *iddef = find_iddef(hp->project->document, idref->name);
     BOOL found = FALSE;
 
     if (iddef) {
@@ -260,7 +260,7 @@ static BOOL check_local_idref(HSCPRC * hp, IDREF * idref)
 
         DIHP( {
              INFILEPOS * fpos = idref->fpos;
-             fprintf(stderr, DHL " local id unknown: `%s'\n",
+             fprintf(stderr, DHL " local id unknown: `%s' (%lu,%lu)\n",
                      idref->name, ifp_get_y(fpos), ifp_get_x(fpos));
              }
         );
@@ -287,7 +287,7 @@ BOOL check_all_local_idref(HSCPRC * hp)
     DIHP( {
 
          fprintf(stderr, DHL " local IDs defined:\n");
-         fprintf_dllist(stderr, hp->document->iddefs, prt_iddef);
+         fprintf_dllist(stderr, hp->project->document->iddefs, prt_iddef);
          fprintf(stderr, DHL " local IDs referenced:\n");
          fprintf_dllist(stderr, hp->idrefs, prt_idref);
 

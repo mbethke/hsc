@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 26-Jul-1996
+ * updated: 17-Aug-1996
  * created:  8-Jul-1995
  */
 
@@ -35,6 +35,8 @@ EXPSTR *inpfilename = NULL;     /* name of input file (def: stdin) */
 EXPSTR *outfilename = NULL;     /* name of output file (def: stdout) */
 
 STRPTR msgfilename = NULL;      /* name of message file (def: stderr) */
+STRPTR prjfilename = NULL;      /* name for project-file (def: none) */
+STRPTR prefsfilename = NULL;    /* name for prefs-file (default: search) */
 
 ULONG max_error = 20;           /* abort after too many errors */
 DLLIST *define_list = NULL;     /* defines from user-args */
@@ -42,6 +44,7 @@ DLLIST *incfile = NULL;         /* list of files that should be */
                                        /*   included before main file */
 int return_code = RC_FAIL;      /* exit code of program */
 
+BOOL msg_ansi = FALSE;          /* use ANIS-sequences in messages */
 STRPTR msg_format = NULL;       /* message format */
 EXPSTR *msgbuf = NULL;          /* buffer for message */
 

@@ -228,9 +228,7 @@ by it's corresponding entity.
 <MSG ID="50" CLASS="error" NAME="" UNDOC>
 <MSG ID="51" CLASS="error" NAME="" UNDOC>
 <MSG ID="52" CLASS="error" NAME="" UNDOC>
-<MSG ID="53" CLASS="error" NAME="unmatched <TG>$ELSE</TG>">
-
-An <TG>$else</TG> tag occured without a correspong <TG>$if</TG>.
+<MSG ID="53" CLASS="error" NAME="" UNDOC>
 
 <MSG ID="54" CLASS="warning" NAME="calling external command returned <I>value</I>">
 
@@ -296,14 +294,9 @@ defined in <hsc.prefs>
 <MSG ID="75" CLASS="error" NAME="" UNDOC>
 <MSG ID="76" CLASS="style" NAME="frames are disgusting">
 
-This message should need no comment. Anyway, here's the long
-form: Frames are ill-minded, inconsitent and intollerant. Even
-browser that support frames don't handle their Back/Forward-button
-in a reasonable way anymore. And user seeking for informations have
-a lot of fun reading a text like "This page can only be displayed on
-browsers supporting frames". (In practice, this happens very seldom
-because pages that use frames usually don't contain any useful
-information.)
+This message should need no comment; anyway, read 
+<A HREF="http://www.ummed.edu:8000/pub/i/ijosh/frames/">Why Frames Suck</A> 
+for more details.
 
 <MSG ID="77" CLASS="error" NAME="" UNDOC>
 <MSG ID="78" CLASS="style" NAME="succeeding white-space for <instag>">

@@ -55,24 +55,24 @@ typedef struct dlnode DLNODE;
  */
 #ifndef NOEXTERN_UGLY_DLLIST_H
 
-extern struct dllist *init_dllist(void (*del_data) (APTR data));
-extern struct dlnode *new_dlnode(void);
-extern struct dlnode *ins_dlnode(
-                       struct dllist *list, struct dlnode *node, APTR data);
-extern struct dlnode *app_dlnode(struct dllist *list, APTR data);
+extern DLLIST *init_dllist(void (*del_data) (APTR data));
+extern DLNODE *new_dlnode(void);
+extern DLNODE *ins_dlnode(
+                       DLLIST *list, DLNODE *node, APTR data);
+extern DLNODE *app_dlnode(DLLIST *list, APTR data);
 
-extern APTR detach_dlnode(struct dllist *list, struct dlnode *node);
-extern void del_dlnode(struct dllist *list, struct dlnode *node);
-extern VOID del_all_dlnodes(struct dllist *list);
-extern void del_dllist(struct dllist *list);
+extern APTR detach_dlnode(DLLIST *list, DLNODE *node);
+extern void del_dlnode(DLLIST *list, DLNODE *node);
+extern VOID del_all_dlnodes(DLLIST *list);
+extern void del_dllist(DLLIST *list);
 
-extern BOOL empty_dllist(struct dlnode *list);
+extern BOOL empty_dllist(DLNODE *list);
 
-extern void fprintf_dllist(FILE * stream, struct dllist *list,
+extern void fprintf_dllist(FILE * stream, DLLIST *list,
                            void (*fprintf_data) (FILE * stream, APTR data));
 extern void do_dllist(DLLIST * list, void (*func) (APTR data));
 
-extern struct dlnode *find_dlnode(struct dlnode *start, APTR data,
+extern DLNODE *find_dlnode(DLNODE *start, APTR data,
                             int (*compare) (APTR cmp_data, APTR list_data));
 
 #endif /* NOEXTERN_UGLY_DLLIST_H */

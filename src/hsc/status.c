@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 26-Jul-1996
+ * updated:  9-Sep-1996
  * created: 30-Jul-1995
  *
  */
@@ -55,13 +55,13 @@ VOID set_return_code(int newrc)
 {
     if (newrc > return_code) {
 #if DEBUG_HSCPRE_RETCODE
-        fprintf(stderr, DHP "returncode: set to %d\n", return_code);
+        fprintf(stderr, DHSC "returncode: set to %d\n", return_code);
 #endif
         return_code = newrc;
     }
 #if DEBUG_HSCPRE_RETCODE
     else {
-        fprintf(stderr, DHP "returncode: NOT set to %d (is: %d)\n",
+        fprintf(stderr, DHSC "returncode: NOT set to %d (is: %d)\n",
                 newrc, return_code);
     }
 #endif

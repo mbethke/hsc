@@ -19,7 +19,7 @@
 <$macro UBQ><BLOCKQUOTE></$macro>
 <$macro /UBQ></BLOCKQUOTE></$macro>
 <$macro WebLint><A HREF="http://www.unipress.com/cgi-bin/WWWeblint">WebLint</A></$macro>
-<$macro Aminet FILE:string><A HREF=("http://wuarchive.wustl.edu/~aminet/"+file)>aminet:<(file)></A></$macro>
+<$macro Aminet FILE:string TEXT:string><$if COND=(not set TEXT)><$let TEXT=("aminet:"+FILE)></$if><A HREF=("http://wuarchive.wustl.edu/~aminet/pub/"+file)><(text)></A></$macro>
 <$macro EMAIL address:string><A HREF=("mailto:"+address)><(address)></A></$macro>
 <$macro hsc-support><A HREF="http://www.giga.or.at/~agi/hsc/index.html">hsc-support-w3page</A></$macro>
 <$macro hsc.prefs><FILE>hsc.prefs</FILE></$macro>

@@ -35,20 +35,22 @@
 
 #define VF_KEEP_QUOTES  (1<<28) /* keep quotes untouched */
 #define VF_GLOBAL       (1<<29) /* attribute is global: <$DEFINE> */
-#define VF_MACRO        (1<<30) /* macro attr (see note below) */
+#define VF_MACRO        (1<<30) /* macro-attr */
+#define VF_TAG          (1<<31) /* tag-attr (see note below) */
 
 /*
- * NOTE on VF_MACRO:
+ * NOTE on VF_TAG:
  *
- * within uri-attributes, there is one problem: if you pass
- * an uri-attr to a macro, the uri is parsed twice if the
- * macro is called. this produces shit when the uri is
- * parsed the second time (eg absolute uri is converted again)
+ * Within uri-attributes, there is one problem: if you pass
+ * an uri-attr to a macro or <$define>, the uri is parsed twice,
+ * when attribute is passed to tag.
+ * This produces shit when the uri is parsed the second time
+ * (eg absolute uri is converted again)
  *
- * therefor, uris are not parsed, if the VF_MACRO-flag is
- * enabled. by default, VF_MACRO is disabled and can only be
+ * Therefor, uris are only parsed, if the VF_TAG-flag is
+ * enabled. By default, VF_TAG is disabled and can only be
  * enabled when copying local macro attribute to the global
- * attribute list. (see "copy_local_varlist()" in "vars.c")
+ * attribute list. (see "copy_local_varlist()" in "attrib.c")
  */
 
 #define VF_CONST_STR    "CONST" /* attr is read only <$DEFINE> */

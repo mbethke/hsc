@@ -70,7 +70,7 @@
  * debugging defines
  */
 #if DEBUG
-#define D(x) if (hsc_get_debug(hp)) x
+#define D(x) if (hp->debug) x
 #else
 #define D(x)                    /* nufin */
 #endif

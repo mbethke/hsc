@@ -1,5 +1,5 @@
 /*
- * dllist.c
+ * ugly/dllist.c
  *
  * double linked list processing functions
  *
@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 22-Mar-1996
+ * updated: 11-Sep-1996
  * created:  1-Mar-1994
  *
  *---------------------------------------------------------
@@ -31,14 +31,8 @@
 #include "utypes.h"
 #include "umemory.h"
 
-/*
- *
- * include header file without external prototypes
- *
- */
-
+/* include header file without external prototypes */
 #define NOEXTERN_UGLY_DLLIST_H
-
 #include "dllist.h"
 
 /*
@@ -50,12 +44,12 @@
  * errors: return NULL (out of mem)
  *
  */
-struct dllist *init_dllist(void (*fn_del_data) (APTR data))
+DLLIST *init_dllist(void (*fn_del_data) (APTR data))
 {
-    struct dllist *newlist;
+    DLLIST *newlist;
 
     newlist =                   /* alloc mem for list */
-        umalloc(sizeof(struct dllist));
+        umalloc(sizeof(DLLIST));
 
     if (newlist)
     {
@@ -78,12 +72,12 @@ struct dllist *init_dllist(void (*fn_del_data) (APTR data))
  * errors: return NULL (out of mem)
  *
  */
-struct dlnode *new_dlnode(void)
+DLNODE *new_dlnode(void)
 {
-    struct dlnode *newnode;
+    DLNODE *newnode;
 
     newnode =                   /* alloc mem for new node */
-        umalloc(sizeof(struct dlnode));
+        umalloc(sizeof(DLNODE));
 
     if (newnode)
     {                           /* alloc successful? */
@@ -102,13 +96,12 @@ struct dlnode *new_dlnode(void)
  * but do not delete the entries data
  *
  */
-APTR detach_dlnode(struct dllist * list, struct dlnode * node)
+APTR detach_dlnode(DLLIST * list, DLNODE * node)
 {
     APTR nd_data = NULL;
 
     if (list && node)
     {                           /* list & node node defined? */
-
         nd_data = node->data;   /*     remeber data */
         if (node->prev)         /*     remove node from list */
             node->prev->next = node->next;
@@ -133,12 +126,11 @@ APTR detach_dlnode(struct dllist * list, struct dlnode * node)
  * remove entry from double linked list
  *
  */
-void del_dlnode(struct dllist *list, struct dlnode *node)
+void del_dlnode(DLLIST * list, DLNODE * node)
 {
 
     if (list && node)
     {                           /* list & node node defined? */
-
         void (*dd) (APTR) = list->del_data;
 
         if (node->data)         /* Y-> call destructor */
@@ -169,7 +161,7 @@ void del_dlnode(struct dllist *list, struct dlnode *node)
  *
  * remove all nodes from a list
  */
-VOID del_all_dlnodes(struct dllist *list)
+VOID del_all_dlnodes(DLLIST * list)
 {
     while (list->first)
         del_dlnode(list, list->first);
@@ -181,66 +173,52 @@ VOID del_all_dlnodes(struct dllist *list)
  * insert a data entry into double linked list BEFORE node
  *
  */
-struct dlnode *ins_dlnode(
-                        struct dllist *list, struct dlnode *node, APTR data)
+DLNODE *ins_dlnode(DLLIST * list, DLNODE * node, APTR data)
 {
-
-    struct dlnode *newnode = NULL;
+    DLNODE *newnode = NULL;
 
     if (list)
     {
-
         newnode = new_dlnode();
 
         if (newnode)
         {
-
             newnode->data = data;
             list->entry_num++;
 
             if (node)
             {
-
                 if (list->first == node)
                 {
-
                     /*
                      * insert as first entry
                      */
                     list->first = newnode;
-
                 }
                 else
                 {
-
                     /*
                      * insert somewhere in the list
                      */
                     node->prev->next = newnode;
                     newnode->prev = node->prev;
-
                 }
                 node->prev = newnode;
                 newnode->next = node;
-
             }
             else
             {                   /* append as last entry */
-
                 if (list->last)
                     list->last->next = newnode;
                 newnode->prev = list->last;
                 list->last = newnode;
-
             }
 
             if (list->first == NULL)
                 list->first = newnode;
             if (list->last == NULL)
                 list->last = newnode;
-
         }
-
     }
 
     return newnode;
@@ -255,20 +233,33 @@ struct dlnode *ins_dlnode(
  * errors: return NULL (out of mem)
  *
  */
-struct dlnode *app_dlnode(struct dllist *list, APTR data)
+DLNODE *app_dlnode(DLLIST * list, APTR data)
 {
-
-    struct dlnode *newnode = NULL;
+    DLNODE *newnode = NULL;
 
     if (list)
-    {
-
         newnode = ins_dlnode(list, NULL, data);
 
-    }
+    return newnode;
+}
+
+/*
+ * add_dlnode
+ *
+ * add new node to list (as first entry)
+ *
+ * result: new node
+ * errors: return NULL (out of mem)
+ *
+ */
+DLNODE *add_dlnode(DLLIST * list, APTR data)
+{
+    DLNODE *newnode = NULL;
+
+    if (list)
+        newnode = ins_dlnode(list, list->first, data);
 
     return newnode;
-
 }
 
 /*
@@ -277,12 +268,10 @@ struct dlnode *app_dlnode(struct dllist *list, APTR data)
  * free whole list and its nodes and data
  *
  */
-void del_dllist(struct dllist *list)
+void del_dllist(DLLIST * list)
 {
-
     if (list)
     {
-
         /* remove all nodes */
         while (list->first)
             del_dlnode(list, list->first);
@@ -295,7 +284,6 @@ void del_dllist(struct dllist *list)
         list->del_data = NULL;
         ufree(list);
     }
-
 }
 
 /*
@@ -307,17 +295,14 @@ void do_dllist(DLLIST * list, void (*func) (APTR data))
 {
     if (list)
     {
-
         DLNODE *nd = list->first;
 
         while (nd)
         {
-
             (*func) (nd->data);
             nd = nd->next;
         }
     }
-
 }
 
 /*
@@ -326,40 +311,32 @@ void do_dllist(DLLIST * list, void (*func) (APTR data))
  * output a whole list to a stream
  * (more or less only a debugging function)
  */
-void fprintf_dllist(FILE * stream, struct dllist *list,
+void fprintf_dllist(FILE * stream, DLLIST * list,
                     void (*fprintf_data) (FILE * stream, APTR data))
 {
-
     if (list)
     {
-
-        struct dlnode *node;
+        DLNODE *node;
         ULONG i = 1;
 
         node = list->first;
         if (node)
         {
-
             while (node)
             {
-
                 fprintf(stream, "%4lu: ", i++);
                 if (fprintf_data)
                     (*fprintf_data) (stream, node->data);
                 else
                     fprintf(stream, "%s\n", (STRPTR) node->data);
                 node = node->next;
-
             }
-
         }
         else
             fprintf(stream, "  [empty list]\n");
-
     }
     else
         fprintf(stream, "  [no list]\n");
-
 }
 
 /*
@@ -374,23 +351,20 @@ void fprintf_dllist(FILE * stream, struct dllist *list,
  * result: ptr to node that contains requested data
  *         or NULL if not found
  */
-struct dlnode *find_dlnode(struct dlnode *start, APTR data,
-                           int (*compare) (APTR cmp_data, APTR list_data))
+DLNODE *find_dlnode(DLNODE * start, APTR data,
+                    int (*compare) (APTR cmp_data, APTR list_data))
 {
-    struct dlnode *search = start;
+    DLNODE *search = start;
     int found = 0;
 
     while (search && !(found))
     {
-
         found = (*compare) (data, search->data);
         if (!found)
             search = search->next;
-
     }
 
     return search;
-
 }
 
 /*
@@ -401,7 +375,7 @@ struct dlnode *find_dlnode(struct dlnode *start, APTR data,
  * params: list..list to check for emptyness
  * result: TRUE, if list contains no nodes
  */
-BOOL empty_dllist(struct dllist * list)
+BOOL empty_dllist(DLLIST * list)
 {
     if (list->first)
         return TRUE;

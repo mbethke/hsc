@@ -48,5 +48,5 @@
 *>
 <$macro FOOTLINE>
 <HR>
-  Updated by <ITS_ME> at <(GetTime)>
+  Updated by <ITS_ME> at <(GetTime())>
 </$macro>

@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  4-Aug-1996
+ * updated: 11-Sep-1996
  * created: 19-Feb-1996
  */
 
@@ -258,13 +258,13 @@ BOOL hsc_copy_base_info(HSCPRC * dest_hp, HSCPRC * dummy_hp)
  * try to open (any) config file and read preferences
  * from it
  */
-BOOL hsc_read_prefs(HSCPRC * hp)
+BOOL hsc_read_prefs(HSCPRC * hp, STRPTR prefs_fname)
 {
-    STRPTR prefs_fname = NULL;
     BOOL ok = FALSE;
 
     /* find prefs file */
-    prefs_fname = find_prefs_fname(hp);
+    if (!prefs_fname)
+        prefs_fname = find_prefs_fname(hp);
 
     /* status message */
     if (prefs_fname)
@@ -290,6 +290,85 @@ BOOL hsc_read_prefs(HSCPRC * hp)
         hsc_message(hp, MSG_NO_CONFIG,
                     "can not open preferences file %q",
                     CONFIG_FILE);
+    }
+
+    return (ok);
+}
+
+/*
+ * callback to display "project-file corrupt"-message
+ */
+static VOID msg_corrupt_pf(HSCPRJ * project, STRPTR reason)
+{
+    STRPTR prjtxt = "project-file corrupt";
+    HSCPRC *hp = (HSCPRC *) project->user_data;
+
+    if (reason)
+        hsc_message(hp, MSG_CORRUPT_PRJFILE, "%s (%s)", prjtxt, reason);
+    else
+        hsc_message(hp, MSG_CORRUPT_PRJFILE, "%s", prjtxt);
+}
+
+/*
+ * hsc_init_project
+ *
+ * read project-file
+ */
+BOOL hsc_init_project(HSCPRC * hp, STRPTR project_fname)
+{
+    BOOL ok = FALSE;
+
+    /* init project */
+    hp->project = new_project();
+    hp->project->user_data = (APTR) hp;
+    hp->project->debug = hp->debug;
+    hp->project->CB_msg_corrupt_pf = msg_corrupt_pf;
+
+    if (project_fname)
+    {
+        /*
+         * read project-data
+         */
+        D(fprintf(stderr, DHL "read project-file `%s'\n", project_fname));
+
+        hsc_status_file_begin(hp, project_fname);
+
+        /* read project-file */
+        hp->inpf = infopen(project_fname, 0);
+
+        if (hp->inpf)
+        {
+            ok = hsc_project_read_file(hp->project, hp->inpf);
+            infclose(hp->inpf);
+            if (ok)
+            {
+                /* message about success */
+                EXPSTR *msg = init_estr(32);
+                set_estr(msg, project_fname);
+                app_estr(msg, ": project-file read");
+                hsc_status_misc(hp, estr2str(msg));
+                del_estr(msg);
+            }
+
+            hp->inpf = NULL;
+        }
+        else
+        {
+            D(fprintf(stderr, DHL "  can't read project-file\n"));
+            ok = TRUE;
+            /* TODO: message "creating new one" */
+        }
+    }
+    else
+    {
+        D(fprintf(stderr, DHL "no project-file to load\n"));
+        ok = TRUE;
+    }
+
+    if (ok)
+    {
+        /* dettach current document */
+        hsc_project_set_document(hp->project, hp->filename_document);
     }
 
     return (ok);
@@ -342,16 +421,12 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
         HSC_DEFICON_STR " /SKIPLF NAME:string/r>",
         HSC_DEFINE_STR " /SKIPLF /SPECIAL>",
         HSC_DEFTAG_STR " /SKIPLF /SPECIAL>",
-        HSC_ELSE_STR " /SKIPLF>",
-        HSC_ELSEIF_STR " /SKIPLF " CONDITION_ATTR ":bool>",
+        HSC_ELSE_STR " /SKIPLF /MBI=\"" HSC_IF_STR "\">",
+        HSC_ELSEIF_STR " /SKIPLF /MBI=\"" HSC_IF_STR "\"" CONDITION_ATTR ":bool>",
         HSC_MESSAGE_STR " /SKIPLF TEXT:string/r CLASS:enum(\"note|warning|error|fatal\")='note'>",
         HSC_EXEC_STR " /SKIPLF COMMAND:string/r REMOVE:enum(\"on|off|auto\")=\"auto\" ATTRIBUTE:string INCLUDE:bool FILE:string " INCLUDE_ATTR ">",
         HSC_EXPORT_STR " /SKIPLF FILE:string/r DATA:string/r APPEND:bool>",
-#ifdef OLDIFCOND
-        HSC_IF_STR " /SKIPLF /SPECIAL /CLOSE>",
-#else
         HSC_IF_STR " /SKIPLF /CLOSE " CONDITION_ATTR ":bool>",
-#endif
         HSC_INSERT_STR " /OBSOLETE TEXT:string TIME:bool FORMAT:string>",
         HSC_INCLUDE_STR " /SKIPLF FILE:string/r " INCLUDE_ATTR ">",
         HSC_LET_STR " /SKIPLF /SPECIAL>",
@@ -414,7 +489,7 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
     }
 
     /* assign "\n" to linefeed-attribute */
-    set_vartext( find_varname( hp->defattr, LINEFEED_ATTR), "\n");
+    set_vartext(find_varname(hp->defattr, LINEFEED_ATTR), "\n");
 
     /* assign tag-callbacks to hsc-tags */
     if (ok)
@@ -497,13 +572,13 @@ BOOL hsc_assign_tagCBs(HSCPRC * hp)
  * - read preferences file
  * - assign tag-callbacks
  */
-BOOL hsc_init_hscprc(HSCPRC * hp)
+BOOL hsc_init_hscprc(HSCPRC * hp, STRPTR prefs_fname)
 {
     BOOL ok = FALSE;            /* return value */
 
     if (hsc_init_tagsNattr(hp)
         && hsc_init_basicEntities(hp)
-        && hsc_read_prefs(hp)
+        && hsc_read_prefs(hp, prefs_fname)
         && hsc_assign_tagCBs(hp)
         )
     {

@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 27-Jul-1996
+ * updated: 18-Sep-1996
  * created: 16-Jul-1995
  */
 
@@ -29,7 +29,7 @@
 
 #include "hsclib/inc_base.h"
 #include "hsclib/idref.h"
-#include "hsclib/project.h"
+#include "hscprj/project.h"
 #include "hsclib/uri.h"
 
 #define PARENT_URI "../"        /* string for parent dir within URIs */
@@ -48,26 +48,20 @@ VOID conv_path2uri(EXPSTR * dest, STRPTR path)
     /* replace leading parent directories by "../" */
     while (!strncmp(path, PARENT_DIR, strlen(PARENT_DIR)))
     {
-
         app_estr(dest, PARENT_URI);
         path += strlen(PARENT_DIR);
-
     }
 
     while (path[0])
     {
-
         /* replace all "//" by "../" */
         if ((path[0] == '/') && (path[1] == '/'))
         {
-
             app_estr(dest, PARENT_URI);
             path += 2;
-
         }
         else
         {
-
             app_estrch(dest, path[0]);
             path++;
         }
@@ -75,11 +69,14 @@ VOID conv_path2uri(EXPSTR * dest, STRPTR path)
 
 #elif defined MSDOS
     /* replace all "\" by "/" */
-    if ((path[0] == '\\'))
-        app_estrch(dest, '/');
-    else
-        app_estrch(dest, path[0]);
-    path++;
+    while (path[0])
+    {
+        if ((path[0] == '\\'))
+            app_estrch(dest, '/');
+        else
+            app_estrch(dest, path[0]);
+        path++;
+    }
 
 #elif defined UNIX
     /* simply copy path */
@@ -122,13 +119,16 @@ VOID conv_uri2path(EXPSTR * dest, STRPTR uri)
         }
     }
 
-#elif defined MS_DOS
+#elif defined MSDOS
     /* convert all "/" to "\" */
     while (uri[0])
+    {
         if (uri[0] == '/')
             app_estrch(dest, '\\');
         else
             app_estrch(dest, uri[0]);
+        uri++;
+    }
 
 #elif defined UNIX
     set_estr(dest, uri);
@@ -181,15 +181,15 @@ static VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_f
     clr_estr(dest_uri);
     clr_estr(dest_fname);
 
-    /* evaluate kind of URI */
-    if (kind == URI_abs)
-        uri++;                  /* skip ":" */
-
     /* if a <BASE HREF=".."> was found before,
      * therefor treat URI as absolute
      */
-    if (hp->docbase_set && (kind == URI_rel))
-        kind = URI_abs;
+    if (hp->docbase_set)
+        kind = URI_ext;
+
+    /* evaluate kind of URI */
+    if (kind == URI_abs)
+        uri++;                  /* skip ":" */
 
     /* reset destination filename */
     set_estr(dest_fname, "");
@@ -344,13 +344,13 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
 
             /* evaluate kind of URI */
             if (kind == URI_abs)
-                noabsuri++;          /* skip ":" */
+                noabsuri++;     /* skip ":" */
 
             /* extract path and #name */
             if (noabsuri[0] == '#')
             {
                 path = NULL;
-                name = noabsuri + 1; /* skip '#' for ":#id" */
+                name = noabsuri + 1;    /* skip '#' for ":#id" */
             }
             else
             {
@@ -372,12 +372,7 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
                     exist = fopen(estr2str(dest_fname), "r");
                     if (!exist)
                     {
-                        hsc_msg_nouri(hp, estr2str(dest_fname), noabsuri, NULL);
-#if 0
-                        hsc_message(hp, MSG_NO_URIPATH,
-                                    "path to URI not found: %q",
-                                    estr2str(dest_fname));
-#endif
+                        hsc_msg_nouri(hp, estr2str(dest_fname), uri, NULL);
                     }
                     else
                     {
@@ -385,8 +380,42 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
 
                         /* check id */
                         if (hp->chkid && name)
-                            check_document_id(hp, estr2str(dest_fname),
-                                              name);
+                        {
+                            STRPTR doc_fname = estr2str(dest_fname);
+
+                            if (!fnamecmp(hp->project->document->docname,
+                                          doc_fname))
+                            {
+                                /* filename references current document */
+                                add_local_idref(hp, name);
+                            }
+                            else
+                            {
+                                /* filename reference other document;
+                                 * lookup project-data */
+                                switch (check_document_id(hp->project,
+                                                          doc_fname, name))
+                                {
+                                case ERR_CDI_OK:
+                                    D(fprintf(stderr, DHL "  id ok\n"));
+                                    break;
+                                case ERR_CDI_NoID:
+                                    hsc_message(hp, MSG_UNKN_ID,
+                                                "unknown %i", name);
+                                    break;
+                                case ERR_CDI_NoDocumentEntry:
+                                    hsc_message(hp, MSG_NO_DOCENTRY,
+                                                "no entry for document %q "
+                                                "to check %i",
+                                                estr2str(dest_fname),
+                                                name);
+                                    break;
+                                default:
+                                    panic("unknown returncode");
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  9-Aug-1996
+ * updated: 12-Sep-1996
  * created:  1-Jul-1995
  */
 
@@ -53,7 +53,6 @@ static BOOL arg_pipe_in = FALSE;
 static BOOL arg_license = FALSE;
 static BOOL arg_help = FALSE;
 static BOOL arg_debug = FALSE;
-static STRPTR arg_prjfile = NULL;
 static STRPTR arg_iconbase = NULL;
 static STRPTR arg_striptags = NULL;
 #if 0
@@ -62,7 +61,7 @@ static LONG arg_entmode = EMODE_KEEP;
 
 static HSCPRC *arg_hp = NULL;
 
-/* contains defines for destination-attribues */
+/* contains defines for destination-attributes */
 static EXPSTR *fileattr_str = NULL;
 
 /*
@@ -151,7 +150,7 @@ static STRPTR arg_mode_CB(STRPTR arg)
     size_t mode = strenum(arg, MODE_ENUMSTR, '|', STEN_NOCASE);
     HSCPRC *hp = arg_hp;
 
-    D(fprintf(stderr, DHP "args: mode=%s\n", arg));
+    D(fprintf(stderr, DHSC "args: mode=%s\n", arg));
 
     if (!mode)
         errmsg = "unknown mode";
@@ -211,7 +210,7 @@ static STRPTR arg_status_CB(STRPTR arg)
 #if DEBUG
     HSCPRC *hp = arg_hp;
 #endif
-    D(fprintf(stderr, DHP "args: status=%s\n", arg));
+    D(fprintf(stderr, DHSC "args: status=%s\n", arg));
 
     arg = strtok(argstr, "|");
     while (arg)
@@ -305,7 +304,7 @@ static VOID define_file_attribs(HSCPRC * hp)
     hsc_include_string(hp, "[define destattr]", estr2str(fileattr_str),
                        IH_PARSE_HSC | IH_NO_STATUS);
 
-    D(fprintf(stderr, DHP "destination attributes defines:\n%s",
+    D(fprintf(stderr, DHSC "destination attributes defines:\n%s",
               estr2str(fileattr_str))
         );
 }
@@ -335,7 +334,7 @@ BOOL user_defines_ok(HSCPRC * hp)
         {
             STRPTR defarg = (STRPTR) dln_data(nd);
 
-            D(fprintf(stderr, DHP "define using `%s'\n", defarg));
+            D(fprintf(stderr, DHSC "define using `%s'\n", defarg));
 
             set_estr(defbuf, "<$define ");
 
@@ -411,13 +410,12 @@ BOOL user_defines_ok(HSCPRC * hp)
                 if (quote_needed)
                     app_estrch(defbuf, quote_needed);
 
-
             }
 
             /* append end ">" */
             app_estrch(defbuf, '>');
 
-            D(fprintf(stderr, DHP "define: `%s'\n", estr2str(defbuf)));
+            D(fprintf(stderr, DHSC "define: `%s'\n", estr2str(defbuf)));
 
             hsc_include_string(hp, "DEFINE",
                              estr2str(defbuf), IH_PARSE_HSC | IH_NO_STATUS);
@@ -431,7 +429,7 @@ BOOL user_defines_ok(HSCPRC * hp)
     }
     else
     {
-        D(fprintf(stderr, DHP "(no defines)\n"));
+        D(fprintf(stderr, DHSC "(no defines)\n"));
     }
 
     return ((BOOL) (return_code < RC_ERROR));
@@ -469,8 +467,11 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "TO/K", &arg_outfname,
                      "output file (default: stdout)",
 
-                     "PRJFILE/T/K", &arg_prjfile,
-                     "project file",
+                     "PRJFILE/T/K", &prjfilename,
+                     "project file (default: none)",
+
+                     "PREFSFILE/T/K", &prefsfilename,
+                     "syntax preferences (default: hsc.prefs)",
 
                      "MSGFILE=MF/T/K", &msgfilename,
                      "message file (default: stderr)",
@@ -482,35 +483,33 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "max. number of errors (default: 20)",
 
                      "EXTENSION/T/K", &arg_extension,
-                     "output-file-extension (default: " DEFAULT_EXTENSION ")",
+                   "output-file-extension (default: " DEFAULT_EXTENSION ")",
 
-#if 1
                      "DEFINE=DEF/T/K/M", &define_list,
                      "define global attribute",
-#endif
+
                      "IGNORE=IGN/N/K/M/$", arg_ignore_CB, &ignore_list,
                      "ignore message number",
 
                      "MODE/E/K/$", arg_mode_CB, MODE_ENUMSTR, &arg_mode,
                      "mode for syntax check (" MODE_ENUMSTR ")",
-#if 0
-                     "QUOTEMODE=QM/E/K", QMODE_ENUMSTR, &arg_quotemode,
+
+                     "QUOTESTYLE=QS/E/K", QMODE_ENUMSTR, &arg_quotemode,
                      "defines how quotes appear (" QMODE_ENUMSTR ")",
-                     "ENTITYMODE=EM/E/K", EMODE_ENUMSTR, &entmode,
+#if 0
+                     "ENTITYSTYLE=ES/E/K", EMODE_ENUMSTR, &entmode,
                      "defines how special chars. appear (" EMODE_ENUMSTR ")",
     /* switches */
-                     "CHECKURI=CU/S", &arg_chkuri,
-                     "check existence of local URIs",
 #endif
                      "COMPACT=CO/S", &arg_compact,
-                     "stripe useless LFs and white-spaces",
+                     "strip useless LFs and white-spaces",
 
                      "GETSIZE/S", &arg_getsize,
                      "get width and height of images",
-#if 0
-                     "PIPEIN=PI/S", &arg_pipe_in,
-                     "read input file from stdin",
-#endif
+
+                     "MSGANSI/S", &msg_ansi,
+                     "use ansi-sequences in messages",
+
                      "RPLCENT=RE/S", &arg_rplc_ent,
                      "replace special characters",
 
@@ -523,7 +522,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "JENS/S", &arg_jens,
                      "don't try this at home",
                      "STRIPCOMMENT=SC/S", &arg_strip_cmt,
-                     "strip SGML comments",
+                     "strip SGML-comments",
 
                      "STRIPEXTERNAL=SX/S", &arg_strip_ext,
                      "strip tags with external URIs",
@@ -534,7 +533,8 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "ICONBASE/T/K", &arg_iconbase,
                      "base-uri for icon-entities",
 
-               "STATUS/E/K/$", arg_status_CB, STATUS_ENUM_STR, &disp_status,
+                     "STATUS/E/K/$", arg_status_CB,
+                     STATUS_ENUM_STR, &disp_status,
                      "status message (" STATUS_ENUM_STR ")",
 
                      "-DEBUG/S", &arg_debug, "enable debugging output",
@@ -590,6 +590,10 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
             if (!arg_extension)
                 arg_extension = DEFAULT_EXTENSION;
 
+            /* disable ID-warning if no project-file */
+            if (!prjfilename)
+                hsc_set_msg_ignore(hp, MSG_NO_DOCENTRY, TRUE);
+
             /* compute name of input file */
             arg_inpfname = NULL;
             if (dll_first(incfile) && !arg_pipe_in)
@@ -601,15 +605,19 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
                 /* get path part of inputfilename as relative
                  * destination directory */
-                get_fpath(rel_destdir, arg_inpfname);   /* TODO: set reldir when including first file */
+                get_fpath(rel_destdir, arg_inpfname);
+
+                /* TODO: set reldir when including first file */
+                /* TODO: find out why the above TODO is there */
 
                 /* remove input filename from incfile */
                 del_dlnode(incfile, dll_last(incfile));
 
-                D(fprintf(stderr, DHP "input : use `%s'\n"
-                          DHP "reldir: use `%s'\n",
+                D(fprintf(stderr, DHSC "input : use `%s'\n"
+                          DHSC "reldir: use `%s'\n",
                           estr2str(inpfilename), estr2str(rel_destdir)));
             }
+
             /* display include files */
             D(
                  {
@@ -617,7 +625,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
                  while (nd)
                  {
-                 fprintf(stderr, DHP "includ: use `%s'\n", (
+                 fprintf(stderr, DHSC "includ: use `%s'\n", (
                                                       STRPTR) dln_data(nd));
                  nd = dln_next(nd);
                  }
@@ -650,7 +658,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                     if (!lastch)
                     {
                         lastch = (PATH_SEPARATOR[0]);
-                        D(fprintf(stderr, DHP "AMIGA: use current dir\n"));
+                        D(fprintf(stderr, DHSC "AMIGA: use current dir\n"));
                     }
 #endif
 
@@ -659,7 +667,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                         /* use outfilename as destdir */
                         set_estr(destdir, arg_outfname);
                         arg_outfname = NULL;
-                        D(fprintf(stderr, DHP "output: use `%s' as destdir\n",
+                        D(fprintf(stderr, DHSC "output: use `%s' as destdir\n",
                                   estr2str(destdir)));
                     }
                     else if (arg_inpfname)
@@ -695,8 +703,8 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                             }
                             out_reldir++;
                         }
-                        D(fprintf(stderr, DHP "corr_inp: `%s'\n"
-                                  DHP "corr_out: `%s'\n",
+                        D(fprintf(stderr, DHSC "corr_inp: `%s'\n"
+                                  DHSC "corr_out: `%s'\n",
                                   inp_reldir, out_reldir)
                             );
 
@@ -705,7 +713,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                         if (!fnamecmp(inp_reldir, out_reldir))
                         {
                             /* they match.. */
-                            STRPTR tmp_name = NULL;
+                            STRPTR tmp_name = NULL;     /* copy of kack_nam */
 
                             /* cut corresponding chars */
                             get_left_estr(kack_destdir, kack_destdir,
@@ -714,9 +722,9 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
                             set_estr(kack_reldir, inp_reldir);
 
-                            D(fprintf(stderr, DHP "kack_dst: `%s'\n"
-                                      DHP "kack_rel: `%s'\n"
-                                      DHP "kack_nam: `%s'\n",
+                            D(fprintf(stderr, DHSC "kack_dst: `%s'\n"
+                                      DHSC "kack_rel: `%s'\n"
+                                      DHSC "kack_nam: `%s'\n",
                                       estr2str(kack_destdir),
                                       estr2str(kack_reldir),
                                       estr2str(kack_name))
@@ -730,6 +738,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                             /* create output filename */
                             tmp_name = strclone(estr2str(kack_name));
                             estrcpy(kack_name, kack_destdir);
+                            estrcat(kack_name, kack_reldir);
                             app_estr(kack_name, tmp_name);
                             ufreestr(tmp_name);
 
@@ -754,7 +763,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                     /* set outputfilename with value passed iwithin args */
                     outfilename = init_estr(32);
                     set_estr(outfilename, arg_outfname);
-                    D(fprintf(stderr, DHP "output: set to `%s'\n",
+                    D(fprintf(stderr, DHSC "output: set to `%s'\n",
                               estr2str(outfilename)));
                 }
                 else
@@ -766,12 +775,14 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
                         /* link destdir & input filename */
                         outfilename = init_estr(32);
-                        link_fname(outfilename, estr2str(destdir), arg_inpfname);
-                        set_fext(outfilename, arg_extension);
+                        link_fname(outfilename, estr2str(destdir),
+                                   arg_inpfname);
+                        if (strcmp(arg_extension, "."))
+                            set_fext(outfilename, arg_extension);
                         D(fprintf(stderr,
-                              DHP "output: concat destdir+inpfile+`.html'\n"
-                                  DHP "output: set to `%s'\n",
-                                  estr2str(outfilename)));
+                              DHSC "output: concat destdir+inpfile+`.%s'\n"
+                                  DHSC "output: set to `%s'\n",
+                                  arg_extension, estr2str(outfilename)));
                     }
                     else
                         fnsux = TRUE;
@@ -787,7 +798,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
             }
             else
             {
-                D(fprintf(stderr, DHP "output: use stdout\n"));
+                D(fprintf(stderr, DHSC "output: use stdout\n"));
                 use_stdout = TRUE;
             }
 
@@ -800,10 +811,8 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
         {
             if (arg_iconbase)
                 hsc_set_iconbase(hp, arg_iconbase);
-            if (arg_prjfile)
-                hsc_set_filename_project(hp, arg_prjfile);
             if (!use_stdout)
-                hsc_set_filename_process(hp, estr2str(outfilename));
+                hsc_set_filename_document(hp, estr2str(outfilename));
         }
         /* display argument error message */
         if (!ok)
@@ -842,15 +851,15 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                  HSCMSG_ID i;
 
                  fprintf(stderr, "\n"
-                         DHP "input : `%s'\n", estr2str(inpfilename));
-                 fprintf(stderr, DHP "output: `%s'\n", get_outfilename());
-                 fprintf(stderr, DHP "destdr: `%s'\n", estr2str(destdir));
-                fprintf(stderr, DHP "reldst: `%s'\n", estr2str(rel_destdir));
-                 if (arg_prjfile)
-                 fprintf(stderr, DHP "projct: `%s'\n", arg_prjfile);
+                         DHSC "input : `%s'\n", estr2str(inpfilename));
+                 fprintf(stderr, DHSC "output: `%s'\n", get_outfilename());
+                 fprintf(stderr, DHSC "destdr: `%s'\n", estr2str(destdir));
+                fprintf(stderr, DHSC "reldst: `%s'\n", estr2str(rel_destdir));
+                 if (prjfilename)
+                 fprintf(stderr, DHSC "projct: `%s'\n", prjfilename);
                  if (!use_stdout)
-                fprintf(stderr, DHP "procss: `%s'\n", estr2str(outfilename));
-                 fprintf(stderr, DHP "ignore:");
+                fprintf(stderr, DHSC "procss: `%s'\n", estr2str(outfilename));
+                 fprintf(stderr, DHSC "ignore:");
                  for (i = 0; i < MAX_MSGID; i++)
                  if (hsc_get_msg_ignore(hp, i))
                  fprintf(stderr, " %lu", i);

@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 26-Jul-1996
+ * updated:  9-Sep-1996
  * created: 17-Mar-1996
  *
  */
@@ -33,12 +33,28 @@
 #define NOEXTERN_HSC_CALLBACK_H
 #include "hsc/callback.h"
 
+
+/*
+ * defines for ANSI-sequences
+ */
+#define ANSI_RESET     "\033[0m"
+#define ANSI_BOLD      "\033[1m"
+#define ANSI_ITALIC    "\033[3m"
+#define ANSI_UNDERLINE "\033[4m"
+#define ANSI_INVERT    "\033[7m"
+
+#define ANSI_TEXT_BACKGR "\033[30m"
+#define ANSI_TEXT_SHADOW "\033[31m"
+#define ANSI_TEXT_HILITE "\033[32m"
+#define ANSI_TEXT_STRESS "\033[31m"
+
+
 static FILE *msgfile = NULL;
 
 /*
  * hsc_nomem_handler
  *
- * called from ugly/umalloc, if malloc() did return NULL
+ * called from ugly/umemory/umalloc(), if malloc() did return NULL
  */
 BOOL hsc_nomem_handler( size_t size )
 {
@@ -64,6 +80,7 @@ static VOID message(HSCPRC *hp,
      STRPTR msg_text)
 {
     STRPTR msg_class_str = "*UNKNOWN*";
+    STRPTR msg_class_seq = ANSI_BOLD;
     STRPTR msgfmt = msg_format;
 
     if  ( !msgfmt )
@@ -89,9 +106,11 @@ static VOID message(HSCPRC *hp,
             break;
         case MSG_ERROR:
             msg_class_str = "Error";
+            msg_class_seq = ANSI_BOLD ANSI_TEXT_HILITE;
             break;
         case MSG_FATAL:
             msg_class_str = "Fatal error";
+            msg_class_seq = ANSI_BOLD ANSI_TEXT_HILITE;
             break;
 
     }
@@ -120,13 +139,21 @@ static VOID message(HSCPRC *hp,
             switch ( msgfmt[0] )
             {
                 case 'c':
+                    if (msg_ansi)
+                        app_estr(msgbuf, msg_class_seq);
                     app_estr( msgbuf, msg_class_str );
+                    if (msg_ansi)
+                        app_estr(msgbuf, ANSI_RESET);
                     break;
                 case 'f':
                     app_estr( msgbuf, fname );
                     break;
                 case 'i':
+                    if (msg_ansi)
+                        app_estr(msgbuf, msg_class_seq);
                     app_estr( msgbuf, long2str( msg_id ) );
+                    if (msg_ansi)
+                        app_estr(msgbuf, ANSI_RESET);
                     break;
                 case 'm':
                     app_estr( msgbuf, msg_text );
@@ -157,7 +184,7 @@ static VOID message(HSCPRC *hp,
 
     D(
         if ( msgfile != stderr )
-            fprintf( stderr, DHP "msg `%s (%ld,%ld): %s %ld: %s'\n",
+            fprintf( stderr, DHSC "msg `%s (%ld,%ld): %s %ld: %s'\n",
                      fname, y, x,
                      msg_class_str, msg_id, msg_text )
     );
@@ -270,7 +297,7 @@ BOOL init_msgfile( HSCPRC *hp, STRPTR fname )
 
     if ( fname )
     {
-        D( fprintf( stderr, DHP "write msg to `%s'\n", fname ) );
+        D( fprintf( stderr, DHSC "write msg to `%s'\n", fname ) );
 
         errno = 0;
         msgfile = fopen( fname, "w" );
@@ -290,7 +317,7 @@ BOOL init_msgfile( HSCPRC *hp, STRPTR fname )
     else
     {
         msgfile = stderr;
-        D( fprintf( stderr, DHP "write msg to <stderr>\n" ) );
+        D( fprintf( stderr, DHSC "write msg to <stderr>\n" ) );
     }
 
     return( ok );

@@ -43,6 +43,8 @@
 
 #include "hsclib/msgid.h"
 
+#include "hscprj/document.h"
+
 #include "hsclib/attrib.h"
 #include "hsclib/entity.h"
 #include "hsclib/tag.h"

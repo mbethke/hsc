@@ -31,11 +31,12 @@
  *
  * hsc/hsc.c
  *
- * updated: 31-Jul-1996
+ * updated:  9-Sep-1996
  * created:  1-Jul-1995
  */
 
 #include "hsc/global.h"
+#include "hscprj/project.h"
 
 /*
  * ugly includes
@@ -121,14 +122,9 @@ static VOID cleanup(VOID)
  */
 int main(int argc, char *argv[])
 {
-#if DEBUG
-    /* just because I'm curious how long cleanup lasts */
-    /* NOTE: obviously, it last very long */
-    fputs("(init)\r", stderr);
-#endif
     /* set program information */
     set_prginfo("hsc", "Tommy-Saftwörx", VERSION, REVISION, BETA,
-                "HTML Sucks Completely",
+                "html sucks completely",
                 "Freeware, type `hsc LICENSE' for details.");
 
 #if DEBUG
@@ -173,8 +169,8 @@ int main(int argc, char *argv[])
 
                 /* init process & read preferences */
                 if (init_callback(hp)   /* assign callbacks */
-                    && hsc_init_hscprc(hp)      /* init hsc-process */
-                    && hsc_read_project_file(hp)        /* read project info */
+                    && hsc_init_hscprc(hp, prefsfilename)       /* init hsc-process */
+                    && hsc_init_project(hp, prjfilename)        /* read project */
                     && user_defines_ok(hp)      /* process user defines */
                     && include_ok(hp)   /* read include files (macros) */
                     && hsc_include_file(hp, inpfname,
@@ -183,7 +179,7 @@ int main(int argc, char *argv[])
                     )
                 {
                     if (write_output(hp))       /* write output file */
-                        hsc_write_project_file(hp);
+                        hsc_project_write_file(hp->project, prjfilename);
                 }
             }
         }

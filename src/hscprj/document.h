@@ -5,8 +5,17 @@
  *
  */
 
-#ifndef HSCLIB_DOCUMENT_H
-#define HSCLIB_DOCUMENT_H
+#ifndef HSCPRJ_DOCUMENT_H
+#define HSCPRJ_DOCUMENT_H
+
+#include "hsclib/ldebug.h"
+
+#include "ugly/utypes.h"
+#include "ugly/dllist.h"
+#include "ugly/expstr.h"
+#include "ugly/umemory.h"
+#include "ugly/ustring.h"
+#include "ugly/infile.h"
 
 /* document structure */
 typedef struct document_node {
@@ -61,6 +70,7 @@ extern CALLER *fpos2caller(INFILEPOS * fpos);
 extern HSCDOC *new_document(STRPTR docname);
 extern VOID del_document(APTR data);
 extern int cmp_document(APTR cmp_data, APTR list_data);
+extern DLNODE *find_document_node(DLLIST *list, STRPTR name);
 extern HSCDOC *find_document(DLLIST * list, STRPTR name);
 
 extern VOID del_reference(APTR data);
@@ -80,5 +90,9 @@ extern int cmp_iddef(APTR cmp_data, APTR list_data);
 extern HSCIDD *app_iddef(HSCDOC * document, STRPTR iddef_name);
 extern HSCIDD *find_iddef(HSCDOC * document, STRPTR name);
 
-#endif /* HSCLIB_DOCUMENT_H */
+/* function called if invalid state dedected */
+#define panic(text) call_panic(text,__FILE__,__LINE__)
+extern VOID call_panic(STRPTR text, STRPTR file, ULONG line);
+
+#endif /* HSCPRJ_DOCUMENT_H */
 

@@ -18,7 +18,7 @@ And link-testing is a very stupid task...</P>
 
 <P>Of course, there are several tools around: You can use a
 C-preprocessor to define macros and include files, use
-<WebLint> as a syntax-checker, replace your special
+some of the various html-validators, replace your special
 characters with <KBD>recode</KBD> and run a link-test-tool
 on your page.</P>
 
@@ -48,7 +48,7 @@ up-to-date.</P>
 
 <H2>How it works</H2>
 
-<P><hsc> simply acts as a preprocessor: You give it a
+<P><hsc> simply acts as a preprocessor: You give it an
 "extended" html-source (later in this document refered as
 "hsc-source") containig special commands, and <hsc>
 interprets it and produces a pure html-output as object
@@ -70,7 +70,8 @@ in configurability.</P>
 
 <P>If you just want to create your own personal homepage,
 write a short html-document with information about your
-three selfwritten freeware-proggies or somethink like that,
+three selfwritten freeware-proggies, include a picture of your cat,
+send greets to Sepp and Hugo or something like that,
 there are probably other tools which are easier to handle and
 will serve your needs well. But of course, I can't prevent you from
 using <hsc> for these tasks, too.</P>

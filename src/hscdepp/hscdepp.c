@@ -31,23 +31,28 @@
  *
  * hscdepp/hscdepp.c
  *
- * updated:  1-Aug-1996
+ * updated:  8-Sep-1996
  * created:  8-Jul-1996
  */
 
 /* ANSI includes */
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
+#include <time.h>
 
 /* ugly includes */
+#include "ugly/ustring.h"
+#include "ugly/dllist.h"
+#include "ugly/expstr.h"
+#include "ugly/infile.h"
 #include "ugly/uargs.h"
 #include "ugly/prginfo.h"
 #include "ugly/returncd.h"
 
 /* hsclib includes */
-#include "hsclib/hsclib.h"
-#include "hsclib/document.h"
-#include "hsclib/project.h"
+#include "hscprj/document.h"
+#include "hscprj/project.h"
 
 /* include revision data */
 #include "hscdepp/hscdepp_rev.h"
@@ -65,14 +70,24 @@ static const STRPTR AmigaOS_version = VERSTAG;
 #define SHIT "*** "             /* prefix for total failure */
 
 /* debugging define */
+#ifdef DEBUG
+#undef DEBUG
+#define DEBUG 1
+#endif
+
 #ifdef D
 #undef D
 #endif
+
 #if DEBUG
 #define D(x) if (debug) {x;}
 #else
 #define D(x) {/*nufin*/}
 #endif
+
+/* step-sizes for input-file/depency-string */
+#define CHUNKSIZE_INPUTFILE (64*1024)
+#define CHUNKSIZE_DEPENDSTR (16*1024)
 
 /* default parameters */
 #define DEFAULT_PROJECT "hsc.project"   /* project-filename */
@@ -103,7 +118,7 @@ static EXPSTR *lines_precede = NULL;
 static EXPSTR *lines_follow = NULL;
 static EXPSTR *lines_depend = NULL;
 
-static HSCPRC *hp = NULL;
+static HSCPRJ *project = NULL;
 
 /*
  * cleanup: free all resources
@@ -112,7 +127,7 @@ static HSCPRC *hp = NULL;
 static VOID cleanup(VOID)
 {
     D(fprintf(stderr, "(cleanup)\r"));
-    del_hscprc(hp);
+    del_project(project);
     del_estr(lines_precede);
     del_estr(lines_follow);
     del_estr(lines_depend);
@@ -139,6 +154,11 @@ static BOOL hscdepp_nomem_handler(size_t size)
     exit(return_code);
 
     return (FALSE);             /* immediatly abort */
+}
+
+VOID msg_corrupt_pf(HSCPRJ * hp, STRPTR reason)
+{
+    fprintf(stderr, "project-file corrupt: %s\n", reason);
 }
 
 /*
@@ -203,7 +223,13 @@ static BOOL args_ok(int argc, char *argv[])
     {
         ok = set_args(argc, argv, hscdepp_args);
 
-        if (arg_help || arg_license)
+        /* display argument error message */
+        if (!ok)
+        {
+            pargerr();
+            set_return_code(RC_ERROR);
+        }
+        else if (arg_help || arg_license)
         {
             /*
              * display help or license text
@@ -214,6 +240,7 @@ static BOOL args_ok(int argc, char *argv[])
             else
                 show_license();
             set_return_code(RC_WARN);
+            ok = FALSE;
         }
         else
         {
@@ -249,13 +276,6 @@ static BOOL args_ok(int argc, char *argv[])
                  fprintf(stderr, DHD "nameall =`%s'\n", nameall);
                  }
             );
-        }
-
-        /* display argument error message */
-        if (!ok)
-        {
-            pargerr();
-            set_return_code(RC_ERROR);
         }
 
         /* release mem used by args */
@@ -438,9 +458,7 @@ static BOOL read_makefile(VOID)
 static BOOL read_project(VOID)
 {
     BOOL ok = FALSE;
-
-    hp = new_hscprc();
-    hsc_set_filename_project(hp, prjfile);
+    INFILE *inpf = NULL;
 
     if (verbose)
     {
@@ -448,18 +466,21 @@ static BOOL read_project(VOID)
         fflush(stderr);
     }
 
-    /* TODO: sucks, currently there are no details why
-     * reading project-file failed */
+    /* assign message-callback for corrupt project-file */
+    project->CB_msg_corrupt_pf = msg_corrupt_pf;
+
+    /* read project-file */
     errno = 0;
-    if (hsc_read_project_file(hp))
+    inpf = infopen(prjfile, CHUNKSIZE_INPUTFILE);
+    if (inpf)
     {
-        if (dll_first(hp->documents))
+        if (hsc_project_read_file(project, inpf))
         {
-            if
-                (verbose)
+            if (verbose)
                 fprintf(stderr, HD "%s: project-file read\n", prjfile);
             ok = TRUE;
         }
+        infclose(inpf);
     }
 
     if (!ok)
@@ -468,7 +489,6 @@ static BOOL read_project(VOID)
         if (errno)
             fprintf(stderr, HD ": %s", strerror(errno));
         fprintf(stderr, "\n");
-
     }
 
     return (ok);
@@ -517,10 +537,10 @@ static BOOL update_makefile(VOID)
 {
     BOOL ok = FALSE;
     ULONG linelen = 0;          /* length of current line */
-    DLNODE *docnode = dll_first(hp->documents);
+    DLNODE *docnode = dll_first(project->documents);
     BOOL bak_ok = TRUE;
 
-    lines_depend = init_estr(1024);
+    lines_depend = init_estr(CHUNKSIZE_DEPENDSTR);
 
     /* append tagline */
     if (!notaglines)
@@ -564,7 +584,7 @@ static BOOL update_makefile(VOID)
     /*
      * append document data
      */
-    docnode = dll_first(hp->documents);
+    docnode = dll_first(project->documents);
     while (docnode)
     {
         HSCDOC *document = dln_data(docnode);
@@ -680,7 +700,7 @@ int main(int argc, char *argv[])
 #endif
     /* set program information */
     set_prginfo("hscdepp", "Tommy-Saftwörx", VERSION, REVISION, BETA,
-                "hsc dependency generator",
+                "hsc dependency procreator",
                 "Freeware, type `hscdepp LICENSE' for details.");
 
 #if DEBUG
@@ -699,11 +719,13 @@ int main(int argc, char *argv[])
          * main procedure
          */
         return_code = RC_OK;
-        if (args_ok(argc, argv)
+        project = new_project();
+        if (project
+            && args_ok(argc, argv)
             && read_makefile()
             && read_project()
             && update_makefile()
-            )
+        )
         {
             if (verbose)
             {
@@ -719,4 +741,3 @@ int main(int argc, char *argv[])
     }
     return (return_code);
 }
-

@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  4-Aug-1996
+ * updated: 18-Aug-1996
  * created:  7-Oct-1995
  */
 
@@ -43,7 +43,7 @@
 #define IFST_ERR    99          /* error occured */
 
 /* chars that represent TRUE, FALSE and
- * UNDEF (error in if-expression) on IF_stack
+ * UNDEF (error in if-expression) on if_stack
  */
 #define ISTK_FALSE '0'          /* condition false */
 #define ISTK_TRUE  '1'          /* condition true */
@@ -65,12 +65,12 @@ BOOL handle_hsc_elseif(HSCPRC * hp, HSCTAG * tag);
 BOOL handle_hsc_cif(HSCPRC * hp, HSCTAG * tag);
 
 /* convert boolean value to value for if-stack */
-static if_t bool2ift( BOOL bval )
+static if_t bool2ift(BOOL bval)
 {
     if (bval)
-        return(ISTK_TRUE);
+        return (ISTK_TRUE);
     else
-        return(ISTK_FALSE);
+        return (ISTK_FALSE);
 }
 
 /*
@@ -82,9 +82,9 @@ static if_t bool2ift( BOOL bval )
 /* is_push: add a new value to the if-stack */
 static VOID is_push(HSCPRC * hp, if_t value)
 {
-    app_estrch(hp->IF_stack, (char) value);
+    app_estrch(hp->if_stack, (char) value);
 
-    DIF(fprintf(stderr, DHL "push IF-stack: \"%s\"\n", estr2str(hp->IF_stack)));
+    DIF(fprintf(stderr, DHL "push IF-stack: \"%s\"\n", estr2str(hp->if_stack)));
 }
 
 /* is_get: get first value from the if-stack */
@@ -92,9 +92,9 @@ static if_t is_get(HSCPRC * hp)
 {
     if_t value = ISTK_FALSE;
 
-    if (hp->IF_stack)
+    if (hp->if_stack)
     {
-        STRPTR stkstr = estr2str(hp->IF_stack);
+        STRPTR stkstr = estr2str(hp->if_stack);
 
         DIF(fprintf(stderr, DHL "get  IF-stack: \"%s\"\n", stkstr));
 
@@ -105,19 +105,19 @@ static if_t is_get(HSCPRC * hp)
                 && (lastch != ISTK_FALSE)
                 && (lastch != ISTK_ELSE))
             {
-                DIF(panic("Illegal value on IF_stack"));
+                DIF(panic("Illegal value on if_stack"));
             }
             else
                 value = (if_t) lastch;
         }
         else
         {
-            DIF(panic("IF_stack EMPTY"));
+            DIF(panic("if_stack EMPTY"));
         }
     }
     else
     {
-        DIF(panic("IF_stack UNDEFINED"));
+        DIF(panic("if_stack UNDEFINED"));
     }
 
     DIF(fprintf(stderr, DHL "get  IF-stack: value=`%c'\n", (char) value));
@@ -131,14 +131,14 @@ static if_t is_pop(HSCPRC * hp)
 {
     if_t value = is_get(hp);
 
-    if (!strlen(estr2str(hp->IF_stack)))
+    if (!strlen(estr2str(hp->if_stack)))
     {
-        DIF(panic("Popping empty IF_stack"));
+        DIF(panic("Popping empty if_stack"));
     }
 
-    get_left_estr(hp->IF_stack, hp->IF_stack, strlen(estr2str(hp->IF_stack)) - 1);
+    get_left_estr(hp->if_stack, hp->if_stack, strlen(estr2str(hp->if_stack)) - 1);
 
-    DIF(fprintf(stderr, DHL "pop  IF-stack: \"%s\"\n", estr2str(hp->IF_stack)));
+    DIF(fprintf(stderr, DHL "pop  IF-stack: \"%s\"\n", estr2str(hp->if_stack)));
 
     return (value);
 }
@@ -148,7 +148,116 @@ static BOOL is_empty(HSCPRC * hp)
 {
     BOOL result = FALSE;
 
-    if (!strlen(estr2str(hp->IF_stack)))
+    if (!strlen(estr2str(hp->if_stack)))
+        result = TRUE;
+
+    return (result);
+}
+
+/*
+ *-------------------------------------
+ * SELECT-stack manipulation
+ *-------------------------------------
+ */
+
+/*
+ * del_select_stack_node
+ */
+VOID del_select_stack_node(APTR data)
+{
+    STRPTR s = (STRPTR) data;
+    ufreestr(s);
+}
+
+/*
+ * new_select_stack_node
+ */
+STRPTR new_select_stack_node(STRPTR data)
+{
+    return (strclone(data));
+}
+
+/*
+ * cmp_select_stack_node
+ */
+int cmp_select_stack_node(APTR cmp_data, APTR lst_data)
+{
+    STRPTR s1 = (STRPTR) cmp_data;
+    STRPTR s2 = (STRPTR) lst_data;
+
+#if DEBUG
+    if (!cmp_data)
+        panic("cmp_data = NULL");
+    if (!lst_data)
+        panic("lst_data = NULL");
+#endif
+
+    if (!strcmp(s1, s2))
+        return (-1);
+    else
+        return (0);
+}
+
+/* ss_push: add a new value to the if-stack */
+static VOID ss_push(HSCPRC * hp, STRPTR value)
+{
+    app_dlnode(hp->select_stack, new_select_stack_node(value));
+    DIF(fprintf(stderr, DHL "push select_stack: \"%s\"\n", value));
+}
+
+/* ss_get: get first value from the select-stack */
+static STRPTR ss_get(HSCPRC * hp, EXPSTR * dest)
+{
+    STRPTR value = NULL;
+
+    if (hp->select_stack)
+    {
+        DLNODE *nd = dll_first(hp->select_stack);
+
+        if (nd)
+        {
+            value = dln_data(nd);
+        }
+        else
+        {
+            DIF(panic("select_stack EMPTY"));
+        }
+    }
+    else
+    {
+        DIF(panic("select_stack UNDEFINED"));
+    }
+
+    DIF(
+           if (value)
+           fprintf(stderr, DHL "get  select_stack: value=`%s'\n", value)
+        );
+
+    return (value);
+}
+
+/* ss_pop: remove first value of select-stack */
+static STRPTR ss_pop(HSCPRC * hp, EXPSTR * dest)
+{
+    STRPTR value = ss_get(hp, dest);
+
+    if (!value)
+    {
+        DIF(panic("popping empty select_stack"));
+        value = "";
+    }
+
+    DIF(fprintf(stderr, DHL "pop  select_stack: \"%s\"\n", value));
+
+    return (value);
+}
+
+/* ss_empty: check if if-stack is empty */
+static BOOL ss_empty(HSCPRC * hp)
+{
+    BOOL result = FALSE;
+
+    if (dll_first(hp->select_stack))
         result = TRUE;
 
     return (result);
@@ -491,8 +600,8 @@ BOOL handle_hsc_if(HSCPRC * hp, HSCTAG * tag)
 #ifdef OLDIFCOND
     if_t new_cond = get_condition(hp);
 #else
-    BOOL new_condbool  = get_varbool_byname(tag->attr, CONDITION_ATTR);
-    if_t new_cond = bool2ift( new_condbool);
+    BOOL new_condbool = get_varbool_byname(tag->attr, CONDITION_ATTR);
+    if_t new_cond = bool2ift(new_condbool);
 #endif
 
     /* store new_cond on stack */
@@ -570,8 +679,8 @@ BOOL handle_hsc_else(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_elseif(HSCPRC * hp, HSCTAG * tag)
 {
-    BOOL new_condbool  = get_varbool_byname(tag->attr, CONDITION_ATTR);
-    if_t new_cond = bool2ift( new_condbool);
+    BOOL new_condbool = get_varbool_byname(tag->attr, CONDITION_ATTR);
+    if_t new_cond = bool2ift(new_condbool);
 
     if (is_empty(hp))
     {

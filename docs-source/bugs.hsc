@@ -6,7 +6,7 @@
     QAUTHOR='James, "Stripmining"'>
 
 <H2>Known bugs</H2>
-<seppl>
+
 The problems below should be fixed.. sometimes.
 <UL>
 <LI>For missing end-tags, the position of the last occurence of the
@@ -25,12 +25,11 @@ The problems below should be fixed.. sometimes.
 
 The problems below are no real bugs and should be fixed.. sometimes.
 <UL>
-<LI><hscdepp> currently is unreasonable huge because it needs to
-    initialise several internal structures never needed for 
-    Makefile-creation
 <LI>Most NEXT and PREV buttons of the  docs don't fit; I just wanted to
     show how to create a navigation bar, but I'm too lazy to maintain it
     while the structure of the documention isn't fixed.
+<LI>Some parts of the docs still need some improvement (like the chapter
+    about messages)
 <LI>As I know myself, these documents still contain loads of typos and
     `strange english'..
 </UL>
@@ -44,6 +43,16 @@ The problems described below probably won't ever be fixed.
     occure when copying the html-object-tree to a case-sensitive
     filesystem. I recommend to rebuild the whole project at the
     target system.
+<LI>If you specify a <TG>BASE HREF=".."</TG>, <hsc> is unable to
+    find out how the base is related to the destination-directory
+    and will treat all local URIs like external ones; Absolute URIs
+    aren't possible with a base-URI set, of course.
+<LI>For projects larger 500 documents, scanning the project-file on
+    every run takes a awful lot of time; due the lack of any portable
+    concept of keepind data resident after a program exits, there is
+    no workaround for this (same problem like with <hsc.prefs>); you
+    will have to get rid of the project-file and <hscdepp> for such
+    projects.
 <LI>The obsolete tags <TG>LISTING</TG> and <TG>XMP</TG> might not be
     treated correctly, as the behavior of these two seems so be not
     very strickly definded. You should avoid them anyway and use
@@ -73,7 +82,7 @@ The problems described below probably won't ever be fixed.
 <hsc> is fully dynamic and it's input size, numer of syntax-elements
 and etc. is only limited by memory and disk-space. Only some less important
 status messages are created in classic, braindead zero-terminated 
-C-character-arrays and are truncated if they become too long.
-
+C-character-arrays and are truncated if they become too long. Problems
+might occure if data leave 32-bit address-space.
 
 </WEBPAGE>

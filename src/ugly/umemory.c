@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 30-Jul-1996
+ * updated: 13-Sep-1996
  * created: 29-Mar-1994
  *
  */
@@ -356,7 +356,7 @@ static BOOL ugly_walldamaged(UGLYMEM * umem)
 
             fprintf(stderr, "*** MEMORY WALL DAMAGED!!!\n");
             fprintf(stderr, "*** %s wall, byte#%lu is %s instead of 0x%02x\n",
-                    wall, i, str_ubyte(value), umem->fillchar);
+                    wall, (ULONG) i, str_ubyte(value), umem->fillchar);
             umem_info(umem);
             ugly_memdump(umem->ptr, umem->size);
             fprintf(stderr, "  * lower wall:\n");

@@ -19,13 +19,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 10-Jul-1996
+ * updated:  9-Sep-1996
  * created:  7-Jul-1996
  */
 
-#include "hsclib/inc_base.h"
+#include <stdio.h>
+#include <string.h>
 
-#include "hsclib/document.h"
+#include "hscprj/document.h"
 
 /* debuggin define */
 #ifdef D
@@ -36,6 +37,17 @@
 #else
 #define D(x)                    /* nufin */
 #endif
+
+/*
+ * call_panic
+ *
+ * panic message; called by "panic()"-macro
+ */
+VOID call_panic(STRPTR text, STRPTR file, ULONG line)
+{
+    fprintf(stderr, "\n##\n## illegal state in `%s' (%lu): %s\n##\n",
+            file, line, text);
+}
 
 /*
  * del/new_document
@@ -63,10 +75,10 @@ HSCDOC *new_document(STRPTR docname)
     HSCDOC *newdoc = (HSCDOC *) umalloc(sizeof(HSCDOC));
 
 #if 0
-    DI(fprintf(stderr, DHL "new document `%s'\n", docname));
+    DP(fprintf(stderr, DHP "new document `%s'\n", docname));
 #endif
     newdoc->docname = strclone(docname);
-    newdoc->sourcename = strclone("");
+    newdoc->sourcename = NULL;
     newdoc->title = init_estr(0);
     newdoc->iddefs = init_dllist(del_iddef);
     newdoc->includes = init_dllist(del_include);
@@ -100,10 +112,17 @@ int cmp_document(APTR cmp_data, APTR list_data)
         return (0);
 }
 
+
+/* find_document_node: scans document list for a specific document */
+DLNODE *find_document_node(DLLIST *list, STRPTR name)
+{
+    return( find_dlnode(dll_first(list), (APTR) name, cmp_document));
+}
+
 /* find_document: scans document list for a specific document */
 HSCDOC *find_document(DLLIST * list, STRPTR name)
 {
-    DLNODE *nd = find_dlnode(dll_first(list), (APTR) name, cmp_document);
+    DLNODE *nd = find_document_node(list, name);
     HSCDOC *document = NULL;
 
     if (nd)
@@ -213,7 +232,7 @@ HSCREF *app_reference(HSCDOC * document, STRPTR ref_name)
     ref = new_reference(ref_name);
     app_dlnode(document->references, (APTR) ref);
 #if 0
-    D(fprintf(stderr, DHL "new reference `%s'\n", ref_name));
+    DP(fprintf(stderr, DHP "new reference `%s'\n", ref_name));
 #endif
 
     return (ref);
@@ -350,7 +369,7 @@ int cmp_iddef(APTR cmp_data, APTR list_data)
         return (0);
 }
 
-/* find_document: scans document list for a specific document */
+/* find_iddef: scans document list for a specific id */
 HSCIDD *find_iddef(HSCDOC * document, STRPTR name)
 {
     DLNODE *nd = find_dlnode(dll_first(document->iddefs),
@@ -374,7 +393,7 @@ HSCIDD *app_iddef(HSCDOC * document, STRPTR iddef_name)
     iddef = new_iddef(iddef_name);
     app_dlnode(document->iddefs, (APTR) iddef);
 #if 0
-    D(fprintf(stderr, DHL "new id-definition `%s'\n", iddef_name));
+    DP(fprintf(stderr, DHP "new id-definition `%s'\n", iddef_name));
 #endif
 
     return (iddef);

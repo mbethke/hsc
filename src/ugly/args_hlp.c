@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 30-Jul-1995
+ * updated: 10-Sep-1996
  * created:  3-Jul-1994
  *
  */
@@ -44,18 +44,49 @@
 #include "uargs.h"
 
 /*
- * fprintf_ah_flag
+ * strcat_flag
  */
-int fprintf_ah_flag(FILE * stream, struct arginfo *ai,
-                    ULONG chk_flag, char ch)
+static VOID strcat_flag(STRPTR s, struct arginfo *ai, ULONG chk_flag, char ch)
 {
-    int err = 0;
+    char flag[3] = "/x";
 
     if ((ai->ai_flags) & chk_flag)
-        err = fprintf(stream, "/%c", ch);
+    {
+        flag[1] = ch;
+        strcat(s, flag);
+    }
+}
 
-    return err;
+static STRPTR ai2str(struct arginfo *ai)
+{
+    static STRARR s[100];
 
+    strncpy(s, ai->ai_id, 100 - 20);
+
+    switch (ai->ai_type)
+    {
+    case ARG_SWITCH:
+        strcat(s, "/S");
+        break;
+    case ARG_LONG_RANGE:
+    case ARG_LONG:
+        strcat(s, "/N");
+        break;
+    case ARG_TEXT:
+    case ARG_ENUM:
+    case ARG_HANDLEFUNC:
+        break;
+    default:
+        strcat(s, "/?");
+        break;
+    }
+
+    strcat_flag(s, ai, ARG_KEYWORD, 'K');
+    strcat_flag(s, ai, ARG_REQUIRED, 'A');
+    strcat_flag(s, ai, ARG_MULTIPLE, 'M');
+    strcat_flag(s, ai, ARG_CASESENS, 'C');
+
+    return (s);
 }
 
 /*
@@ -64,70 +95,54 @@ int fprintf_ah_flag(FILE * stream, struct arginfo *ai,
 int fprintf_arghelp(FILE * stream, struct arglist *al)
 {
     int err = 0;
-    int maxidlen = 18;          /* max. length if arg id */
 
     if (al)
     {
-
-        struct dlnode *no;
+        struct dlnode *nd;
         struct arginfo *ai;
+        size_t maxidlen = 0;      /* max. length if arg id */
 
-        no = al->al_list->first;
-
-        while (no)
+        /* compute maximum length */
+        nd = al->al_list->first;
+        while (nd)
         {
-
-            ai = (struct arginfo *) no->data;
+            ai = (struct arginfo *) dln_data(nd);
 
             if (ai)
             {
-
-#if 0
-                char ch;
-#endif
-
                 if (ai->ai_help)
                 {
+                    STRPTR s = ai2str(ai);
+                    if (strlen(s)>maxidlen)
+                        maxidlen = strlen(s);
+                }
+            }
+            nd = dln_next(nd);
+        }                       /*while */
+        maxidlen += 2;
 
-#if 0
-                    switch (ai->ai_type)
-                    {
+        nd = al->al_list->first;
+        while (nd)
+        {
+            ai = (struct arginfo *) dln_data(nd);
 
-                    case ARG_SWITCH:
-                        ch = 'S';
-                        break;
-                    case ARG_TEXT:
-                        ch = 'T';
-                        break;
-                    case ARG_LONG_RANGE:
-                        ch = 'R';
-                        break;
-                    default:
-                        ch = '?';
-                        break;
+            if (ai)
+            {
+                if (ai->ai_help)
+                {
+                    STRPTR s = ai2str(ai);
 
-                    }
-                    fprintf(stream, "/%c", ch);
-
-                    fprintf_ah_flag(stream, ai, ARG_KEYWORD, 'K');
-                    fprintf_ah_flag(stream, ai, ARG_REQUIRED, 'R');
-                    fprintf_ah_flag(stream, ai, ARG_MULTIPLE, 'M');
-                    fprintf_ah_flag(stream, ai, ARG_CASESENS, 'C');
-#endif
                     if (ai->ai_help)
                         fprintf(stream, " %-*s  %s",
-                                maxidlen, ai->ai_id, ai->ai_help);
+                                (int) maxidlen, s, ai->ai_help);
                     else
-                        fprintf(stream, "%s", ai->ai_id);
+                        fprintf(stream, "%s", s);
 
                     fprintf(stream, "\n");
-
                 }
-
             }
 
-            no = no->next;
-
+            nd = dln_next(nd);
         }                       /*while */
     }
 
@@ -145,7 +160,6 @@ int fprintf_arghelp_short(FILE * stream, struct arglist *al)
 
     if (al)
     {
-
         struct dlnode *no;
         struct arginfo *ai;
 
@@ -156,54 +170,14 @@ int fprintf_arghelp_short(FILE * stream, struct arglist *al)
 
         while (no)
         {
-
             ai = (struct arginfo *) no->data;
 
             if (ai)
-            {
-
-                char ch;
-
-                fprintf(stream, "%s", ai->ai_id);
-
-                switch (ai->ai_type)
-                {
-
-                case ARG_SWITCH:
-                    ch = 'S';
-                    break;
-                case ARG_TEXT:
-                    ch = '\0';
-                    break;
-                case ARG_LONG_RANGE:
-                    ch = 'R';
-                    break;
-                case ARG_LONG:
-                    ch = 'N';
-                    break;
-                case ARG_ENUM:
-                    ch = 'E';
-                    break;
-                default:
-                    ch = '?';
-                    break;
-
-                }
-                if (ch)
-                    fprintf(stream, "/%c", ch);
-
-                fprintf_ah_flag(stream, ai, ARG_KEYWORD, 'K');
-                fprintf_ah_flag(stream, ai, ARG_REQUIRED, 'A');
-                fprintf_ah_flag(stream, ai, ARG_MULTIPLE, 'M');
-                fprintf_ah_flag(stream, ai, ARG_CASESENS, 'C');
-                fprintf_ah_flag(stream, ai, ARG_OVERWRITE, 'O');
-
-            }
+                fprintf(stream, "%s", ai2str(ai));
 
             no = no->next;
             if (no)
                 fprintf(stream, ",");
-
         }                       /*while */
 
         fprintf(stream, "\n");

@@ -21,6 +21,10 @@
 #define modadj(x,by) ((by)*(((x)+(by))/(by)))
 #endif
 
+/* some inline macros used without DEBUG defined */
+#define ugly_inline_estr2str(es) ((es)->es_data)
+#define ugly_inline_estrlen(es)  ((es)->es_len - 1)
+
 typedef struct
 {
     STRPTR es_data;             /* ptr to string data */
@@ -51,11 +55,11 @@ extern BOOL ugly_app_estr(EXPSTR * es, CONSTRPTR s);
 extern BOOL ugly_dbg_set_estr(EXPSTR * es, CONSTRPTR s, STRPTR file, ULONG line);
 extern BOOL ugly_dbg_app_estrch(EXPSTR * es, int ch, STRPTR file, ULONG line);
 extern BOOL ugly_dbg_app_estr(EXPSTR * es, CONSTRPTR s, STRPTR file, ULONG line);
+extern STRPTR ugly_estr2str(EXPSTR * es);
+extern size_t ugly_estrlen(EXPSTR * es);
 
-extern STRPTR estr2str(EXPSTR * es);
 extern BOOL estrcpy(EXPSTR * dest, EXPSTR * src);
 extern BOOL estrcat(EXPSTR * dest, EXPSTR * src);
-extern size_t estrlen(EXPSTR * es);
 
 extern BOOL get_mid_estr(EXPSTR * dest, EXPSTR * src, size_t from, size_t num);
 extern BOOL get_right_estr(EXPSTR * dest, EXPSTR * src, size_t num);
@@ -75,6 +79,8 @@ extern BOOL get_left_estr(EXPSTR * dest, EXPSTR * src, size_t num);
 #define app_estr( es, s ) ugly_dbg_app_estr( es, s, __FILE__, __LINE__ )
 #define init_estr( s ) ugly_dbg_init_estr( s, __FILE__, __LINE__ )
 #define clr_estr( s ) ugly_dbg_clr_estr( s, __FILE__, __LINE__ )
+#define estr2str( s ) ugly_estr2str( s )
+#define estrlen( s ) ugly_estrlen( s )
 
 #else
 
@@ -85,6 +91,8 @@ extern BOOL get_left_estr(EXPSTR * dest, EXPSTR * src, size_t num);
 #define app_estr( es, s ) ugly_app_estr( es, s )
 #define init_estr( s ) ugly_init_estr( s )
 #define clr_estr( s ) ugly_clr_estr( s )
+#define estr2str( s ) ugly_inline_estr2str( s )
+#define estrlen( s ) ugly_inline_estrlen( s )
 
 #endif
 

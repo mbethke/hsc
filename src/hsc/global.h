@@ -26,7 +26,7 @@
 /*
  * defines
  */
-#define DHP "*hscpre* "
+#define DHSC "*hscpre* "
 
 /*
  * mode strings for syntax check
@@ -87,7 +87,10 @@
 
 extern EXPSTR *inpfilename;
 extern EXPSTR *outfilename;
+extern BOOL   msg_ansi;
 extern STRPTR msgfilename;
+extern STRPTR prjfilename;
+extern STRPTR prefsfilename;
 
 extern ULONG max_error;
 extern DLLIST *define_list;

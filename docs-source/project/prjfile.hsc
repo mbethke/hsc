@@ -42,4 +42,8 @@ You can ignore this, and the project-file will be created after
 the (successful) creation of the html-object. The next time you 
 start <hsc> passing the same project-file, no warning will appear.</P>
 
+<P>Until all documents have been processed (and added therefor been
+added to the project-file) by <hsc> at least once, there will also
+be some occurences of messaged#51 you can ignore, too.</P>
+
 </WEBPAGE>

@@ -26,8 +26,10 @@
 
 #include <time.h>
 
+#include "hsclib/ldebug.h"
 #include "hsclib/tag.h"
-#include "hsclib/document.h"
+
+#include "hscprj/project.h"
 
 typedef LONG HSCMSG_ID;         /* hsc message id */
 typedef LONG HSCMSG_CLASS;      /* hsc message class */
@@ -43,8 +45,7 @@ typedef struct hscprocess
     DLLIST *defattr;            /* defined attributes */
     DLLIST *defent;             /* defined special charcters & entities */
     DLLIST *container_stack;    /* stack of container-tags currently open */
-    struct document_node *document;
-    DLLIST *documents;          /* list of documents (read from project) */
+    HSCPRJ *project;            /* project data */
     DLLIST *idrefs;             /* list of references to local IDs */
     EXPSTR *destdir;            /* destination root directory */
     EXPSTR *reldir;             /* relative destination directory */
@@ -55,14 +56,17 @@ typedef struct hscprocess
     EXPSTR *iconbase;           /* base URI for icons */
     time_t start_time;          /* time process has been started */
 
-    EXPSTR *IF_stack;           /* stack for results of nested <$if>s */
+    DLLIST *select_stack;       /* stack for results of <$select> */
+    EXPSTR *if_stack;           /* stack for results of <$if> */
 
     EXPSTR *tag_name_str;       /* strings for communication with tag-handlers */
     EXPSTR *tag_attr_str;
     EXPSTR *tag_close_str;
 
+#if 0
     STRPTR filename_project;    /* where to read/write project data */
-    STRPTR filename_process;    /* process-name to be stored in project */
+#endif
+    STRPTR filename_document;   /* document-name to be stored in project */
 
     BOOL *msg_ignore;           /* messages to be ignored */
     HSCMSG_CLASS *msg_class;    /* messages with remaped classes */
@@ -140,11 +144,9 @@ HSCPRC;
 #define PARENT_FILE_ID  "::p::" /* used as prefix in filename if */
               /* parent file on input-stack should be used for message-pos. */
 
-#ifdef AMIGA
-/* file that contains base-data from `LoadHscPrefs' */
-#define HSCBASE_FILE "env:hscBase"
-#endif
-
+/*
+ * system-dependant defines
+ */
 #ifdef AMIGA
 #define CONFIG_FILE "hsc.prefs"
 #define CONFIG_PATH "env:", "s:"
@@ -153,12 +155,21 @@ HSCPRC;
 #define CONFIG_FILE "hsc.prefs"
 #define CONFIG_PATH "/usr/local/lib/"
 
+#elif defined WINNT
+#define CONFIG_FILE "hsc.prefs"
+#define CONFIG_PATH "\\"
+
 #elif defined MSDOS
 #define CONFIG_FILE "HSC.PRE"
 #define CONFIG_PATH "\\"
 
 #else
 #error "Operating system not supported: config-file/path"
+#endif
+
+/* handle several OS-es same as MSDOS */
+#if (!defined MSDOS) & (defined WINNT)
+#define MSDOS
 #endif
 
 /* step sizes for expstr's */
@@ -284,8 +295,7 @@ extern VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext);
 extern BOOL hsc_set_destdir(HSCPRC * hp, STRPTR dir);
 extern BOOL hsc_set_reldir(HSCPRC * hp, STRPTR fname);
 extern BOOL hsc_set_iconbase(HSCPRC * hp, STRPTR uri);
-extern BOOL hsc_set_filename_project(HSCPRC * hp, STRPTR filename);
-extern BOOL hsc_set_filename_process(HSCPRC * hp, STRPTR filename);
+extern BOOL hsc_set_filename_document(HSCPRC * hp, STRPTR filename);
 extern VOID hsc_set_quote_mode(HSCPRC * hp, LONG new_mode);
 extern VOID hsc_set_entity_mode(HSCPRC * hp, LONG new_mode);
 
@@ -334,11 +344,7 @@ extern VOID hsc_reset_msg_class(HSCPRC * hp);
 extern BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text);
 
 /* misc. functions */
-extern VOID call_panic(STRPTR text, STRPTR file, ULONG line);
 extern BOOL hsc_standard_nomem_handler(size_t size);
-
-/* function called if invalid state dedected */
-#define panic(text) call_panic(text,__FILE__,__LINE__)
 
 #endif /* NOEXTERN_HSC_HSCPRC */
 #endif /* HSC_HSCPRC_H */

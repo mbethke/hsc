@@ -154,7 +154,7 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                         int j = 0;
 
                         DSZ(printf("%04x: %02x %02x: (%02x%02x %02x%02x) ",
-                                   i, buf[i], buf[i + 1],
+                                   (ULONG) i, buf[i], buf[i + 1],
                                    buf[i + 2], buf[i + 3],
                                    buf[i + 4], buf[i + 5]));
 
@@ -319,7 +319,7 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                             estr2str(srcpath));
             }
 
-            DSZ(fprintf(stderr, DHL "  size: \"%s\" (%dx%d)\n",
+            DSZ(fprintf(stderr, DHL "  size: \"%s\" (%ldx%ld)\n",
                         filetype, width, height));
 
             fclose(fref);

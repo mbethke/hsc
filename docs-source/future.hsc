@@ -22,10 +22,13 @@ The enhancements below are planed to implemented.. sometimes
 <LI>Do checking of external URIs with an external program (eg. `GetURL')
 <LI><TG>$select</TG>, <TG>$when</TG> and <TG>$otherwise</TG> as an extended version of <TG>$if</TG>
 <LI>Plausibility checking of external URIs (unknown protocoll, missing domain)
+<LI>CLI-option <KBD>STRIPBADWS</KBD> to automatically remove those white-spaces
+    which cause messages#78 and #79.
+<LI>Use system-independant paths for filenames stored in project-file, so
+    you can work with the same project-file under multiple systems.
 <LI>After having read the specs for html 0.32, maybe I should rename
     the program to `hsemtics' (short for `HTML sucks even more than
     I can say")
-<LI>Improve docs...
 </UL>
 
 <H2>Far future</H2>
@@ -56,6 +59,8 @@ or more of them, fell free trying to convince me.
 <LI>Undefine attributes via <TG>$undefine</TG> - what for?
 <LI>Move around in text using <TG>$goto</TG> and <TG>$label</TG> - this
     one's perverted to the core.
+<LI>Support any other output-formats like texinfo or AmigaGuide; there
+    are convertes around for that tasks.
 </UL>
 
 </WEBPAGE>

@@ -17,11 +17,11 @@ a pre-relaese or bugfixes for <hsc>.</P>
 
 <H1>How to reach the Author</H1>
 
-<P>If you find any bugs (which is still quite probably), have any questions
-about <hsc> and it's usage (which is quite probably 'cause the docs are
-still rather confusing) or have any suggestions how to improve <hsc>
-(which is still quite probably 'cause <hsc> is far from being perfect),
-email me.</P>
+<P>If you find any bugs (which seems to become more and more unlikely), 
+have any questions about <hsc> and it's usage (which should be quite
+unlikely because I meanwhile consider these docs quite useful) or have 
+any suggestions how to improve <hsc> (if you can stand them not being
+implemented within the next three years), email me.</P>
 
 <P>But please read the sections about <A HREF="questions.html">Questions
 and Answers</A>, <A HREF="future.html">future improvements</A>
@@ -34,10 +34,20 @@ even for complete idiots.</P>
 <A HREF="http://www.giga.or.at/~agi/hsc/index.html">hsc's support-page</A>,
 so check this, too. (Note: Traditionally, the most distressing bugs
 are reported and fixed a few days after a new release showed up in
-Amient, so it's probably a good habbit to take a look at this page
+Aminet, so it's probably a good habbit to take a look at this page
 about a week after downloading <hsc> from Aminet.)</P>
 
 <P>You can reach me via email at <EMAIL ADDRESS="agi@giga.or.at"> or
 <EMAIL ADDRESS="agi@sbox.tu-graz.ac.at"></P>
+
+If someone insists on wasting paper, use
+
+<BLOCKQUOTE>
+Thomas Aglassinger<BR>
+Lissagasse 12/II/9<BR>
+8020 Graz<BR>
+AUSTRIA
+</BLOCKQUOTE>
+but don't expect me to buy stamps for a reply.
 
 </WEBPAGE>

@@ -20,7 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  4-Aug-1996
+ * updated: 18-Sep-1996
  * created: 23-Jul-1995
  */
 
@@ -39,7 +39,7 @@
 #include "hsclib/tag_if.h"
 
 #define TIMEBUF_INC    20
-#define ES_STEP_SOURCE 40
+#define ES_STEP_SOURCE 1024
 
 /* states for handle_hsc_source */
 #define SRST_TEXT    0          /* inside text      */
@@ -662,8 +662,7 @@ BOOL handle_hsc_deficon(HSCPRC * hp, HSCTAG * tag)
     STRPTR name = get_vartext_byname(tag->attr, "NAME");
     DLNODE *nd = NULL;
 
-    nd = find_dlnode(
-                        hp->defent->first, (APTR) name, cmp_strent);
+    nd = find_dlnode(hp->defent->first, (APTR) name, cmp_strent);
     if (nd)
         msg_illg_defent(hp, "duplicate entity");
     else
@@ -680,7 +679,6 @@ BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag)
 {
 
     HSCVAR *attr = define_var(hp, hp->defattr, 0);
-
     if (attr)
     {
         /* set mci for local attribute */
@@ -688,6 +686,9 @@ BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag)
             attr->macro_id = get_mci(hp);
         else
             attr->macro_id = MCI_GLOBAL;
+
+        /* see "attrib.h" why this */
+        attr->varflag |= VF_MACRO;
 
         /* set new value (copy from default) if passed */
         if (get_vardeftext(attr))
@@ -740,6 +741,7 @@ BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
                 /* assign destination to dummy attribute */
                 attr = dummy;
                 dummy->vartype = attr->vartype;
+                dummy->varflag = attr->varflag;
             }
 
             /* check if a "=" comes next */

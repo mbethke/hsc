@@ -20,8 +20,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 30-Jul-1996
- * created: 21-Feb-1996
  */
 
 #ifndef HSCLIB_HSCLIB_H         /* avoid include twice */
@@ -31,7 +29,7 @@
 
 #include "hsclib/include.h"
 #include "hsclib/linit.h"
-#include "hsclib/project.h"
+#include "hscprj/project.h"
 
 #endif /* HSCLIB_HSCLIB_H */
 

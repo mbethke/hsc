@@ -11,12 +11,11 @@ This one is the complete distribution of the AmigaOS-version and
 includes the binaries, 
 <PRE>
     hsc            executable for the preprocessor
-    hsc.020        executable for the preprocessor, requires 68020
     hscdepp        executable for the dependency-procreator
     hsc.prefs      contains html-syntax-definition
     CHANGES        program history
-    README         guess what
-    README.docs    tells you where to start reading the docs
+    README         short introduction
+    IMPORTANT      where to start and what to read
     COPYING        The GNU General public license
     example/       a short example project
     grafflwerk/    miscellaneous stuff that might be useful
@@ -49,7 +48,8 @@ You probably will have to modify the <Makefile>.
     COPYING        The GNU General public license
     Makefile       Makefile to compile the wohle thing
     Makefile.dodl  Makefile for CC and weenixes
-    hsclib/        sources for the parser
+    hsclib/        parser-functions
+    hscprj/        project-management-functions
     hsc/           hsc, the preprocessor
     hscdepp/       hscdepp, the dependency-procreator
     ugly/          my personal function library; experimental stuff

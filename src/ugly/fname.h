@@ -35,16 +35,8 @@
 #define PATH_SEPARATOR    "/:"
 #define DIR_SEPARATOR     '/'
 #define PARENT_DIR        "/"
-#define FNAME_IGNORE_CASE TRUE
-
-#elif defined MSDOS
-#define MAX_FPATH 128
-#define MAX_FNAME   8
-#define MAX_FEXT    3
-#define PATH_SEPARATOR    "\\:"
-#define DIR_SEPARATOR     '\\'
-#define PARENT_DIR        "..\\"
-#define FNAME_IGNORE_CASE TRUE
+#define FNAME_IGNORE_CASE 1
+#define CRLF_SHIT 0
 
 #elif defined UNIX
 #define MAX_FPATH 254
@@ -53,14 +45,37 @@
 #define PATH_SEPARATOR    "/"
 #define DIR_SEPARATOR     '/'
 #define PARENT_DIR        "../"
-#define FNAME_IGNORE_CASE FALSE
+#define FNAME_IGNORE_CASE 0
+#define CRLF_SHIT 0
+
+#elif defined WINNT
+#define MAX_FPATH 254
+#define MAX_FNAME 254
+#define MAX_FEXT  253
+#define PATH_SEPARATOR    "\\:"
+#define DIR_SEPARATOR     '\\'
+#define PARENT_DIR        "..\\"
+#define FNAME_IGNORE_CASE 1
+#define CRLF_SHIT 1
+
+#define MSDOS /* isn't this nasty? */
+
+#elif defined MSDOS
+#define MAX_FPATH 128
+#define MAX_FNAME   8
+#define MAX_FEXT    3
+#define PATH_SEPARATOR    "\\:"
+#define DIR_SEPARATOR     '\\'
+#define PARENT_DIR        "..\\"
+#define FNAME_IGNORE_CASE 1
+#define CRLF_SHIT 1
 
 #else
 #error "Operating system not supported: filename-functions"
 #endif
 
 /* strcmp() for filenames: case-sensitive or not */
-#if FNAME_IGNORE_CASE == TRUE
+#if FNAME_IGNORE_CASE
 #define fnamecmp(a,b) strcmp((a),(b))
 #define fnamencmp(a,b,n) strncmp((a),(b),(n))
 #else
