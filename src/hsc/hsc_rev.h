@@ -23,9 +23,9 @@
 #define _STRINGIFY(x) #x
 
 #define VERSION		0
-#define REVISION	931
-#define DATE	"31.08.03"
-#define TIME	"11:48:42"
+#define REVISION	932
+#define DATE	"24.12.03"
+#define TIME	"00:44:10"
 
 #define __VSTR STRINGIFY(VERSION)
 #define __RSTR STRINGIFY(REVISION)
