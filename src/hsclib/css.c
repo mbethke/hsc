@@ -53,8 +53,7 @@ static HSCSTYLE *find_stylename(DLLIST *stylelist, CONSTRPTR name) {
  *
  * alloc & init a new style element
  */
-static HSCSTYLE *new_styleattr(CONSTRPTR name, CONSTRPTR value)
-{
+HSCSTYLE *new_styleattr(CONSTRPTR name, CONSTRPTR value) {
    HSCSTYLE *newvar = (HSCSTYLE*)umalloc(sizeof(HSCSTYLE));
 
 #if DEBUG_ATTR
