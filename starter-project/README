@@ -1,0 +1,24 @@
+About `starter-project'
+=======================
+
+This drawer contains some files and material that can be used as a
+template for new projects. Included are a makefile, a (nearly) empty
+project file and the first hsc/html file.
+
+source/
+-------
+This drawer contains the source file for your project
+
+source/Makefile
+---------------
+This is an empty Makefile you can use as initial for new projects.
+Read the docs, section "Project Mangament" to find out how it is
+supposed to work.
+
+html/
+-----
+This is a destination directory, where all documents created from
+the source will be placed. Also all your additional data like
+images or archives accessable from your pages should end up there.
+
+

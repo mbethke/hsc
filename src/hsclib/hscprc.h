@@ -214,8 +214,6 @@ struct hscprocess
     HSCMSG_CLASS *msg_class;    /* messages with remaped classes */
     ULONG msg_count;            /* numer of messages occured until now */
 
-    enum content_called{no, once, often};
-
     BOOL chkid;                 /* flag: check existence of URIs/IDs */
     BOOL chkuri;
     BOOL compact;               /* flag: create compact output */
@@ -284,6 +282,13 @@ struct hscprocess
                       STRPTR white_spaces, STRPTR text);
       VOID(*CB_id) (struct hscprocess * hp,
                     HSCATTR * attr, STRPTR id);
+
+#ifdef MSDOS
+    /* some compilers seem to have problems with this line.. */
+    enum content_called{no, once, often};
+#endif
+
+
 };
 
 typedef struct hscprocess HSCPRC;

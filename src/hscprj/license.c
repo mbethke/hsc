@@ -22,7 +22,7 @@
  *
  * routines to display license
  *
- * updated: 25-Jan-1997
+ * updated:  3-Jun-1997
  * created: 17-Nov-1996
  */
 
@@ -45,12 +45,14 @@ STRPTR hsc_license =            /* the usual boring text */
 "along with this program; if not, write to the Free Software\n"
 "Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\n"
 
+#if 0
 /* author address */
 "To contact author, write to:\n"
 "  Thomas Aglassinger\n"
 "  Lissagasse 12/2/9\n"
 "  8020 Graz\n"
 "  AUSTRIA\n\n"
+#endif
 
 /* support w3page */
 "For support and updates, look at `http://www.giga.or.at/~agi/hsc/'\n\n"

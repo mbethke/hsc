@@ -1,5 +1,196 @@
+
 CHANGES
 =======
+
+Version 0.914, 6-Jun-1997
+ (very minor update just fixing a few problems)
+
+ hsc:
+ - fixed bug: sgml comments at end of macros caused "unexpected
+   end of context" [Hartmut Goebel]
+ - fixed bug: attribute FILE of <$depend> did work just the other
+   way round [Hartmut Goebel]
+ - improved handling of unknown attributes: within tag calls, they
+   now cause message#84 (just a warning), within macro calls, they
+   cause message#85 (an error), everywhere else good old message#20
+   (also an error) shows up
+ - changed class of message#15 to error ("required tag missing")
+
+ docs/
+ - fixed previous/next relations between documents; buttons should
+   now work
+ - removed some outdated remarks on old-style macros, which could
+   confuse users a lot
+ - updated all next/previous relations
+ - renamed `absolute URIs' to `Project Relative URIs' to avoid
+   confusion as this term is normally used for `external' URIs.
+ - added some notes on the not-existing german documentation
+ - added some general comments about make and common problems
+   (make.html)
+ - added some details why hsc.prefs is used instead of DTD
+   (prefs.html)
+
+ source/
+ - removed some unneeded stuff which could cause problems for some
+   ridiculous compilers
+
+ examples/
+ - re-included this stuff because of popular demand
+
+ miscellaneous:
+ - compiled with gcc 2.7.2.1
+
+---------------------------------------------------------------------
+
+Version 0.913, 26-May-1997
+ (more consitent container macros; reworked data-skipping and
+ sgml-comments; improved hscpitt;some bugfixes and minor
+ improvements)
+
+ hsc:
+ - fixed bug: with CLI option COMPACT enabled, empty lines at end of 
+   include files have not been removed [Hartmut Goebel]
+ - fixed bug: when skipping data (like when searching for a </$if>),
+   hsc-comments ending with an even number of asterisks (`*') have
+   not been recognised [Hartmut Goebel]
+ - fixed bug: with STATUS=QUIET, even critical I/O error messages
+   have been suppressed
+ - fixed bug: `<$source>sepp<</$source>' did not work
+ - fixed bug: message class `note' was ignored even with MODE set
+   to `pedantic'
+ - fixed bug: with QUOTESTYLE=NONE, values containing an underscore
+   (`_') have not been quoted [Magnus Holmgren]
+ - fixed bug: under certain circumstances, hsc wanted boolean
+   attributes to be quoted and came up with message#81 [Magnus
+   Holmgren]
+ - fixed bug: with option SMARTENT set, an `&' succeeding a tag was
+   replaced by `&amp;' even without any white spaces around [Stefan
+   Gybas]
+ - fixed some minor bugs that lead to wrong line numbers within
+   messages
+ - fixed some small memory leaks under certain error conditions
+ - fixed a mismatched va_end() [Sergio Monesi]
+ - added new concept for container macros [Walter Doerwald]
+ - added CLI option SERVERDIR to support server relative URIs
+ - added tag <$stripws>
+ - added tag <$depend> to add dependencies to files which are not
+   included directly, but also contain data which can affect the
+   document [Hartmut Goebel]
+ - added fExists() to check files relative to source diretory
+ - added message#36 "server relative URI"
+ - added message#58 "heading inside anchor"
+ - added message#52 "redefined end tag"
+ - moved message#55 to #50 "empty sgml-comment"
+ - added message#55 "text outside sgml-comment context"
+ - removed warning#56 "single word sgml-comment"
+ - changed error#3 to "end of context" instead of "file", as this
+   looked pretty stupid at the end of a macro in the middle of a
+   file
+ - changed Exists() that it now operates on URIs
+ - improved skipping data:
+   - whenever hsc needs to skip input until some specific tag (like
+     or <$if> or <$macro>), only one procedure is called in all
+     cases (less code)
+   - skipping tag attributes and expressions is implemented in a
+     more consistent way now
+   - when skipping sgml-comments, there are still all checks
+     performed
+ - improved tag modifier /AUTOCLOSE: constructs like
+   <P>sepp</P>hugo</P> now cause message#13, too
+ - improved handling of sgml-comments; it should now handle the
+   bullshit with even/odd number of hyphens (-), but you should use
+   hsc-comments anyway
+
+ hsc.prefs:
+ - moved SIZE:num from tag OPTION to tag SELECT [Xavier Bestel]
+ - added /required-modifier to ALT attributes; it should have been
+   there since ever
+
+ hscpitt (v1.1):
+ - fixed bug: on errors, no proper return code has been set
+ - fixed bug: on commands DELETE and ERASE, project data have not
+   been updated
+ - removed some debugging output, which even showed up in optimised
+   version
+ - added command ADD to add documents
+ - added line `INCLUDE' on COMMAND=EXTRACT
+
+ source/Makefile
+ - fixed bug: on `make clean', `hsctools/hscdepp.o' was not removed
+
+ source/Makefile.dodl
+ - fixed bug: hscpitt was not compiled automatically
+
+ source/README
+ - fixed error: location of binaries was wrong
+ - fixed error: hscpitt was not mentioned
+ - added small test suite
+
+ grafflwerk/
+ - added `hscpaltrow.rexx'
+ - fixed WINDOW-tooltype for some ARexx-scripts which did not set
+   proper title
+ - renamed `SendAWeb' to `SendBrowser'
+ - moved `Makefile' to `starter-project/source/'
+
+ miscellaneous:
+ - ported to RiscOS [Sergio Monesi and Nick Craig-Wood]
+ - removed `example', added `starter-project' directory instead
+ - renamed `Hmpf_Grmbl_Wrcks' to `NEWS'
+ - moved hsc-sources for documentation into source-archive
+ - included README's of main directory into all archives
+ - compiled with gcc 2.7.2.1
+
+---------------------------------------------------------------------
+    
+Version 0.912, 26-Jan-1997
+ (only some bugfixes)
+
+ hsc:
+ - fixed bug: CLI option INCLUDEDIR caused some memory to be released
+   twice [Rolf Herzog]
+ - fixed bug: enforcer-hits when using stdout for output, and a
+   PRJFILE has been specified; hsc now simple does not update the
+   project file in this case, as there are no reasonable filenames
+   available [Hartmut Goebel]
+ - fixed bug: calling macros recursively didn't set proper
+   attribute values for the end tag; hsc used the values of the later
+   tag for the attributes of the ealier one [Walter Doerwald]
+ - fixed bug: internal hsc-tags not beginning with an `$' haven't 
+   been recognised, and hsc started to output text too soon, 
+   resulting into empty lines at the beginning of output [Hartmut 
+   Goebel]
+ - fixed bug: same problem as above if source started with a
+   macro containing empty lines in the beginning  [Hartmut  Goebel]
+ - fixed bug: forgot to close some temporary files [Jens T. Berger
+   Thielemann]
+ - fixed bug: for missing end-tags, the position of the last 
+   occurrence of the start-tag with the same name was reported as 
+   corresponding start-tag
+ - changed panic-messages that they now immediately abort hsc
+ - added tag modifier `/RECOMMENDED' (for eg. <HTML>)
+ - added CLI option --help to act same as HELP
+
+ hsc.prefs:
+ - tags <HTML>, <HEAD> and <BODY> are no more /REQUIRED, but only
+   /RECOMMENDED
+
+ source/Makefile:
+ - added support for library managers (like `ar' or `oml')
+
+ source/Makefile.dodl
+ - fixed; was broken at all
+ - added support to create debugging version
+
+ documentation:
+ - added some comments about panic-messages (messages.html)
+ - fixed about 653246273 spelling mistakes, thanks to ISpell
+   (bad grammar remains, of course)
+
+ miscellaneous:
+ - compiled with gcc 2.7.2.1 (obtained `Geek Gadgets' finally..)
+
+---------------------------------------------------------------------
 
 Version 0.911, 4-Dec-1996 (The Porsche Release)
  (included hscpitt; improved white space handling; some bugfixes 
@@ -24,7 +215,7 @@ Version 0.911, 4-Dec-1996 (The Porsche Release)
    - changed base directory of source archive from `source/' to
      `hsc/source/'
    - changed CLI option ICONBASE that it now only works in "*"-mode
-   - changed version numbering to be conformant to AmigaOS (using
+   - changed version numbering to conform with AmigaOS (using
      0.911 instead of 0.9.11)
    - added CLI option INCLUDEDIR
    - added CLI option STRIPBADWS (as suggested by Armin Obersteiner
@@ -35,12 +226,12 @@ Version 0.911, 4-Dec-1996 (The Porsche Release)
    - added: version for AmigaOS can now be made resident
    - improved white spaces; now carriage return ("\r") is also
      recognised
-   - improved <$exec> that REMOVE="ON" implictly enables TEMPORARY
+   - improved <$exec> that REMOVE="ON" implicitly enables TEMPORARY
    - improved GETSIZE that attributes for dimension, that have been
      set by hand are now validated (before: ignored; see also
      message#45)
    - improved IGNORE that it now handles whole classes to be ignored
-     more reliabel
+     more reliable
    - improved IGNORE that you now can pass a whole list of messages
      and classes to be ignored, separated by a vertical bar ("|")
    - improved HSCPATH that no more trailing slash is required
@@ -64,7 +255,7 @@ Version 0.911, 4-Dec-1996 (The Porsche Release)
    - reworked author information, included some stuff you should 
      read before contacting me
    - added chapter about file options (fileargs.html)
-   - added chapter about environment vriables (envvar.html)
+   - added chapter about environment variables (envvar.html)
    - several sub-topics can now be reached from the main page
    - included an example on how CLI-option GETSIZE is supposed to
      affect the output
@@ -89,7 +280,7 @@ Version 0.9.10, 30-Sep-1996
    more then once if they've been declared using <$define>,
    usually resulting into wrong paths for existence-check
    (reported by Andreas Gaszner)
- - fixed bug that caused the relative destination-dir to be ommited
+ - fixed bug that caused the relative destination-dir to be omitted
    for the output-filename, if a full input-filename has been passed
    (reported by Walter Doerwald)
  - fixed a minor bug in grafflwerk/hScMsg.rexx, which could lead to
@@ -113,7 +304,7 @@ Version 0.9.9,  9-Aug-1996
  - fixed bug: option RPLCENT didn't work as expected due to a
    strange behavior of GCC's isalpha(), which declared eg. `ü' as an
    alphanumeric char (only AmigaOS; reported by Stefan Gybas)
- - fixed bug: absolute URIs lead to wrong URIs, if they exeeded two
+ - fixed bug: absolute URIs lead to wrong URIs, if they exceeded two
    nested directories (reported by Stefan Gybas)
  - fixed some minor bugs that prevented you from oppressing certain
    messages (reported by Armin Obersteiner)
@@ -175,7 +366,7 @@ Version 0.9.8, 29-May-1996
    GIF89a-extensions at all.
  - fixed bug that could lead to wrong message position when
    inserting expressions with `<(expr)>'; now, only the position
-   where the `)>' has appeard is used
+   where the `)>' has appeared is used
  - fixed bug that lead to wrong message position for messages
    launched during scan of string-constants (always used start of
    string as position)
@@ -192,7 +383,7 @@ Version 0.9.8, 29-May-1996
  - fixed some typos and missing attribute in hsc.prefs (reported by
    Marcel Offermans)
  - added "location of previous call"-messages if a message is
-   launched during processing a marco or an include-file
+   launched during processing a macro or an include-file
  - added tag <$DEFICON> to define icon-entity
  - added CLI-option ICONBASE to denote a base-uri where icon images
    are located and replace all icon-entities with <IMG>-tags
@@ -324,9 +515,9 @@ Version 0.9.3,  20-Nov-1995 (internal release only)
  - added <$SOURCE> to support inline sources
  - added tag <$LET> to create/update attributes
  - added tag <$MESSAGE> for user messages
- - container usage of <P> and <LI> is now supported (altough, in a
+ - container usage of <P> and <LI> is now supported (although, in a
    quite clumsy way; see AUTOCLOSE)
- - writes output only if no error occured
+ - writes output only if no error occurred
  - improved handling of comments inside macros
  - improved speed for reading macros
  - fixed bug: values for attributes of a tag have not been reset
@@ -347,7 +538,7 @@ Version 0.9.2, 23-Oct-1995
  - added SOURCE option for <$INCLUDE>
  - closing macro now not only inherits attributes passed to the
    opening macro, but also its values (kick me for that!)
- - check for redefinance of tag/macro
+ - check for redefinition of tag/macro
  - writing to output starts after useful data (skip empty lines,
    white-spaces, comments and hsc-tags in config/include files)
  - removed bug in handler for SGML comments, if "\n" was found
@@ -377,7 +568,7 @@ Version 0.9.1,  9-Oct-1995
  - support numeric entities (eg "&#123;")
  - "quot" entity
  - whines about quotes found within text
- - replace "&","<",">" by its entities, if surounded by white-spaces
+ - replace "&","<",">" by its entities, if surrounded by white spaces
    (switch SMARTENT)
  - replace quotes by "&quot;" (switch SMARTENT)
  - added "Reading config" status message

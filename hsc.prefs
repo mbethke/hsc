@@ -5,9 +5,9 @@
 ** For html-0.3x, most tags should be in, too. Also included is
 ** several bullshit supported only by special browsers.
 **
-** (W) by Tommy-Saftw&ooml;rx in 1995,96
+** (W) by Tommy-Saftw&ooml;rx in 1995-97
 **
-** updated: 27-Oct-1996
+** updated: 11-May-1997
 ** created:  8-Sep-1995
 *>
 
@@ -216,13 +216,13 @@
 <$deftag ADDRESS /CLOSE /LAZY="ciklw">
 <$deftag BASE /ONLYONCE /LAZY="h" target:string>
 <$deftag BLOCKQUOTE /CLOSE /LAZY="ciklw">
-<$deftag BODY /CLOSE /REQUIRED /ONLYONCE /LAZY="cil" BACKGROUND:uri BGCOLOR:color TEXT:color LINK:color VLINK:color ALINK:color>
+<$deftag BODY /CLOSE /RECOMMENDED /ONLYONCE /LAZY="cil" BACKGROUND:uri BGCOLOR:color TEXT:color LINK:color VLINK:color ALINK:color>
 <$deftag BR /LAZY="cikl">
 <$deftag DD /LAZY="cikl">
 <$deftag DL /CLOSE /LAZY="cikl" COMPACT:bool>
 <$deftag DT /LAZY="cikl">
-<$deftag HTML /CLOSE /REQUIRED /ONLYONCE>
-<$deftag HEAD /CLOSE /REQUIRED /ONLYONCE>
+<$deftag HTML /CLOSE /RECOMMENDED /ONLYONCE>
+<$deftag HEAD /CLOSE /RECOMMENDED /ONLYONCE>
 <$deftag H1 /CLOSE /NAW="h1|h2|h3|h4|h5|h6" /LAZY="ciklmsw" /WHTSPC ALIGN:enum("left|right|center|justify") SEQNUM:string SKIP:string DINGBAT:string>
 <$deftag H2 /CLOSE /NAW="h1|h2|h3|h4|h5|h6" /LAZY="ciklmsw" /WHTSPC ALIGN:enum("left|right|center|justify") SEQNUM:string SKIP:string DINGBAT:string>
 <$deftag H3 /CLOSE /NAW="h1|h2|h3|h4|h5|h6" /LAZY="ciklmsw" /WHTSPC ALIGN:enum("left|right|center|justify") SEQNUM:string SKIP:string DINGBAT:string>
@@ -230,7 +230,7 @@
 <$deftag H5 /CLOSE /NAW="h1|h2|h3|h4|h5|h6" /LAZY="ciklmsw" /WHTSPC ALIGN:enum("left|right|center|justify") SEQNUM:string SKIP:string DINGBAT:string>
 <$deftag H6 /CLOSE /NAW="h1|h2|h3|h4|h5|h6" /LAZY="ciklmsw" /WHTSPC ALIGN:enum("left|right|center|justify") SEQNUM:string SKIP:string DINGBAT:string>
 <$deftag HR /LAZY="ciklm" SRC:uri/z SIZE:string WIDTH:string ALIGN:enum("left|right|center")/j NOSHADE:bool/j >
-<$deftag IMG /LAZY="cil" SRC:uri/x/z/r ALT:string ALIGN:enum("top|bottom|middle|left|right|texttop|absmiddle|baseline|absbottom") MD:string UNITS:string ISMAP:bool WIDTH:string HEIGHT:string VALIGN:enum("top|middle|bottom|baseline") BORDER:string/j HSPACE:string/j VSPACE:string/j LOWSRC:uri/j USEMAP:uri/j>
+<$deftag IMG /LAZY="cil" SRC:uri/x/z/r ALT:string/required ALIGN:enum("top|bottom|middle|left|right|texttop|absmiddle|baseline|absbottom") MD:string UNITS:string ISMAP:bool WIDTH:string HEIGHT:string VALIGN:enum("top|middle|bottom|baseline") BORDER:string/j HSPACE:string/j VSPACE:string/j LOWSRC:uri/j USEMAP:uri/j>
 <$deftag ISINDEX /LAZY="h" PROMPT:string/j>
 <$deftag LI /AUTOCLOSE /MBI="ul|ol|dir|menu" /LAZY="ciklms" SKIP:string DINGBAT:string VALUE:string/j TYPE:string/j>
 <$deftag LINK HREF:uri/x TITLE:string REV:string REL:string URN:string METHODS:string>
@@ -248,14 +248,14 @@
 <$deftag INPUT /MBI="form" /LAZY="cilms" TYPE:string NAME:string VALUE:string DISABLED:bool CHECKED:bool MAXLENGTH:string ALIGN:enum("top|middle|bottom|left|right") ACCEPT:string MIN:string MAX:string SIZE:string>
 <$deftag MENU /CLOSE COMPACT:bool>
 <$deftag META CONTENT:string/r HTTP-EQUIV:string NAME:string>
-<$deftag OPTION /MBI="select" SELECTED:bool DISABLED:bool VALUE:string SIZE:num>
-<$deftag SELECT /CLOSE /MBI="form" /LAZY="cil" NAME:string/r MULTIPLE:bool ROWS:string COLS:string DISABLED:bool ERROR:string WIDTH:string HEIGHT:string UNITS:string>
+<$deftag OPTION /MBI="select" SELECTED:bool DISABLED:bool VALUE:string>
+<$deftag SELECT /CLOSE /MBI="form" /LAZY="cil" NAME:string/r MULTIPLE:bool ROWS:string COLS:string DISABLED:bool ERROR:string WIDTH:string HEIGHT:string UNITS:string SIZE:num>
 <$deftag TEXTAREA /MBI="form" /CLOSE ALIGN:enum("top|bottom|middle|left|right") COLS:string NAME:string ROWS:string WRAP:enum("off|soft|hard")>
 
 <*********************>
 <*** HTML 3.x tags ***>
 <*********************>
-<$deftag AREA /MBI="map" COORDS:string SHAPE:enum("rect|circle|polygon") HREF:uri NOHREF:bool ALT:string>
+<$deftag AREA /MBI="map" COORDS:string SHAPE:enum("rect|circle|polygon") HREF:uri NOHREF:bool ALT:string/required>
 <$deftag BANNER /CLOSE /LAZY="cil">
 <$deftag BQ /CLOSE /LAZY="cikl" NOWRAP:bool>
 <$deftag CAPTION /CLOSE /MBI="fig|table" /LAZY="cil" ALIGN:enum("top|bottom|left|right")>
@@ -263,7 +263,7 @@
 <$deftag CREDIT /CLOSE /MBI="bq|fig" /LAZY="cil">
 <$deftag DIV /CLOSE /LAZY="ciklw" ALIGN:enum("left|right|center|justify")>
 <$deftag FN /CLOSE /LAZY="cil">
-<$deftag FIG /CLOSE /LAZY="cikl" SRC:uri/x/z/r ALIGN:enum("left|right|center|justify|bleedleft|bleedright") NOFLOW:bool MD:string WIDTH:string/j HEIGHT:string/j UNITS:string IMAGEMAP:uri>
+<$deftag FIG /CLOSE /LAZY="cikl" SRC:uri/x/z/r ALIGN:enum("left|right|center|justify|bleedleft|bleedright") NOFLOW:bool MD:string WIDTH:string HEIGHT:string UNITS:string IMAGEMAP:uri>
 <$deftag FONT /CLOSE COLOR:color FACE:string SIZE:enum("1|2|3|4|5|6|7|+1|+2|+3|+4|+5|+6|+7|-1|-2|-3|-4|-5|-6|-7")><* looks rather stupid, eh? *>
 <$deftag LH /CLOSE /LAZY="cil">
 <$deftag MAP /CLOSE NAME:id>
@@ -279,7 +279,7 @@
 <*********************>
 <*** JAVA tags     ***>
 <*********************>
-<$deftag APPLET /CLOSE CODE:uri WIDTH:string HEIGHT:string CODEBASE:uri ALT:string NAME:id VSPACE:string/j HSPACE:string/j ALIGN:enum("left|right|middle|texttop|top|absmiddle|baseline|bottom|absbottom")>
+<$deftag APPLET /CLOSE CODE:uri WIDTH:string HEIGHT:string CODEBASE:uri ALT:string/required NAME:id VSPACE:string/j HSPACE:string/j ALIGN:enum("left|right|middle|texttop|top|absmiddle|baseline|bottom|absbottom")>
 <$deftag PARAM NAME:string VALUE:string>
 
 <**********************>

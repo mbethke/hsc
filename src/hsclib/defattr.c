@@ -23,7 +23,7 @@
  * functions to define new attribute
  * and manipulate attribute lists
  *
- * updated: 25-Feb-1997
+ * updated: 31-May-1997
  * created:  6-Jan-1995
  */
 
@@ -425,9 +425,13 @@ HSCATTR *define_attr_by_hp(HSCPRC * hp, STRPTR default_value, ULONG unmasked_fla
     {
         /* set scope for local attribute */
         if (attr->varflag & VF_GLOBAL)
+        {
             attr->macro_id = MCI_GLOBAL;
+        }
         else
+        {
             attr->macro_id = get_current_mci(hp);
+        }
 
         /* see "attrib.h" why this */
         attr->varflag |= VF_MACRO;

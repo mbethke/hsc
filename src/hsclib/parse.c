@@ -22,22 +22,6 @@
  *
  * parse file: handle for entities & tags
  *
- * Copyright (C) 1995,96  Thomas Aglassinger
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
  * updated: 25-May-1997
  * created:  1-Jul-1995
  *
@@ -251,8 +235,8 @@ HSCTAG *append_end_tag(HSCPRC * hp, HSCTAG * tag)
         /* (for message "end tag missing) */
         end_tag->start_fpos = new_infilepos(hp->inpf);
 
+#if 0 /* TODO: remove this */
         /* for container macros, remember position where content starts */
-#if 0
         end_tag->end_fpos = clone_infilepos(tag->end_fpos);
 #endif
 
@@ -505,7 +489,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
                             {
 #if 1
                                 now_tag_strip_whtspc = tag;
-#else
+#else /* TODO: remove this */
                                 hsc_message(hp, MSG_SUCC_WHTSPC,
                                             "succeeding white-space for %T",
                                             tag);

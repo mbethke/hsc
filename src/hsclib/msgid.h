@@ -49,7 +49,7 @@
  * next message number
  *=========================
  */
-#define MAX_MSGID (84-1)
+#define MAX_MSGID (86-1)
 
 /*
  * obsolete numbers:
@@ -89,8 +89,8 @@
 #define MSG_TAG_TOO_OFTEN      (MSG_ERROR+ 12)  /* tag occured too often */
 #define MSG_UNMA_CTAG          (MSG_ERROR+ 13)  /* unmatched end-tag */
 #define MSG_CTAG_NESTING       (MSG_WARN + 14)  /* illegal end-tag nesting */
-#define MSG_MISS_REQTAG        (MSG_WARN + 15)  /* required tag missing */
-#define MSG_MISS_RCMDTAG       (MSG_STYLE+ 67)  /* required tag missing */
+#define MSG_MISS_REQTAG        (MSG_ERROR+ 15)  /* required tag missing */
+#define MSG_MISS_RCMDTAG       (MSG_STYLE+ 67)  /* recommended tag missing */
 #define MSG_MISS_CTAG          (MSG_WARN + 16)  /* end-tag missing */
 #define MSG_UNKN_TAG_OPTION    (MSG_ERROR+ 17)  /* unknown tag option */
 #define MSG_TAG_OBSOLETE       (MSG_WARN + 37)  /* obsolete tag */
@@ -115,7 +115,9 @@
 /*
  * messages within attributes
  */
-#define MSG_UNKN_ATTR          (MSG_ERROR+ 20)  /* unknown attribute */
+#define MSG_UNKN_ATTR_REF      (MSG_ERROR+ 20)  /* unknown attribute reference */
+#define MSG_UNKN_ATTR_TAG      (MSG_WARN + 84)  /* unknown tag attribute */
+#define MSG_UNKN_ATTR_MACRO    (MSG_ERROR+ 85)  /* unknown macro attribute */
 #define MSG_NO_URIPATH         (MSG_WARN + 21)  /* path to URI not found */
 #define MSG_SERVER_URI         (MSG_WARN + 36)  /* suspicios enum value */
 #define MSG_ARG_NO_QUOTE       (MSG_WARN + 22)  /* argument without quote */

@@ -5,7 +5,7 @@ TITLE
 
 VERSION 
 
-  0.911
+  0.914
 
 AUTHOR
 
@@ -13,64 +13,69 @@ AUTHOR
 
 DESCRIPTION
 
-  hsc is a developer tool for html projects.
+  Hsc is a developer tool for html projects.
 
   It can be used on any html file and creates a new html file as
-  output. In the input file, you may use an extended syntax based
-  on html, but which also allows things like macros and
-  conditionals.
+  output. In the input file, you may use an extended syntax based on
+  html, but which also allows extensions like macros, conditionals and
+  more.
 
-  It's mainly intended to create and maintain larger html projects.
-  As a CLI-only tool, it should be used with `make'; a 
-  dependecy generator is included.
+  It's mainly intended to create and maintain larger html projects. As
+  a CLI-only tool, it should be used with `make'; a dependency
+  generator is included.
 
-  hsc is *not* a tool to make html easier for beginners; It's a
-  tool to make html a bit less painful and braindamaged for
-  people who already know how to work with it.
+  Hsc is *not* a tool to make html easier for beginners; It's a tool
+  to make html a bit less painful and brain-damaged for people who
+  already know how to work with it.
 
 FEATURES
 
-  o adds some special tags, for example to
-    o include files (also sources)
-    o execute shell commands during conversion
-    o add comments in a reasonable way
-  o supports macros (implemented as additional tags)
-  o conditionals (if/else/elseif)
-  o simple expressions can be passed as values to attributes (like
-    string concatenation, string comparison, import of environment-
-    variables, current time or filesize)
-  o for local links, checks if file/id exists
-  o maintains a project-file to check existence of id's over all 
-    files processed
-  o supports absolute URIs (relative to root directory of project)
-  o replaces special characters by entities
-  o evaluates attributes for image size
-  o strips comments and specified tags
-  o strips useless white spaces
-  o replaces icon entities by images
-  o performs a (small) syntax- and structure-check
-  o easy to extend syntax-definition format
-  o dependency generator for Makefiles included
+  - macros (implemented as additional tags)
+  - conditionals (if/else/elseif)
+  - expressions, supporting
+    - string concatenation and comparison,
+    - import of environment variables
+    - current time
+    - size of files
+  - special tags to
+    - include files (also sources)
+    - execute shell commands (and include output)
+    - add comments in a reasonable way
+  - for local links, checks if file/id exists
+  - project relative URIs
+  - replaces special characters by entities
+  - evaluates attributes for image size (png/jfif/gif)
+  - strips comments and specified tags
+  - strips useless white spaces
+  - replaces icon entities by images
+  - performs a basic syntax- and structure check
+  - easy to extend syntax definition format
+  - maintains a project file
+  - dependency generator for Makefiles included
+  - tool to examine/manipulate project files included
 
 NEW FEATURES
 
-  o some bugfixes (as usual)
-  o tool to examine/manipulate project files included
-  o improved handling of white spaces
+  This is a very minor update fixing some small bugs and some problems
+  with the documentation.
 
 SPECIAL REQUIREMENTS
 
-  AmigaOS 2.04, 2MB of regular memory, 68020, some sort of 
-  WWW browser and ASCII editor.
-  For larger projects, 4MB of memory and 68040 are recommded.
+  AmigaOS 2.04, 2MB of regular memory, 68020, some sort of WWW browser
+  and ASCII editor.
 
-  Different to most other WWW tools, hsc requires an user-IQ > 50.
+  For larger projects, 4MB of memory and 68040 are recommended.
+
+  Different to most other WWW tools, hsc requires an user-IQ > 50. You
+  should also know how to work with the CLI and how to write
+  Makefiles. You should already made have some experiences with macro
+  processors and some programming language (Rexx should suffice)
 
 AVAILABILITY
 
-  o Every Aminet-mirror, file "text/hyper/hsc.lha"; for example
+  - Every Aminet-mirror, file "text/hyper/hsc.lha"; for example
     "ftp://wuarchive.wustl.edu/pub/aminet/text/hyper/hsc.lha"
-  o "http://www.giga.or.at/~agi/hsc/index.html"
+  - "http://www.giga.or.at/~agi/hsc/"
 
 PRICE
 
@@ -82,5 +87,5 @@ DISTRIBUTABILITY
 
 SOURCE CODE
 
-  ANSI-C source-code is available in a separate archive (look for
+  ANSI-C source code is available in a separate archive (look for
   `hsc-source.lha' at the same site you've got the binaries from).

@@ -8,14 +8,9 @@ risk.
 The ARexx-scripts for ScMsg are a bit experimental because I don't
 like ScMsg and don't use these scripts myself.
 
-The Arexx-script for AWeb should be easy to change for other
-Browsers because it isn't very complex.
-
-Makefile
---------
-This is an empty Makefile you can use as initial for new projects.
-Read the docs, section "Project Mangament" to find out how it is
-supposed to work.
+The Arexx-script `SendBrowser' currently only supports AWeb, but
+should be easy to modify for other Browsers because it is not very
+complex.
 
 hScMsg.rexx
 -----------
@@ -24,11 +19,17 @@ messages outputed by hsc to ScMsg, which is part of the
 SAS/c-package. It is supposed to be used as a substitute for hsc
 inside Makefiles. See the source-code for usage.
 
-SendAWeb.rexx
--------------
-An ARexx-script that can be used to display an updated html-object
-in AWeb. Read the docs, section
-"project managment/makefiles/postprocessing" for details.
+hscPalthrow.rexx
+----------------
+An ARexx-script which invokes hscpitt and parses it's output, so the
+user can easily access it. Refer to the documentation, section
+"project management/hscpalthrow for details.
+
+SendBrowser.rexx
+----------------
+An ARexx-script that can be used to display an updated html-object in
+AWeb. Refer to the documentaion, section "project
+management/makefiles/postprocessing" for details.
 
 SendScMsg.rexx
 --------------

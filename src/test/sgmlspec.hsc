@@ -18,4 +18,10 @@
 <* legal switching context *>
 <!-- switch ---- context -->
 
+<$macro sepp>
+<!-- inside a macro -->
+</$macro>
+
+<sepp>
+
 </BODY></HTML>

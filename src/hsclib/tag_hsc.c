@@ -23,7 +23,7 @@
  * tag callbacks for "<$xx>" and related
  * (for macro callbacks, see "tag_macro.c")
  *
- * updated: 15-Apr-1997
+ * updated: 31-May-1997
  * created: 23-Jul-1995
  */
 
@@ -421,9 +421,13 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
                               attribute_name));
 
                     if (output_attr)
+                    {
                         set_vartext(output_attr, infgetall(outfile));
+                    }
                     else
-                        hsc_msg_unkn_attr(hp, attribute_name);
+                    {
+                        hsc_msg_unkn_attr_ref(hp, attribute_name);
+                    }
                 }
                 infclose(outfile);
 
@@ -785,7 +789,7 @@ BOOL handle_hsc_depend(HSCPRC * hp, HSCTAG * tag)
         EXPSTR *dest_fname = init_estr(64);
 
         /* convert URI to local filename */
-        if (file)
+        if (!file)
         {
             conv_hscuri2file(hp, dest_fname, filename);
             filename = estr2str(dest_fname);
@@ -861,7 +865,9 @@ BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
             ok = parse_gt(hp);
         }
         else
-            hsc_msg_unkn_attr(hp, varname);
+        {
+            hsc_msg_unkn_attr_ref(hp, varname);
+        }
 
         /* remove dummy attribute */
         del_hscattr(dummy);

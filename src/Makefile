@@ -431,6 +431,13 @@ TESTEXPECTED	= \
 	$(TESTDIR)sgmlspec.expected	\
 	$(TESTDIR)stripws.expected
 
+TESTMSG		= \
+	$(TESTDIR)unknattr.msg
+
+TESTMEX		= \
+	$(TESTDIR)unknattr.mex
+
+
 # implicit rule for testing
 %.html : %.hsc
 	@echo testing $<..
@@ -438,10 +445,17 @@ TESTEXPECTED	= \
 	-@diff --brief $@ $*.expected
 	-@diff --brief $*.msg $*.mex
 
+# implicit rule for sources which create no html document,
+# but only messages
+%.msg : %.hsc
+	@echo testing $< (messages only)..
+	-@$(TESTHSC) $(TESTFLAGS) $< MSGFILE=$*.msg
+	-@diff --brief $*.msg $*.mex
+
 # test targets
 #$(TESTDIR)macro.html : $(TESTDIR)macro.hsc
 
-test : $(TESTHTML)
+test : $(TESTHTML) $(TESTMSG)
 
 #
 # cleanup - remove all objects and executables
@@ -473,6 +487,7 @@ clean_all :
 
 clean_test :
 	-$(DEL) $(TESTHTML)
+	-$(DEL) $(TESTMSG)
 
 sterile : clean clean_all clean_test
 	-$(DEL) hsc/hsc
@@ -508,7 +523,17 @@ hscpitt : hsctools/hscpitt
 	$(COPY) $*.msg $*.mex
 
 test_expected : $(TESTEXPECTED)
+
+#
+# update expected test data
+# for those which only create message files
+#	
+%.mex : %.msg
+	$(COPY) $< $@
+
+test_expected : $(TESTEXPECTED) $(TESTMEX)
 	
+test_mex : $(TESTMEX)
 
 # copy executables to distribution dir
 DISTDIR = hsc:hsc/
@@ -594,7 +619,7 @@ version: hscvers deppvers pittvers
 
 hscvers :
 	@echo "0" >hsc_rev.beta
-	RevUp 0 hsc REV 913 C EXTRA 
+	RevUp 0 hsc REV 914 C EXTRA 
 	@move hsc_rev.* hsc/ quiet
 	@type hsc/hsc_rev.h
 

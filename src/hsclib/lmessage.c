@@ -22,7 +22,7 @@
  *
  * message functions for hsc
  *
- * updated: 20-Mar-1997
+ * updated:  1-Jun-1997
  * created: 10-Mar-1996
  *
  */
@@ -113,6 +113,7 @@ static BOOL is_child_file(STRPTR filename)
 VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
 {
     HSCMSG_CLASS msg_class = hsc_get_msg_class(hp, msg_id);
+    HSCMSG_ID msg_id_unmasked = msg_id & MASK_MESSAGE;
     INFILE *msg_inpf = NULL;
     STRPTR msg_fname = "unknown";
     ULONG msg_x = 0;
@@ -128,14 +129,14 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
     else if (
                 (hsc_get_msg_ignore(hp, msg_id))
                 &&
-                (hsc_get_msg_class(hp, msg_id) <= MSG_WARN)
+                (msg_class <= MSG_WARN)
         )
     {
         /* oppress message if it is marked as ignored
          * and it is no ERROR/FATAL message
          */
         D(fprintf(stderr, DHL "ignore msg#%ld: ignore enabled\n",
-                  msg_id & MASK_MESSAGE));
+                  msg_id_unmasked));
         disp_msg = FALSE;
     }
     else if (((msg_class == MSG_NOTE) && (hp->msg_ignore_notes))
@@ -145,8 +146,8 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
     {
         /* oppress message if it's class is
          * marked as to be ignored */
-        D(fprintf(stderr, DHL "ignore msg#%ld: ignore whole class\n",
-                  msg_id & MASK_MESSAGE));
+        D(fprintf(stderr, DHL "ignore msg#%ld: ignore whole class (%06lx)\n",
+                  msg_id_unmasked, msg_class));
         disp_msg = FALSE;
     }
 
@@ -281,9 +282,13 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                 case 'j':
                     /* append jerk/prostitute */
                     if (hp->prostitute)
-                        app_estr(hp->curr_msg, "prostitute");
+                    {
+                        app_estr(hp->curr_msg, "prostitutes");
+                    }
                     else
-                        app_estr(hp->curr_msg, "jerk");
+                    {
+                        app_estr(hp->curr_msg, "jerks");
+                    }
                     break;
 
                 default:
@@ -300,10 +305,14 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                 }
             }
             else
+            {
                 app_estrch(hp->curr_msg, format[0]);
+            }
 
             if (format[0])
+            {
                 format++;
+            }
         }
         va_end(ap);
 
@@ -354,13 +363,16 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
             msg_y = 0;
         }
 
+#if 0 /* TODO: remove */
+        fprintf(stderr, "*** msg_id    = %06lx\n", msg_id);
+        fprintf(stderr, "*** msg_class = %06lx\n", msg_class);
+#endif
         /* send message via callback */
         if (hp->CB_message)
 
             (*(hp->CB_message))
                 (hp,
-                 msg_class,
-                 msg_id & MASK_MESSAGE,
+                 msg_class, msg_id_unmasked,
                  msg_fname, msg_x, msg_y,
                  estr2str(hp->curr_msg)
                 );
@@ -379,8 +391,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
 
                 (*(hp->CB_message_ref))
                     (hp,
-                     msg_class,
-                     msg_id & MASK_MESSAGE,
+                     msg_class, msg_id_unmasked,
                      msg_fname, msg_x, msg_y,
                      ""
                     );
@@ -391,7 +402,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
     }
     else
     {
-        D(fprintf(stderr, DHL "suppressed msg#%ld\n", msg_id & MASK_MESSAGE));
+        D(fprintf(stderr, DHL "suppressed msg#%ld\n", msg_id_unmasked));
     }
 }
 
@@ -434,11 +445,24 @@ VOID hsc_msg_stripped_tag(HSCPRC * hp, HSCTAG * tag, STRPTR why)
     }
 }
 
-VOID hsc_msg_unkn_attr(HSCPRC * hp, STRPTR attr)
+VOID hsc_msg_unkn_attr_ref(HSCPRC * hp, STRPTR attr)
 {
-    hsc_message(hp, MSG_UNKN_ATTR,
+    hsc_message(hp, MSG_UNKN_ATTR_REF,
                 "unknown %a", attr);
 }
+
+VOID hsc_msg_unkn_attr_tag(HSCPRC * hp, STRPTR attr, STRPTR tag)
+{
+    hsc_message(hp, MSG_UNKN_ATTR_TAG,
+                "unknown %a for %t", attr, tag);
+}
+
+VOID hsc_msg_unkn_attr_macro(HSCPRC * hp, STRPTR attr, STRPTR macro)
+{
+    hsc_message(hp, MSG_UNKN_ATTR_MACRO,
+                "unknown %a for %t", attr, macro);
+}
+
 
 #if 1                           /* TODO: get rid of this */
 VOID hsc_msg_eol(HSCPRC * hp)
@@ -476,6 +500,7 @@ VOID hsc_msg_nouri(HSCPRC * hp, STRPTR filename, STRPTR uriname, STRPTR note)
  */
 VOID enforcerHit(VOID)
 {
+#ifndef AMIGA
     fputs("WORD-WRITE to  00000000        data=0000       PC: 0325B854\n"
           "USP:  034735C8 SR: 0004 SW: 0729  (U0)(-)(-)  TCB: 03349A28\n"
         "Name: \"Shell Process\"  CLI: \"hsc\"  Hunk 0000 Offset 00000074\n"
@@ -502,4 +527,5 @@ VOID enforcerHit(VOID)
      * allows code like the one you can read below) */
     strcpy((STRPTR) hsc_message, "die for oil, sucker");
     exit(RC_FAIL);              /* just for the case we are still there.. */
+#endif
 }

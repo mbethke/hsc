@@ -1,0 +1,74 @@
+NEWS
+====
+
+This file is of no use for new users of hsc and just describes the
+in-combat-ibilities of this release to the previous one. For a 
+complete list of improvements and bug-fixes, refer to `CHANGES'.
+
+---------------------------------------------------------------------
+
+Version 0.914
+
+- The `examples' drawer is back again.
+
+- The documentation now tells a bit more about `make'; If this still
+  does not help to prevent new users from sending me bullshit-emails
+  with extraordinary silly questions, I might consider removing the
+  introductory material completely...
+
+- The term `absolute URI' is now used for external URIs; the manual
+  now referres to `project relative URIs' instead to avoid confusion
+  as this term is normally used to refer to external URIs...clear?
+  Better give "docs/features/uris.html" a glimpse...
+
+- If you compile this yourself and perform a `make test' afterwards,
+  some calls to hsc will exit with an error return code. This is
+  because some test sources now contain corrupt data. These will not
+  create a html document, bug only a message file which will be
+  analysed for differences just like before. The `diff' program still
+  should not report any mismatches, of course.
+
+---------------------------------------------------------------------
+
+Version 0.913
+
+This isn't really a nasty update, but:
+
+- Container macros are now implemented in a cleaner way. However,
+  old-style containers still work, and currently there is no need to
+  remove this code. Although old-style is not documented any more.
+
+  Anyway, instead of
+
+    <$macro FILE><I><$macro>
+    <$macro /FILE></I><$macro>
+
+  you should now use
+
+    <$macro FILE /CLOSE><I><$content></I><$macro>
+
+  when creating new macros.
+
+- to check existence of files, there are now two functions: Exists()
+  works on URIs, and fExists() on files relative to the source
+  directory
+
+- collected some material from `graffelwerk' and `example' and put it
+  into `starter-project', which should now contain a reasonable
+  template to start with a new project.
+
+- the hsc-sources for the docs are now located in the source-archive
+
+- hscpalthrow introduces the first tool of the hsc-package *not*
+  named after a male actor, but a female one. Therefor, certain
+  homo-erotic aspects of this package will probably vanish.
+
+---------------------------------------------------------------------
+
+Version 0.912
+
+- "hsc.prefs" has be changed so that <HTML>, <HEAD> and <BODY> are
+  no more required, but only recommended within a document.
+
+- The Makefile for the source archive now supports library managers
+  like `ar' and `oml'

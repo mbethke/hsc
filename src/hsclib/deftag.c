@@ -22,7 +22,7 @@
  *
  * define new tag from input file
  *
- * updated: 25-Feb-1997
+ * updated: 31-May-1997
  * created: 13-Oct-1995
  */
 
@@ -113,12 +113,6 @@ HSCTAG *def_tag_name(HSCPRC * hp, BOOL * start_tag)
             tag = app_tag(taglist, nw);
         }
     }                           /* err_eof already called in infget_tagid() */
-
-#if 0                           /* TODO: remove this */
-    /* convert tag name to upper  case */
-    if (tag)
-        upstr(tag->name);
-#endif
 
     return (tag);
 }
@@ -388,7 +382,9 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
 
         /* auto-set HT_KEEP_QUOTES */
         if (!strncmp(tag->name, HSC_TAGID, strlen(HSC_TAGID)))
+        {
             tag->option |= HT_KEEP_QUOTES;
+        }
 
         /*
          * set tag attributes
@@ -425,9 +421,9 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
  * parse & set one single tag argument
  *
  */
-static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unknown)
+static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR tagname, BOOL tag_unknown, BOOL is_macro_tag)
 {
-    HSCATTR *var = find_varname(varlist, varname);
+    HSCATTR *attr = find_varname(varlist, varname);
     INFILE *inpf = hp->inpf;
     STRPTR arg = NULL;
     BOOL ok = FALSE;
@@ -450,20 +446,33 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
     }
     app_estr(attr_str, infgetcw(inpf));
 
-    if (!var)
+    if (!attr)
     {
         /* attribute not found: assign to dummy-attribute */
-        var = &skipvar;
-        var->name = varname;
-        var->deftext = NULL;
-        var->text = NULL;
-        var->enumstr = NULL;
-        var->vartype = VT_STRING;
-        var->varflag = 0;
+        attr = &skipvar;
+        attr->name = varname;
+        attr->deftext = NULL;
+        attr->text = NULL;
+        attr->enumstr = NULL;
+        attr->vartype = VT_STRING;
+        attr->varflag = 0;
 
-        /* message: unknown attribute */
-        if (!unknown)
-            hsc_msg_unkn_attr(hp, varname);
+        /* launch message about unknown attribute
+         *
+         * if the whole tag is unknown, no message is launched;
+         * if it is a normal tag, this causes a warning
+         * if it is a macro tag, it causes an error */
+        if (!tag_unknown)
+        {
+            if (is_macro_tag)
+            {
+                hsc_msg_unkn_attr_macro(hp, varname, tagname);
+            }
+            else
+            {
+                hsc_msg_unkn_attr_tag(hp, varname, tagname);
+            }
+        }
     }
 
     /* get argument */
@@ -479,15 +488,21 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
             app_estr(val_str, infgetcw(inpf));
 
             /* parse expression */
-            arg = eval_expression(hp, var, NULL);
+            arg = eval_expression(hp, attr, NULL);
 
             /* append value to log */
-            if (var->quote != VQ_NO_QUOTE)
-                app_estrch(val_str, var->quote);
-            if (get_vartext(var))
-                app_estr(val_str, get_vartext(var));
-            if (var->quote != VQ_NO_QUOTE)
-                app_estrch(val_str, var->quote);
+            if (attr->quote != VQ_NO_QUOTE)
+            {
+                app_estrch(val_str, attr->quote);
+            }
+            if (get_vartext(attr))
+            {
+                app_estr(val_str, get_vartext(attr));
+            }
+            if (attr->quote != VQ_NO_QUOTE)
+            {
+                app_estrch(val_str, attr->quote);
+            }
 
             if (arg)
             {
@@ -504,16 +519,21 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
             {
                 app_estr(val_str, "=");
 
-                arg = eval_cloneattr(hp, var);
+                arg = eval_cloneattr(hp, attr);
 
                 /* append value to log */
-                if (var->quote != VQ_NO_QUOTE)
-                    app_estrch(val_str, var->quote);
-                if (get_vartext(var))
-                    app_estr(val_str, get_vartext(var));
-                if (var->quote != VQ_NO_QUOTE)
-                    app_estrch(val_str, var->quote);
-
+                if (attr->quote != VQ_NO_QUOTE)
+                {
+                    app_estrch(val_str, attr->quote);
+                }
+                if (get_vartext(attr))
+                {
+                    app_estr(val_str, get_vartext(attr));
+                }
+                if (attr->quote != VQ_NO_QUOTE)
+                {
+                    app_estrch(val_str, attr->quote);
+                }
                 if (arg)
                 {
                     DAV(fprintf(stderr, DHL "  inherited `%s'\n", arg));
@@ -531,8 +551,10 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
             /* handle boolean attribute */
             arg = NULL;
             inungetcwws(inpf);
-            if (var == &skipvar)
-                var->vartype = VT_BOOL;
+            if (attr == &skipvar)
+            {
+                attr->vartype = VT_BOOL;
+            }
             ok = TRUE;
         }
     else
@@ -541,15 +563,15 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
     if (ok)
         if (arg)
         {
-            if (var->vartype == VT_BOOL)
+            if (attr->vartype == VT_BOOL)
             {
                 /* set boolean attribute depending on expression */
-                set_varbool(var, get_varbool(var));
+                set_varbool(attr, get_varbool(attr));
 
                 /* if the expression returned FALSE, remove
                  * the boolean  switch from tag-call
                  */
-                if (!get_varbool(var))
+                if (!get_varbool(attr))
                     clr_estr(attr_str);
             }
             else if (!inheritage_failed)
@@ -566,26 +588,28 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, BOOL unkn
         else
         {
             /* no value has been passed to the attribute */
-            if (var->vartype == VT_BOOL)
+            if (attr->vartype == VT_BOOL)
             {
                 /* for boolean attributes, this is legal,
                  * and enables the attribute
                  */
-                set_varbool(var, TRUE);
+                set_varbool(attr, TRUE);
             }
-            else if (!unknown)
+            else if (!tag_unknown)
             {
                 /* for non-boolean attributes, display
                  * error message
                  */
                 hsc_message(hp, MSG_NOARG_ATTR,
-                            "missing value for %A", var);
+                            "missing value for %A", attr);
             }
         }
 
     /* cleanup pseudo-attr */
-    if (var == &skipvar)
-        clr_vartext(var);
+    if (attr == &skipvar)
+    {
+        clr_vartext(attr);
+    }
 
     /* append & cleanup attribute and value string */
     app_estr(hp->tag_attr_str, estr2str(attr_str));
@@ -618,7 +642,9 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
     do
     {
         if (!nw)
+        {
             hsc_msg_eof(hp, "read attributes");
+        }
         else
         {
             /*
@@ -634,8 +660,11 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
                 /* process attribute */
                 if (check_attrname(hp, nw))
                 {
-                    BOOL unknown = tag->option & HT_UNKNOWN;
-                    set_tag_arg(hp, varlist, nw, unknown);
+                    BOOL tag_unknown = tag->option & HT_UNKNOWN;
+                    BOOL is_macro_tag = tag->option & HT_MACRO;
+
+                    set_tag_arg(hp, varlist, nw, tag->name,
+                                tag_unknown, is_macro_tag);
                 }
                 else
                 {

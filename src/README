@@ -15,6 +15,12 @@ you can obtain the sources from.
 IMPORTANT: If you've compiled older versions of hsc before, remove 
 all files of the old sources before you continue.
 
+---------------------------------------------------------------------
+
+This document describes the compilation procedure for most of the
+systems supported. To compile under RiscOS, refer to the
+"hsc/source/riscos/" directory.
+
 There are two makefiles, but only one is required to create the 
 binaries:
 
@@ -32,7 +38,7 @@ Use
 
 to start the compilation-sequence.
 
-If you dare, you can try to coment out/in some lines to select a more
+If you dare, you can try to comment out/in some lines to select a more
 specific compiler setup.
 
 ================
@@ -62,9 +68,15 @@ to start the compilation-sequence.
 -----------------
 COMPILER WARNINGS
 -----------------
-Normally, no warnings should show up, exept about ununsed functions
+Normally, no warnings should show up, except about unused functions
 and parameters. This is because some parameters and functions are
 only used by the debugging-version.
+
+Additionally, warnings like "expected pointer to char, found pointer
+to unsigned char" might appear. This is because of the idiotic fact
+that it is up to the C compiler weather `char' is signed or unsigned.
+As I can't stand this, I declared a `typedef STRPTR unsigned char *;'
+and use this every time I have to pass a string pointer.
 
 ------------
 OPTIMISATION
@@ -80,24 +92,38 @@ optimisers out there..
 TEST RUN
 --------
 To test if hsc works as expected, some test data are included in
-source/test/. Simple type
+source/test/. Please note that this material might not be up to date
+for pre-releases you have downloaded from the support-w3-page.
+
+To initiate the test sequence, simple type
 
     make test
 
-from the same directory you started the compilation before.
+from the same directory you have started the compilation before.
 
-This will invoke hsc several times: some .hsc-files will be used
-to create some .html files. These are compared with .expected-files,
-which have been compiled before and contain the expected output.
+This will invoke hsc several times: some `.hsc' files will be used to
+create some `.html' files. These are compared with `.expected' files,
+which have been created before and contain the expected output.
 
 For this comparison, `diff --brief' will used. Make sure that such
 a command is available before starting the test process.
 
-Additionally, hsc will redirect messages to .msg files. These will
-be compared with .mex ("messages expected") files the same way as
+Additionally, hsc will redirect messages to `.msg' files. These will
+be compared with `.mex' ("messages expected") files the same way as
 described above.
 
 If all works fine, `diff' should not produce any output.
+
+But you should be aware that the test run also includes some faulty
+input data to test if hsc is able to cope with certain error
+situations. These will result in an output like
+
+    testing test/unknattr.hsc (messages only)..
+    hsc/hsc failed returncode 10
+    make: [test/unknattr.msg] Error 10 (ignored)
+
+and should not confuse you. Only an error reported by `diff' counts as
+a failed test run.
 
 -------
 CLEANUP
@@ -121,8 +147,8 @@ Make sure that you didn't extract the source-archive to a path where
 an old source-archive has already been located; remove older 
 versions before you extract the sources.
 
-Problems might occure, if your compiler does not support ANSI-C (as
-"cc" under SunOS on my university - Pfthuahuhahua!), but I won't
+Problems might occurre, if your compiler does not support ANSI-C (as
+`cc' under SunOS at my university - Pfthuahuhahua!), but I won't
 care about this.
 
 ============
@@ -135,10 +161,9 @@ If nothing went wrong, you now should have created three files:
     hsctools/hscdepp
     hsctools/hscpitt
 
-These are the executables. Now follow the installation-instructions 
-of the documentation that came with the main-archive.
+These are the executables. Now follow the installation instructions
+of the documentation that came with the main archive.
 
 (In short: put the binaries somewhere in your search-path, and setup
 hsc.prefs in the appropriate place.)
 
-Thomas Aglassinger <agi@giga.or.at>

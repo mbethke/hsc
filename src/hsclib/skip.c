@@ -22,7 +22,7 @@
  *
  * functions for skipping several things
  *
- * updated: 26-May-1997
+ * updated:  3-Jun-1997
  * created:  8-Oct-1995
  */
 
@@ -34,7 +34,7 @@
 #include "hsclib/skip.h"
 
 /* debug skip */
-#if 0
+#if 1
 #define DS(x) if(hp->debug) x
 #else
 #define DS(x)
@@ -593,12 +593,15 @@ BOOL skip_sgml_special(HSCPRC * hp, EXPSTR * content)
                     }
                 }
 
-                /* read next char */
-                ch = infgetc(inpf);
+                if (!end)
+                {
+                    /* read next char */
+                    ch = infgetc(inpf);
+                }
             }
 
             /* push back last char */
-            if (ch != EOF)
+            if (!end && (ch != EOF))
             {
                 inungetc(ch, inpf);
             }
@@ -606,8 +609,10 @@ BOOL skip_sgml_special(HSCPRC * hp, EXPSTR * content)
         else
         {
             /* push back chars read until yet */
+            inungetc(ch, inpf);
             inungetc(ch_prev, inpf);
-            inungetc(ch_prev, inpf);
+
+            ch_prev = EOF;
         }
     }
 
@@ -648,7 +653,7 @@ BOOL skip_sgml_special(HSCPRC * hp, EXPSTR * content)
     /* handle unexpected end-of-file */
     if (ch == EOF)
     {
-        hsc_msg_eof(hp, "missing end of sgml-special \"<!..>\"");
+        hsc_msg_eof(hp, "missing end of sgml special tag \"<!..>\"");
     }
 
     return ((BOOL) ! (hp->fatal));

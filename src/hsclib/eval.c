@@ -739,7 +739,7 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
                 }
                 else
                 {
-                    hsc_msg_unkn_attr(hp, nw);
+                    hsc_msg_unkn_attr_ref(hp, nw);
                     *err = TRUE;
                 }
             }
@@ -1138,7 +1138,7 @@ static STRPTR eval_attrref(HSCPRC * hp, HSCATTR * destattr)
         else
         {
             /* reference to unknown destattr */
-            hsc_msg_unkn_attr(hp, nw);
+            hsc_msg_unkn_attr_ref(hp, nw);
         }
 
         /* set empty value for reference to NULL */
@@ -1459,7 +1459,9 @@ STRPTR eval_cloneattr(HSCPRC * hp, HSCATTR * dest)
             dest->quote = attr->quote;
         }
         else
-            hsc_msg_unkn_attr(hp, nw);
+        {
+            hsc_msg_unkn_attr_ref(hp, nw);
+        }
     }
 
     /* update attribute value and quotes */

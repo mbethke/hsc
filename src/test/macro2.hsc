@@ -6,10 +6,10 @@
 
 <$macro page /close title:string>
 <html>
-<head></head>
+<head><title>blub</title></head>
 <body><$content></body>
 </html>
 </$macro>
 
-<hinz title=mist>
+<hinz title="mist">
 

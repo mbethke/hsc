@@ -142,7 +142,7 @@ VOID reset_hscprc(HSCPRC * hp)
     hp->msg_ignore_notes = FALSE;
     hp->msg_ignore_style = FALSE;
     hp->msg_ignore_port = FALSE;
-    for (i = 0; i < MAX_MSGID; i++)
+    for (i = 0; i <= MAX_MSGID; i++)
     {
         hp->msg_ignore[i] = FALSE;
         hp->msg_class[i] = MSG_NOTE;
@@ -633,9 +633,13 @@ BOOL hsc_get_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id)
 {
     /* HSCMSG_ID max_msgid = MAX_MSGID; */
     if ((msg_id & MASK_MESSAGE) <= MAX_MSGID)
+    {
         return (hp->msg_ignore[msg_id & MASK_MESSAGE]);
+    }
     else
+    {
         return (FALSE);
+    }
 }
 
 BOOL hsc_set_msg_class(HSCPRC * hp, HSCMSG_ID msg_id, HSCMSG_CLASS msg_class)
@@ -643,22 +647,29 @@ BOOL hsc_set_msg_class(HSCPRC * hp, HSCMSG_ID msg_id, HSCMSG_CLASS msg_class)
     BOOL set = FALSE;
 
     if ((msg_id & MASK_MESSAGE) <= MAX_MSGID)
+    {
         hp->msg_class[msg_id & MASK_MESSAGE] = msg_class;
+    }
 
     return (set);
 }
 
 HSCMSG_CLASS hsc_get_msg_class(HSCPRC * hp, HSCMSG_ID msg_id)
 {
-    if ((msg_id & MASK_MESSAGE) <= MAX_MSGID)
+    HSCMSG_ID msg_id_unmasked = msg_id & MASK_MESSAGE;
+    if (msg_id_unmasked <= MAX_MSGID)
     {
-        HSCMSG_CLASS mchp = hp->msg_class[msg_id & MASK_MESSAGE];
+        HSCMSG_CLASS mchp = hp->msg_class[msg_id_unmasked];
         HSCMSG_CLASS mcid = msg_id & MASK_MSG_CLASS;
 
         if (mcid > mchp)
+        {
             return (mcid);
+        }
         else
+        {
             return (mchp);
+        }
     }
     else
         return (MSG_NONE);
