@@ -31,6 +31,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "utypes.h"
 #include "umemory.h"
@@ -56,6 +59,28 @@ BOOL fexists(STRPTR filename)
         fclose(file);
     }
     return ((BOOL) (file != NULL));
+}
+
+/*
+ * fgetentrytype
+ *
+ * check whether a filesystem object is a file of a directory
+ *
+ * result: see fentrytype_t definition
+ *
+ * TODO: make sure this is halfway portable
+ */
+fentrytype_t fgetentrytype(STRPTR name) {
+   struct stat sbuf;
+   fentrytype_t type = FE_NONE;
+   
+   if(-1 != stat(name,&sbuf)) {
+      if(S_ISDIR(sbuf.st_mode))
+         type = FE_DIR;
+      else if(S_ISREG(sbuf.st_mode) || S_ISLNK(sbuf.st_mode))
+         type = FE_FILE;
+   }
+   return type; 
 }
 
 /*
