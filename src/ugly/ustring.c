@@ -43,18 +43,11 @@
 int last_ch(STRPTR s)
 {
     size_t len = strlen(s);
-    int ch = 0;
 
     if (len)
-    {
-        ch = s[len - 1];
-    }
+        return (int)(s[len - 1]);
     else
-    {
-        ch = 0;
-    }
-
-    return ch;
+        return 0;
 }
 
 /*

@@ -32,26 +32,6 @@
 #endif
 #define UNIKOT "*unikot* "
 
-/*
- * display internal error message
- *
- * c - condition which causes error
- * m - message text to discibe error
- */
-#define internal_error(c,m)                           \
-    if ((c))                                          \
-    {                                                 \
-        unikot_internal_error(__FILE__, __LINE__, m); \
-    }
-
-#if 0
-static void unikot_internal_error(char *file, long int line, char *message) {
-    fprintf(stderr, "*** internal error at `%s' (%ld): %s\n",
-            file, line, message);
-    exit(255);
-}
-#endif
-
 /**** ugly/utf8_to_ucs4 *********************************************
  * NAME
  *   uft8_to_ucs4 - convert UTF-8-string to  UTF-4-code (32 bit)
@@ -78,7 +58,7 @@ int utf8_to_ucs4(ucs4_t * ucs4, const utf8_t * utf8str) {
     int skip = 1;
 
     if (utf8str[0] >= 192) {
-        /* blimy! This must be an extended char */
+        /* blimey! This must be an extended char */
         char ch_to_read = 0;
         utf8_t i = utf8str[0];
         ucs4_t first_ch_mask = 0x3f;

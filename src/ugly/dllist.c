@@ -95,7 +95,8 @@ DLNODE *new_dlnode(void)
  * but do not delete the entriy's data
  *
  */
-APTR detach_dlnode(DLLIST * list, DLNODE * node) {
+APTR detach_dlnode(DLLIST * list, DLNODE * node)
+{
     APTR nd_data = NULL;
 
     if (list && node) {         /* list & node node defined? */
@@ -123,7 +124,8 @@ APTR detach_dlnode(DLLIST * list, DLNODE * node) {
  * remove entry from double linked list
  *
  */
-void del_dlnode(DLLIST * list, DLNODE * node) {
+void del_dlnode(DLLIST * list, DLNODE * node)
+{
     if (list && node) {         /* list & node defined? */
         void (*dd) (APTR) = list->del_data;
 
@@ -144,7 +146,8 @@ void del_dlnode(DLLIST * list, DLNODE * node) {
  * Move <node> from list <src> to the end of <dest> without
  * copying/reallocating anything.
  */
-void move_dlnode(DLLIST *dest, DLLIST *src, DLNODE *node) {
+void move_dlnode(DLLIST *dest, DLLIST *src, DLNODE *node)
+{
    /* detach node w/o deleting it */
    dll_detach_node(src,node);
    dll_append_node(dest,node);
@@ -155,7 +158,8 @@ void move_dlnode(DLLIST *dest, DLLIST *src, DLNODE *node) {
  *
  * remove all nodes from a list
  */
-VOID del_all_dlnodes(DLLIST * list) {
+VOID del_all_dlnodes(DLLIST * list)
+{
     while (list->first)
         del_dlnode(list, list->first);
 }
@@ -166,7 +170,8 @@ VOID del_all_dlnodes(DLLIST * list) {
  * insert a data entry into double linked list BEFORE node
  *
  */
-static DLNODE *ins_dlnode(DLLIST * list, DLNODE * node, APTR data) {
+static DLNODE *ins_dlnode(DLLIST * list, DLNODE * node, APTR data)
+{
     DLNODE *newnode = NULL;
 
     if (list) {

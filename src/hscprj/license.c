@@ -30,7 +30,7 @@
 
 #include "ugly/utypes.h"
 
-STRPTR hsc_license =            /* the usual boring text */
+STRPTR hsc_license1 =            /* the usual boring text */
 "\nThis program is free software; you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by\n"
 "the Free Software Foundation; either version 2 of the License, or\n"
@@ -39,8 +39,9 @@ STRPTR hsc_license =            /* the usual boring text */
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-"GNU General Public License for more details.\n\n"
+"GNU General Public License for more details.\n\n",
 
+hsc_license2 = 
 "You should have received a copy of the GNU General Public License\n"
 "along with this program; if not, write to the Free Software\n"
 "Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\n"
@@ -58,6 +59,8 @@ STRPTR hsc_license =            /* the usual boring text */
  */
 VOID show_license(VOID)
 {
-    fprintf(stderr, hsc_license);
+   /* 2*printf just to avoid compiler moaning */
+   fprintf(stderr, hsc_license1);
+   fprintf(stderr, hsc_license2);
 }
 

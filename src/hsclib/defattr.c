@@ -109,9 +109,7 @@ BOOL check_varlist(HSCPRC * hp, DLLIST * varlist)
  */
 LONG get_mci(HSCPRC * hp)
 {
-   hp->tag_call_id++;
-   
-   return (hp->tag_call_id);
+   return (++(hp->tag_call_id));
 }
 
 /*
@@ -122,9 +120,7 @@ VOID unget_mci(HSCPRC * hp)
 {
    hp->tag_call_id--;
    if (hp->tag_call_id < 0)
-   {
       panic("MCI underflow");
-   }
 }
 
 /*

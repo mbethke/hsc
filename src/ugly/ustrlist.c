@@ -38,8 +38,8 @@
  */
 VOID del_string_node(APTR data)
 {
-    STRPTR s = (STRPTR) data;
-    ufreestr(s);
+   STRPTR s = (STRPTR)data;
+   ufreestr(s);
 }
 
 /*
@@ -47,9 +47,6 @@ VOID del_string_node(APTR data)
  */
 STRPTR new_string_node(STRPTR data)
 {
-#if 0
-    D(fprintf(stderr, DHL "new string `%s'\n", data));
-#endif
     return (strclone(data));
 }
 
@@ -109,9 +106,7 @@ DLNODE *app_strnode(DLLIST * list, STRPTR str)
     DLNODE *nd = NULL;
 
     if (scp)
-    {
         nd = app_dlnode(list, (APTR) scp);
-    }
 
     return nd;
 }
