@@ -3,12 +3,24 @@
 **
 ** ugly string functions
 **
-** (W) by Tommy-Saftwörx in 1993,94,95
+** Copyright (C) 1993,94,95,96  Thomas Aglassinger
 **
-** updated: 18-Nov-1995
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+**
+** updated: 12-Apr-1996
 ** created: 31-Jul-1993
-**
-** $VER: string.c 1.2.1 (18.11.95)
 */
 
 
@@ -48,7 +60,7 @@ STRPTR ugly_strclone( CONSTRPTR oldstr, STRPTR file, ULONG line )
     if ( oldstr ) {
 
         newstr =                           /* alloc mem for clone */
-#ifdef UMEM_TRACKING
+#if DEBUG_UGLY_MEMORY
             ugly_malloc_tracking( strlen( oldstr ) +1, file, line );
 #else
             umalloc(  strlen( oldstr ) +1 );
@@ -165,7 +177,7 @@ int upstrncmp( CONSTRPTR s1, CONSTRPTR s2, size_t n )
 */
 void ugly_freestr( STRPTR s, STRPTR file, ULONG line )
 {
-#ifdef UMEM_TRACKING
+#if DEBUG_UGLY_MEMORY
     ugly_free( s, file, line );
 #else
     ufree( s );
@@ -186,7 +198,7 @@ void ugly_freestr( STRPTR s, STRPTR file, ULONG line )
 */
 void ugly_reallocstr( STRPTR *oldstr,  CONSTRPTR newstr, STRPTR file, ULONG line )
 {
-#ifdef UMEM_TRACKING
+#if DEBUG_UGLY_MEMORY
     ugly_freestr( *oldstr, file, line );                   /* free old string */
     *oldstr = ugly_strclone( newstr, file, line );         /* clone new string */
 #else
@@ -240,15 +252,11 @@ STRPTR ustrrpbrk( CONSTRPTR str, CONSTRPTR set )
 
         i = strlen( str )-1;
 
-        if ( i >= 0 ) {
-        
-            while ( ( i ) && ( strchr( set, str[i] ) == NULL ) )
-                i--;
-
-            if ( strchr( set, str[i] ) )
-                result = ( STRPTR ) &(str[i]);
-        }
-
+	while ( ( i ) && ( strchr( set, str[i] ) == NULL ) )
+	     i--;
+	
+	if ( strchr( set, str[i] ) )
+	     result = ( STRPTR ) &(str[i]);
     }
 
     return result;
@@ -271,7 +279,7 @@ BOOL str2long( STRPTR s, LONG *num )
 {
     BOOL conv_ok = FALSE;
 
-    if ( sscanf( s, "%d", num ) ) {
+    if ( sscanf( s, "%d", (int*) num ) ) {
 
         conv_ok = TRUE;
 
@@ -295,7 +303,7 @@ STRPTR long2str( LONG num )
 {
     STRPTR result_str = NULL;
 
-    if ( sprintf( num2str_buffer, "%d", num ) ) {
+    if ( sprintf( num2str_buffer, "%d", (int) num ) ) {
 
         result_str = num2str_buffer;
 

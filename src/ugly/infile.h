@@ -11,11 +11,9 @@
 /*
 ** includes
 */
-#include <ctype.h>
-#include <stdio.h>
-
 #include "types.h"
 #include "expstr.h"
+#include "dllist.h"
 
 /* reasonable value for buffer-step-size */
 #define IF_BUFFER_VALUE 128
@@ -29,24 +27,37 @@ typedef struct infile {
     EXPSTR *lnbuf;           /* buffer for inputline */
     EXPSTR *wordbuf;         /* word buffer */
     EXPSTR *wspcbuf;         /* word buffer (white spaces) */
-    EXPSTR *logstr;          /* log string */
 
-    size_t filepos;          /* file position */
-    ULONG  flnctr;           /* line number in file */
-    size_t lnctr;            /* pos. in current line */
+    ULONG  filepos;          /* file position */
+    ULONG  pos_y;            /* line number in file */
+    ULONG  pos_x;            /* pos. in current line */
+    ULONG  wpos_y;           /* line number in file of current word */
+    ULONG  wpos_x;           /* pos. in current line of current word */
+    ULONG  base_x;           /* base position */
+    ULONG  base_y;
+
+    DLLIST *pos_list;        /* list of pending pos-request */
+    ULONG  pos_count;        /* number of entries in poslist */
 
     BOOL  (*is_ws)( int ch );     /* ptr to func that checks if a char */
                                    /* is a white-space */
     BOOL  (*is_nc)( int ch );     /* deto, but for "normal char" */
 
-    BOOL   log_enable;       /* flag: TRUE means to log all chars */
     BOOL   eof_reached;      /* flag: TRUE, if end of file */
     BOOL   out_of_mem;       /* flag: TRUE, if ran out of memory */
     BOOL   skipped_ws;       /* flag: TRUE, if last infgetw */
                              /*       skipped a white-space */
-
+    BOOL   closed;           /* flag: TRUE, if closed, but pending */
+                             /*       fpos-requested exist */
 } INFILE;
 
+typedef struct infile_pos {
+    INFILE *inpf;
+    STRPTR fname;                      /* filename */
+    ULONG x;                           /* column */
+    ULONG y;                           /* line */
+    ULONG fpos;                        /* file position */
+} INFILEPOS;
 
 /*
 ** global macros
@@ -81,6 +92,8 @@ extern size_t inungetcw( INFILE *inpf );
 
 extern ULONG  infget_x( INFILE *inpf );
 extern ULONG  infget_y( INFILE *inpf );
+extern ULONG  infget_wx( INFILE *inpf );
+extern ULONG  infget_wy( INFILE *inpf );
 extern STRPTR infget_fname( INFILE *inpf );
 extern BOOL   infget_skws( INFILE *inpf );
 
@@ -90,11 +103,22 @@ extern size_t infskip_ws( INFILE *inpf );
 extern int    infeof( INFILE *inpf );
 extern int    infgotoeol( INFILE *inpf );
 
+extern VOID del_infilepos( INFILEPOS *pos );
+extern INFILEPOS *new_infilepos( INFILE *inpfile );
+extern INFILEPOS *new_winfilepos( INFILE *inpfile );
+extern STRPTR ifp_get_fname( INFILEPOS *pos );
+extern ULONG  ifp_get_x( INFILEPOS *pos );
+extern ULONG  ifp_get_y( INFILEPOS *pos );
+extern BOOL set_infilepos( INFILE *inpf, INFILEPOS *pos );
+extern BOOL set_infile_base( INFILE *inpf, INFILEPOS *pos );
+
+#if 0
 extern void inflog_enable( INFILE *inpf );
 extern void inflog_disable( INFILE *inpf );
 extern BOOL inflog_clear( INFILE *inpf );
 extern BOOL inflog_app( INFILE *inpf, STRPTR s );
 extern STRPTR infget_log( INFILE *inpf );
+#endif
 
 
 #endif /* NOEXTERN_UGLY_INFILE_H */

@@ -3,7 +3,23 @@
 **
 ** ugly argument preparation functions
 **
-** updated: 18-Nov-1995
+** Copyright (C) 1994,95,96  Thomas Aglassinger
+**
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+**
+** updated: 29-Jan-1996
 ** created:  3-Jul-1994
 **
 **===================================================================
@@ -29,7 +45,6 @@
 #define NOEXTERN_UGLY_ARGS_H
 #include "args.h"
 
-
 /*
 ** error vars
 */
@@ -37,7 +52,6 @@ LONG   prep_error_num;                 /* error number */
 int    prep_error_idx;                 /* # of template causing error */
 size_t prep_error_pos;                 /* pos in arg */
 BOOL   no_preperr, any_preperr;        /* error flags for _prepare_args() */
-
 
 /*
 ** error functions for _prepare_arg()
@@ -70,7 +84,7 @@ void fprintf_arginfo( FILE *stream, APTR data )
 {
     struct arginfo *arg = (struct arginfo *) data;
 
-    fprintf( stream, "  %-15s %2x %2x", 
+    fprintf( stream, "  %-15s %2lx %2lx",
              arg->ai_id, arg->ai_type, arg->ai_flags );
     if ( arg->ai_help )
         printf("  \"%s\"", arg->ai_help );
@@ -90,6 +104,8 @@ struct arglist *prepare_args( STRPTR arglist_name, ... )
     struct dllist  *newlist;
     struct arginfo *newarg;
     struct arglist *new_arglist = NULL;
+
+    DA( fprintf( stderr, DUA "prepare_args()\n" ) );
 
     clr_preperr();                     /* clear error vars */
 
@@ -136,7 +152,10 @@ struct arglist *prepare_args( STRPTR arglist_name, ... )
             nxtdef = strclone( nxtdef );                
             prep_error_idx++;
 
+
             if ( nxtdef ) {
+
+                DA( fprintf( stderr, DUA "  `%s'\n", nxtdef ) );
 
                 newarg = umalloc( sizeof( struct arginfo) );
 
@@ -144,8 +163,8 @@ struct arglist *prepare_args( STRPTR arglist_name, ... )
 
                     STRPTR new_id;
                     STRPTR typestr;
-                    STRPTR flagstr;
-                    STRPTR enumstr;    /* enum string for type 'E' */
+                    STRPTR flagstr = NULL;
+                    STRPTR enumstr = NULL;       /* enum string for type 'E' */
                     LONG   new_type  = 0;
                     LONG   new_flags = 0;
                     LONG   rnlolim   = 0;
@@ -351,6 +370,10 @@ struct arglist *prepare_args( STRPTR arglist_name, ... )
                 } else
                     set_preperr( APE_NO_MEM, 0 );
                 
+            } else {
+
+                DA( fprintf( stderr, DUA "  (end prepare)\n" ) );
+
             }
             
         } while ( nxtdef && no_preperr );

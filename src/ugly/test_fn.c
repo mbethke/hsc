@@ -4,7 +4,7 @@
 **
 ** test filename manipulaton functions
 **
-** (W) by Tommy-Saftwörx in 1994,95
+** (W) by Tommy-Saftwörx in 1994,95,96
 **
 */
 
@@ -14,20 +14,23 @@
 
 #include "types.h"
 #include "string.h"
+#include "expstr.h"
 #include "fname.h"
 
 #define NUM_NAME 6
 
-char newp[ MAX_PATH ];   /* new path (result of get_relfname() ) */
+char newp[ MAX_FPATH ];   /* new path (result of get_relfname() ) */
 
+EXPSTR *dest = NULL;
 
-void test_app_fname( STRPTR dir, STRPTR fn )
+void test_link_fname( STRPTR dir, STRPTR fn )
 {
-    STRPTR appfn =  app_fname( dir, fn );
+    BOOL ok = link_fname( dest, dir, fn );
 
     if ( !dir ) dir = "NULL";
     if ( !fn  ) fn  = "NULL";
-    printf( "file \"%s\" in \"%s\" -> \"%s\"\n", fn, dir, appfn );
+    printf( "file \"%s\" in \"%s\" -> [%d] \"%s\"\n",
+            fn, dir, ok, estr2str( dest ) );
 
 
 }
@@ -44,13 +47,15 @@ void test_getfne( void )
         };
     STRPTR res;
     int i;
+    BOOL ok;
 
     for ( i=0; i < NUM_NAME; i++ ) {
-        res = get_fext( name[i] );
-        printf( "get_fext (\"%-25s\") -> \"%s\"\n",
-                name[i], res );
-        printf( "get_fname(\"%-25s\") -> \"%s\"\n",
-                name[i], get_fname( name[i] ) );
+        ok = get_fext( dest, name[i] );
+        printf( "get_fext (\"%-25s\") -> [%d] \"%s\"\n",
+                name[i], ok, estr2str( dest ) );
+        ok = get_fname( dest, name[i]  );
+        printf( "get_fname(\"%-25s\") -> [%d] \"%s\"\n",
+                name[i], ok, estr2str( dest ) );
 
         printf( "\n" );
 
@@ -58,175 +63,46 @@ void test_getfne( void )
 
 }
 
-#if 0
-void old_test_reldir( STRPTR absn, STRPTR curp )
-{
-    /*
-    ** TODO: call upstrcmp() only when non-unix
-    */
-    STRPTR fname = strclone( get_fname( absn ) );  /* filename */
-    STRPTR absop  = strclone( get_fpath( absn ) ); /* absolute path */
-    STRPTR ocurp  = strclone( curp ); /* copy of curp for output */
-    STRPTR absp   = absop; /* working copy of absolute path */
-
-    char newp[ MAX_PATH ]; /* new path (result) */
-    char tmpb[ MAX_PATH ]; /* temp buffer */
-    STRPTR tmpp1, tmpp2; /* temp pointer */
-    STRPTR rest_absp;    /* rest of current path */
-
-    newp[0] = 0;
-
-    /*
-    ** strip equal subdir
-    */
-    do {
-        tmpp1 = get_nsdir( absp );
-        strcpy( tmpb, tmpp1 );
-        tmpp2 = get_nsdir( curp );
-        if (!upstrcmp( tmpb, tmpp2 )) {
-
-            absp += strlen( tmpb );
-            curp += strlen( tmpp2 );
-
-        }
-
-    } while ( tmpb[0] && tmpp2[0] && (!upstrcmp( tmpb, tmpp2 )) );
-
-    rest_absp = absp;
-
-
-    /*
-    ** for every subdir in absp unequal to
-    ** corresponding subdir curp, insert a parent dir
-    */
-    do {
-
-        tmpp1 = get_nsdir( absp );
-        strcpy( tmpb, tmpp1 );
-        tmpp2 = get_nsdir( curp );
-        if ( upstrcmp( tmpb, tmpp2 )) {
-
-            absp += strlen( tmpb );
-            curp += strlen( tmpp2 );
-            strcat( newp, PARENT_DIR );
-
-        }
-
-
-    } while ( tmpp2[0] && (upstrcmp( tmpb, tmpp2 )));
-
-    strcat( newp, rest_absp );
-    strcat( newp, fname );
-
-    printf( "\"%s\" and \"%s\" -> \"%s\"\n", absn, ocurp, newp );
-
-    ufreestr( fname );
-    ufreestr( ocurp );
-    ufreestr( absop );
-}
-#endif
-
-STRPTR get_relfname( STRPTR absn, STRPTR curp )
-{
-    char tmpb[ MAX_PATH ];   /* temp buffer */
-    char fname[ MAX_FNAME ]; /* file name only */
-    char abspa[ MAX_PATH ];  /* absolute path only */
-    STRPTR tmpp1, tmpp2;     /* temp pointer */
-    STRPTR rest_absp;        /* rest of current path */
-    STRPTR absp;
-
-    /*
-    ** TODO: handle out of mem
-    */
-
-    /* init string array */
-    newp[0] = 0;
-    strcpy( fname, get_fname( absn ) );
-    strcpy( abspa, get_fpath( absn ) );
-    absp = abspa;
-
-    /*
-    ** strip all equal subdirs
-    */
-    do {
-        tmpp1 = get_nsdir( absp );
-        strcpy( tmpb, tmpp1 );
-        tmpp2 = get_nsdir( curp );
-        if (!upstrcmp( tmpb, tmpp2 )) {
-
-            absp += strlen( tmpb );
-            curp += strlen( tmpp2 );
-
-        }
-
-    } while ( tmpb[0] && tmpp2[0] && (!upstrcmp( tmpb, tmpp2 )) );
-
-    rest_absp = absp;
-
-
-    /*
-    ** for every subdir in absp unequal to
-    ** corresponding subdir curp, insert a parent dir
-    */
-    if ( curp[0] )
-        do {
-
-            tmpp1 = get_nsdir( absp );
-            strcpy( tmpb, tmpp1 );
-            tmpp2 = get_nsdir( curp );
-            if ( upstrcmp( tmpb, tmpp2 )) {
-
-                absp += strlen( tmpb );
-                curp += strlen( tmpp2 );
-                strcat( newp, PARENT_DIR );
-
-            }
-
-
-        } while ( tmpp2[0] && (upstrcmp( tmpb, tmpp2 )));
-
-    strcat( newp, rest_absp );
-    strcat( newp, fname );
-
-    return ( newp );
-}
-
 
 void test_reldir( STRPTR absn, STRPTR curp )
 {
-    /*
-    ** TODO: call upstrcmp() only when non-unix
-    */
-    printf( "\"%s\" and \"%s\" -> \"%s\"\n",
-            absn, curp, get_relfname( absn, curp ) );
+    BOOL ok = get_relfname( dest, absn, curp );
+    printf( "\"%s\" and \"%s\" -> [%d] \"%s\"\n",
+            absn, curp, ok, estr2str( dest ) );
 
 }
 
-void test_nsdir( STRPTR path )
+void test_fsdir( STRPTR path )
 {
-    STRPTR newp = get_nsdir( path );
+    BOOL ok = get_fsdir( dest, path );
 
-    printf( "get_nsdir: \"%s\" -> \"%s\"\n", path, newp );
+    printf( "get_fsdir: \"%s\" -> [%d]\"%s\"\n",
+            path, ok, estr2str( dest ) );
 
 }
 
 void test_fpath( STRPTR path )
 {
-    STRPTR newp = get_fpath( path );
+    BOOL ok = get_fpath( dest, path );
 
-    printf( "get_fpath: \"%s\" -> \"%s\"\n", path, newp );
+    printf( "get_fpath: \"%s\" -> [%d]\"%s\"\n",
+        path, ok, estr2str( dest ) );
 
 }
 
 
 void test_setfext( STRPTR fn, STRPTR ext )
 {
-    STRPTR newfn = set_fext( fn, ext );
+    BOOL ok;
+
+    set_estr( dest, fn );
+    ok = set_fext( dest, ext );
 
     if ( !fn  ) fn  = "NULL";
     if ( !ext ) ext = "NULL";
 
-    printf( "set_fext: \"%s\" with \"%s\" -> \"%s\"\n", fn, ext, newfn );
+    printf( "set_fext: \"%s\" with \"%s\" -> [%d] \"%s\"\n",
+            fn, ext, ok, estr2str( dest ) );
 }
 
 int main( void )
@@ -234,8 +110,12 @@ int main( void )
     LONG i;
     STRPTR nam;
 
+    /* init global destination */
+    dest = init_estr( 20 );
+
     printf( "Testing ugly fname functions:\n\n" );
 
+#if 0
     printf( "temp names (%d):", L_tmpnam );
     for ( i=0; i<10; i++ ) {
 
@@ -248,6 +128,7 @@ int main( void )
 
     }
     printf( "\n" );
+#endif
 
 #if 0
     /*
@@ -256,15 +137,17 @@ int main( void )
     test_getfne();
 #endif
 
-#if 0
+#if 1
     /*
     ** test app_fname
     */
-    test_app_fname( "c:tools", "sucktool.exe" );
-    test_app_fname( "c:", "sucktool.exe" );
-    test_app_fname( "", "sucktool.exe" );
-    test_app_fname( NULL, "sucktool.exe" );
-    test_app_fname( NULL, NULL );
+    test_link_fname( "c:tools", "sucktool.exe" );
+    test_link_fname( "c:", "sucktool.exe" );
+    test_link_fname( "", "sucktool.exe" );
+    test_link_fname( NULL, "sucktool.exe" );
+    test_link_fname( "tools", "" );
+    test_link_fname( "tools/", "" );
+    test_link_fname( NULL, NULL );
 #endif
 
 #if 0
@@ -275,12 +158,6 @@ int main( void )
     test_setfext( "hugo", "suck" );
     test_setfext( "hugo.oh.yeah.honey", "sucker" );
     test_setfext( "", "suck" );
-
-    /* these 3 calls now lead to an enforcer hit. */
-    /* but is there any need to handle these cases? */
-    test_setfext( "hugo", NULL );
-    test_setfext( NULL, "suck" );
-    test_setfext( NULL, NULL );
 #endif
 
 #if 0
@@ -293,22 +170,20 @@ int main( void )
     test_fpath( "hugo/" );
     test_fpath( "hugo" );
     test_fpath( "" );
-    test_fpath( NULL );  /* ->enforcer hit */
 #endif
 
 #if 0
     /*
-    ** test get_nsdir: get first subdir from path
+    ** test get_fsdir: get first subdir from path
     */
-    test_nsdir( "hugo/heini/" );
-    test_nsdir( "hugo/hein" );
-    test_nsdir( "hugo/" );
-    test_nsdir( "hugo" );
-    test_nsdir( "" );
-    test_nsdir( NULL );  /* ->enforcer hit */
+    test_fsdir( "hugo/heini/" );
+    test_fsdir( "hugo/hein" );
+    test_fsdir( "hugo/" );
+    test_fsdir( "hugo" );
+    test_fsdir( "" );
 #endif
 
-#if 1
+#if 0
 #if 1
     test_reldir( "image/back.gif", "image/hugo/" );
 #endif

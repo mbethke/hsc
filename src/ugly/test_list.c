@@ -49,7 +49,7 @@ int main( int argc, char *argv[] )
     DLNODE *nd = NULL;
     STRPTR str = NULL;
 
-#ifdef UMEM_TRACKING
+#if DEBUG_UGLY_MEMORY
     atexit( atexit_uglymemory );
 #endif
 

@@ -21,16 +21,15 @@ void test_enumstr( STRPTR str, STRPTR set, char sep, BYTE options )
 {
     LONG result = strenum( str, set, sep, options );
 
-    printf( "strenum( \"%4s\",%-16s,\"%c\",%d) -> %d\n",
+    printf( "strenum( \"%4s\",%-16s,\"%c\",%d) -> %ld\n",
             str, set, sep, options, result );
 }
 
 int main( void )
 {
-    LONG i;
     STRPTR nam;
 
-#ifdef UMEM_TRACKING
+#if DEBUG_UGLY_MEMORY
 
     /* display a memory tracking report */
     /* at end of execution */

@@ -4,8 +4,6 @@
 **
 ** test expandable-string functions
 **
-** (W) by Tommy-Saftwörx in 1995
-**
 */
 
 #include <stdlib.h>
@@ -23,21 +21,26 @@ EXPSTR *es, *res;
 /* print current estr */
 void pe( STRPTR comment )
 {
-    printf( "es:%s: (%2d/%2d/%2d) \"%s\"\n", comment,
-            es->es_len, es->es_size, es->es_step, estr2str( es ) ) ;
+    printf( "es:%s: (%2lu/%2lu/%2lu) \"%s\"\n", comment,
+            (ULONG) es->es_len, (ULONG) es->es_size,
+            (ULONG) es->es_step, estr2str( es ) ) ;
 }
 void pr( STRPTR comment )
 {
-    printf( "rs:%s: (%2d/%2d/%2d) \"%s\"\n", comment,
-            res->es_len, res->es_size, res->es_step, estr2str( res ) ) ;
+    printf( "rs:%s: (%2lu/%2lu/%2lu) \"%s\"\n", comment,
+            (ULONG) res->es_len, (ULONG) res->es_size,
+            (ULONG) res->es_step, estr2str( res ) ) ;
 }
 
 int main( void )
 {
+#if 0
     LONG i;
+#endif
 
+#if DEBUG_UGLY_MEMORY
     atexit( atexit_uglymemory );
-
+#endif
 
 #if 0
     for ( i=0; i<20; i++ )
@@ -48,9 +51,21 @@ int main( void )
     es  = init_estr( 8 ); pe( "init  ") ;
     res = init_estr( 8 ); pr( "init  ") ;
 
+#if 0
+
+    /* test reference to NULL string */
+    app_estrch( NULL, 'x' );
+    app_estr( es, NULL );
+
+#endif
+
 #if 1
     printf( "** test set & append\n" );
     set_estr( es, "hugo ist doof." ); pe( "set   " );
+    set_estrn( es, "hugo",4 ); pe( "setn:4  " );
+    set_estrn( es, "hugo",1 ); pe( "setn:1 " );
+    set_estrn( es, "hugo",0 ); pe( "setn:0 " );
+    set_estrn( es, "hugo",5 ); pe( "setn:5 " );
 
     app_estrch( es, ' ' ); pe("appch ");
     app_estrch( es, 's' ); pe("appch ");

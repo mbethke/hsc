@@ -132,6 +132,14 @@ struct arglist {
     struct arginfo *al_nokeywd;        /* entry w/o /K flag; TODO: remove */
 };
 
+/* debuggin define */
+#if DEBUG_UGLY_ARG
+#define DA(x) x
+#define DUA "*args  * "
+#else
+#define DA(x) /* nufin */
+#define DUA   /* nufin */
+#endif
 
 /*
 ** extern functions & global vars

@@ -3,10 +3,12 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 
 #include "types.h"
+#include "memory.h"
 #include "infile.h"
 
 #define GETSTRLEN 10
@@ -14,11 +16,18 @@
 int main( int argc, char *argv[] )
 {
     INFILE *inpf;
+    INFILEPOS *pos1 = NULL;
+    INFILEPOS *pos2 = NULL;
+
     char *fname;
     char ch;
     size_t i;
     char getstr[GETSTRLEN+1];
     char *wdbuf;
+
+#if DEBUG_UGLY_MEMORY
+    atexit( atexit_uglymemory );
+#endif
 
     if ( argc == 1 )
         fname = "hugo.txt";
@@ -60,15 +69,10 @@ int main( int argc, char *argv[] )
         ** read the first 3 words
         */
         for ( i=0; i<3; i++ ) {
-            if ( i==1 )
-                inflog_disable( inpf );
-            else
-                inflog_enable( inpf );
             wdbuf = infgetw( inpf );
-            printf( "word#%d: [%d] \"%s\"\n", i, strlen(wdbuf), wdbuf );
+            printf( "word#%lu: [%lu] \"%s\"\n",
+                     (ULONG) i, (ULONG) strlen(wdbuf), wdbuf );
         }
-
-        inflog_disable( inpf );
 
         /* info about current word */
         printf( "current word: \"%s\", \"%s\"\n",
@@ -79,9 +83,11 @@ int main( int argc, char *argv[] )
         */
         inungetcw( inpf );
         wdbuf = infgetw( inpf );
-        printf( "reword: [%d] \"%s\"\n", strlen(wdbuf), wdbuf );
+        printf( "reword: [%lu] \"%s\"\n", (ULONG) strlen(wdbuf), wdbuf );
 
-        inflog_app( inpf, "** inserted **" );
+        /* remember current position */
+        pos1 = new_infilepos( inpf );
+
         /*
         ** read and print rest of file
         */
@@ -97,10 +103,21 @@ int main( int argc, char *argv[] )
 
         }
 
-        /* print log */
-        printf( "log: \"%s\"\n", infget_log( inpf ) );
+        pos2 = new_infilepos( inpf );
+
+        printf( "pos#1: %s (%lu,%lu)\n",
+                ifp_get_fname( pos1 ),
+                ifp_get_x( pos1 ),
+                ifp_get_y( pos1 ) );
+        del_infilepos( pos1 );
 
         infclose( inpf );
+
+        printf( "pos#2: %s (%lu,%lu)\n",
+                ifp_get_fname( pos2 ),
+                ifp_get_x( pos2 ),
+                ifp_get_y( pos2 ) );
+        del_infilepos( pos2 );
 
     } else
         perror( "Can't open input file" );
@@ -118,7 +135,9 @@ int main( int argc, char *argv[] )
 
         infclose( inpf );
     } else
-        perror( "Can't opne input file from string" );
+        perror( "Can't open input file from string" );
+
+    printf( "\n" );
 
     return( 0 );
 }

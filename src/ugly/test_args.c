@@ -12,7 +12,7 @@
 
 void prt_ign( FILE *stream, APTR data )
 {
-    fprintf( stream, "%d\n", (LONG) data );
+    fprintf( stream, "%ld\n", (LONG) data );
 }
 
 STRPTR set_ignore( STRPTR arg )
@@ -59,22 +59,22 @@ STRPTR arg_mode( STRPTR arg )
 */
 int main( int argc, char *argv[] )
 {
-    STRPTR fromfile = NULL;
+    DLLIST *fromfiles = NULL;
     STRPTR errfile = NULL;
     STRPTR tofile = NULL;
-    STRPTR destdir = NULL;
     BOOL   help = FALSE;
+    BOOL   flag = FALSE;
+    STRPTR destdir = NULL;
     LONG   mode = 0;
     LONG   num  = 0;
     LONG   line = 0;
     BOOL   verb = 0;
-    BOOL   flag = FALSE;
     DLLIST *ignore = NULL;
     DLLIST *ignore_list = NULL; /* dummy */
 
     struct arglist *my_args;
 
-#ifdef UMEM_TRACKING
+#if DEBUG_UGLY_MEMORY
     atexit( atexit_uglymemory );
 #endif
     /*
@@ -84,9 +84,9 @@ int main( int argc, char *argv[] )
         "a short test program", "This is FreeWare!" );
 
     my_args = prepare_args( "MY_ARGS",
-#if 0
-              "From"          , &fromfile, "input file",
-              "To"            , &tofile, "output file (default: stdout)",
+#if 1
+              "From/M"        , &fromfiles, "input file",
+              "To/K"          , &tofile, "output file (default: stdout)",
               "ErrFile=ef/T/K", &errfile, "error file (default: stderr)",
               "DestDir/K"     , &destdir    , "destination directory",
               "MaxErr/N/K"    , &num  , "max. number of errors (default:20)",
@@ -107,7 +107,7 @@ int main( int argc, char *argv[] )
               "TO", &tofile, "output file",
               "Num/N"            , &num, "number of lines to convert",
 #endif
-#if 1
+#if 0
               "Ignore=ign/N/K/M/$", arg_ignore, &ignore_list, "ignore message number",
               "Mode/E/K/$"        , arg_mode, "hugo|sepp|resi", &mode, "set the fucking mode",
               "ERRFILE/K", &errfile, "error file",
@@ -118,7 +118,7 @@ int main( int argc, char *argv[] )
               NULL );
 
 
-#ifdef UMEM_TRACKING__0
+#if DEBUG_UGLY_MEMORY__0
     fprintf( stderr, "<mem report>\n" );
     umem_report( "testargs - end" );
 #endif
@@ -135,20 +135,28 @@ int main( int argc, char *argv[] )
 #endif
         if ( set_args( argc, argv, my_args ) ) {
 
+                DLNODE *nd = NULL;
+                if ( fromfiles )nd = dll_first( fromfiles );
+
                 printf( "args ok:\n" );
 
-                if (fromfile) printf( "  from: \"%s\"\n", fromfile );
+                while ( nd )
+                {
+                    printf( "  from: \"%s\"\n", (STRPTR) nd->data );
+                    nd = nd->next;
+                }
+
                 if (tofile)   printf( "  to  : \"%s\"\n", tofile );
                 if (errfile)  printf( "  err : \"%s\"\n", errfile );
                 if ( help )   printf( "  help: TRUE\n" );
                 if ( verb )   printf( "  verb: TRUE\n" );
-                if ( num )    printf( "  num : %d\n", num );
+                if ( num )    printf( "  num : %ld\n", num );
                 if ( ignore)  {
                     printf( " ign :\n" );
                     fprintf_dllist( stdout, ignore, prt_ign );
                 }
-                if ( line )   printf( "  line: %d\n", line );
-                if ( mode )   printf( "  mode: %d\n", mode );
+                if ( line )   printf( "  line: %ld\n", line );
+                if ( mode )   printf( "  mode: %ld\n", mode );
 
         } else
 
@@ -157,10 +165,11 @@ int main( int argc, char *argv[] )
         /* cleanup args */
         free_args( my_args );
         del_dllist( ignore );
+        del_dllist( fromfiles );
 
     } else
         
-        printf( "ArgDef error: %2x\n", prep_error_num );
+        printf( "ArgDef error: %2lu\n", prep_error_num );
     return 0;
 }
 

@@ -2,6 +2,95 @@
                    hsc version history
                    ===================
 
+Version 0.9.7, 15-May-1996
+ - fixed a nasty bug that could cause enforcer-hits
+   inside macros
+ - fixed bug: for GETSIZE within GIFs, now the size
+   of the first image is used (before: size of screen)
+ - MAJOR CHANGE:
+   - changed CLI option TO that it requires keyword `TO'
+     and decides if TO decribes a directory or file
+     depending on the last character (check for `/').
+   - removed CLI option INCLUDE; now you have to pass
+     only the filename with no preceeding keyword
+   - declaration of an enumerator-type now supports
+     expressions as argument.
+ - renamed CLI option ERRFILE to MSGFILE ('cause not all
+   messages are errors..)
+ - removed CLI option CHECKURI; now use IGNORE=21 if you
+   don't want your URIs to be checked for existence
+ - added CLI option MSGFORMAT to describe output format
+   of messages
+ - added useful file location for messages within macros
+ - changed message for missing end tags that it now
+   reports location of corresponding start tag
+ - added check for existence of IDs inside same file
+ - added CLI option PRJFILE for project-file that
+   maintains data about IDs globaly
+ - added check for existence of IDs inside same file
+ - added check for existence of IDs for all files
+   included into project file
+ - added attribute types `ID' and `COLOR'
+ - added tag "<(..)>" to insert values of expressions
+ - added JFIF/JPEG-support for GETSIZE
+ - added support for some html3-tags within "hsc.prefs"
+ - added new message type "portability problem"
+ - added def's for most proposed html30-tags
+ - removed string-arrays for parsing & checking URIs;
+   there should be no more "normal" C-strings within
+   the whole source now (exept some message buffers,
+   which get truncated if too small)
+ - now compiles fine with gcc's "-Wall -W"-options
+   (exept some warnings about unused variables/functions)
+ - using that stupid AmigaGuide-like buttons for the
+   navigation bar within the docs
+ - compiled with gcc 2.7.0 and libnix 1.1
+
+Version 0.9.6, 12-Jan-1996
+ - fixed bug: white spaces after boolean attributes
+   have been stripped, if no expression followed
+ - fixed bug: "click-here" checking has only been
+   done, if RPLCENT has been set
+ - MAJOR CHANGE: improved concept for attributes:
+   - added tag <$DEFINE> to create new attributes
+   - changed <$LET> to only update already existing
+     attributes
+   - changed syntax to define an attribute: flags
+     now must come before default value; this
+     stricter syntax seems to be more consistent, if
+     you use a "/" in the default value, but didn't
+     enclose it into quotes
+   - added attribute flags /GLOBAL, /CONST, /GETSIZE
+     and /STRIPEXT
+   - removed attribute flags /NOQUOTE, /NOCOPY and
+     /NOHANDLE (they've been undocumented anyway)
+ - added COMPACT option to strip useless linefeeds
+   and white spaces
+ - added QUOTEMODE option to use same kind of quotes
+   for all attributes
+ - added STRIPEXTERNAL option to strip tags that
+   contain a reference to an external URI
+ - added STRIPCOMMENT to strip SGML comments
+ - added STRIPTAGS to strip specific tags
+ - added support for linefeeds inside expressions
+ - added support for linefeeds inside strings
+ - Amiga version now also searches "env:" for prefs
+ - added more subtile STATUS option
+ - status message string is no more done via
+   sprintf() and is stripped if it gets too long
+ - added some plausibility checking for <$DEFENT>
+ - rewrote ReadMe for example-project
+ - fixed dead links in docs (used IGNORE=21 when
+   converting docs..)
+
+Version 0.9.5, 21-Dec-1995
+ - included source into distribution
+ - example project now compiles again (Hmpf..)
+ - added boolean expressions
+ - added default values for boolean attributes
+ - added GETENV operator to import values of
+   environment variables
+
 Version 0.9.4, 14-Dec-1995
  - distributing archive under GNU General public
    license (read "GNU_GPL" for details)

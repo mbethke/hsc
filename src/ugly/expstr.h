@@ -34,24 +34,57 @@ typedef struct {
 
 #ifndef NOEXTERN_UGLY_EXPSTR_H
 
-extern EXPSTR *init_estr( size_t step_size );
+extern EXPSTR *ugly_dbg_init_estr( size_t step_size, STRPTR file, ULONG line );
+extern EXPSTR *ugly_init_estr( size_t step_size );
 extern void del_estr( EXPSTR *es );
 
-extern BOOL set_estr( EXPSTR *es, CONSTRPTR s );
-extern BOOL clr_estr( EXPSTR *es );
-extern BOOL app_estrch( EXPSTR *es, int ch );
-extern BOOL app_estr( EXPSTR *es, CONSTRPTR s );
+extern BOOL ugly_clr_estr( EXPSTR *es );
+extern BOOL ugly_dbg_clr_estr( EXPSTR *es, STRPTR file, ULONG line );
+extern BOOL set_estrn( EXPSTR *es, CONSTRPTR s, size_t n);
+
+extern BOOL ugly_set_estr( EXPSTR *es, CONSTRPTR s );
+extern BOOL ugly_app_estrch( EXPSTR *es, int ch );
+extern BOOL ugly_app_estr( EXPSTR *es, CONSTRPTR s );
+
+extern BOOL ugly_dbg_set_estr( EXPSTR *es, CONSTRPTR s, STRPTR file, ULONG line );
+extern BOOL ugly_dbg_app_estrch( EXPSTR *es, int ch, STRPTR file, ULONG line );
+extern BOOL ugly_dbg_app_estr( EXPSTR *es, CONSTRPTR s, STRPTR file, ULONG line );
 
 extern STRPTR estr2str( EXPSTR *es );
 extern BOOL   estrcpy( EXPSTR *dest, EXPSTR *src );
+extern BOOL   estrcat( EXPSTR *dest, EXPSTR *src );
 extern size_t estrlen( EXPSTR *es );
 
 extern BOOL get_mid_estr( EXPSTR *dest, EXPSTR *src, size_t from, size_t num );
 extern BOOL get_right_estr( EXPSTR *dest, EXPSTR *src, size_t num );
 extern BOOL get_left_estr( EXPSTR *dest, EXPSTR *src, size_t num );
 
-
 #endif  /* NOEXTERN_UGLY_EXPSTR_H */
+
+/*
+** debugging prototypes
+*/
+#if DEBUG_UGLY_EXPSTR
+
+/* full debugging */
+#define set_estr_mem( es, size ) ugly_dbg_set_estr_mem( es, size, __FILE__, __LINE__ )
+#define set_estr( es, s ) ugly_dbg_set_estr( es, s, __FILE__, __LINE__ )
+#define app_estrch( es, ch ) ugly_dbg_app_estrch( es, ch, __FILE__, __LINE__ )
+#define app_estr( es, s ) ugly_dbg_app_estr( es, s, __FILE__, __LINE__ )
+#define init_estr( s ) ugly_dbg_init_estr( s, __FILE__, __LINE__ )
+#define clr_estr( s ) ugly_dbg_clr_estr( s, __FILE__, __LINE__ )
+
+#else
+
+/* no debugging */
+#define set_estr_mem( es, size ) ugly_set_estr_mem( es, size )
+#define set_estr( es, s ) ugly_set_estr( es, s )
+#define app_estrch( es, ch ) ugly_app_estrch( es, ch )
+#define app_estr( es, s ) ugly_app_estr( es, s )
+#define init_estr( s ) ugly_init_estr( s )
+#define clr_estr( s ) ugly_clr_estr( s )
+
+#endif
 
 
 #endif  /* UGLY_EXPSTR_H */

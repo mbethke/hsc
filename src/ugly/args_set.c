@@ -3,7 +3,23 @@
 **
 ** ugly set arguments handling functions
 **
-** updated: 10-Dec-1995
+** Copyright (C) 1994,95,96  Thomas Aglassinger
+**
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+**
+** updated: 20-Apr-1996
 ** created:  3-Jul-1994
 **
 **===================================================================
@@ -30,6 +46,12 @@
 
 #define NOEXTERN_UGLY_ARGS_H
 #include "args.h"
+
+#if 0
+#undef DA
+#define DA(x) x
+#endif
+
 
 /*
 ** global export vars
@@ -110,6 +132,7 @@ int compare_arginfo( APTR cmp_data, APTR list_data )
 */
 void clr_ai_set( struct arglist *al )
 {
+#if 0
     struct dlnode  *nd;
     struct arginfo *ai;
 
@@ -123,6 +146,22 @@ void clr_ai_set( struct arglist *al )
                     nd = nd->next;
 
                 }
+#endif
+    if ( al && ( al->al_list ) ) {
+
+        struct dlnode  *nd = al->al_list->first;
+
+        while ( nd ) {
+
+            struct arginfo *ai = (struct arginfo *) nd->data;
+
+            if ( ai )
+                ai->ai_set = FALSE;
+            nd = nd->next;
+
+        }
+    }
+
 }
 
 
@@ -217,13 +256,27 @@ void find_nxt_nokeywd( struct arglist *al )
         al->al_nokeywd = NULL;
         while ( nd && ( al->al_nokeywd == NULL ) ) {
 
+            BOOL is_keywd         = FALSE;
+            BOOL multiple_nokeywd = FALSE;
+
             ai = ( struct arginfo * ) nd->data;
 
-            if ( (ai->ai_flags & ARG_KEYWORD)
-                 || (ai->ai_type & ARG_SWITCH)
-                 || (ai->ai_set)
-            )
+            is_keywd = ai->ai_flags & ARG_KEYWORD;
+            multiple_nokeywd =
+                    (ai->ai_flags & ARG_MULTIPLE )
+                    && !is_keywd;
+
+            if (
+                 (
+                   (ai->ai_flags & ARG_KEYWORD)
+                   || (ai->ai_type & ARG_SWITCH)
+                   || (ai->ai_set)
+                 )
+                 && !multiple_nokeywd
+               )
+            {
                 nd = nd->next;
+            }
             else
                 al->al_nokeywd = ai;
 
@@ -516,7 +569,9 @@ void check_required_set( struct arglist *al )
 */
 BOOL set_args( int argc, char *argv[], struct arglist *al )
 {
-
+#if 0
+    DA( fprintf( stderr, DUA "set_args()\n" ) );
+#endif
     clr_argerr();
     clr_ai_set( al );
     reset_nokeywd( al );
@@ -534,6 +589,7 @@ BOOL set_args( int argc, char *argv[], struct arglist *al )
         struct arginfo *found_ai;
         struct dlnode  *ainode;
         STRPTR          arg2 = NULL;   /* passed to set_arg_value */
+        STRARR          sas_c_is_buggy[20];
 
         /*
         ** search for entry in arginfo-list
@@ -545,6 +601,11 @@ BOOL set_args( int argc, char *argv[], struct arglist *al )
         /* TODO: check if "<" or "<=" */
         if ( argidx < argc-1 )
             arg2 = argv[ argidx+1 ];
+
+        DA( fprintf( stderr, DUA "  arg: `%s'\n", argv[argidx] ) );
+
+        /* this line compensates a bug in sas/c 6.50 optimizer */
+        strncpy( sas_c_is_buggy, argv[argidx], 20 );
 
         if ( ainode ) {
 
@@ -559,8 +620,13 @@ BOOL set_args( int argc, char *argv[], struct arglist *al )
                 
                 argidx += set_arg_value( al->al_nokeywd, argv[ argidx ], arg2, FALSE );
 
-            } else
+            } else {
+
                 set_argerr( ASE_UNKNOWN_KEYWORD, argv[ argidx ] );
+#if 0
+                DA( fprintf( stderr, DUA "  unknown keyword\n" ) );
+#endif
+            }
 
         }
 

@@ -7,17 +7,17 @@
 **
 ** ugly data typing.
 **
-** NOTE: contains also UGLY_VER and UGLY_REV
+** NOTE: contains also UGLY_VER and UGLY_REV and
+** includes debuggin defines
 **
-** Version 1.0.6, (W) by Tommy-Saftwörx 1994,95
+** (W) by Tommy-Saftwörx 1994,95,96
 **
-** updated: 31-Oct-1995
+** updated: 23-Mar-1996
 ** created: 25-Jan-1994
-**
-** $VER: types.h 1.0.6 (31.10.1995)
-**
 */
 
+/* include debugging defines */
+#include "debug.h"
 
 /*
 ** are you running a amiga?
@@ -92,6 +92,7 @@ typedef unsigned char   TEXT;
 
 typedef const unsigned char *CONSTRPTR;          /* string constants */
 typedef unsigned char        STRARR;             /* string array */
+typedef unsigned char        CHAR;                /* single character */
 
 /*
 ** UPTR as an generic pointer. C-math will not operate on UPTR.

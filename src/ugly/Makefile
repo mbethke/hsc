@@ -3,7 +3,7 @@
 ##
 ## (W) by Tommy-Saftwörx
 ##
-## $VER: makefile 1.1.4 (30.9.95)
+## $VER: makefile 1.1.7 (20.4.1996)
 ##
 
 #
@@ -11,63 +11,61 @@
 #
 # - sys		defines operating system
 #		(supported: AMIGA,UNIX)
-# - dest	destination dir for object files
-#		(useful to compile to ram-disk)
-# - ign		ignore warning for unreferenced vars
 # - norm	compiler flags for developer version
 # - optim	compiler flags for official version
 # - comp	compiler call to create an object file (*.o)
 # - link	compiler call to link a file
 
- 
-#**
-#** sas/c AMIGA
-#**
-sys  = DEFINE=AMIGA
-dest = t:
-ign  = IGNORE=93
-opts = STRICT ANSI STRINGMERGE SMALLCODE SMALLDATA NOICONS MEMORYSIZE=HUGE 
-norm = $(sys) $(opts) DEFINE=UMEM_TRACKING DEBUG=SF
-optim= $(sys) $(opts) NODBG STRIPDEBUG SMALLCODE OPT OPTSIZE DEBUG=LINE
-link = sc LINK $(ign)
-comp = sc
-
-
 #**
 #** gcc AMIGA
 #**
-#dest = 
-#sys  = -DAMIGA -DGCC
+#sys  = -DAMIGA -Damigados -noixemul
 
 #**
 #** gcc UNIX
 #**
-#dest =
 #sys  = -DUNIX
 
 #**
 #** gcc (any system)
 #**
-#norm = $(sys) -DUMEM_TRACKING -ansi -ggdb
-#optim= $(sys) -ansi -O
-#comp = gcc -c
-#link = gcc -o $@
-#ign  =
+#debug= $(sys) -D_ANSI_SOURCE -DDEBUG_UGLY -ggdb
+#norm = $(sys) -D_ANSI_SOURCE
+#optim= $(sys) -D_ANSI_SOURCE -O -s
+#comp = gcc -Wall -W -c
+#link = gcc -Wall -W -o $@
+
+#**
+#** sas/c AMIGA
+#**
+sys  =
+opts =  
+debug= $(sys) $(opts) DEBUG=SF DEF=DEBUG_UGLY
+norm = $(sys) $(opts) DEBUG=LINE
+optim= $(sys) $(opts) IGN=304 IGN=93 OPTIMIZE NOSTKCHK 
+link = sc LINK 
+comp = sc
+
 
 #**
 #** compiler mode 
-#**   norm...create developer version (mem tracking, debugging code)
-#**   optim..official release (optimised)
+#**	debug..create developer version (mem tracking, debugging code)
+#**	norm...create unoptimised version
+#**	optim..create optimised version
 #**
-mode = $(optim)
+#mode = $(optim)
 #mode = $(norm)
+mode = $(debug)
+
+#--------------------------------------
 
 #
 # test files
 #
-all: test_es test_fn test_args test_file test_list test_mem test_out test_str
+all : test_es test_fn test_args test_file test_list test_mem test_str
 
-
+clean :
+	delete (#?.o|#?.s|#?.p) quiet
 
 ##
 ## project
@@ -100,7 +98,7 @@ dllist.o  : types.h dllist.h dllist.c
 expstr.o : types.h expstr.c
 	$(comp) expstr.c $(mode)
 
-fname.o   : types.h string.h fname.h fname.c
+fname.o   : types.h expstr.h string.h fname.h fname.c
 	$(comp) fname.c $(mode)
 
 memory.o   : types.h memory.c memory.h dllist.h
@@ -115,38 +113,38 @@ string.o  : types.h string.h string.c
 #umx.o : types.h umx.h umx.c
 #	$(comp) umx.c $(mode)
 
-infile.o : types.h string.h memory.h infile.c
+infile.o : types.h string.h memory.h expstr.h infile.h infile.c
 	$(comp) infile.c $(mode)
 
-outfile.o : types.h string.h memory.h outfile.c
-	$(comp) outfile.c $(mode)
+#outfile.o : types.h string.h memory.h expstr.h outfile.h outfile.c
+#	$(comp) outfile.c $(mode)
 
 ##
 ## test files
 ##
 
-test_fn : test_fn.c fname.o memory.o
-	$(link) test_fn.c fname.o string.o memory.o $(mode)
+test_fn : test_fn.c fname.o memory.o expstr.o
+	$(link) $(mode) test_fn.c expstr.o fname.o string.o memory.o
 
-test_args : test_args.c args.o dllist.o prginfo.o memory.o
-	$(link) test_args.c args.o string.o dllist.o memory.o prginfo.o $(mode)
+test_args : test_args.c args.o dllist.o prginfo.o memory.o string.o
+	$(link) $(mode) test_args.c args.o string.o dllist.o memory.o prginfo.o
 
 test_es : test_es.c expstr.o memory.o string.o
-	$(link) test_es.c expstr.o string.o memory.o $(mode)
+	$(link) $(mode) test_es.c expstr.o string.o memory.o
 
 test_file : test_file.c infile.o dllist.o expstr.o memory.o
-	$(link) test_file.c dllist.o expstr.o infile.o string.o memory.o $(mode)
+	$(link) $(mode) test_file.c dllist.o expstr.o infile.o string.o memory.o
 
 test_list : test_list.c dllist.o string.o memory.o
-	$(link) test_list.c dllist.o string.o memory.o $(mode)
+	$(link) $(mode) test_list.c dllist.o string.o memory.o
 
 test_mem : test_mem.c memory.o dllist.o string.o
-	$(link) test_mem.c dllist.o memory.o string.o $(mode)
+	$(link) $(mode) test_mem.c dllist.o memory.o string.o
 
-test_out : test_out.c outfile.o dllist.o expstr.o memory.o
-	$(link) test_out.c dllist.o expstr.o outfile.o string.o memory.o $(mode)
+#test_out : test_out.c outfile.o dllist.o expstr.o memory.o
+#	$(link) $(mode) test_out.c dllist.o expstr.o outfile.o string.o memory.o
 
 test_str : test_str.c memory.o string.o
-	$(link) test_str.c memory.o string.o $(mode)
+	$(link) $(mode) test_str.c memory.o string.o
 
 # EOF

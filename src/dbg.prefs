@@ -1,23 +1,24 @@
+<$defent NAME="uuml" RPLC="ü" NUM="252">
 <*********************>
 <*** HTML 1.0 tags ***>
 <*********************>
-<$deftag LI AUTOCLOSE MBI="ul|ol|dir|menu">
-<$deftag ! IGNOREARGS>
-<$deftag A CLOSE NAW="A" HREF:uri NAME:string REL:string>
-<$deftag B CLOSE>
-<$deftag BODY CLOSE ONLYONCE>
+<$deftag LI /AUTOCLOSE /MBI="ul|ol|dir|menu">
+<$deftag ! /SPECIAL>
+<$deftag A /CLOSE /NAW="A" /LAZY="i" HREF:uri NAME:id REL:string>
+<$deftag B /CLOSE>
+<$deftag BODY /CLOSE /ONLYONCE BGCOLOR:color>
 <$deftag BR>
-<$deftag CODE CLOSE>
-<$deftag HTML CLOSE ONLYONCE>
-<$deftag HEAD CLOSE ONLYONCE>
-<$deftag H1 CLOSE>
-<$deftag IMG SRC:uri ALT:string ALIGN:enum(top|bottom|middle) ISMAP:bool>
-<$deftag I CLOSE>
-<$deftag P AUTOCLOSE>
-<$deftag PRE CLOSE>
-<$deftag TT CLOSE>
-<$deftag TITLE CLOSE ONLYONCE>
-<$deftag UL CLOSE>
+<$deftag CODE /CLOSE>
+<$deftag HTML /CLOSE /ONLYONCE>
+<$deftag HEAD /CLOSE /ONLYONCE>
+<$deftag H1 /CLOSE>
+<$deftag IMG SRC:uri/x/z ALT:string ALIGN:enum("top|bottom|middle") ISMAP:bool WIDTH:string HEIGHT:string>
+<$deftag I /CLOSE>
+<$deftag P /AUTOCLOSE>
+<$deftag PRE /CLOSE>
+<$deftag TT /CLOSE>
+<$deftag TITLE /CLOSE /ONLYONCE>
+<$deftag UL /CLOSE>
 
 <** "Click here" syndrome **>
-<$LET __CLICK_HERE__:string="click|here">
+<$define __CLICK_HERE__:string="click|here">

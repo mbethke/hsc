@@ -17,10 +17,6 @@
 **           pointing to memory to NULL, 
 **           but only if it has been allocated 
 **           successfully before
-**
-** umalloc()  - TODO
-** urealloc() - TODO
-** ucalloc()  - TODO
 */
 typedef struct uglymem {
 
@@ -33,7 +29,7 @@ typedef struct uglymem {
 
 } UGLYMEM;
 
-#ifdef UMEM_TRACKING
+#if DEBUG_UGLY_MEMORY
 
 /* ugly function calls with memory tracking ENABLED */
 #define umalloc(size) ugly_malloc_tracking( size, __FILE__, __LINE__ )
@@ -59,7 +55,7 @@ typedef struct uglymem {
 
 #define atexit_uglymemory atexit_uglymemory_dummy
 
-#endif
+#endif /* DEBUG_UGLY_MEMORY */
 
 
 

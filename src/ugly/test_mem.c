@@ -5,7 +5,6 @@
 */
 
 #include "types.h"
-#define UMEM_TRACKING
 #include "memory.h"
 #include "string.h"
 

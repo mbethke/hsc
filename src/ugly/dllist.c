@@ -3,12 +3,24 @@
 **
 ** double linked list processing functions
 **
-** (W) by Tommy-Saftwörx in 1994,95
+** Copyright (C) 1994,95,96  Thomas Aglassinger
 **
-** updated: 18-Nov-1995
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+**
+** updated: 22-Mar-1996
 ** created:  1-Mar-1994
-**
-** $VER: dllist.c 1.3.3 (18.11.1995)
 **
 **---------------------------------------------------------
 */
@@ -86,6 +98,38 @@ struct dlnode *new_dlnode( void )
 
 
 /* 
+** detach_dlnode()
+**
+** remove entry from double linked list,
+** but do not delete the entries data
+**
+*/
+APTR detach_dlnode( struct dllist *list, struct dlnode *node )
+{
+    APTR nd_data = NULL;
+
+    if ( list && node ) {              /* list & node node defined? */
+
+        nd_data = node->data;          /*     remeber data */
+        if ( node->prev )              /*     remove node from list */
+            node->prev->next = node->next;
+        else
+            list->first = node->next;
+        list->entry_num--;
+
+        if ( node->next )
+            node->next->prev = node->prev;
+        else
+            list->last = node->prev;
+        
+        ufree( node );                 /*     free node */
+    }
+
+    return nd_data;
+}
+
+
+/* 
 ** del_dlnode()
 **
 ** remove entry from double linked list
@@ -123,6 +167,18 @@ void del_dlnode( struct dllist *list, struct dlnode *node )
 
 
 /*
+** del_all_dlnodes()
+**
+** remove all nodes from a list
+*/
+VOID del_all_dlnodes( struct dllist *list )
+{
+    while ( list->first )
+        del_dlnode( list, list->first );
+}
+
+
+/*
 ** ins_dlnode()
 **
 ** insert a data entry into double linked list BEFORE node
@@ -132,7 +188,7 @@ struct dlnode *ins_dlnode(
     struct dllist *list, struct dlnode *node, APTR data )
 {
 
-    struct dlnode *newnode;
+    struct dlnode *newnode = NULL;
 
     if ( list ) {
 
@@ -185,7 +241,6 @@ struct dlnode *ins_dlnode(
     }
 
     return newnode;
-
 }
 
 
@@ -212,7 +267,6 @@ struct dlnode *app_dlnode( struct dllist *list, APTR data )
     return newnode;
 
 }
-
 
 /*
 ** del_dllist
@@ -275,18 +329,18 @@ void fprintf_dllist( FILE *stream, struct dllist *list,
     if ( list ) {
 
         struct dlnode *node;
-        LONG           i=1;
+        ULONG          i=1;
 
         node = list->first;
         if ( node ) {
 
             while ( node ) {
 
-                fprintf( stream, "%4d: ", i++ );
+                fprintf( stream, "%4lu: ", i++ );
                 if ( fprintf_data )
                     (*fprintf_data)( stream, node->data );
                 else
-                    fprintf( stream, "%s\n", node->data );
+                    fprintf( stream, "%s\n", (STRPTR) node->data );
                 node = node->next;
 
             }
@@ -330,4 +384,21 @@ struct dlnode *find_dlnode( struct dlnode *start, APTR data,
     return search;
 
 }
+
+/*
+** empty_dllist
+**
+** check if a list is empty
+**
+** params: list..list to check for emptyness
+** result: TRUE, if list contains no nodes
+*/
+BOOL empty_dllist( struct dllist *list )
+{
+    if ( list->first )
+        return TRUE;
+    else
+        return FALSE;
+}
+
 

@@ -23,7 +23,7 @@
 **            never use _call_set_prginfo()!
 **
 */
-#ifdef AMIGA
+#if defined (AMIGA) && ( !defined( VERSTAG ) )
 #define  set_prginfo( name, auth, ver, rev, rel, info, copy ) \
     { call_set_prginfo( name, auth, ver, rev, rel,            \
       __DATE__, __TIME__, info, copy );                       \

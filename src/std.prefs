@@ -1,16 +1,18 @@
 <*
 ** this is the config file for hsc
 **
-** it defines all tags of HTML2.0, but only some entities.
+** it defines all tags of HTML2.0 and all entities
+** for Latin1-charset. For HTML3.x, only some tags
+** are defined
 **
 ** (W) by Tommy-Saftwörx in 1995
 **
-** updated: 14-Dec-1995
+** updated: 15-May-1996
 ** created:  8-Sep-1995
 *>
 
 <*********************>
-<* Entities          *>
+<* Special charcters *>
 <*********************>
 <*
 ** NOTE: "NUM" is not yet supported
@@ -113,87 +115,140 @@
 <$defent NAME="thorn"  RPLC="þ" NUM="254">
 <$defent NAME="yuml"   RPLC="ÿ" NUM="255">
 
+<****************************>
+<* character level elements *>
+<****************************>
+<* information type elements *>
+<$deftag ABBREV /CLOSE /LAZY="cil">
+<$deftag ACRONYM /CLOSE /LAZY="cil">
+<$deftag AU /CLOSE /LAZY="cil">
+<$deftag CITE /CLOSE /LAZY="cil">
+<$deftag CODE /CLOSE /LAZY="cil">
+<$deftag DEL /CLOSE /LAZY="cil">
+<$deftag DFN /CLOSE /LAZY="cil">
+<$deftag EM /CLOSE /LAZY="cil">
+<$deftag INS /CLOSE /LAZY="cil">
+<$deftag KBD /CLOSE /LAZY="cil">
+<$deftag LANG /CLOSE /LAZY="cil">
+<$deftag PERSON /CLOSE /LAZY="cil">
+<$deftag Q /CLOSE /LAZY="cil">
+<$deftag SAMP /CLOSE /LAZY="cil">
+<$deftag STRONG /CLOSE /LAZY="cil">
+<$deftag VAR /CLOSE /LAZY="cil">
+
+<* font style elements *>
+<$deftag B /CLOSE /LAZY="cil">
+<$deftag BIG /CLOSE /LAZY="cil">
+<$deftag I /CLOSE /LAZY="cil">
+<$deftag S /CLOSE /LAZY="cil">
+<$deftag SMALL /CLOSE /LAZY="cil">
+<$deftag SUB /CLOSE /LAZY="cil">
+<$deftag SUP /CLOSE /LAZY="cil">
+<$deftag TT /CLOSE /LAZY="cil">
+<$deftag U /CLOSE /LAZY="cil">
+
 <*********************>
 <*** HTML 1.0 tags ***>
 <*********************>
-<$deftag ! IGNOREARGS><* do not edit *>
-<$deftag A CLOSE HREF:uri NAME:string REL:string NAW="A">
-<$deftag ADDRESS CLOSE>
-<$deftag B CLOSE>
-<$deftag BASE ONLYONCE HREF:uri>
-<$deftag BLOCKQUOTE CLOSE>
-<$deftag BODY CLOSE REQUIRED ONLYONCE BGCOLOR:string/j TEXT:string/j LINK:string/j VLINK:string/j ALINK:string/j>
-<$deftag BR CLEAR:enum(left|right|all|*)/j><* note: CLEAR will become legal in 30 *>
-<$deftag CITE CLOSE>
-<$deftag CODE CLOSE>
-<$deftag DD>
-<$deftag DL CLOSE COMPACT:bool>
-<$deftag DT>
-<$deftag EM CLOSE>
-<$deftag HTML CLOSE REQUIRED ONLYONCE>
-<$deftag HEAD CLOSE REQUIRED ONLYONCE>
-<$deftag H1 CLOSE NAW="h1|h2|h3|h4|h5|h6">
-<$deftag H2 CLOSE NAW="h1|h2|h3|h4|h5|h6">
-<$deftag H3 CLOSE NAW="h1|h2|h3|h4|h5|h6">
-<$deftag H4 CLOSE NAW="h1|h2|h3|h4|h5|h6">
-<$deftag H5 CLOSE NAW="h1|h2|h3|h4|h5|h6">
-<$deftag H6 CLOSE NAW="h1|h2|h3|h4|h5|h6">
-<$deftag HR SIZE:string/j WIDTH:string/j ALIGN:enum(left|right|center)/j NOSHADE:bool/j>
-<$deftag I CLOSE>
-<$deftag IMG SRC:uri ALT:string ALIGN:enum(top|bottom|middle|left|right|texttop|absmiddle|baseline|absbottom) ISMAP:bool WIDTH:string/j HEIGHT:string/j BORDER:string/j HSPACE:string/j VSPACE:string/j LOWSRC:uri/j>
-<$deftag ISINDEX ACTION:string PROMPT:string/j>
-<$deftag KBD CLOSE>
-<$deftag LI AUTOCLOSE MBI="ul|ol|dir|menu" VALUE:string/j TYPE:string/j>
-<$deftag LINK HREF:uri TITLE:string REV:string REL:string URN:string METHODS:string>
+<$deftag ! /SPECIAL><* do not edit *>
+<$deftag A /CLOSE /NAW="A" /LAZY="chil" NAME:id REL:string REV:string MD:string SHAPE:string TITLE:string>
+<$deftag ADDRESS /CLOSE /LAZY="ciklw">
+<$deftag BASE /ONLYONCE /LAZY="h">
+<$deftag BLOCKQUOTE /CLOSE /LAZY="ciklw">
+<$deftag BODY /AUTOCLOSE /REQUIRED /ONLYONCE /LAZY="cil" BACKGROUND:uri BGCOLOR:color TEXT:color LINK:color VLINK:color ALINK:color>
+<$deftag BR /LAZY="cikl">
+<$deftag DD /LAZY="cikl">
+<$deftag DL /CLOSE /LAZY="cikl" COMPACT:bool>
+<$deftag DT /LAZY="cikl">
+<$deftag HTML /CLOSE /REQUIRED /ONLYONCE>
+<$deftag HEAD /AUTOCLOSE /REQUIRED /ONLYONCE>
+<$deftag H1 /CLOSE /NAW="h1|h2|h3|h4|h5|h6" /LAZY="ciklmsw" SEQNUM:num SKIP:num DINGBAT:string>
+<$deftag H2 /CLOSE /NAW="h1|h2|h3|h4|h5|h6" /LAZY="ciklmsw" SEQNUM:num SKIP:num DINGBAT:string>
+<$deftag H3 /CLOSE /NAW="h1|h2|h3|h4|h5|h6" /LAZY="ciklmsw" SEQNUM:num SKIP:num DINGBAT:string>
+<$deftag H4 /CLOSE /NAW="h1|h2|h3|h4|h5|h6" /LAZY="ciklmsw" SEQNUM:num SKIP:num DINGBAT:string>
+<$deftag H5 /CLOSE /NAW="h1|h2|h3|h4|h5|h6" /LAZY="ciklmsw" SEQNUM:num SKIP:num DINGBAT:string>
+<$deftag H6 /CLOSE /NAW="h1|h2|h3|h4|h5|h6" /LAZY="ciklmsw" SEQNUM:num SKIP:num DINGBAT:string>
+<$deftag HR /LAZY="ciklm" SRC:uri/z SIZE:string WIDTH:string ALIGN:enum("left|right|center")/j NOSHADE:bool/j >
+<$deftag IMG /LAZY="cil" SRC:uri/x/z/r ALT:string ALIGN:enum("top|bottom|middle|left|right|texttop|absmiddle|baseline|absbottom") MD:string UNITS:string ISMAP:bool WIDTH:string/j HEIGHT:string/j BORDER:string/j HSPACE:string/j VSPACE:string/j LOWSRC:uri/j>
+<$deftag ISINDEX /LAZY="h" PROMPT:string/j>
+<$deftag LI /AUTOCLOSE /MBI="ul|ol|dir|menu" /LAZY="ciklms" SKIP:num DINGBAT:string VALUE:string/j TYPE:string/j>
+<$deftag LINK HREF:uri/x TITLE:string REV:string REL:string URN:string METHODS:string>
 <$deftag NEXTID N:string>
-<$deftag P AUTOCLOSE ALIGN:enum(left|right|center|justify|indent) NOWRAP:bool>
-<$deftag PRE CLOSE>
-<$deftag OL CLOSE COMPACT:bool START:string/j TYPE:string/j>
-<$deftag SAMP CLOSE>
-<$deftag STRONG CLOSE>
-<$deftag TT CLOSE>
-<$deftag TITLE CLOSE REQUIRED ONLYONCE>
-<$deftag UL CLOSE>
-<$deftag VAR CLOSE>
+<$deftag P /AUTOCLOSE /LAZY="cilw" ALIGN:enum("left|right|center|justify|indent")>
+<$deftag PRE /CLOSE /LAZY="cikl" WIDTH:string>
+<$deftag OL /CLOSE SEQNUM:num COMPACT:bool CONTINUE:bool START:string/j TYPE:string/j>
+<$deftag TITLE /CLOSE /REQUIRED /ONLYONCE>
+<$deftag UL /CLOSE /LAZY="ciklms" PLAIN:bool COMPACT:bool DINGBAT:string WRAP:string>
 
 <*********************>
 <*** HTML 2.0 tags ***>
 <*********************>
-<*
-** NOTE: I haven't found a reference that discribes only
-** the HTML 2.0 tags, therefor these $deftags might
-** define some attributes that are proposed for 3.0.
-*>
-<$deftag FORM CLOSE ACTION:string METHODE:enum(get|post) ENCTYPE:string SCRIPT:string>
-<$deftag INPUT MBI="form" TYPE:string NAME:string VALUE:string DISABLED:bool CHECKED:bool SRC:string MD:string MAXLENGTH:string ALIGN:enum(top|middle|bottom|left|right) ACCEPT:string><* clumsy *>
-<$deftag MENU CLOSE COMPACT:bool>
+<$deftag FORM /CLOSE ACTION:string METHODE:enum("get|post") ENCTYPE:string SCRIPT:string>
+<$deftag INPUT /MBI="form" /LAZY="cilms" TYPE:string NAME:string VALUE:string DISABLED:bool CHECKED:bool MAXLENGTH:string ALIGN:enum("top|middle|bottom|left|right") ACCEPT:string MIN:string MAX:string>
+<$deftag MENU /CLOSE COMPACT:bool>
 <$deftag META CONTENT:string/r HTTP-EQUIV:string NAME:string>
-<$deftag OPTION MBI="select" SELECTED:bool DISABLED:bool VALUE:string>
-<$deftag SELECT CLOSE MBI="form" NAME:string/r MULTIPLE:bool>
-<$deftag TEXTAREA MBI="form" CLOSE ALIGN:enum(top|bottom|middle|left|right) COLS:string NAME:string ROWS:string>
+<$deftag OPTION /MBI="select" SELECTED:bool DISABLED:bool VALUE:string>
+<$deftag SELECT /CLOSE /MBI="form" /LAZY="cil" NAME:string/r MULTIPLE:bool ROWS:num COLS:num DISABLED:bool ERROR:string WIDTH:string HEIGHT:string UNITS:string>
+<$deftag TEXTAREA /MBI="form" /CLOSE ALIGN:enum("top|bottom|middle|left|right") COLS:string NAME:string ROWS:string>
 
 <*********************>
-<*** OBSOLETE tags ***>
+<*** HTML 3.x tags ***>
 <*********************>
-<$deftag LISTING CLOSE OBSOLETE>
-<$deftag PLAINTEXT CLOSE OBSOLETE>
-<$deftag XMP CLOSE OBSOLETE>
-<$deftag HP0 CLOSE OBSOLETE><* highlight phrase *>
-<$deftag HP1 CLOSE OBSOLETE>
-<$deftag HP2 CLOSE OBSOLETE>
-<$deftag HP3 CLOSE OBSOLETE>
+<$deftag AREA /MBI="map" COORDS:string SHAPE:enum("rect|circle|polygon") HREF:uri NOHREF:bool ALT:string>
+<$deftag BANNER /CLOSE /LAZY="cil">
+<$deftag BQ /CLOSE /LAZY="cikl" NOWRAP:bool>
+<$deftag CAPTION /CLOSE /MBI="fig|table" /LAZY="cil" ALIGN:enum("top|bottom|left|right")>
+<$deftag CREDIT /CLOSE /MBI="bq|fig" /LAZY="cil">
+<$deftag DIV /CLOSE /LAZY="ciklw" ALIGN:enum("left|right|center|justify")>
+<$deftag FN /CLOSE /LAZY="cil">
+<$deftag FIG /CLOSE /LAZY="cikl" SRC:uri/x/z/r ALIGN:enum("left|right|center|justify|bleedleft|bleedright") NOFLOW:bool MD:string WIDTH:string/j HEIGHT:string/j UNITS:string IMAGEMAP:uri>
+<$deftag FONT /CLOSE COLOR:color FACE:string SIZE:enum("1|2|3|4|5|6|7|+1|+2|+3|+4|+5|+6|+7|-1|-2|-3|-4|-5|-6|-7")><* looks rather stupid, eh? *>
+<$deftag LH /CLOSE /LAZY="cil">
+<$deftag MAP /CLOSE NAME:id>
+<$deftag NOTE /CLOSE /LAZY="ciklms">
+<$deftag OVERLAY SRC:uri/x/z/r MD:string UNITS:string X:string Y:string  WIDTH:string/j HEIGHT:string/j IMAGEMAP:uri>
+<$deftag RANGE /LAZY="ci" FROM:uri UNTIL:uri>
+<$deftag STYLE NOTATION:string>
+<$deftag TABLE /CLOSE /LAZY="ciklw" NOFLOW:bool ALIGN:enum("left|right|center|justify|bleedleft|bleedright") UNITS:string COLSPEC:string DP:string WIDTH:string BORDER:bool CELLSPACING:string CELLPADDING:string>
+<$deftag TD /MBI="table" /LAZY="cikw" NOFLOW:bool ALIGN:enum("left|right|center|justify|decimal") VALIGN:enum("top|middle|bottom|baseline") DP:string AXIS:string AXES:string CLOSPAN:num ROWSPAN:num>
+<$deftag TH /MBI="table" /LAZY="cikw" NOFLOW:bool ALIGN:enum("left|right|center|justify|decimal") VALIGN:enum("top|middle|bottom|baseline") DP:string AXIS:string AXES:string CLOSPAN:num ROWSPAN:num>
+<$deftag TR /MBI="table" /LAZY="cilw" ALIGN:enum("left|right|center|justify|decimal") VALIGN:enum("top|middle|bottom|baseline") DP:string>
+
+<*********************>
+<*** JAVA tags     ***>
+<*********************>
+<$deftag APPLET /CLOSE CODE:uri WIDTH:string HEIGHT:string CODEBASE:uri ALT:string NAME:id VSPACE:string/j HSPACE:string/j ALIGN:enum("left|right|middle|texttop|top|absmiddle|baseline|bottom|absbottom")>
+<$deftag PARAM NAME:string VALUE:string>
+
+<*********************>
+<*** /OBSOLETE tags ***>
+<*********************>
+<$deftag LISTING /CLOSE /OBSOLETE>
+<$deftag PLAINTEXT /CLOSE /OBSOLETE>
+<$deftag XMP /CLOSE /OBSOLETE>
+<$deftag HP0 /CLOSE /OBSOLETE><* highlight phrase *>
+<$deftag HP1 /CLOSE /OBSOLETE>
+<$deftag HP2 /CLOSE /OBSOLETE>
+<$deftag HP3 /CLOSE /OBSOLETE>
+<$deftag STRIKE /CLOSE /OBSOLETE>
 
 <*****************>
-<*** JERK tags ***>
+<*** /JERK tags ***>
 <*****************>
-<$deftag BASEFONT JERK SIZE:enum(1|2|3|4|5|6|7)>
-<$deftag BLINK CLOSE JERK>
-<$deftag CENTER CLOSE JERK>
-<$deftag FONT CLOSE JERK COLOR:string SIZE:enum(1|2|3|4|5|6|7|+1|+2|+3|+4|+5|+6|+7|-1|-2|-3|-4|-5|-6|-7)><* looks rather stupid, eh? *>
-<$deftag NOBR CLOSE JERK>
-<$deftag WBR JERK>
+<$deftag BASEFONT /JERK SIZE:enum("1|2|3|4|5|6|7")>
+<$deftag BGSOUND /JERK SRC:uri LOOP:string>
+<$deftag BLINK /CLOSE /JERK>
+<$deftag CENTER /CLOSE /JERK>
+<$deftag EMBED /AUTOCLOSE /JERK SRC:uri HEIGHT:string WIDTH:string ATTRIBUTE_1:string ATTRIBUTE_2:string>
+<$deftag FRAME /JERK SRC:uri NAME:string MARGINWIDTH:string MARGINHEIGHT:string SCROLLING:enum("yes|no|auto") NORESIZE:bool>
+<$deftag FRAMESET /JERK ROWS:string COLS:string>
+<$deftag NOBR /CLOSE /JERK>
+<$deftag NOEMBED /CLOSE /JERK>
+<$deftag NOFRAME /CLOSE /JERK>
+<$deftag WBR /JERK>
 
-<** "Click here" syndrome **>
-<$LET __Click_Here__:string="click|here">
-
+<** keywords for "click here"-syndrome **>
+<$define __click_here__:string/c="click|here">
+<** color names **>
+<$define __color_names__:string/c="aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|olive|purple|red|silver|teal|white|yellow">
 <* EOF *>

@@ -8,9 +8,6 @@
 **
 ** (W) by Tommy-Saftwörx in 1994,95
 **
-** updated: 28-Jul-95
-** created: 01-Mar-94
-**
 */
 
 #include <stdio.h>
@@ -40,6 +37,14 @@ struct dllist {                        /* PRIVATE (read-only)*/
 typedef struct dllist DLLIST;
 typedef struct dlnode DLNODE;
 
+/*
+** access methodes
+*/
+#define dll_first( list ) (list)->first
+#define dll_last( list )  (list)->last
+#define dln_prev( node )  (node)->prev
+#define dln_next( node )  (node)->next
+#define dln_data( node )  (node)->data
 
 /*
 **
@@ -54,8 +59,12 @@ extern struct dlnode *ins_dlnode(
          struct dllist *list, struct dlnode *node, APTR data );
 extern struct dlnode *app_dlnode( struct dllist *list, APTR data );
 
+extern APTR detach_dlnode( struct dllist *list, struct dlnode *node );
 extern void del_dlnode( struct dllist *list, struct dlnode *node );
+extern VOID del_all_dlnodes( struct dllist *list );
 extern void del_dllist( struct dllist *list );
+
+extern BOOL empty_dllist( struct dlnode *list );
 
 extern void fprintf_dllist( FILE *stream, struct dllist *list,
          void ( *fprintf_data ) ( FILE *stream, APTR data ) );

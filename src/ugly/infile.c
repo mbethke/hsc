@@ -3,13 +3,24 @@
 **
 ** ugly input file functions
 **
-** Version 1.4.3, (W) by Tommy-Saftwörx in 1995
+** Copyright (C) 1995,96  Thomas Aglassinger
 **
-** updated:  3-Dec-1995
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+**
+** updated: 12-Apr-1996
 ** created:  8-Jul-1995
-**
-** $VER: infile.c 1.4.3 (3.12.1995)
-**
 */
 
 /*
@@ -17,12 +28,12 @@
 **
 ** - handle errors within expstr (no mem)
 ** - more elegant handling of inunget( '\n' );
-** - assign logstr to user-definable expstr
 */
 
 /*
 ** includes
 */
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,6 +54,15 @@
 */
 STRPTR FNAME_STDIN="<stdin>";          /* filename for stdin (CONSTANT) */
 
+/*
+** debugging defines
+*/
+#define DINF "*infile* "
+#if DEBUG_UGLY_INFILE
+#define D( x ) x
+#else
+#define D( x ) /* nufin */
+#endif
 
 /*
 ** local vars
@@ -50,6 +70,7 @@ STRPTR FNAME_STDIN="<stdin>";          /* filename for stdin (CONSTANT) */
 
 /* forward references */
 BOOL infget_skws( INFILE *inpf );
+static VOID del_infilepos_nddata( APTR data );
 
 /*
 **
@@ -89,21 +110,26 @@ BOOL default_normch( int ch )
 ** reset a INFILE struct (set all items to NULL)
 ** (only called by con/destructor)
 */
-void reset_infile( INFILE *inpf )
+static VOID reset_infile( INFILE *inpf )
 {
     inpf->infile      = NULL;
     inpf->filename    = NULL;
     inpf->lnbuf       = NULL;
     inpf->wordbuf     = NULL;        
     inpf->wspcbuf     = NULL;
-    inpf->logstr      = NULL;
     inpf->filepos     = 0;
-    inpf->lnctr       = 0;
-    inpf->flnctr      = 0;
+    inpf->pos_x       = 0;
+    inpf->pos_y       = 0;
+    inpf->wpos_x      = 0;
+    inpf->wpos_y      = 0;
+    inpf->base_x       = 0;
+    inpf->base_y       = 0;
+    inpf->pos_list    = NULL;
+    inpf->pos_count   = 0;
     inpf->eof_reached = FALSE;
     inpf->out_of_mem  = FALSE;
     inpf->skipped_ws  = FALSE;
-    inpf->log_enable  = FALSE;
+    inpf->closed      = FALSE;
     inpf->is_nc       = NULL;
     inpf->is_ws       = NULL;
 }
@@ -112,28 +138,45 @@ void reset_infile( INFILE *inpf )
 /*
 ** remove INFILE structure
 */
-void del_infile( INFILE *inpf )
+static VOID del_infile( INFILE *inpf )
 {
     if ( inpf ) {
 
-        /* close file */
-        if ( inpf->infile )
-            fclose( inpf->infile );
+        D( {
+            fprintf( stderr, DINF "close file" );
+            if ( inpf->filename )
+                fprintf( stderr, " \"%s\"", inpf->filename );
+            fprintf( stderr, "\n" );
+        } );
 
-        /* release mem */
-        ufreestr( inpf->filename );
-        del_estr( inpf->lnbuf );
-        del_estr( inpf->wordbuf );
-        del_estr( inpf->wspcbuf );
-        del_estr( inpf->logstr );
+        if ( inpf->pos_count )
+        {
+            inpf->closed = TRUE;
+            D( fprintf( stderr, DINF "  (%d fpos-req left)\n",
+                        inpf->pos_count ) );
+        }
+        else
+        {
+            /* close file */
+            if ( inpf->infile )
+                fclose( inpf->infile );
 
-        /* reset all items */
-        reset_infile( inpf );
+            /* remove pos-requests */
+            del_dllist( inpf->pos_list );
 
-        /* release whole structure */
-        ufree( inpf );
+            /* release mem */
+            ufreestr( inpf->filename );
+            del_estr( inpf->lnbuf );
+            del_estr( inpf->wordbuf );
+            del_estr( inpf->wspcbuf );
+
+            /* reset all items */
+            reset_infile( inpf );
+
+            /* release whole structure */
+            ufree( inpf );
+        }
     }
-
 }
 
 /*
@@ -160,14 +203,14 @@ INFILE *init_infile( CONSTRPTR name, size_t step_size )
         inpf->lnbuf       = init_estr( step_size );
         inpf->wordbuf     = init_estr( step_size );
         inpf->wspcbuf     = init_estr( step_size );
-        inpf->logstr      = init_estr( step_size );
+        inpf->pos_list    = init_dllist( del_infilepos_nddata );
+        inpf->pos_count   = 0;
 
         /* check if init ok */
         if ( !( (inpf->filename || !(name))
                 && inpf->lnbuf
                 && inpf->wordbuf
-                && inpf->wspcbuf
-                && inpf->logstr ) )
+                && inpf->wspcbuf ) )
         {
             /* remove infile, */
             /* set return value to NULL */
@@ -202,18 +245,40 @@ INFILE *init_infile( CONSTRPTR name, size_t step_size )
 */
 ULONG infget_x( INFILE *inpf )
 {
-    return (inpf->lnctr +1);
+    return (inpf->pos_x + inpf->base_x);
 }
 
 
 /*
 ** infget_y
 **
-** get colum of current line
+** get current line
 */
 ULONG infget_y( INFILE *inpf )
 {
-    return (inpf->flnctr +1);
+    return (inpf->pos_y + inpf->base_y);
+}
+
+
+/*
+** infget_wx
+**
+** get colum of current word
+*/
+ULONG infget_wx( INFILE *inpf )
+{
+    return (inpf->wpos_x + inpf->base_x);
+}
+
+
+/*
+** infget_y
+**
+** get line of current word
+*/
+ULONG infget_wy( INFILE *inpf )
+{
+    return (inpf->wpos_y + inpf->base_y);
 }
 
 
@@ -443,7 +508,6 @@ int infgetc( INFILE *inpf )
     if ( inpf && (!inpf->eof_reached) ) {
 
         STRPTR lnbuf_str = estr2str( inpf->lnbuf );
-        BOOL   ok;          /* result of expstr-funcs */
 
         /*
         ** if at end of line buffer, scan next line
@@ -465,26 +529,19 @@ int infgetc( INFILE *inpf )
             result = lnbuf_str[inpf->filepos];   /* set last char as result */
             if ( result ) {                      /* goto next char in buf */
 
-                inpf->lnctr++;
+                inpf->pos_x++;
                 inpf->filepos++;
 
             }
         }
 
-        /* update log-string if neccessary */
-        if ( (result != EOF) && (inpf->log_enable) )
-            ok = app_estrch( inpf->logstr, result );
-
         /* update line number */
         if ( result == '\n' ) {
 
-            inpf->flnctr++;
-            inpf->lnctr = 0;
+            inpf->pos_y++;
+            inpf->pos_x = 0;
 
         }
-
-        if ( !ok )
-            /* TODO: handle out of mem */;
     }
 
     return( result );
@@ -520,20 +577,15 @@ int inungetc( int ch, INFILE *inpf )
         lnbuf_str[inpf->filepos] = ch;
         result = ch;
 
-        /* unget in logstr */
-        if ( (inpf->log_enable) && ( estrlen( inpf->logstr ) ) )
-            if ( !get_left_estr( inpf->logstr, inpf->logstr, estrlen(inpf->logstr)-1 ) )
-                /* TODO: handle out of mem */;
-
         /* handle LF */
         if ( ch == '\n' ) {
 
             result = ch;
-            inpf->flnctr--;
-            inpf->lnctr = 0;
+            inpf->pos_y--;
+            inpf->pos_x = 0;
 
-        } else if ( inpf->lnctr )
-            inpf->lnctr--;
+        } else if ( inpf->pos_x )
+            inpf->pos_x--;
 
     }
 
@@ -665,9 +717,11 @@ size_t infskip_ws( INFILE *inpf )
     if ( ctr )                         /* any whtspcs skipped? */
         inpf->skipped_ws = TRUE;       /* Y-> set skippe-flag */
 
+#if 0    
     if ( !ok )
         /* TODO: error */;
-
+#endif
+    
     /*
     ** write back last char read
     */
@@ -706,6 +760,10 @@ STRPTR infgetw( INFILE *inpf )
     */
     if ( !infeof(inpf) ) {
 
+        /* store word position */
+        inpf->wpos_x = inpf->pos_x;
+        inpf->wpos_y = inpf->pos_y;
+
         ch = infgetc( inpf );
 
         if ( ((*isnc)(ch)) )
@@ -723,7 +781,6 @@ STRPTR infgetw( INFILE *inpf )
         if ( (ch!=EOF) && (wordread) )
             inungetc( ch, inpf );
 
-        if ( ch != EOF );
         thisword = estr2str( inpf->wordbuf );
 
     } else
@@ -772,6 +829,7 @@ int infgotoeol( INFILE *inpf )
     return (ch);
 }
 
+#if 0
 /*
 **-------------------------------------
 ** functions for logstr
@@ -808,6 +866,187 @@ BOOL inflog_app( INFILE *inpf, STRPTR s )
 STRPTR infget_log( INFILE *inpf )
 {
     return ( estr2str( inpf->logstr ) );
+}
+#endif
+
+/*
+**-------------------------------------
+** functions for file-positions
+**-------------------------------------
+*/
+
+/*
+** del_infilepos_nddata
+*/
+static VOID del_infilepos_nddata( APTR data )
+{
+    INFILEPOS *pos = (INFILEPOS*) data;
+
+    if ( pos )
+    {
+        /* decrese number of pending pos-requests */
+        (pos->inpf->pos_count)--;
+
+        D( fprintf( stderr, DINF "del pos-req: \"%s\" (%d,%d); %d left\n",
+                    pos->inpf->filename, pos->x, pos->y,
+                    pos->inpf->pos_count ) );
+
+        /* free resources alloceted by pos-request */
+        ufree( pos );
+    }
+}
+
+/*
+** find_posnd
+*/
+static int cmp_posdata( APTR data1, APTR data2 )
+{
+    if ( data1 == data2 )
+        return( -1 );
+    else
+        return( 0 );
+}
+
+/*
+** del_infilepos
+*/
+VOID del_infilepos( INFILEPOS *pos )
+{
+    if ( pos )
+    {
+        INFILE *inpf = pos->inpf;
+
+        /* remove filename */
+        ufreestr( pos->fname );
+
+        /* check, if file has already been closed by user,
+        ** but the last pos-requests has just been deleted
+        ** now.
+        ** if so, really close the file now
+        */
+        if ( (inpf->closed)
+             && (inpf->pos_count == 1 )
+           )
+        {
+            D( fprintf( stderr, DINF "  really closing file:\n" ) );
+            (pos->inpf->pos_count)--;
+            infclose1( inpf );
+        }
+        else
+        {
+            DLNODE *nd = find_dlnode( dll_first( pos->inpf->pos_list ),
+                                      pos, cmp_posdata );
+            del_dlnode( pos->inpf->pos_list, nd );
+        }
+    }
+}
+
+
+/*
+** del_all_infilepos
+*/
+VOID del_all_infilepos( INFILE *inpf )
+{
+    del_all_dlnodes( inpf->pos_list );
+}
+
+/*
+** new_infilepos
+*/
+static INFILEPOS *new_infilepos_node( INFILE *inpfile, ULONG x, ULONG y )
+{
+    INFILEPOS *pos = umalloc( sizeof( INFILEPOS ) );
+
+    if ( pos )
+    {
+        DLNODE    *nd  = app_dlnode( inpfile->pos_list, pos );
+
+        pos->inpf  = inpfile;
+        pos->fname = strclone( inpfile->filename );
+        pos->x     = x;
+        pos->y     = y;
+        pos->fpos  = inpfile->filepos;
+
+        if ( !nd )
+        {
+            del_infilepos_nddata( pos );
+            pos = NULL;
+        }
+        else
+        {
+            (inpfile->pos_count)++;
+        }
+    }
+
+    D(
+        if ( pos )
+        {
+            fprintf( stderr, DINF "new pos-req: \"%s\" (%d,%d); #%d\n",
+                     inpfile->filename,
+                     inpfile->pos_x, inpfile->pos_y, inpfile->pos_count );
+        }
+        else
+        {
+            fprintf( stderr, DINF "new pos-req FAILED\n" );
+        }
+    );
+
+    return pos;
+}
+
+INFILEPOS *new_infilepos( INFILE *inpfile )
+{
+    INFILEPOS *pos = new_infilepos_node( inpfile,
+                                         inpfile->pos_x, inpfile->pos_y );
+    return pos;
+}
+
+INFILEPOS *new_winfilepos( INFILE *inpfile )
+{
+    INFILEPOS *pos = new_infilepos_node( inpfile,
+                                         inpfile->wpos_x, inpfile->wpos_y );
+    return pos;
+}
+
+/*
+** get methodes for pos-req
+*/
+STRPTR ifp_get_fname( INFILEPOS *pos )
+{
+    return( infget_fname( pos->inpf ) );
+}
+
+ULONG ifp_get_x( INFILEPOS *pos )
+{
+    return( pos->x );
+}
+
+ULONG ifp_get_y( INFILEPOS *pos )
+{
+    return( pos->y );
+}
+
+BOOL set_infile_base( INFILE *inpf, INFILEPOS *pos )
+{
+    D( fprintf( stderr, DINF "set base \"%s\" to \"%s\" (%d,%d)\n",
+                inpf->filename, pos->inpf->filename, pos->x, pos->y ) );
+    reallocstr( &(inpf->filename), pos->fname );
+    inpf->base_x = pos->x;
+    inpf->base_y = pos->y+1;
+    return( TRUE );                    /* TODO: handle out of mem */
+}
+
+
+BOOL set_infilepos( INFILE *inpf, INFILEPOS *pos )
+{
+    D( fprintf( stderr, DINF "set pos  \"%s\" to \"%s\" (%d,%d)\n",
+                inpf->filename, pos->inpf->filename, pos->x, pos->y ) );
+    reallocstr( &(inpf->filename), pos->fname );
+    inpf->pos_x  = pos->x;
+    inpf->pos_y  = pos->y;
+    inpf->wpos_x = pos->x;
+    inpf->wpos_y = pos->y;
+    return( TRUE );                    /* TODO: handle out of mem */
 }
 
 

@@ -1,0 +1,50 @@
+
+                    hsc source distribution
+                    =======================
+
+This archive contains the sources for hsc. They are distributed under
+GNU General Public License (for details, see file "GNU_GPL" in this
+directory).
+
+To compile it, change the makefiles according to your system/compiler,
+and comment out sections not required by adding a "#" at the
+beginning of the specific lines.
+
+At the moment, only AmigaOS and Unix are supported. For AmigaOS, you
+require SAS/C or gcc, for Unix, only gcc is supported; But as the
+makefile does not use any very special options of gcc, most cc-like
+compilers also should work after replacing "gcc" by eg "cc" (know
+to work with SGIs).
+
+The makefiles support three compilation modes: "debug" for a
+debugging version that includes all debugging information, supports
+a source-level memory-tracking and enables some additional output
+and plausibility checks. "norm" links only some debugging information,
+and "optim" strips all debugging information and creates an optimized
+executable; with some compilers, "optim" migth cause problems.
+
+Make sure that you compile the "ugly" files and the main files with
+the same mode.
+
+Problems might occure, if your compiler does not support ANSI-C
+(as "cc" under SunOS on my university - Pfthuahuhahua!)
+
+
+Change to the directory "ugly/" and compile the files there
+(This is my own personal function library - experimental stuff).
+
+After that, compile the other files using the makefile in the
+main-directory.
+
+Command sequence:
+
+    cd ugly
+    make      (or "smake" for SAS/C)
+    cd ..     (or "/" for AmigaOS without c-shell)
+    make
+
+If nothing went wrong, you now should have created a file called
+"hsc" which is the executable. Now follow the installation
+instructions of the documentation that came with the main-archive.
+
+Thomas Aglassinger <agi@giga.or.at>

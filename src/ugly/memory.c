@@ -5,9 +5,23 @@
 ** implements some parts of Amiga-developer-tool
 ** "MungWall" at source-level
 **
-** Version 1.2.1, (W) by Tommy-Saftwörx
+** Copyright (C) 1994,95,96  Thomas Aglassinger
 **
-** updated:  4-Dec-1995
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+**
+** updated: 11-Apr-1996
 ** created: 29-Mar-1994
 **
 */
@@ -202,7 +216,7 @@ void ugly_memdump( void *ptr, size_t size )
     if ( size > 16 )
         size = 16;
 
-    fprintf( stderr, "  %08p:", ptr );
+    fprintf( stderr, "  %p:", ptr );
     if ( data ) {
 
         size_t i;
@@ -232,13 +246,14 @@ void ugly_memdump( void *ptr, size_t size )
 
 void uglymem_meminfo( void *ptr, STRPTR file, ULONG line )
 {
-    fprintf( stderr, "  in \"%s\" (%d) at %08p\n", file, line, ptr );
+    fprintf( stderr, "  in \"%s\" (%lu) at %p\n", file, line, ptr );
 }
 
 void umem_info( UGLYMEM *umem )
 {
-    fprintf( stderr, "  %06d (0x%04x) bytes from \"%s\" (%d) at %08p\n",
-             umem->size, umem->size, umem->file, umem->line, umem->ptr );
+    fprintf( stderr, "  %06lu (0x%04lx) bytes from \"%s\" (%lu) at %p\n",
+             (ULONG) umem->size, (ULONG) umem->size,
+             umem->file, umem->line, umem->ptr );
 }
 
 /*
@@ -261,7 +276,7 @@ void uglymem_report( STRPTR msg, STRPTR file, ULONG line, STRPTR date, STRPTR ti
         /* report header */
         fprintf( stderr, "Memory Report (%s)\n", msg );
         if ( file )
-            fprintf( stderr, "(\"%s\" (%d), at %s, %s)\n",
+            fprintf( stderr, "(\"%s\" (%lu), at %s, %s)\n",
                              file, line, date, time );
 
         /* print all elements */
@@ -284,15 +299,15 @@ void uglymem_stats( STRPTR msg, STRPTR file, ULONG line, STRPTR date, STRPTR tim
     /* statistics header */
     fprintf( stderr, "Memory statistics (%s)\n", msg );
     if ( file )
-        fprintf( stderr, "(\"%s\" (%d), at %s, %s)\n",
+        fprintf( stderr, "(\"%s\" (%lu), at %s, %s)\n",
                          file, line, date, time );
 
     /* memory statistics */
-    fprintf( stderr, "  bytes used: %d (max: %d)\n",
+    fprintf( stderr, "  bytes used: %lu (max: %lu)\n",
                      ugly_curmem_usage, ugly_maxmem_usage );
-    fprintf( stderr, "  nodes used: %d (max: %d)\n",
+    fprintf( stderr, "  nodes used: %lu (max: %lu)\n",
                      ugly_curnod_usage, ugly_maxnod_usage );
-    fprintf( stderr, "  calls to: umalloc(%d)   ufree(%d)\n",
+    fprintf( stderr, "  calls to: umalloc(%lu)   ufree(%lu)\n",
                      ugly_umalloc_count, ugly_ufree_count );
 
 }
@@ -320,7 +335,7 @@ void atexit_uglymemory_real( void )
         del_uglymem( first );
 
     if ( mem_lost )
-        fprintf( stderr, "\n%d bytes of memory lost!\n",  mem_lost );
+        fprintf( stderr, "\n%lu bytes of memory lost!\n",  mem_lost );
 }
 
 

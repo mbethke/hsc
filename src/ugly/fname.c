@@ -1,22 +1,30 @@
 /*
-**
 ** fname.c
 **
 ** filename processing functions
 **
-** (W) by Tommy-Saftwörx in 1994,95
+** Copyright (C) 1994,95,96  Thomas Aglassinger
 **
-** version 0.8.1
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
 **
-** updated: 31-Aug-1995
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+**
+** updated: 28-Jan-1996
 ** created: 24-May-1994
 **
-** $VER: fname.c 0.8.1 (31.8.1995)
+** $VER: fname.c 0.9.0 (28-Jan-1996)
 **
 **-------------------------------------------------------------------
-** TODO:
-** - app_fext: check, if filename gets too long; handle this case
-** - xxx_fext: handle NULL-string as filename parameter
 **
 */
 
@@ -27,15 +35,10 @@
 #include "types.h"
 #include "memory.h"
 #include "string.h"
+#include "expstr.h"
 
 #define NOEXTERN_UGLY_FNAME_H
 #include "fname.h"
-
-
-/*
-** global vars
-*/
-char fn_buffer[ MAX_PATH ];            /* result string */
 
 
 /*
@@ -47,31 +50,29 @@ char fn_buffer[ MAX_PATH ];            /* result string */
 ** result: extension of _fn or NULL, if fn was also NULL
 **
 */
-STRPTR get_fext( CONSTRPTR fn )
+BOOL get_fext( EXPSTR *dest, CONSTRPTR fn )
 {
-    STRPTR fn_ext = NULL;              /* result var */
-    size_t i;                          /* string index counter */
+    CONSTRPTR fn_ext = fn;             /* result var */
 
-    if ( fn ) {
+    /* search for end of string */
+    while ( fn_ext[0] )
+        fn_ext++;
 
-        i = strlen( fn )-1;
+    /* search string backwards for "." or PATH_SEPARATOR */
+    do
+      /* nufin */;
+    while ( ( fn_ext != fn )         /* beginning of name reached? */
+            && (fn_ext--)              /* process next char */
+            && ( fn_ext[0] != '.' )
+            && ( strchr( PATH_SEPARATOR, fn_ext[0] ) == NULL ) );
+    
+    /* copy extension to dest */
+    if ( fn_ext[0] == '.' )
+        set_estr( dest, ++fn_ext );
+    else
+        clr_estr( dest );
 
-        if ( i > 0 ) {
-        
-            while ( ( i ) && ( fn[i] != '.' )
-                    && ( strchr( PATH_SEPARATOR, fn[i] ) == NULL ) )
-                i--;
-            
-            if ( fn[i] != '.' )                /* no extension? */
-                i = strlen( fn );
-        }
-
-        strncpy( fn_buffer, &(fn[i]), strlen( fn) -i +1 );
-        fn_ext = fn_buffer;
-
-    }
-
-    return fn_ext;
+    return ( ok_fnl_fext( dest ) );
 }
 
 
@@ -80,51 +81,19 @@ STRPTR get_fext( CONSTRPTR fn )
 **
 **
 */
-STRPTR get_fname( CONSTRPTR fn )
+BOOL get_fname( EXPSTR *dest, CONSTRPTR fn )
 {
-    STRPTR fn_name;                    /* result var */
+    CONSTRPTR fn_name = fn;
 
-    fn_name = ustrrpbrk( fn, PATH_SEPARATOR );
+    fn_name = ustrrpbrk( fn_name, PATH_SEPARATOR );
 
+    /* copy extension to dest */
     if ( fn_name )
-        fn_name++;
+        set_estr( dest, ++fn_name );
     else
-        fn_name = ( STRPTR ) fn;
+        set_estr( dest, fn );
 
-
-    if ( fn_name ) {
-        strcpy( fn_buffer, fn_name );
-        fn_name = fn_buffer;
-
-    }
-
-    return fn_name;
-}
-
-
-/*
-** get_nsdir: get next subdirectory (including separator)
-**
-*/
-STRPTR get_nsdir( CONSTRPTR fn )
-{
-    STRPTR fn_name;
-
-    fn_buffer[0] = '\0';               /* reset buffer */
-
-    fn_name = strpbrk( fn, PATH_SEPARATOR );
-
-    if ( fn_name ) {
-
-        size_t idx = strlen(fn) - strlen(fn_name)+1;
-
-        fn_name++;
-        strncpy( fn_buffer, fn, idx );
-        fn_buffer[idx] = '\0';
-
-    }
-
-    return fn_buffer;
+    return ( ok_fnl_fname( dest ) );
 }
 
 
@@ -133,23 +102,37 @@ STRPTR get_nsdir( CONSTRPTR fn )
 **
 **
 */
-STRPTR get_fpath( CONSTRPTR fn )
+BOOL get_fpath( EXPSTR *dest, CONSTRPTR fn )
 {
     STRPTR pa_name = ustrrpbrk( fn, PATH_SEPARATOR );
 
-    fn_buffer[0] = '\0';
-
     if ( pa_name ) {
 
-        size_t idx = strlen(fn) - strlen(pa_name)+1;
+        set_estrn( dest, fn, strlen(fn) - strlen(pa_name)+1 );
 
-        pa_name++;
-        strncpy( fn_buffer, fn, idx );
-        fn_buffer[idx] = '\0';
+    } else
+        clr_estr( dest );
 
-    }
+    return ( ok_fnl_fpath( dest ) );
+}
 
-    return fn_buffer;
+
+/*
+** get_fsdir: get next subdirectory (including separator)
+**
+*/
+BOOL get_fsdir( EXPSTR *dest, CONSTRPTR fn )
+{
+    STRPTR fn_name = strpbrk( fn, PATH_SEPARATOR );
+
+    if ( fn_name ) {
+
+        set_estrn( dest, fn, strlen(fn) - strlen(fn_name)+1 );
+
+    } else
+        clr_estr( dest );
+
+    return ( ok_fnl_fpath( dest ) );
 }
 
 
@@ -158,9 +141,10 @@ STRPTR get_fpath( CONSTRPTR fn )
 **
 **
 */
-STRPTR get_fdrive( CONSTRPTR fn )
+BOOL get_fdrive( EXPSTR *dest, CONSTRPTR fn )
 {
-    return NULL;                       /* <- to be implemented */
+    clr_estr( dest );
+    return ( ok_fnl_fpath( dest ) );
 }
 
 
@@ -177,7 +161,7 @@ STRPTR get_fdrive( CONSTRPTR fn )
 ** (internal function)
 **
 */
-size_t fextidx( CONSTRPTR fn )
+static size_t fextidx( CONSTRPTR fn )
 {
     size_t i;                          /* string index counter */
 
@@ -193,46 +177,45 @@ size_t fextidx( CONSTRPTR fn )
 
 
 /*
-** set_fext
-**
-**
-**
-*/
-STRPTR set_fext( CONSTRPTR fn, CONSTRPTR newext )
-{
-    size_t extidx;                     /* index, where extension starts */
-
-    extidx = fextidx( fn );            /* get extension index */
-
-    strncpy( fn_buffer, fn, extidx );
-    fn_buffer[extidx]   = '.';
-    fn_buffer[extidx+1] = '\0';
-
-    strcat( fn_buffer, newext );
-
-    return fn_buffer;                  /* return new filename */
-}
-
-
-/*
 ** clr_fext: clear filename extension
 **
-** params: fn...filename to strip
-** result: filename without extension
+** params: dest...string that contains filename to strip
 **
 ** EXAMPLE: "testfile.txt" -> "testfile"
 **
 */
-STRPTR clr_fext( CONSTRPTR fn )
+BOOL clr_fext( EXPSTR *dest )
 {
-    size_t extidx;                     /* index, where extension starts */
+    BOOL ok;
+    size_t extidx = fextidx( estr2str( dest) );
+                                       /* index, where extension starts */
+    ok = set_estrn( dest, estr2str( dest), extidx );
+    ok &= ok_fnl_fpath( dest );
 
-    extidx = fextidx( fn );            /* get extension index */
+    return ( ok );
+}
 
-    strncpy( fn_buffer, fn, extidx );
-    fn_buffer[extidx] = '\0';
 
-    return fn_buffer;                  /* return new filename */
+/*
+** set_fext: set new (last) extension for filename
+**
+** params: dest....string that contains old filename
+**         newext..new extension to set
+**
+** EXAMPLE: "testfile.txt", "lha" -> "testfile.lha"
+**          "hugo.tar.gz" , "lha" -> "hugo.tar.lha"
+*/
+BOOL set_fext( EXPSTR *dest, CONSTRPTR newext )
+{
+    BOOL ok;
+
+    ok = clr_fext( dest );
+    ok &= app_estrch( dest, '.' );
+    ok &= app_estr( dest, newext );
+
+    ok &= ok_fnl_fpath( dest );
+
+    return ( ok );
 }
 
 
@@ -242,22 +225,14 @@ STRPTR clr_fext( CONSTRPTR fn )
 ** EXAMPLE: ("testfile.txt", "lha") -> "testfile.txt.lha"
 **                                  -> "testfile.lha"     (msdos)
 */
-STRPTR app_fext( CONSTRPTR fn, CONSTRPTR newext )
+BOOL app_fext( EXPSTR *dest, CONSTRPTR newext )
 {
-    size_t extidx;                     /* index, where extension starts */
+    BOOL ok = app_estrch( dest, '.' );
 
-    extidx = fextidx( fn );            /* get extension index */
+    ok &= app_estr( dest, newext );
+    ok &= ok_fnl_fpath( dest );
 
-    strncpy( fn_buffer, fn, extidx );
-    if ( fn_buffer[extidx] != '.' ) {
-        fn_buffer[extidx]   = '.';
-        extidx++;
-    }
-    fn_buffer[extidx] = '\0';
-
-    strcat( fn_buffer, newext );
-
-    return fn_buffer;
+    return ( ok );
 }
 
 
@@ -268,38 +243,29 @@ STRPTR app_fext( CONSTRPTR fn, CONSTRPTR newext )
 **         fn....source string with extension to replace
 **         idx...extension index
 */
-STRPTR set_fnameIdx( CONSTRPTR fn, int idx )
+BOOL set_fnameIdx( EXPSTR *dest, int idx )
 {
-    char   fn_ext[ 4 ];                /* index extension */
-    size_t extidx;                     /* index, where extension starts */
-
-    extidx = fextidx( fn );            /* get extension index */
-
-    strncpy( fn_buffer, fn, extidx );
-    fn_buffer[extidx]   = '.';
-    fn_buffer[extidx+1] = '\0';
-
+    char   fn_ext[ 12 ];               /* index extension */
     sprintf( fn_ext, "%03d", idx );    /* create index string */
 
-    strcat( fn_buffer, fn_ext );
-
-    return fn_buffer;
+    return ( set_fext( dest, fn_ext ) );
 }
 
 /*
-** app_fname: append filename to directory
+** link_fname: link directory and filename together
 **
-** params: dir...directoryname
+** params: dest..where to store result
+**         dir...directoryname
 **         fn....filename to append
 **
 ** NOTE: a PATHSEPARATOR[0] is append to dir, if none exists
+** NOTE: dir and fn MUST NOT be part of dest,
+**       when invoking this funtion
 */
-STRPTR app_fname( STRPTR dir, STRPTR fn )
+BOOL link_fname( EXPSTR *dest, STRPTR dir, STRPTR fn )
 {
     BOOL anydir;                        /* TRUE, if any dir passed as arg */
-
-    /* reset buffer */
-    fn_buffer[0] = '\0';
+    BOOL ok = TRUE;
 
     /* is a dir passed? */
     anydir = (dir!=NULL);
@@ -307,19 +273,22 @@ STRPTR app_fname( STRPTR dir, STRPTR fn )
 
     if ( anydir ) {
 
-        strcat( fn_buffer, dir );
+        set_estr( dest, dir );
         /* check, if the last char of dir is a path separator */
         /* ->if not, append a direcory separator */
         if ( !strchr( PATH_SEPARATOR, dir[strlen(dir)-1] ) )
-            strcat( fn_buffer, DIR_SEPARATOR );
+            app_estrch( dest, DIR_SEPARATOR );
 
-    }
+    } else
+        clr_estr( dest );
 
     /* append filename */
     if ( fn )
-        strcat( fn_buffer, fn );
+        app_estr( dest, fn );
 
-    return fn_buffer;
+    ok &= ok_fnl_fpath( dest );
+
+    return ok;
 }
 
 /*
@@ -345,3 +314,92 @@ STRPTR tmpnamstr( void )
 
     return ( s );
 }
+
+/*
+** get_relfname: get relative filename, according to given path
+**
+** params: absn..absolute filename
+**         curp..current path
+**
+** EXAMPLE:
+**  "image/back.gif" and "image/hugo/" -> "/back.gif"
+**  "image/back.gif" and ""            -> "image/back.gif"
+**  "image/back.gif" and "people/"     -> "/image/back.gif"
+*/
+BOOL get_relfname( EXPSTR *dest, STRPTR absn, STRPTR curp )
+{
+    EXPSTR *fname = init_estr( 32 );   /* file name only */
+    EXPSTR *abspa = init_estr( 32 );   /* absolute path only */
+    EXPSTR *tmpp1 = init_estr( 32 );   /* temp pointer */
+    EXPSTR *tmpp2 = init_estr( 32 );
+    STRPTR rest_absp = NULL;           /* rest of current path */
+    STRPTR absp      = NULL;           /* path processing */
+    int    cmp_result;                 /* stores result returned by upstrcmp */
+
+    /* init string array */
+    clr_estr( dest );
+    get_fname( fname, absn );
+    get_fpath( abspa, absn );
+    absp = estr2str( abspa );
+
+    /*
+    ** skip all equal subdirs
+    */
+    do {
+
+        get_fsdir( tmpp1, absp );
+        get_fsdir( tmpp2, curp );
+        cmp_result = upstrcmp( estr2str( tmpp1 ), estr2str( tmpp2 ) );
+
+        if ( !cmp_result ) {
+
+            absp += estrlen( tmpp1 );
+            curp += estrlen( tmpp2 );
+
+        }
+
+    } while ( estrlen(tmpp1)
+              && estrlen(tmpp2)
+              && (!cmp_result) );
+
+    /* remember equal part of path */
+    rest_absp = absp;
+
+    /*
+    ** for every subdir in absp unequal to
+    ** corresponding subdir curp, insert a parent dir
+    */
+    if ( curp[0] )
+        do {
+
+            get_fsdir( tmpp1, absp );
+            get_fsdir( tmpp2, curp );
+            cmp_result = upstrcmp( estr2str(tmpp1), estr2str(tmpp2) );
+
+            if ( cmp_result ) {
+
+                absp += estrlen( tmpp1 );
+                curp += estrlen( tmpp2 );
+                app_estr( dest, PARENT_DIR );
+
+            }
+
+
+        } while ( estrlen(tmpp2) && cmp_result );
+
+    /* append equal part of path */
+    app_estr( dest, rest_absp );
+
+    /* append name of file */
+    app_estr( dest, estr2str(fname) );
+
+    /* relaese resources */
+    del_estr( fname );
+    del_estr( abspa );
+    del_estr( tmpp1 );
+    del_estr( tmpp2 );
+
+    return ( ok_fnl_fpath(dest) );
+}
+
+

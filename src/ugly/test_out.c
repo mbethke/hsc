@@ -9,15 +9,10 @@
 #include "types.h"
 #include "outfile.h"
 
-#define GETSTRLEN 10
-
 int main( int argc, char *argv[] )
 {
     OUTFILE *outf;
     char *fname;
-    char ch;
-    size_t i;
-    char getstr[GETSTRLEN+1];
 
     if ( argc == 1 )
         fname = "hugo2.txt";
