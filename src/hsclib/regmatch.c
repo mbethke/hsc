@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 2003 Matthias Bethke
+ * Copyright (C) 2004 Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,9 @@
  */
 
 #include "hsclib/regmatch.h"
+#include "hsclib/inc_base.h"
+
+static char lowercasemap[256];
 
 /* P may be NULL, only used for error reporting */
 BOOL hscregmatch_pc(CONSTRPTR s, CONSTRPTR p, regex_t *re)
@@ -45,35 +48,58 @@ BOOL hscregmatch_pc(CONSTRPTR s, CONSTRPTR p, regex_t *re)
 
 BOOL hscregmatch(HSCPRC *hp, CONSTRPTR s, CONSTRPTR p, BOOL nocase)
 {
-   static char translatemap[256];
-   static BOOL tmap_init = TRUE;
    BOOL ret = FALSE;
    regex_t re;
-   const char *regerrs;
-
-   if(tmap_init) {
-      /* Only initialize the translate map once. */
-      int i;
-      for(i=0; i<sizeof(translatemap); ++i)
-         translatemap[i] = toupper((char)i);
-      tmap_init = FALSE;
-   }
-
-   /* initialize regex structure before compiling */
-   re.buffer = NULL;
-   re.allocated = 0;
-   re.fastmap = NULL;
-   re.translate = nocase ? translatemap : NULL;
-   re.no_sub = 1;
-   
-   if((regerrs = re_compile_pattern(p,strlen(p),&re))) {
-      /* TODO: proper error reporting */
-      fprintf(stderr,"regcomp(%s): %s\n",p,regerrs);
-   } else {
+   if(hscregcomp_re(hp,&re,p,nocase,FALSE)) {
       ret = hscregmatch_pc(s,p,&re);
       regfree(&re);
    }
    return ret;
+}
+
+/* precompile a pattern to an existing regex_t */
+BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR p, BOOL nocase, BOOL fastmap)
+{
+   static BOOL lcmap_init = TRUE;
+   const char *regerrs;
+
+   if(lcmap_init) {
+      /* Only initialize the translate map once. */
+      int i;
+      for(i=0; i<sizeof(lowercasemap); ++i)
+         lowercasemap[i] = toupper((char)i);
+      lcmap_init = FALSE;
+   }
+
+   /* initialize regex structure before compiling */
+   re->buffer = NULL;
+   re->allocated = 0;
+   re->fastmap = NULL;
+   re->translate = nocase ? lowercasemap : NULL;
+   re->no_sub = 1;
+   
+   if((regerrs = re_compile_pattern(p,strlen(p),re))) {
+      if(hp) {
+         hsc_message(hp, MSG_ILLG_REGEX, "error in regular expression %q: %s",
+               p,regerrs);
+      }
+      return FALSE;
+   }
+   return TRUE;
+}
+
+/* precompile a pattern to a new regex_t */
+regex_t *hscregcomp(HSCPRC *hp, CONSTRPTR p, BOOL nocase, BOOL fastmap)
+{
+   regex_t *re = umalloc(sizeof(regex_t));
+
+   if(re) {
+      if(!hscregcomp_re(hp,re,p,nocase,fastmap)) {
+         ufree(re);
+         re = NULL;
+      }
+   }
+   return re;
 }
 
 /* $Id$*/
