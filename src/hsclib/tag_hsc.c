@@ -614,8 +614,8 @@ BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag)
 
    if (nums) {
       if (str2long(nums, &num)) {
-         if (strlen(rplc) == 1) {
-            if ((num >= 160) && (num <= 255)) {
+         if (strlen(rplc) <= 1) {
+            if ((num >= 160) && (num <= 65535)) {
                DLNODE *nd = NULL;
 
                nd = find_dlnode(
@@ -630,7 +630,7 @@ BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag)
                      msg_illg_defent(hp, "duplicate NUM");
                }
                if (!nd)
-                  add_ent(hp->defent, name, rplc, num);
+                  add_ent(hp->defent, name, ('\0' == rplc[0]) ? NULL : rplc, num);
             } else
                msg_illg_defent(hp, "illegal range for NUM");
          } else
