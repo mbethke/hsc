@@ -22,7 +22,7 @@
  *
  * tag callbacks for "<$MACRO>" and "<macro>"
  *
- * updated: 10-May-1997
+ * updated:  2-Nov-1997
  * created:  5-Aug-1995
  */
 
@@ -59,7 +59,8 @@ static BOOL include_macro(HSCPRC * hp, HSCTAG * macro, STRPTR macro_text, STRPTR
     DMC(prt_varlist(hp->defattr, "global attr (after copy_local_vars)"));
 
     if (ok)
-    {                           /* include macro file */
+    {
+        /* include macro file */
         ok = hsc_base_include_string(hp, filename, macro_text,
                                      IH_PARSE_MACRO, fpos);
     }
@@ -193,7 +194,7 @@ static BOOL handle_content_macro(HSCPRC * hp, HSCTAG * tag)
 
     if (!macro_content_attr)
     {
-        panic("no content attribute")
+        panic("no content attribute");
     }
 
     /* skip macro content until corresponding end macro is found; store

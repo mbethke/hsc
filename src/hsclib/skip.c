@@ -22,7 +22,7 @@
  *
  * functions for skipping several things
  *
- * updated:  3-Jun-1997
+ * updated: 13-Oct-1997
  * created:  8-Oct-1995
  */
 
@@ -34,7 +34,7 @@
 #include "hsclib/skip.h"
 
 /* debug skip */
-#if 1
+#if DEBUG
 #define DS(x) if(hp->debug) x
 #else
 #define DS(x)
@@ -842,11 +842,27 @@ BOOL skip_tag_attribs(HSCPRC * hp, EXPSTR * content)
             case STATE_TAGATTR:
                 {
                     if (!strcmp(nw, "="))
+                    {
+                        /* normal assignment */
                         state = STATE_TAGATTR_EQ;
+                    }
+                    else if (!strcmp(nw, "?"))
+                    {
+                        /* conditional assignment:
+                         * just check for succeeding "=",
+                         * and push it back into input stream */
+                        parse_eq(hp);
+                        inungetcw(inpf);
+                    }
                     else if (!strcmp(nw, ">"))
                     {
                         DS(fprintf(stderr, DHLS "end-of-tag-call\n"));
                         quit = TRUE;
+                    }
+                    else
+                    {
+                        /* just skipped a boolean attribute;
+                         * nufin to do about it */
                     }
                     break;
                 }
@@ -1037,7 +1053,7 @@ BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STRPTR tag
                         {
                             DS(fprintf(stderr, DHLS "hsc-verbatim\n"));
                             APP_CONTENT(estr2str(tagstr));
-                            skip_hsc_comment(hp, content);
+                            skip_hsc_verbatim(hp, content);
                             state = STATE_TEXT;
                         }
                         /* check, if hsc-source reached */

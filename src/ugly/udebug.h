@@ -17,16 +17,14 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
+/*
+ * ugly/udebug.h
+ *
+ * basic debugging macro and flags to control debugging output
+ * of ugly.lib
+ */
 #ifndef UGLY_DEBUG_H
 #define UGLY_DEBUG_H
-/*
- * ugly/debug.h
- *
- * ugly debugging defines.
- *
- * (C) by Tommy-Saftwörx 1996
- *
- */
 
 #ifdef DEBUG_UGLY
 
@@ -52,9 +50,17 @@
 
 #endif /* DEBUG_UGLY */
 
-#define panic(msg) {                                 \
-    fprintf(stderr, "** PANIC at \"%s\" (%u): %s\n", \
-            __FILE__, __LINE__, (msg)); exit(255); }
+/* show panic messages?
+ *
+ * NOTE: display_panic_message() is declared in ugly/umemory.c */
+
+/* this define is named after the marvelous movie directed by
+ * Franz Nowotny starring Hanno Pöschl and Paulus Manker */
+#ifndef EXIT_NUR_KEINE_PANIK
+#define panic(msg) display_panic_message((msg), __FILE__, __LINE__)
+#else
+#define panic(msg) /* nufin */
+#endif
 
 #endif /* UGLY_DEBUG_H */
 

@@ -26,15 +26,12 @@
  *
  * Author : Thomas Aglassinger (Tommy-Saftwörx)
  * Email  : agi@giga.or.at, agi@sbox.tu-graz.ac.at
- * Address: Lissagasse 12/II/9
- *          8020 Graz
- *          AUSTRIA
  *
  *-------------------------------------------------------------------
  *
  * hsc/hsc.c
  *
- * updated: 11-Apr-1997
+ * updated: 14-Oct-1997
  * created:  1-Jul-1995
  */
 
@@ -70,6 +67,34 @@ static const char AmigaOS_version[] = VERSTAG;
 /* hsc-process structure that is used during
  * the wohle conversion */
 static HSCPRC *hp = NULL;
+
+/*
+ * attempt_atexit
+ *
+ * try to add another atexit()-function; if it fails,
+ * abort with error message
+ */
+static BOOL attempt_atexit(VOID (*func) (VOID))
+{
+#define ERRMSG_LEN 300
+    BOOL ok = FALSE;
+
+    errno = 0;
+    if (atexit(func))
+    {
+        /* atexit() failed; display error message */
+        char errmsg[ERRMSG_LEN];
+        strncpy(errmsg, "atexit() failed: ", ERRMSG_LEN);
+        strncat(errmsg, strerror(errno), ERRMSG_LEN);
+        status_error(errmsg);
+    }
+    else
+    {
+        ok = TRUE;
+    }
+
+    return ok;
+}
 
 /*
  * includes_ok
@@ -205,16 +230,17 @@ int hsc_main(HSCPRC ** hpVar, int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     int main_return_code = RC_FAIL;
+    BOOL atexit_ok = TRUE;
 
     /* set program information */
-    set_prginfo("hsc", "Tommy-Saftwörx", VERSION, REVISION, BETA,
+    set_prginfo("hsc", UGLY_AUTHOR, VERSION, REVISION, BETA,
                 "html sucks completely",
                 "Freeware, type `hsc LICENSE' for details.");
 
 #if DEBUG
     /* display a memory tracking report
      * at end of execution */
-    atexit(atexit_uglymemory);
+    atexit_ok = attempt_atexit(atexit_uglymemory);
 #endif
 
     /* install nomem-handler; this one displays an error message
@@ -222,15 +248,17 @@ int main(int argc, char *argv[])
     ugly_nomem_handler = hsc_nomem_handler;
 
     /* use cleanup() as additional exit func
-     * (even called if out-of-memory) */
-    if (!atexit(cleanup))
+     * (even called in case of out-of-memory) */
+    if (atexit_ok)
+    {
+        atexit_ok = attempt_atexit(cleanup);
+    }
+
+    /* if still all right, let's dance */
+    if (atexit_ok)
     {
         HSCPRC *hpVar = NULL;
         main_return_code = hsc_main(&hpVar, argc, argv);
-    }
-    else
-    {
-        status_error("atexit() failed ");
     }
 
 #ifdef SINGLE_CLIENT_SERVER

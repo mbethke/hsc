@@ -7,6 +7,15 @@ complete list of improvements and bug-fixes, refer to `CHANGES'.
 
 ---------------------------------------------------------------------
 
+Version 0.915
+
+- For those who need to compile everything on there own: the whole
+  process has changed a bit, the Makefile should now be easier to
+  handle. Compiling is no more described in `source/README', but in
+  `docs/source.html'.
+
+---------------------------------------------------------------------
+
 Version 0.914
 
 - The `examples' drawer is back again.

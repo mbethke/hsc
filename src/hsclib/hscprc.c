@@ -22,7 +22,7 @@
  *
  * hsc process functions
  *
- * updated: 10-May-1997
+ * updated:  5-Oct-1997
  * created: 11-Feb-1996
  */
 
@@ -62,6 +62,7 @@ VOID del_hscprc(HSCPRC * hp)
         del_dllist(hp->defent);
         del_dllist(hp->deftag);
         del_dllist(hp->defattr);
+        del_dllist(hp->deflazy);
         del_dllist(hp->container_stack);
         del_dllist(hp->content_stack);
         del_dllist(hp->inpf_stack);
@@ -167,6 +168,7 @@ HSCPRC *new_hscprc(void)
         hp->defent = init_dllist(del_entity);
         hp->deftag = init_dllist(del_hsctag);
         hp->defattr = init_dllist(del_hscattr);
+        hp->deflazy = init_dllist(del_hsctag);
         hp->container_stack = init_dllist(del_hsctag);
         hp->content_stack = init_dllist(del_string_node);
         hp->inpf_stack = init_dllist(del_inpf_stack_node);
@@ -195,8 +197,8 @@ HSCPRC *new_hscprc(void)
 #endif
 
         /* alloc message arrays */
-        hp->msg_ignore = (BOOL *)
-            umalloc((MAX_MSGID + 1) * sizeof(BOOL));
+        hp->msg_ignore = (HSCIGN *)
+            umalloc((MAX_MSGID + 1) * sizeof(HSCIGN));
         hp->msg_class = (HSCMSG_CLASS *)
             umalloc((MAX_MSGID + 1) * sizeof(HSCMSG_CLASS));
 
@@ -570,8 +572,8 @@ VOID hsc_set_status_misc(HSCPRC * hp, VOID(*status_misc) (HSCPRC * hp, STRPTR s)
 
 VOID hsc_set_message(
                         HSCPRC * hp,
-                        VOID(*message) (struct hscprocess * hp,
-                                        HSCMSG_CLASS msg_class, HSCMSG_ID,
+                        VOID(*message) (struct hsc_process * hp,
+                                        HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
                                         STRPTR fname, ULONG x, ULONG y,
                                         STRPTR msg_text))
 {
@@ -580,7 +582,7 @@ VOID hsc_set_message(
 
 VOID hsc_set_message_ref(
                             HSCPRC * hp,
-                            VOID(*message_ref) (struct hscprocess * hp,
+                            VOID(*message_ref) (struct hsc_process * hp,
                                    HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
                                              STRPTR fname, ULONG x, ULONG y,
                                                 STRPTR msg_text))
@@ -589,28 +591,28 @@ VOID hsc_set_message_ref(
 }
 
 VOID hsc_set_start_tag(HSCPRC * hp,
-                       VOID(*start_tag) (struct hscprocess * hp,
+                       VOID(*start_tag) (struct hsc_process * hp,
           HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close))
 {
     hp->CB_start_tag = start_tag;
 }
 
 VOID hsc_set_end_tag(HSCPRC * hp,
-                     VOID(*end_tag) (struct hscprocess * hp,
+                     VOID(*end_tag) (struct hsc_process * hp,
           HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close))
 {
     hp->CB_end_tag = end_tag;
 }
 
 VOID hsc_set_text(HSCPRC * hp,
-                  VOID(*text) (struct hscprocess * hp,
+                  VOID(*text) (struct hsc_process * hp,
                                STRPTR white_spaces, STRPTR text))
 {
     hp->CB_text = text;
 }
 
 VOID hsc_set_id(HSCPRC * hp,
-                VOID(*id) (struct hscprocess * hp,
+                VOID(*id) (struct hsc_process * hp,
                            HSCATTR * attr, STRPTR id))
 {
     hp->CB_id = id;
@@ -619,7 +621,7 @@ VOID hsc_set_id(HSCPRC * hp,
 /*
  * message methodes
  */
-BOOL hsc_set_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id, BOOL value)
+BOOL hsc_set_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id, HSCIGN value)
 {
     BOOL set = FALSE;
 
@@ -629,7 +631,7 @@ BOOL hsc_set_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id, BOOL value)
     return (set);
 }
 
-BOOL hsc_get_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id)
+HSCIGN hsc_get_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id)
 {
     /* HSCMSG_ID max_msgid = MAX_MSGID; */
     if ((msg_id & MASK_MESSAGE) <= MAX_MSGID)
@@ -678,6 +680,21 @@ HSCMSG_CLASS hsc_get_msg_class(HSCPRC * hp, HSCMSG_ID msg_id)
 /*
  * set message classes to be ignored
  */
+BOOL hsc_get_msg_ignore_notes(HSCPRC * hp)
+{
+    return hp->msg_ignore_notes;
+}
+
+BOOL hsc_get_msg_ignore_style(HSCPRC * hp)
+{
+    return hp->msg_ignore_style;
+}
+
+BOOL hsc_get_msg_ignore_port(HSCPRC * hp)
+{
+    return hp->msg_ignore_port;
+}
+
 BOOL hsc_set_msg_ignore_notes(HSCPRC * hp, BOOL value)
 {
     hp->msg_ignore_notes = value;
@@ -695,6 +712,7 @@ BOOL hsc_set_msg_ignore_port(HSCPRC * hp, BOOL value)
     hp->msg_ignore_port = value;
     return (value);
 }
+
 
 /*
  * reset whole arrays for message-class/ignores

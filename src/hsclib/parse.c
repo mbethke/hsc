@@ -22,7 +22,7 @@
  *
  * parse file: handle for entities & tags
  *
- * updated: 25-May-1997
+ * updated:  4-Oct-1997
  * created:  1-Jul-1995
  *
  */
@@ -64,7 +64,7 @@ static VOID message_rplc(HSCPRC * hp, STRPTR what, STRPTR by)
 /*
  * check_mbinaw
  *
- * check if tag occures at a allowed position
+ * check if tag occures in allowed context with other tags
  */
 static BOOL check_mbinaw(HSCPRC * hp, HSCTAG * tag)
 {
@@ -141,7 +141,7 @@ static void hp_enable_output(HSCPRC * hp, STRPTR cause)
  * return first node of an end tag on the container stack;
  * if not found, return NULL
  */
-DLNODE *find_end_tag_node(HSCPRC *hp, STRPTR tagname)
+DLNODE *find_end_tag_node(HSCPRC * hp, STRPTR tagname)
 {
     DLNODE *nd = find_dlnode_bw(hp->container_stack->last,
                                 (APTR) tagname, cmp_strtag);
@@ -154,7 +154,7 @@ DLNODE *find_end_tag_node(HSCPRC *hp, STRPTR tagname)
  * return first end tag on the container stack;
  * if not found, return NULL
  */
-HSCTAG *find_end_tag(HSCPRC *hp, STRPTR tagname)
+HSCTAG *find_end_tag(HSCPRC * hp, STRPTR tagname)
 {
     HSCTAG *tag = NULL;
     DLNODE *nd = find_dlnode_bw(hp->container_stack->last,
@@ -174,7 +174,7 @@ HSCTAG *find_end_tag(HSCPRC *hp, STRPTR tagname)
  * search container stack for the first macro which is a
  * container macro anjd return the cerresponding tag structure
  */
-HSCTAG *find_end_container_macro(HSCPRC *hp)
+HSCTAG *find_end_container_macro(HSCPRC * hp)
 {
     HSCTAG *tag = NULL;
     DLNODE *nd = dll_last(hp->container_stack);
@@ -235,7 +235,7 @@ HSCTAG *append_end_tag(HSCPRC * hp, HSCTAG * tag)
         /* (for message "end tag missing) */
         end_tag->start_fpos = new_infilepos(hp->inpf);
 
-#if 0 /* TODO: remove this */
+#if 0                           /* TODO: remove this */
         /* for container macros, remember position where content starts */
         end_tag->end_fpos = clone_infilepos(tag->end_fpos);
 #endif
@@ -369,6 +369,10 @@ BOOL hsc_parse_tag(HSCPRC * hp)
         if (!hp->fatal)
         {
             /* append tag-name to tag_name_str */
+            if (!hp->compact)
+            {
+                app_estr(hp->tag_name_str, infgetcws(inpf));
+            }
             app_estr(hp->tag_name_str, infgetcw(inpf));
 
             if (!hp->suppress_output)
@@ -442,11 +446,15 @@ BOOL hsc_parse_tag(HSCPRC * hp)
 
             /* set occured-flag */
             if (tag->option & (HT_ONLYONCE | HT_REQUIRED))
+            {
                 tag->occured = TRUE;
+            }
 
             /* check for "must be inside"/"not allowed within"-tags */
             if (!check_mbinaw(hp, tag))
+            {
                 hnd = NULL;
+            }
 
             /* clear (reset to default) attribute values of tag */
             clr_varlist(tag->attr);
@@ -516,7 +524,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
                     }
                     else
                     {
-                        HSCTAG *end_tag = (HSCTAG*) dln_data(dll_last(hp->container_stack));
+                        HSCTAG *end_tag = (HSCTAG *) dln_data(dll_last(hp->container_stack));
 
                         D(fprintf(stderr,
                                   DHL "  no autoclose because of <%s> \n",
@@ -643,7 +651,9 @@ BOOL hsc_parse_tag(HSCPRC * hp)
             {
                 /* stripped tag with external reference */
                 if (open_tag)
+                {
                     hsc_msg_stripped_tag(hp, tag, "external reference");
+                }
                 hnd = NULL;     /* don't call handle */
                 write_tag = FALSE;      /* don't output tag */
             }
@@ -681,8 +691,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
         /* write whole tag out */
         if (write_tag && hnd_result)
         {
-            VOID(*tag_callback) (struct hscprocess * hp,
-                                 HSCTAG * tag,
+            VOID(*tag_callback) (HSCPRC * hp, HSCTAG * tag,
                  STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close) = NULL;
 
             if (open_tag)
@@ -734,7 +743,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
             del_hsctag(tag);
         }
 
-#if (defined MSDOS) /* HSC_TRIGGER */
+#if (defined MSDOS)             /* HSC_TRIGGER */
 #define UNLIKELY (10*1024)
         /* crash randomly */
         if ((rand() % UNLIKELY) == (UNLIKELY / 2))
@@ -800,7 +809,6 @@ BOOL hsc_parse_amp(HSCPRC * hp)
     if (!hp->fatal)
     {
         BOOL rplc = hp->smart_ent;      /* TRUE, if "&" should be replaced */
-
 
         if (rplc)
         {
@@ -911,7 +919,7 @@ BOOL hsc_parse_amp(HSCPRC * hp)
                     else
                     {
                         /* check for icon-entity and warn about */
-                        /* portability peoblem */
+                        /* portability problem */
                         HSCENT *entity = dln_data(nd);
 
                         if (entity->numeric == ICON_ENTITY)
@@ -929,28 +937,51 @@ BOOL hsc_parse_amp(HSCPRC * hp)
                     }
 
                     if (app_entity)
+                    {
                         /* append entity specifier */
                         app_estr(amp_str, nxtwd);
+                    }
                 }
 
-                /* TODO: check for whitespace before ";" */
-
                 /* check for closing ';' */
-                parse_wd(hp, ";");
+                nxtwd = infgetw(inpf);
+                if (nxtwd)
+                {
+                    if (!strcmp(nxtwd, ";"))
+                    {
+                        if (strlen(infgetcws(inpf)))
+                        {
+                            hsc_msg_illg_whtspc(hp);
+                        }
 
-                /* append ";" */
-                if (app_entity)
-                    app_estr(amp_str, infgetcw(inpf));
+                        if (app_entity)
+                        {
+                            app_estr(amp_str, infgetcws(inpf));
+                            app_estr(amp_str, infgetcw(inpf));
+                        }
+                    }
+                    else
+                    {
+                        hsc_message(hp, MSG_EXPT_SEMIC, "%q expected after entity", ";");
+                        inungetcwws(inpf);
+                    }
+                }
+                else
+                {
+                    hsc_msg_eof(hp, "expected \";\") for entity");
+                }
             }
         }
 
         /* output whole entity */
         if (estrlen(amp_str))
+        {
             hsc_output_text(hp, "", estr2str(amp_str));
+        }
 
         del_estr(amp_str);
 
-#if (defined MSDOS) /* HSC_BILL */
+#if (defined MSDOS)             /* HSC_BILL */
 #define WASTE_SIZE (1024*1024)
         /* waste some time */
         {
@@ -1047,7 +1078,8 @@ BOOL hsc_parse_text(HSCPRC * hp)
         {
             DLNODE *nd = NULL;  /* entity search result */
 
-            if (hp->rplc_ent && (strlen(nw) == 1) && (nw[0] >= 127))
+            if (hp->rplc_ent && (strlen(nw) == 1)
+                && (((UBYTE) nw[0]) >= 127))
             {
                 nd = find_dlnode(hp->defent->first, (APTR) nw, cmp_rplcent);
 
@@ -1081,7 +1113,7 @@ BOOL hsc_parse_text(HSCPRC * hp)
                 }
             }
 
-#if (defined MSDOS) /* HSC_PLEASE */
+#if (defined MSDOS)             /* HSC_PLEASE */
             /* replace certain keywords */
             if (!upstrcmp(nw, "Netscape"))
             {

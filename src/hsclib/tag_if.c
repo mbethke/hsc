@@ -377,7 +377,16 @@ BOOL handle_hsc_cif(HSCPRC * hp, HSCTAG * tag)
 {
     DIF(fprintf(stderr, DHL "IF: standard closing handler\n"));
 
-    is_pop(hp);                 /* remove if-value from stack */
+    if (is_empty(hp))
+    {
+        /* this can happen, if <$if> had errors in args */
+        DIF(fprintf(stderr, DHL "%s: unhandled handler conditional\n", tag->name));
+    }
+    else
+    {
+        /* remove if-value from stack */
+        is_pop(hp);
+    }
 
     return (FALSE);
 }
@@ -391,7 +400,8 @@ BOOL handle_hsc_else(HSCPRC * hp, HSCTAG * tag)
 {
     if (is_empty(hp))
     {
-        panic("unhandled <$else>");
+        /* this can happen, if <$if> had errors in args */
+        DIF(fprintf(stderr, DHL "%s: unhandled handler conditional\n", tag->name));
     }
     else
     {
@@ -430,7 +440,8 @@ BOOL handle_hsc_elseif(HSCPRC * hp, HSCTAG * tag)
 
     if (is_empty(hp))
     {
-        message_unma_else(hp, tag);
+        /* this can happen, if <$if> had errors in args */
+        DIF(fprintf(stderr, DHL "%s: unhandled handler conditional\n", tag->name));
     }
     else
     {

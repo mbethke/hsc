@@ -23,7 +23,7 @@
  * tag callbacks for "<$xx>" and related
  * (for macro callbacks, see "tag_macro.c")
  *
- * updated: 31-May-1997
+ * updated:  5-Oct-1997
  * created: 23-Jul-1995
  */
 
@@ -71,18 +71,7 @@ BOOL handle_hsc_include(HSCPRC * hp, HSCTAG * tag);
  */
 BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag)
 {
-#if 1
     skip_hsc_comment(hp, NULL);
-#else /* TODO: remove */
-    BYTE cstate = CMST_TEXT;    /* vars for eoc_reached() */
-    LONG cnest = 0;             /* nesting: already read one "<*" */
-    BOOL end = FALSE;           /* end of comment reached? */
-
-    while (!end && !(hp->fatal))
-    {
-        end = eoc_reached(hp, &cstate, &cnest);
-    }
-#endif
 
     return (FALSE);
 }
@@ -97,7 +86,6 @@ BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag)
 {
-#if 1
     EXPSTR *content = init_estr(0);
     if (skip_hsc_verbatim(hp, content))
     {
@@ -114,43 +102,6 @@ BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag)
     }
     del_estr(content);
 
-#else /* TODO: remove */
-    INFILE *inpf = hp->inpf;
-    int ch = EOF;               /* current char */
-    int prev_ch = EOF;          /* prev char read */
-    BOOL abort = FALSE;
-
-    do
-    {
-        STRARR buf[3] =
-        {0, 0, 0};
-
-        ch = infgetc(inpf);
-
-        if ((prev_ch == '|') && (ch == '>'))
-        {
-            abort = TRUE;
-        }
-        else if ((prev_ch == '|') && (ch != '|'))
-        {
-            buf[0] = prev_ch;
-            buf[1] = ch;
-            hsc_output_text(hp, "", buf);
-        }
-        else if (ch != '|')
-        {
-            buf[0] = ch;
-            buf[1] = 0;
-            hsc_output_text(hp, "", buf);
-        }
-        abort |= infeof(inpf);
-        prev_ch = ch;
-    }
-    while (!abort);
-
-    if (prev_ch == EOF)
-        hsc_msg_eof(hp, "skipping source");
-#endif
     return (FALSE);
 }
 
@@ -728,7 +679,6 @@ BOOL handle_hsc_deficon(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag)
 {
-#if 1
     HSCVAR *attr = define_attr_by_hp(hp, NULL, 0);
     if (attr)
     {
@@ -737,42 +687,55 @@ BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag)
         /* check for closing ">" */
         parse_gt(hp);
     }
-#else /* TODO: remove */
-    HSCVAR *attr = define_var(hp, hp->defattr, 0);
-    if (attr)
-    {
-        /* set mci for local attribute */
-        if (attr->varflag & VF_GLOBAL)
-            attr->macro_id = MCI_GLOBAL;
-        else
-            attr->macro_id = get_current_mci(hp);
-
-        /* see "attrib.h" why this */
-        attr->varflag |= VF_MACRO;
-
-        /* set new value (copy from default) if passed */
-        if (get_vardeftext(attr))
-            clr_vartext(attr);
-
-        /* remove default value */
-        clr_attrdef(attr);
-
-        DDA(prt_varlist(hp->defattr, "attributes after $DEFINE"));
-
-        /* check for closing ">" */
-        parse_gt(hp);
-
-    }
-#endif
 
     return (FALSE);
 }
 
 /*
  *-------------------------------------
- * $DEPEND handle
+ * $LAZY handle
  *-------------------------------------
  */
+static HSCTAG *def_lazy_name(HSCPRC *hp)
+{
+    STRPTR nw = NULL;
+    HSCTAG *lazy = NULL;
+    DLLIST *lazy_list = hp->deflazy;
+
+    /* get lazy name */
+    nw = infget_tagid(hp);
+
+    /* create new lazy */
+    if (nw)
+    {
+        lazy = find_strtag(lazy_list, nw);
+        if (lazy)
+        {
+            hsc_message(hp, MSG_REDEFINE_LAZY, "redefined lazy ", lazy);
+        }
+        else
+        {
+            /* create a new opening lazy */
+            lazy = app_tag(lazy_list, nw);
+        }
+    }                           /* err_eof already called in infget_tagid() */
+
+    return (lazy);
+}
+
+
+BOOL handle_hsc_lazy(HSCPRC * hp, HSCTAG * tag)
+{
+    BOOL ok = FALSE;
+    HSCTAG *lazy = def_lazy_name(hp);
+    if (lazy)
+    {
+        ok = def_tag_args(hp, lazy);
+    }
+
+    return (FALSE);
+}
+
 
 /*
  * handle_hsc_depend
@@ -808,6 +771,10 @@ BOOL handle_hsc_depend(HSCPRC * hp, HSCTAG * tag)
 
     return (FALSE);
 }
+
+/*
+ *
+ */
 
 /*
  *-------------------------------------
@@ -848,19 +815,31 @@ BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
             }
 
             /* check if a "=" comes next */
-            if (eq_sign && !strcmp(eq_sign, "="))
-                /* Y->get new value */
-                eval_expression(hp, attr, NULL);
-            else
+            if (eq_sign)
             {
-                /* N->clear or reset attribute to default value */
-                clr_vartext(attr);
-                /* write previous word back (should be ">") */
-                inungetcw(inpf);
+                if (!strcmp(eq_sign, "="))
+                {
+                    /* normal assignment */
+                    eval_expression(hp, attr, NULL);
+                }
+                else if (!strcmp(eq_sign, "?"))
+                {
+                    /* conditional assignment */
+                    if (parse_eq(hp))
+                    {
+                        eval_conditional_assignment(hp, attr);
+                    }
+                }
+                else
+                {
+                    /* N->clear or reset attribute to default value */
+                    clr_vartext(attr);
+                    /* write previous word back (should be ">") */
+                    inungetcw(inpf);
+                }
+
+                DDA(prt_varlist(hp->defattr, "attributes after $LET"));
             }
-
-            DDA(prt_varlist(hp->defattr, "attributes after $LET"));
-
             /* check for closing ">" */
             ok = parse_gt(hp);
         }
@@ -1106,7 +1085,7 @@ BOOL handle_hsc_stripws(HSCPRC * hp, HSCTAG * tag)
 
     if (strip_succ)
     {
-        hsc_output_text(hp,NULL,NULL); /* flush current white spaces */
+        hsc_output_text(hp, NULL, NULL);        /* flush current white spaces */
         hp->strip_next_whtspc = TRUE;
     }
 

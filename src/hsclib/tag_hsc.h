@@ -43,6 +43,7 @@ extern BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_export(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_insert(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_include(HSCPRC * hp, HSCTAG * tag);
+extern BOOL handle_hsc_lazy(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_message(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag);

@@ -38,13 +38,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 17-Nov-1996
+ * updated: 27-Sep-1997
  * created:  3-Jul-1994
  *
  *===================================================================
  * TODO:
  * - support ARG_LONG_RANGE
  * - support ARG_INV_SWITCH (set switch value to FALSE if NOxxx found)
+ * - or better: support ARG_TOGGLE (set to YES/NO)
  *
  */
 
@@ -73,6 +74,8 @@
 
 /*
  * global export vars
+ *
+ * TODO: why the heck should this be global, if it is declared static?
  */
 static int arg_error_num = -1;  /* error number */
 static STRPTR arg_error_arg = NULL;     /* argument causing error */
@@ -383,9 +386,13 @@ STRPTR strargerr(VOID)
     }
 
     if (arg_error_num)
+    {
         return argerrstr;
+    }
     else
+    {
         return NULL;
+    }
 }
 
 /*
@@ -397,7 +404,9 @@ STRPTR strargerr(VOID)
 VOID pargerr(VOID)
 {
     if (arg_error_num)
+    {
         fprintf(stderr, "%s\n", strargerr());
+    }
 }
 
 /*
@@ -717,7 +726,9 @@ BOOL set_args_argv(int argc, char *argv[], ARGLIST * al)
         struct arginfo *found_ai;
         struct dlnode *ainode;
         STRPTR arg2 = NULL;     /* passed to set_arg_value */
+#if 0                           /* TODO:remove */
         STRARR sas_c_is_buggy[20];
+#endif
 
         /*
          * search for entry in arginfo-list
@@ -732,8 +743,10 @@ BOOL set_args_argv(int argc, char *argv[], ARGLIST * al)
 
         DA(fprintf(stderr, DUA "  arg: `%s'\n", argv[argidx]));
 
+#if 0                           /* TODO:remove */
         /* this line compensates a bug in sas/c 6.51 optimizer */
         strncpy(sas_c_is_buggy, argv[argidx], 20);
+#endif
 
         if (ainode)
         {

@@ -5,7 +5,7 @@ TITLE
 
 VERSION 
 
-  0.914
+  0.915
 
 AUTHOR
 
@@ -13,7 +13,7 @@ AUTHOR
 
 DESCRIPTION
 
-  Hsc is a developer tool for html projects.
+  Hsc is a developer tool for html-projects.
 
   It can be used on any html file and creates a new html file as
   output. In the input file, you may use an extended syntax based on
@@ -44,7 +44,7 @@ FEATURES
   - for local links, checks if file/id exists
   - project relative URIs
   - replaces special characters by entities
-  - evaluates attributes for image size (png/jfif/gif)
+  - evaluates attributes for image size (PNG/jfif/gif)
   - strips comments and specified tags
   - strips useless white spaces
   - replaces icon entities by images
@@ -56,20 +56,21 @@ FEATURES
 
 NEW FEATURES
 
-  This is a very minor update fixing some small bugs and some problems
-  with the documentation.
+  - ported to NeXTStep, AmigaOS/ixemul.library and BeOS
+  - conditional assignments
+  - as usual, some minor bugfixes and improvements
 
 SPECIAL REQUIREMENTS
 
-  AmigaOS 2.04, 2MB of regular memory, 68020, some sort of WWW browser
+  AmigaOS 2.04, 2MB of regular memory, 68020, some sort of WWW-browser
   and ASCII editor.
 
   For larger projects, 4MB of memory and 68040 are recommended.
 
-  Different to most other WWW tools, hsc requires an user-IQ > 50. You
+  Different to most other WWW-tools, hsc requires an user-IQ > 50. You
   should also know how to work with the CLI and how to write
   Makefiles. You should already made have some experiences with macro
-  processors and some programming language (Rexx should suffice)
+  processors and some programming language (Rexx should suffice).
 
 AVAILABILITY
 

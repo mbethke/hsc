@@ -57,8 +57,6 @@
  * #define MSG_NO_OUTPUT          (MSG_FATAL+  4)  / * can't open output file * /
  * #define MSG_NO_OUTFNAME        (MSG_FATAL+  5)  / * can't evaluate outp-filenm. * /
  * #define MSG_WSPC_AROUND_TAG    (MSG_STYLE+  8)  / * white space around tag * /
- * #define MSG_ILLG_NUMENT        (MSG_ERROR+ 32)  / * illegal numeric entity * /
- * #define MSG_ONEW_COMMENT       (MSG_PORT + 56)  / * SGML one word comment * /
  *
  */
 
@@ -99,8 +97,8 @@
 #define MSG_MBI                (MSG_ERROR+ 60)  /* must be inside */
 #define MSG_NAW                (MSG_ERROR+ 61)  /* not allowed with */
 #define MSG_ILLG_CTAG          (MSG_ERROR+ 66)  /* illegal end-tag */
-#define MSG_SUCC_WHTSPC        (MSG_STYLE+ 78)  /* succeeding white-space */
-#define MSG_PREC_WHTSPC        (MSG_STYLE+ 79)  /* preceeding white-space */
+#define MSG_SUCC_WHTSPC        (MSG_PORT + 78)  /* succeeding white-space */
+#define MSG_PREC_WHTSPC        (MSG_PORT + 79)  /* preceeding white-space */
 
 /*
  * messages within entities
@@ -120,7 +118,7 @@
 #define MSG_UNKN_ATTR_MACRO    (MSG_ERROR+ 85)  /* unknown macro attribute */
 #define MSG_NO_URIPATH         (MSG_WARN + 21)  /* path to URI not found */
 #define MSG_SERVER_URI         (MSG_WARN + 36)  /* suspicios enum value */
-#define MSG_ARG_NO_QUOTE       (MSG_WARN + 22)  /* argument without quote */
+#define MSG_ARG_NO_QUOTE       (MSG_PORT + 22)  /* argument without quote */
 #define MSG_EMPTY_SYMB_REF     (MSG_ERROR+ 23)  /* empty symbol reference */
 #define MSG_ILLG_ATTR_FLAG     (MSG_WARN + 24)  /* attribute flag not allowed here */
 
@@ -136,6 +134,7 @@
 #define MSG_ILLG_ATTRNAME      (MSG_ERROR+ 64)  /* illegal attribute identifier */
 #define MSG_UNKN_BINOP         (MSG_ERROR+ 65)  /* unknown binary operator */
 #define MSG_ATTR_CONST         (MSG_ERROR+ 27)  /* can't change constant attr */
+#define MSG_IMG_CORRUPT        (MSG_ERROR+  8)  /* image corrupt * /
 
 /*
  * messages from tag handles
@@ -160,6 +159,8 @@
 #define MSG_BLINK_SUX          (MSG_STYLE+ 25)  /* blink sucks  */
 #define MSG_FRAME_SUX          (MSG_STYLE+ 76)  /* frames are disgusting */
 #define MSG_NO_CONTENT         (MSG_FATAL+ 28)  /* no content */
+#define MSG_REDEFINE_LAZY      (MSG_ERROR+ 56)  /* redefined lazy */
+#define MSG_UNKN_LAZY          (MSG_ERROR+ 32)  /* unknown lazy * /
 
 /*
  * messages within expressions
@@ -185,5 +186,7 @@
 #define MSG_REDEFINE_ID        (MSG_WARN + 75)  /* duplicate ID */
 #define MSG_NOEXEC_OUTPUT      (MSG_WARN + 80)  /* no output-file for <$exec>*/
 #define MSG_IOERROR            (MSG_ERROR+ 83)  /* i/o-error */
+
+
 #endif
 

@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     if (inpf)
     {
 
-#if 1
+#if 0
         /* info about first word */
         wdbuf = infgetw(inpf);
         printf("word#0: \"%s\", \"%s\"\n",
@@ -146,6 +146,7 @@ int main(int argc, char *argv[])
     else
         perror("Can't open input file");
 
+#if 0
     /* test a string file */
     inpf = infopen_str("test string", "this is\n a string\n converted\n to an\n input file.", 0);
     if (inpf)
@@ -162,9 +163,23 @@ int main(int argc, char *argv[])
         infclose(inpf);
     }
     else
+    {
         perror("Can't open input file from string");
-
+    }
     printf("\n");
+#endif
+
+#if 1
+    /*
+     * test UTF-8 encoded file
+     */
+    inpf = infopen("danish8.htm");
+    if (inpf)
+    {
+
+        infclose(inpf);
+    }
+#endif
 
     return (0);
 }

@@ -22,7 +22,7 @@
  *
  * message functions for hsc
  *
- * updated:  1-Jun-1997
+ * updated:  8-Oct-1997
  * created: 10-Mar-1996
  *
  */
@@ -58,6 +58,12 @@ static VOID msg_attr(EXPSTR * msgstr, CONSTRPTR attrname)
     app_estr(msgstr, attrname);
 }
 
+static VOID msg_lazy(EXPSTR * msgstr, CONSTRPTR lazy_name)
+{
+    app_estr(msgstr, "var-list ");
+    app_estr(msgstr, lazy_name);
+}
+
 static VOID msg_entity(EXPSTR * msgstr, CONSTRPTR entname)
 {
     app_estr(msgstr, "entity `");
@@ -87,6 +93,9 @@ static VOID msg_idname(EXPSTR * msgstr, CONSTRPTR idname)
  *  %E ptr to HSCENT
  *  %e string to entity-name
  *  %i string to id-name
+ *  %j string to jerk/prostitute
+ *  %L ptr to var-list
+ *  %l string to var-list
  *  %q quoted string
  *  %s string
  *  %T ptr to HSCTAG
@@ -110,16 +119,13 @@ static BOOL is_child_file(STRPTR filename)
                              strlen(PARENT_FILE_ID)));
 }
 
-VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
+/* decides, if a message should be ignored or display */
+static BOOL really_display_message(HSCPRC *hp, HSCMSG_ID msg_id)
 {
     HSCMSG_CLASS msg_class = hsc_get_msg_class(hp, msg_id);
     HSCMSG_ID msg_id_unmasked = msg_id & MASK_MESSAGE;
-    INFILE *msg_inpf = NULL;
-    STRPTR msg_fname = "unknown";
-    ULONG msg_x = 0;
-    ULONG msg_y = 0;
-    BOOL disp_msg = TRUE;       /* flag, if message really */
-    /* should be displayed */
+    BOOL disp_msg = TRUE;       /* function result */
+
     if (hp->fatal)
     {
 
@@ -127,14 +133,13 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
         disp_msg = FALSE;
     }
     else if (
-                (hsc_get_msg_ignore(hp, msg_id))
+                (hsc_get_msg_ignore(hp, msg_id) == ignore)
                 &&
                 (msg_class <= MSG_WARN)
         )
     {
         /* oppress message if it is marked as ignored
-         * and it is no ERROR/FATAL message
-         */
+         * and it is no ERROR/FATAL message */
         D(fprintf(stderr, DHL "ignore msg#%ld: ignore enabled\n",
                   msg_id_unmasked));
         disp_msg = FALSE;
@@ -144,12 +149,35 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
              || ((msg_class == MSG_PORT) && (hp->msg_ignore_port))
         )
     {
-        /* oppress message if it's class is
-         * marked as to be ignored */
-        D(fprintf(stderr, DHL "ignore msg#%ld: ignore whole class (%06lx)\n",
-                  msg_id_unmasked, msg_class));
-        disp_msg = FALSE;
+        /* class should be ignored; however, if this message is set
+         * to enable, still display it */
+        if (hsc_get_msg_ignore(hp, msg_id) != enable)
+        {
+            /* oppress message if it's class is
+             * marked as to be ignored */
+            D(fprintf(stderr, DHL "ignore msg#%ld: ignore whole class (%06lx)\n",
+                      msg_id_unmasked, msg_class));
+            disp_msg = FALSE;
+        }
+        else
+        {
+            D(fprintf(stderr, DHL "enable msg#%ld: only ignore whole class (%06lx)\n",
+                      msg_id_unmasked, msg_class));
+        }
     }
+
+    return disp_msg;
+}
+
+VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
+{
+    HSCMSG_CLASS msg_class = hsc_get_msg_class(hp, msg_id);
+    HSCMSG_ID msg_id_unmasked = msg_id & MASK_MESSAGE;
+    INFILE *msg_inpf = NULL;
+    STRPTR msg_fname = "unknown";
+    ULONG msg_x = 0;
+    ULONG msg_y = 0;
+    BOOL disp_msg = really_display_message(hp, msg_id);         /* display message? */
 
     if (disp_msg)
     {
@@ -173,6 +201,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
             {
                 STRPTR s = NULL;
                 HSCTAG *tag = NULL;
+                HSCTAG *lazy = NULL;
                 HSCATTR *attr = NULL;
                 HSCENT *ent = NULL;
 
@@ -291,6 +320,17 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                     }
                     break;
 
+                case 'L':
+                    /* append var-list-pointer */
+                    lazy = va_arg(ap, HSCTAG *);
+                    msg_lazy(hp->curr_msg, lazy->name);
+                    break;
+
+                case 'l':
+                    /* append var-list */
+                    msg_lazy(hp->curr_msg, va_arg(ap, STRPTR));
+                    break;
+
                 default:
                     /*
                      * append unknown
@@ -363,7 +403,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
             msg_y = 0;
         }
 
-#if 0 /* TODO: remove */
+#if 0                           /* TODO: remove */
         fprintf(stderr, "*** msg_id    = %06lx\n", msg_id);
         fprintf(stderr, "*** msg_class = %06lx\n", msg_class);
 #endif

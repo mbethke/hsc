@@ -511,7 +511,9 @@ static BOOL update_makefile(VOID)
 
     /* append tagline */
     if (!notaglines)
+    {
         app_estr(lines_depend, STR_DEPENDS_FOLLOW);
+    }
 
     /* append some header info */
     if (!notaglines)
@@ -532,21 +534,18 @@ static BOOL update_makefile(VOID)
     /*
      * append all-rule
      */
-    if (docnode->data)
+    app_estr(lines_depend, nameall);
+    app_estr(lines_depend, " :");
+    linelen = strlen(nameall) + 2;
+
+    while (docnode)
     {
-        app_estr(lines_depend, nameall);
-        app_estr(lines_depend, " :");
-        linelen = strlen(nameall) + 2;
+        HSCDOC *document = dln_data(docnode);
+        depline_appstr(document->docname, &linelen);
 
-        while (docnode)
-        {
-            HSCDOC *document = dln_data(docnode);
-            depline_appstr(document->docname, &linelen);
-
-            docnode = dln_next(docnode);
-        }
-        app_estr(lines_depend, "\n\n");
+        docnode = dln_next(docnode);
     }
+    app_estr(lines_depend, "\n\n");
 
     /*
      * append document data
@@ -666,7 +665,7 @@ int main(int argc, char *argv[])
 #define BETA 0
 #endif
     /* set program information */
-    set_prginfo("hscdepp", "Tommy-Saftwörx", VERSION, REVISION, BETA,
+    set_prginfo("hscdepp", UGLY_AUTHOR, VERSION, REVISION, BETA,
                 "hsc dependency procreator",
                 "Freeware, type `hscdepp LICENSE' for details.");
 

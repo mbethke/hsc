@@ -2,6 +2,71 @@
 CHANGES
 =======
 
+Version 0.915, 2-Nov-1997
+ (some more systems supported, minor fixes and improvements)
+
+ hsc:
+ - fixed bug: skipping verbatim data <|..|> did not work inside any
+   skipping context (like macro declarations) because I broke the
+   basic programmer rule "NEVER use Copy and Paste in your editor
+   when writing programs"  [Xavier Bestel]
+ - fixed bug: did not scan for `$HOME/lib/hsc.prefs' as described in
+   the documentation
+ - fixed bug: white spaces before tag names were always removed, even
+   with COMPACT disabled (`< IMG ..>' became `<IMG ..>')
+ - fixed bug: if the expression assigned to the COND-attribute of an
+   <$if> contained errors, the corresponding <$else> panicked
+ - changed class of message#78 and #79 from "bad style" to
+   "portability problem" [Magnus Holmgren]
+ - changed class of message#22 from "warning" to "portability
+   problem"
+ - changed handling of entities without ";": if no ";" is found, the
+   current character remains in the input stream. This has quite some
+   effect if it was a "<" to indicate a tag call. Furthermore this now
+   results into message #19. And there are now some checks for illegal
+   white space within entities performed
+ - remove some debugging code that was even linked with DEBUG=0
+ - added conditional assignments (see docs/assign.html)
+ - added operator `IN'
+ - added ability to unset attributes using <$let>
+ - added message#8, which now comes up for corrupt images instead
+   of an internal error message
+ - now compiles with `gcc -pedantic ..' and does no more depend on
+   char = unsigned char (You are not expected to understand this
+   entry)
+ - added support for NextStep [Dieter Sabathi] (see docs/ports.html)
+ - added support for BeOS
+ - added support for AmigaOS with ixemul.library
+
+ hscpitt (v1.2):
+ - added command NEW to create an empty project file
+ - added switch FORCE
+ - improved command ADD that it can replace an existing document if
+   FORCE has been enabled
+
+ hscdepp(v1.3):
+ - fixed bug: project files without any documents caused enforcer hit
+
+ documentation:
+ - moved description of compilation process into source.html
+ - added notes on how to use hsc together with other html-extensions
+   (others.html)
+ - added some details about assignment and quoting (assign.html)
+ - added example how to assign the output of external scripts to
+   an attribute (features/exec.html)
+ - added some notes on the image formats supported by GETSIZE; yes,
+   it supports PNG since ever (getsize.html)
+ - forgot to document that CLI-option COMPACT also removes unneeded
+   blanks within tag calls (strip.html)
+ - managed to configure GoldEd and ISpell that I can spell-check
+   both English and German texts - and fixed the errors in the
+   (single paged) German version of the docs. (Hoeh Hoeh Hoeh!)
+
+ miscellaneous:
+ - compiled with gcc 2.7.2.1 (works fine, why update?)
+
+---------------------------------------------------------------------
+
 Version 0.914, 6-Jun-1997
  (very minor update just fixing a few problems)
 
@@ -24,7 +89,7 @@ Version 0.914, 6-Jun-1997
  - updated all next/previous relations
  - renamed `absolute URIs' to `Project Relative URIs' to avoid
    confusion as this term is normally used for `external' URIs.
- - added some notes on the not-existing german documentation
+ - added some notes on the not-existing German documentation
  - added some general comments about make and common problems
    (make.html)
  - added some details why hsc.prefs is used instead of DTD
@@ -43,7 +108,7 @@ Version 0.914, 6-Jun-1997
 ---------------------------------------------------------------------
 
 Version 0.913, 26-May-1997
- (more consitent container macros; reworked data-skipping and
+ (more consistent container macros; reworked data-skipping and
  sgml-comments; improved hscpitt;some bugfixes and minor
  improvements)
 

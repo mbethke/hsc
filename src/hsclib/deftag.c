@@ -22,7 +22,7 @@
  *
  * define new tag from input file
  *
- * updated: 31-May-1997
+ * updated: 11-Oct-1997
  * created: 13-Oct-1995
  */
 
@@ -352,9 +352,6 @@ static BOOL parse_tag_var(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
 {
-    /* TODO: remove the bullshit with "\n"-checking;
-     * meanwhile "\n" is treated as white space */
-
     BOOL ok = FALSE;
     STRPTR nw;
     INFILE *inpf = hp->inpf;
@@ -369,13 +366,12 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
         /*
          * set tag options
          */
-        while (nw && ((!strcmp(nw, "/")) || !strcmp(nw, "\n")))
+        while (nw && (!strcmp(nw, "/")))
         {
             nw = infgetw(inpf);
             if (nw)
             {
-                if (strcmp(nw, "\n"))
-                    ok &= parse_tag_option(hp, nw, tag);
+                ok &= parse_tag_option(hp, nw, tag);
                 nw = infgetw(inpf);
             }
         }
@@ -389,20 +385,35 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
         /*
          * set tag attributes
          */
-        while (nw && ((strcmp(nw, ">") || !strcmp(nw, "\n"))))
+        while (nw && (strcmp(nw, ">")))
         {
-            if (strcmp(nw, "\n"))
+            if (strcmp(nw, "("))
             {
+                /* define classic attribute */
                 inungetcw(inpf);
                 ok &= parse_tag_var(hp, tag);
             }
-
+            else
+            {
+                /* insert lazy attribute list */
+                STRPTR name = infget_tagid(hp);
+                if (nw)
+                {
+                    HSCTAG *lazy = find_strtag(hp->deflazy, name);
+                    if (lazy)
+                    {
+                        copy_local_varlist(tag->attr, lazy->attr, MCI_GLOBAL);
+                    }
+                    else
+                    {
+                        hsc_message(hp, MSG_UNKN_LAZY, "unknown %l", name);
+                    }
+                }
+                parse_wd(hp, ")");
+            }
             nw = infgetw(inpf);
+
         }
-
-        /* skip linefeeds */
-        while (nw && !strcmp(nw, "\n"))
-            nw = infgetw(inpf);
 
         /* check for ">" at end */
         if (nw)
@@ -514,12 +525,14 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
         {
             /* process "?="-assignment */
             if (!hp->compact)
+            {
                 app_estr(val_str, infgetcws(inpf));
+            }
             if (parse_eq(hp))
             {
                 app_estr(val_str, "=");
 
-                arg = eval_cloneattr(hp, attr);
+                arg = eval_conditional_assignment(hp, attr);
 
                 /* append value to log */
                 if (attr->quote != VQ_NO_QUOTE)
@@ -558,7 +571,9 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
             ok = TRUE;
         }
     else
+    {
         hsc_msg_eof(hp, "read attribute value");
+    }
 
     if (ok)
         if (arg)
@@ -575,8 +590,10 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
                     clr_estr(attr_str);
             }
             else if (!inheritage_failed)
+            {
                 /* append value to attribute string */
                 estrcat(attr_str, val_str);
+            }
         }
         else if (inheritage_failed)
         {
@@ -617,6 +634,64 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
     del_estr(val_str);
 
     return (ok);
+}
+
+/*
+ * set_tag_defaults
+ *
+ * append attributes which do not have been set by user but contain
+ * an default value to the hp->tag_attr_str
+ */
+static VOID set_tag_defaults(HSCPRC * hp, HSCTAG * tag)
+{
+    DLNODE *nd = dll_first(tag->attr);
+
+    while (nd)
+    {
+        HSCATTR *attr = (HSCATTR *) dln_data(nd);
+        STRPTR value = get_vartext(attr);
+        STRPTR defval = get_vardeftext(attr);
+
+        if (!value && defval)
+        {
+            /* there is no current value, but an default value:
+             * set value with default, */
+            set_vartext(attr, defval);
+
+            /* append attribute name to tag_attr_str */
+            app_estr(hp->tag_attr_str, " ");
+            app_estr(hp->tag_attr_str, attr->name);
+
+            DAV(fprintf(stderr, DHL "  `%s:%s' defaults to `%s'\n",
+                        tag->name, attr->name, defval));
+
+            /* if it is a non-bool attrib, also append value */
+            if (attr->vartype != VT_BOOL)
+            {
+                app_estr(hp->tag_attr_str, "=");
+
+                /* decide which quote to use for default value */
+                attr->quote = DOUBLE_QUOTE;
+                choose_quote(hp, attr);
+
+                /* append quote */
+                if (attr->quote != VQ_NO_QUOTE)
+                {
+                    app_estrch(hp->tag_attr_str, attr->quote);
+                }
+                /* append value */
+                app_estr(hp->tag_attr_str, attr->name);
+                /* append quote */
+                if (attr->quote != VQ_NO_QUOTE)
+                {
+                    app_estrch(hp->tag_attr_str, attr->quote);
+                }
+            }
+        }
+
+        nd = dln_next(nd);
+    }
+
 }
 
 /*
@@ -684,6 +759,10 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
     }
     while (nw);
 
+    /* for all attributes with defaults, but no value,
+     * append it to the tag call */
+    set_tag_defaults(hp, tag);
+
     /* unset scope */
     unget_mci(hp);
 
@@ -695,11 +774,15 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
     {
         ok = check_varlist(hp, varlist);
         if (!ok)
+        {
             inungetcw(inpf);
+        }
     }
 
     if (!ok)
+    {
         result_tci = MCI_ERROR;
+    }
 
     return (result_tci);
 }

@@ -34,23 +34,24 @@
 #define HSC_COMMENT_STR  "*"
 #define HSC_VERBATIM_STR "|"
 #define HSC_INSEXPR_STR  "("
-#define HSC_CONTENT_STR  HSC_TAGID "CONTENT"
-#define HSC_DEFENT_STR   HSC_TAGID "DEFENT"
-#define HSC_DEFICON_STR  HSC_TAGID "DEFICON"
-#define HSC_DEFINE_STR   HSC_TAGID "DEFINE"
-#define HSC_DEFTAG_STR   HSC_TAGID "DEFTAG"
-#define HSC_DEPEND_STR   HSC_TAGID "DEPEND"
-#define HSC_ELSE_STR     HSC_TAGID "ELSE"
-#define HSC_ELSEIF_STR   HSC_TAGID "ELSEIF"
-#define HSC_EXEC_STR     HSC_TAGID "EXEC"
-#define HSC_EXPORT_STR   HSC_TAGID "EXPORT"
-#define HSC_IF_STR       HSC_TAGID "IF"
-#define HSC_INCLUDE_STR  HSC_TAGID "INCLUDE"
-#define HSC_INSERT_STR   HSC_TAGID "INSERT"
-#define HSC_LET_STR      HSC_TAGID "LET"
-#define HSC_MACRO_STR    HSC_TAGID "MACRO"
-#define HSC_MESSAGE_STR  HSC_TAGID "MESSAGE"
-#define HSC_SOURCE_STR   HSC_TAGID "SOURCE"
+#define HSC_CONTENT_STR  HSC_TAGID "content"
+#define HSC_DEFENT_STR   HSC_TAGID "defent"
+#define HSC_DEFICON_STR  HSC_TAGID "deficon"
+#define HSC_DEFINE_STR   HSC_TAGID "define"
+#define HSC_DEFTAG_STR   HSC_TAGID "deftag"
+#define HSC_DEPEND_STR   HSC_TAGID "depend"
+#define HSC_ELSE_STR     HSC_TAGID "else"
+#define HSC_ELSEIF_STR   HSC_TAGID "elseif"
+#define HSC_EXEC_STR     HSC_TAGID "exec"
+#define HSC_EXPORT_STR   HSC_TAGID "export"
+#define HSC_IF_STR       HSC_TAGID "if"
+#define HSC_INCLUDE_STR  HSC_TAGID "include"
+#define HSC_INSERT_STR   HSC_TAGID "insert"
+#define HSC_LET_STR      HSC_TAGID "let"
+#define HSC_LAZY_STR     HSC_TAGID "varlist"
+#define HSC_MACRO_STR    HSC_TAGID "macro"
+#define HSC_MESSAGE_STR  HSC_TAGID "message"
+#define HSC_SOURCE_STR   HSC_TAGID "source"
 #define HSC_STRIPWS_STR  HSC_TAGID "StripWS"
 
 #define HSC_TEXT_STR     "TEXT"
@@ -64,7 +65,7 @@
 #define STRIPWS_ENUM     \
         STRIPWS_BOTH "|" STRIPWS_PREV "|" STRIPWS_SUCC "|" STRIPWS_NONE
 
-struct hscprocess;              /* forward reference */
+struct hsc_process;             /* forward reference */
 
 /*
  * structure & typdef for tag
@@ -73,9 +74,9 @@ typedef struct hsctag
 {
     STRPTR name;                /* tag name, eg "TITLE" */
     ULONG option;               /* tag options, eg HT_CLOSE|HT_REQUIRED */
-      BOOL(*o_handle) (struct hscprocess * hp, struct hsctag * tag);
+      BOOL(*o_handle) (struct hsc_process * hp, struct hsctag * tag);
     /* callback for start-tag */
-      BOOL(*c_handle) (struct hscprocess * hp, struct hsctag * tag);
+      BOOL(*c_handle) (struct hsc_process * hp, struct hsctag * tag);
     /* callback for end-tag */
     DLLIST *attr;               /* list of attributes */
     EXPSTR *op_text;            /* macro text (open/close) */
@@ -123,7 +124,7 @@ HSCTAG;
 #define HT_CONTENT      (1<<16) /* auto-enabled for content macros */
 
 #define HT_KEEP_QUOTES (1<<30)  /* keep quotes for all attributes;
-                                 * auto-enable for all macro tags  */
+                                 * * auto-enable for all macro tags  */
 
 /* tag options that can be set via DEFTAG */
 #define TO_CLOSE_STR       "CLOSE"

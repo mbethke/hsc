@@ -18,7 +18,7 @@
  *
  */
 #ifndef UGLY_UMEMORY_H
-#define UGLY_UMEMORY_H           /* avoid include twice */
+#define UGLY_UMEMORY_H          /* avoid include twice */
 
 /*
  * ugly/umemory.h
@@ -37,18 +37,20 @@
  *           but only if it has been allocated
  *           successfully before
  */
-typedef struct uglymem {
-
+struct uglymem
+{
     struct uglymem *next;
     void *ptr;                  /* ptr to mem area allocated before */
-    STRPTR lower;               /* lower wall */
-    STRPTR upper;               /* upper wall */
+    UBYTE *lower;               /* lower wall */
+    UBYTE *upper;               /* upper wall */
     size_t size;                /* size of this area */
     STRPTR file;                /* filename from which call came */
     ULONG line;                 /* line num in this file */
     UBYTE fillchar;             /* fill character for wall */
 
-} UGLYMEM;
+};
+
+typedef struct uglymem UGLYMEM;
 
 #if DEBUG_UGLY_MEMORY
 
@@ -82,6 +84,8 @@ typedef struct uglymem {
 
 #ifndef NOEXTERN_UGLY_UMEMORY_H
 
+extern VOID display_panic_message(char *msg, char *file, size_t line);
+
 extern void *ugly_malloc_tracking(size_t size, STRPTR file, ULONG line);
 extern void *ugly_malloc_notracking(size_t size);
 extern void ugly_free(void *ptr, STRPTR file, ULONG line);
@@ -98,4 +102,3 @@ extern BOOL(*ugly_nomem_handler) (size_t size);
 #endif
 
 #endif
-

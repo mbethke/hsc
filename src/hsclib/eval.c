@@ -22,7 +22,7 @@
  *
  * attribute value evaluation functions
  *
- * updated: 12-May-1997
+ * updated: 19-Oct-1997
  * created: 11-Oct-1995
  */
 
@@ -57,7 +57,7 @@
 #define OP_GTE_STR ">="
 #define OP_LTE_STR "<="
 #define OP_CEQ_STR "=="         /* TODO: case sensitive string comparison */
-#define OP_INSIDE_STR "IN"      /* TODO: check for substring */
+#define OP_INSIDE_STR "IN"
 #define OP_CL_BRAKET_STR ")"    /* closing braket */
 
 #define OP_EQ   1
@@ -84,10 +84,19 @@
 #define OP_XOR 14
 
 /*
- * string operators
+ * string/arithmetik operators
  */
 #define OP_CAT_STR "+"
+#define OP_SUB_STR "-"
+#define OP_MUL_STR "*"
+#define OP_DIV_STR "/"
+#define OP_MOD_STR "MOD"        /* modulo */
+
 #define OP_CAT      15
+#define OP_SUB      16
+#define OP_MUL      17
+#define OP_DIV      18
+#define OP_MOD      19
 
 typedef BYTE op_t;
 
@@ -141,7 +150,9 @@ static EXPSTR *gettimestr(HSCPRC * hp, struct tm *time)
 
     /* set default time format */
     if (!timefmt)
+    {
         timefmt = "%d-%b-%Y, %H:%M";
+    }
 
     while (!(hp->fatal) && !strftrc)
     {
@@ -316,10 +327,14 @@ BOOL check_attrname(HSCPRC * hp, STRPTR name)
     BOOL ok = FALSE;
 
     if (hsc_normch(name[0]))
+    {
         ok = TRUE;
+    }
     else
+    {
         hsc_message(hp, MSG_ILLG_ATTRNAME,
                     "illegal attribute identifier %q", name);
+    }
 
     return (ok);
 }
@@ -338,10 +353,14 @@ static STRPTR eval_attrname(HSCPRC * hp)
     if (nw)
     {
         if (check_attrname(hp, nw))
+        {
             result = nw;
+        }
     }
     else
+    {
         hsc_msg_eof(hp, "attribute identifier expected");
+    }
 
     return (result);
 }
@@ -351,18 +370,26 @@ static STRPTR eval_attrname(HSCPRC * hp)
  *
  * return readable string for quote-kind
  */
-#define DOUBLE_QUOTE '\"'
-#define SINGLE_QUOTE '\''
 STRPTR quotestr(int quote)
 {
     STRPTR s = "UNKNOWN";
 
     if (quote == DOUBLE_QUOTE)
+    {
         s = "[double]";
+    }
     else if (quote == SINGLE_QUOTE)
+    {
         s = "[single]";
+    }
+    else if (quote == BACK_QUOTE)
+    {
+        s = "[back]";
+    }
     else if (quote == VQ_NO_QUOTE)
+    {
         s = "[none]";
+    }
     else
     {
         STRARR tmp[60];
@@ -379,7 +406,7 @@ STRPTR quotestr(int quote)
  * choose quote to be used for attr, depending on
  * hp->quotemode and quotes used inside the value
  */
-static VOID choose_quote(HSCPRC * hp, HSCATTR * attr)
+VOID choose_quote(HSCPRC * hp, HSCATTR * attr)
 {
     int quote = attr->quote;
     LONG qm = hp->quotemode;    /* lazy.. */
@@ -774,23 +801,55 @@ static BYTE eval_op(HSCPRC * hp)
     {
         /* boolean operators */
         if (!upstrcmp(nw, OP_AND_STR))
+        {
             op = OP_AND;
+        }
         else if (!upstrcmp(nw, OP_OR_STR))
+        {
             op = OP_OR;
+        }
         else if (!upstrcmp(nw, OP_XOR_STR))
+        {
             op = OP_XOR;
-
-        /* concatenation operator */
+        }
         else if (!strcmp(nw, OP_CAT_STR))
+        {
+            /* concatenation operator */
             op = OP_CAT;
-
+        }
+        else if (!strcmp(nw, OP_SUB_STR))
+        {
+            /* subtraction operator */
+            op = OP_SUB;
+        }
+        else if (!strcmp(nw, OP_MUL_STR))
+        {
+            /* multiplication operator */
+            op = OP_MUL;
+        }
+        else if (!strcmp(nw, OP_DIV_STR))
+        {
+            /* division operator */
+            op = OP_DIV;
+        }
+        else if (!strcmp(nw, OP_MOD_STR))
+        {
+            /* modulo operator */
+            op = OP_MOD;
+        }
+        else if (!strcmp(nw, OP_INSIDE_STR))
+        {
+            /* substring search */
+            op = OP_INSIDE;
+        }
         /* closing braket */
         else if (!strcmp(nw, OP_CL_BRAKET_STR))
+        {
             op = OP_CL_BRAKET;
-
-        /* comparison operators */
+        }
         else if (strenum(nw, "<|=|>", '|', STEN_CASE))
         {
+            /* comparison operators */
             STRARR opstr[3];
             int ch;
 
@@ -837,18 +896,143 @@ static BYTE eval_op(HSCPRC * hp)
                 err_op(hp, opstr);
         }
         else
+        {
             err_op(hp, nw);
-
+        }
     }
     else
+    {
         op_eof = TRUE;
+    }
 
     D(fprintf(stderr, "\"\n"));
 
     if (op_eof)
+    {
         hsc_msg_eof(hp, "operator expected");
+    }
 
     return (op);
+}
+
+/*
+ * stroptol
+ *
+ * convert string operand to long int; treat "" as 0,
+ * any non-numeric values as 1
+ *
+ * this enables to use boolean vars in numeric expressions
+ *
+ * result: TRUE
+ */
+static BOOL stroptol(HSCPRC *hp, LONG *dest, STRPTR str)
+{
+    BOOL ok = TRUE;
+
+    *dest = 0;
+
+    if (str[0])
+    {
+        STRPTR last_char = NULL;
+        *dest = strtol(str, &last_char, 0);
+        if (!last_char || (last_char[0]))
+        {
+            *dest = 1;
+        }
+    }
+    else
+    {
+        /* empty string "" counts as 0, too */
+    }
+
+    return ok;
+}
+
+/*
+ * process_arithmetic_op
+ */
+static BOOL process_arithmetic_op(HSCPRC * hp, EXPSTR *result, BYTE op, STRPTR str1, STRPTR str2)
+{
+    BOOL result_set = TRUE;
+    LONG int1 = 0;              /* integer value of string operands */
+    LONG int2 = 0;
+    LONG intr = 0;              /* integer result */
+
+    /* convert both string operands to integers */
+    result_set = stroptol(hp, &int1, str1);
+    result_set &= stroptol(hp, &int2, str2);
+
+    switch (op)
+    {
+    case OP_CAT:
+        intr = int1 + int2;
+        break;
+    case OP_SUB:
+        intr = int1 - int2;
+        break;
+    case OP_MUL:
+        intr = int1 * int2;
+        break;
+    case OP_DIV:
+        intr = int1 / int2;
+        break;
+    case OP_MOD:
+        intr = int1 % int2;
+        break;
+    default:
+        panic("unknown arithmetic operator");
+        break;
+    }
+
+    /* set result */
+    if (result_set)
+    {
+        STRARR buf[20];
+        sprintf(buf, "%ld", intr);
+        set_estr(result, buf);
+    }
+
+    return result_set;
+}
+
+static BOOL process_boolean_op(HSCPRC *hp, HSCATTR *dest, BYTE op, STRPTR str1, STRPTR str2)
+{
+    BOOL bool_val1 = eval_boolstr(str1);
+    BOOL bool_val2 = eval_boolstr(str2);
+    BOOL bool_valr = FALSE;
+
+    switch (op)
+    {
+    case OP_AND:
+        if (bool_val1 && bool_val2)
+        {
+            bool_valr = TRUE;
+        }
+        break;
+
+    case OP_OR:
+        if (bool_val1 || bool_val2)
+        {
+            bool_valr = TRUE;
+        }
+        break;
+
+    case OP_XOR:
+        if ((bool_val1 || bool_val2)
+            && !(bool_val1 && bool_val2)
+            )
+        {
+            bool_valr = TRUE;
+        }
+        break;
+    default:
+        panic("unknown boolean operator");
+        break;
+    }
+
+    set_varbool(dest, bool_valr);
+
+    return FALSE;
 }
 
 /*
@@ -862,106 +1046,140 @@ static VOID process_op(HSCPRC * hp, HSCATTR * dest, BYTE op, STRPTR str1, STRPTR
     D(fprintf(stderr, DHL "  \"%s\", \"%s\"\n", str1, str2));
     if (str2 && (op != OP_NONE))
     {
-        BOOL bool_val1 = eval_boolstr(str1);
-        BOOL bool_val2 = eval_boolstr(str2);
-
         switch (op)
         {
+        case OP_CAT:
+
+            if (dest->vartype != VT_NUM)
+            {
+                /* concat two expressions */
+                set_estr(result, str1);
+                app_estr(result, str2);
+                result_set = TRUE;
+            }
+            else
+            {
+                result_set = process_arithmetic_op(hp, result, op, str1, str2);
+            }
+
+            break;
+
+        case OP_INSIDE:
+
+            /* sub-string search, ignore case */
+            if (upstrstr(str2, str1))
+            {
+                set_varbool(dest, TRUE);
+            }
+            else
+            {
+                set_varbool(dest, FALSE);
+            }
+            break;
+
         case OP_AND:
-            if (bool_val1 && bool_val2)
-                set_varbool(dest, TRUE);
-            else
-                set_varbool(dest, FALSE);
-            break;
-
         case OP_OR:
-            if (bool_val1 || bool_val2)
-                set_varbool(dest, TRUE);
-            else
-                set_varbool(dest, FALSE);
+        case OP_XOR:
+            result_set = process_boolean_op(hp, dest, op, str1, str2);
             break;
 
-        case OP_XOR:
-            if ((bool_val1 || bool_val2)
-                && !(bool_val1 && bool_val2)
-                )
-                set_varbool(dest, TRUE);
-            else
-                set_varbool(dest, FALSE);
+        case OP_SUB:
+        case OP_MUL:
+        case OP_DIV:
+        case OP_MOD:
+            result_set = process_arithmetic_op(hp, result, op, str1, str2);
             break;
 
         case OP_EQ:
 
             /* string comparison, ignore case */
             if (!upstrcmp(str1, str2))
+            {
                 set_varbool(dest, TRUE);
+            }
             else
+            {
                 set_varbool(dest, FALSE);
+            }
             break;
 
         case OP_NEQ:
 
             /* string comparison "<>" */
             if (upstrcmp(str1, str2))
+            {
                 set_varbool(dest, TRUE);
+            }
             else
+            {
                 set_varbool(dest, FALSE);
+            }
             break;
 
         case OP_GT:
 
             /* string comparison ">" */
             if (upstrcmp(str1, str2) > 0)
+            {
                 set_varbool(dest, TRUE);
+            }
             else
+            {
                 set_varbool(dest, FALSE);
+            }
             break;
 
         case OP_LT:
 
             /* string comparison "<" */
             if (upstrcmp(str1, str2) < 0)
+            {
                 set_varbool(dest, TRUE);
+            }
             else
+            {
                 set_varbool(dest, FALSE);
+            }
             break;
 
         case OP_GTE:
 
             /* string comparison ">=" */
             if (upstrcmp(str1, str2) >= 0)
+            {
                 set_varbool(dest, TRUE);
+            }
             else
+            {
                 set_varbool(dest, FALSE);
+            }
             break;
 
         case OP_LTE:
 
             /* string comparison "<=" */
             if (upstrcmp(str1, str2) <= 0)
+            {
                 set_varbool(dest, TRUE);
+            }
             else
+            {
                 set_varbool(dest, FALSE);
+            }
             break;
 
         case OP_CEQ:
 
             /* string comparison, case sensitive */
             if (!strcmp(str1, str2))
+            {
                 set_varbool(dest, TRUE);
+            }
             else
+            {
                 set_varbool(dest, FALSE);
+            }
             break;
-
-        case OP_CAT:
-
-            /* concat two expressions */
-            set_estr(result, str1);
-            app_estr(result, str2);
-            result_set = TRUE;
-
-            break;
-
         default:
             panic("empty operator");
             break;
@@ -971,7 +1189,9 @@ static VOID process_op(HSCPRC * hp, HSCATTR * dest, BYTE op, STRPTR str1, STRPTR
      * if this has not happened yet
      */
     if (result_set)
+    {
         set_vartext(dest, estr2str(result));
+    }
 
     /* remove temp. string for result */
     del_estr(result);
@@ -1246,7 +1466,9 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
         op = eval_op(hp);
 
         if (op == OP_CL_BRAKET)
+        {
             DMSG("  END mark operator reached");
+        }
         else if (op != OP_NONE)
         {
             /* no endmark reached */
@@ -1266,9 +1488,13 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
                 str2 = eval_expression(hp, dest1, endstr);
 
                 if (str2)
+                {
                     process_op(hp, dest, op, str1, str2);
+                }
                 else
+                {
                     exprstr = NULL;
+                }
 
                 /* remove result of second value */
                 del_hscattr((APTR) dest1);
@@ -1378,10 +1604,12 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
                     }
                 }
                 if (!ok)
+                {
                     /* unknown enum value */
                     hsc_message(hp, MSG_ILLG_NUM,
                                 "illegal numeric value %q for %A",
                                 exprstr, dest);
+                }
             }
             /*
              * for boolean attributes, set the name
@@ -1389,10 +1617,16 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
              * empty string, if FALSE
              */
             else if (dest->vartype == VT_BOOL)
+            {
                 if (eval_boolstr(exprstr))
+                {
                     set_vartext(dest, dest->name);
+                }
                 else
+                {
                     set_vartext(dest, "");
+                }
+            }
 
             /*
              * checks performed only for tags,
@@ -1422,7 +1656,9 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
              */
             skip_until_eot(hp, NULL);
             if (!hp->fatal)
+            {
                 inungetcw(inpf);
+            }
         }
     }
 
@@ -1432,36 +1668,42 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
 }
 
 /*
- * eval_cloneattr
+ * assign_conditional_attr
  *
- * read name of attribute, check if it has been set;
- * if so, return value of attribute.
- * all possible errors are handled by this function.
+ * validate and find name of source attrib, if set, copy value
+ * to destination attribute
  *
- * params: hp.....hsc-process
- *         dest...detination attribute where to store value
+ * params: hp...........hsc-process
+ *         dest.........detination attribute where to store value
+ *         source_attr..name of source attribute
  * result: value of attribute, if it has been set, or NULL
  *         if attribute is empty or unknown or other error
  *         has occured.
  */
-STRPTR eval_cloneattr(HSCPRC * hp, HSCATTR * dest)
+static STRPTR assign_conditional_attr(HSCPRC * hp, HSCATTR * dest, STRPTR source_name)
 {
-    STRPTR nw = eval_attrname(hp);
     STRPTR attrval = NULL;
 
-    if (nw)
+    if (source_name)
     {
-        HSCATTR *attr = find_varname(hp->defattr, nw);
+        if (check_attrname(hp, source_name))
+        {
+            HSCATTR *attr = find_varname(hp->defattr, source_name);
 
-        if (attr)
-        {
-            attrval = get_vartext(attr);
-            dest->quote = attr->quote;
+            if (attr)
+            {
+                attrval = get_vartext(attr);
+                dest->quote = attr->quote;
+            }
+            else
+            {
+                hsc_msg_unkn_attr_ref(hp, source_name);
+            }
         }
-        else
-        {
-            hsc_msg_unkn_attr_ref(hp, nw);
-        }
+    }
+    else
+    {
+        panic("no source attribute");
     }
 
     /* update attribute value and quotes */
@@ -1475,3 +1717,61 @@ STRPTR eval_cloneattr(HSCPRC * hp, HSCATTR * dest)
     return (attrval);
 }
 
+/*
+ * eval_conditional_expression
+ *
+ * evaluate a conditional expression like
+ *   SEPP?=HUGO or SEPP?=("hu"+"go")
+ * and modify destination attribute only if the source
+ * attribute really exists
+ *
+ * params: hp...hsc-process
+ *         dest..target attribute to update
+ * result: new value or NULL in case of no update or error
+ */
+STRPTR eval_conditional_assignment(HSCPRC * hp, HSCATTR * dest)
+{
+    STRPTR nw = infgetw(hp->inpf);
+    STRPTR attr_val = NULL;
+
+    D(fprintf(stderr, DHL "  conditional assignment\n"));
+
+    if (nw)
+    {
+        /* temp. attribute to store name of source attribute if it
+         * is specified with an expression */
+        HSCATTR *tmp_attr = NULL;
+        STRPTR source_name = NULL;      /* name of source attribute */
+
+        if (!strcmp(nw, "("))
+        {
+            /* get attribute name from expression */
+            tmp_attr = new_hscattr(PREFIX_TMPATTR "conditional.assignment");
+            source_name = eval_expression(hp, tmp_attr, ")");
+        }
+        else
+        {
+            /* attribute name was simply specified */
+            source_name = nw;
+        }
+
+        if (source_name)
+        {
+            D(fprintf(stderr, DHL "    assign from %s\n", source_name));
+            attr_val = assign_conditional_attr(hp, dest, source_name);
+        }
+
+        /* free resources */
+        if (tmp_attr)
+        {
+            del_hscattr(tmp_attr);
+        }
+
+    }
+    else
+    {
+        hsc_msg_eof(hp, "conditional attribute identifier expected");
+    }
+
+    return (attr_val);
+}

@@ -18,8 +18,7 @@
  *
  */
 /*
- *
- * fname.h
+ * ugly/fname.h
  *
  * header file for filename manipulaton functions
  *
@@ -59,6 +58,26 @@
 #define FNAME_IGNORE_CASE 1
 #define SUGGEST_CRLF_SHIT 0
 
+#elif defined RISCOS                   /* RiscOS */
+#define MAX_FPATH 255
+#define MAX_FNAME  32
+#define MAX_FEXT   32
+#define PATH_SEPARATOR    "/"
+#define DIR_SEPARATOR     '/'
+#define PARENT_DIR        "../"
+#define FNAME_IGNORE_CASE 1
+#define SUGGEST_CRLF_SHIT 0
+
+#elif defined NEXTSTEP                 /* NeXTStep */
+#define MAX_FPATH 254
+#define MAX_FNAME 254
+#define MAX_FEXT  253
+#define PATH_SEPARATOR    "/"
+#define DIR_SEPARATOR     '/'
+#define PARENT_DIR        "../"
+#define FNAME_IGNORE_CASE 0
+#define SUGGEST_CRLF_SHIT 0
+
 #elif defined BEOS                     /* BeOS */
 #define MAX_FPATH 254
 #define MAX_FNAME  64
@@ -77,16 +96,6 @@
 #define DIR_SEPARATOR     '/'
 #define PARENT_DIR        "../"
 #define FNAME_IGNORE_CASE 0
-#define SUGGEST_CRLF_SHIT 0
-
-#elif defined RISCOS                   /* RiscOS */
-#define MAX_FPATH 255
-#define MAX_FNAME  32
-#define MAX_FEXT   32
-#define PATH_SEPARATOR    "/"
-#define DIR_SEPARATOR     '/'
-#define PARENT_DIR        "../"
-#define FNAME_IGNORE_CASE 1
 #define SUGGEST_CRLF_SHIT 0
 
 #elif defined WINNT                    /* bullshit 1 */

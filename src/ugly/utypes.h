@@ -28,10 +28,6 @@
  * NOTE: contains also UGLY_VER and UGLY_REV and
  * includes debuggin defines
  *
- * (W) by Tommy-Saftwörx 1994,95,96,97
- *
- * updated: 20-Mar-1997
- * created: 25-Jan-1994
  */
 
 /* include debugging defines */
@@ -72,10 +68,15 @@ typedef char BYTE;              /* signed 8-bit quantity */
 #endif
 typedef unsigned char UBYTE;    /* unsigned 8-bit quantity */
 
+#if 1
+typedef char *STRPTR;           /* string pointer (NULL terminated) */
+#else
+/* old version causing problems with shitty compilers */
 #if defined(__cplusplus) || defined(RISCOS)
 typedef char *STRPTR;           /* string pointer (NULL terminated) */
 #else
 typedef unsigned char *STRPTR;  /* string pointer (NULL terminated) */
+#endif
 #endif
 
 /* Types with specific semantics */
@@ -109,6 +110,13 @@ typedef char TEXT;
  *
  */
 
+#if 1
+typedef const char *CONSTRPTR;         /* string constants */
+typedef char STRARR;   /* string array */
+typedef char CHAR;     /* single character */
+#else
+
+/* old version causing problems with shitty compilers */
 #ifndef RISCOS
 typedef const unsigned char *CONSTRPTR;         /* string constants */
 typedef unsigned char STRARR;   /* string array */
@@ -117,6 +125,7 @@ typedef unsigned char CHAR;     /* single character */
 typedef const char *CONSTRPTR;         /* string constants */
 typedef char STRARR;   /* string array */
 typedef char CHAR;     /* single character */
+#endif
 #endif
 
 /*

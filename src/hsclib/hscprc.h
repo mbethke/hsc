@@ -42,42 +42,25 @@
 #define OPTION_FILE "hsc.options", "env:hsc.options"
 #define CONFIG_PATH "PROGDIR:"
 
-#elif defined BEOS
-#define CONFIG_FILE "hsc.prefs"
-#define CONFIG_PATH ""          /* TODO: where to search for prefs */
-#define OPTION_FILE "hsc.options"
 #define UNIX 1                  /* utilise POSIX-layer of BeOS */
-
 #elif defined RISCOS
 #define CONFIG_FILE "hsc:hsc.prefs"
 #define CONFIG_PATH "hsc:"
 #define OPTION_FILE "hsc.options"
 
-#elif defined UNIX
+#elif (defined NEXTSTEP) || (defined UNIX) || (defined BEOS)
 #define CONFIG_FILE "hsc.prefs"
-#define CONFIG_PATH "/usr/local/lib/"
+#define CONFIG_PATH "/usr/local/lib/", "/usr/lib/"
 #define OPTION_FILE "hsc.options"
 
-#elif defined WINNT
-#define CONFIG_FILE "hsc.prefs"
-#define CONFIG_PATH "\\"
-#define OPTION_FILE "hsc.options"
-#error "user-IQ underflow"
-
-#elif defined MSDOS
-#define CONFIG_FILE "HSC.PRE"
-#define CONFIG_PATH "\\"
-#define OPTION_FILE "HSC.OPT"
-#error "user-IQ underflow"
-
+/* [3] */
 #else
 #error "Operating system not supported: config-file/path"
 #endif
 
-#if (!defined MSDOS) & ((defined WINNT))
-/* handle several OS-es same as MSDOS */
-#define MSDOS 1
-#error "Fuchs du hast die Gans gestohlen, gib sie wieder her..."
+/* utilise POSIX-layer of BEOS */
+#if defined BEOS
+#define UNIX 1
 #endif
 
 /* step sizes for expstr's */
@@ -148,42 +131,54 @@
 #define CONDITION_ATTR "COND"
 
 /* attribute that tells operating system */
-#define SYSTEM_ATTR     "HSC.SYSTEM"
+#define SYSTEM_ATTR     "hsc.System"
 #ifdef AMIGA
-#define SYSTEM_ATTR_ID "AMIGA"
+#define SYSTEM_ATTR_ID "Amiga"
 
 #elif defined BEOS
-#define SYSTEM_ATTR_ID "BEOS"
+#define SYSTEM_ATTR_ID "BeOS"
 
 #elif defined RISCOS
-#define SYSTEM_ATTR_ID "RISCOS"
+#define SYSTEM_ATTR_ID "RiscOS"
+
+#elif defined NEXTSTEP
+#define SYSTEM_ATTR_ID "NeXTStep"
 
 #elif defined UNIX
-#define SYSTEM_ATTR_ID "UNIX"
+#define SYSTEM_ATTR_ID "Unix"
 
-#elif defined WINNT
-#define SYSTEM_ATTR_ID "WINNT"
-
-#elif defined MSDOS
-#define SYSTEM_ATTR_ID "LLIBLLIK"       /* "kill bill" backwards */
-
+/* dos4 */
 #else
 #error "system not supported: SYSTEM_ATTR_ID"
 #endif
 
+/*
+ * some typedefs used inside the hsc_process
+ */
 typedef LONG HSCMSG_ID;         /* hsc message id */
 typedef LONG HSCMSG_CLASS;      /* hsc message class */
+
+/* enumerator values for hsc_process->msg_ignore */
+enum hsc_ignore_status
+{
+    make_my_day,                /* ignore only, if whole class is ignored */
+    ignore,                     /* always ignore */
+    enable                      /* always show up (even if class ignored) */
+};
+
+typedef enum hsc_ignore_status HSCIGN;
 
 /*
  * hsc process structure
  */
-struct hscprocess
+struct hsc_process
 {
     INFILE *inpf;               /* current input file */
     DLLIST *inpf_stack;         /* stack of nested input files */
     DLLIST *deftag;             /* defined tags and macros */
     DLLIST *defattr;            /* defined attributes */
     DLLIST *defent;             /* defined special charcters & entities */
+    DLLIST *deflazy;            /* defined lazy attribute lists */
     DLLIST *container_stack;    /* stack of container-tags currently open */
     DLLIST *content_stack;      /* stack of contents of container macros */
     DLLIST *include_dirs;       /* include directories */
@@ -207,7 +202,7 @@ struct hscprocess
 
     STRPTR filename_document;   /* document-name to be stored in project */
 
-    BOOL *msg_ignore;           /* messages to be ignored */
+    HSCIGN *msg_ignore;         /* messages to be ignored */
     BOOL msg_ignore_notes;      /* message-classes to be ignores */
     BOOL msg_ignore_style;
     BOOL msg_ignore_port;
@@ -254,44 +249,52 @@ struct hscprocess
                                  * set by parse_tag(), if strip_badws = TRUE */
     BOOL strip_next2_whtspc;    /* flag: strip next but one white space */
     /* status callbacks */
-      VOID(*CB_status_misc) (struct hscprocess * hp, STRPTR s);
+      VOID(*CB_status_misc) (struct hsc_process * hp, STRPTR s);
     /* called for verbose messages */
-      VOID(*CB_status_line) (struct hscprocess * hp);
+      VOID(*CB_status_line) (struct hsc_process * hp);
     /* called after new line */
-      VOID(*CB_status_file_begin) (struct hscprocess * hp, STRPTR filename);
+      VOID(*CB_status_file_begin) (struct hsc_process * hp, STRPTR filename);
     /* called when new file is going to be loaded */
-      VOID(*CB_status_file_end) (struct hscprocess * hp);
+      VOID(*CB_status_file_end) (struct hsc_process * hp);
     /* called after file has fully been processed */
 
     /* message callbacks */
-      VOID(*CB_message) (struct hscprocess * hp,
+      VOID(*CB_message) (struct hsc_process * hp,
                          HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
                          STRPTR fname, ULONG x, ULONG y,
                          STRPTR msg_text);
-      VOID(*CB_message_ref) (struct hscprocess * hp,
+      VOID(*CB_message_ref) (struct hsc_process * hp,
                              HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
                              STRPTR fname, ULONG x, ULONG y,
                              STRPTR msg_text);
 
     /* syntax elements callbacks */
-      VOID(*CB_start_tag) (struct hscprocess * hp,
+      VOID(*CB_start_tag) (struct hsc_process * hp,
           HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close);
-      VOID(*CB_end_tag) (struct hscprocess * hp,
+      VOID(*CB_end_tag) (struct hsc_process * hp,
           HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close);
-      VOID(*CB_text) (struct hscprocess * hp,
+      VOID(*CB_text) (struct hsc_process * hp,
                       STRPTR white_spaces, STRPTR text);
-      VOID(*CB_id) (struct hscprocess * hp,
+      VOID(*CB_id) (struct hsc_process * hp,
                     HSCATTR * attr, STRPTR id);
 
 #ifdef MSDOS
     /* some compilers seem to have problems with this line.. */
-    enum content_called{no, once, often};
+    enum content_called
+    {
+        no, once, often
+    };
 #endif
-
 
 };
 
-typedef struct hscprocess HSCPRC;
+typedef struct hsc_process HSCPRC;
+
+#if (!defined MSDOS) & ((defined WINNT))
+/* handle several OS-es same as MSDOS */
+#define MSDOS 1
+#error "Fuchs du hast die Gans gestohlen, gib sie wieder her..."
+#endif
 
 /*
  * global funcs
@@ -310,35 +313,35 @@ extern VOID hsc_set_status_file_end(HSCPRC * hp, VOID(*status_file) (HSCPRC * hp
 extern VOID hsc_set_status_line(HSCPRC * hp, VOID(*status_line) (HSCPRC * hp));
 extern VOID hsc_set_status_misc(HSCPRC * hp, VOID(*status_misc) (HSCPRC * hp, STRPTR s));
 extern VOID hsc_set_message(HSCPRC * hp,
-                            VOID(*message) (struct hscprocess * hp,
+                            VOID(*message) (struct hsc_process * hp,
                                             HSCMSG_CLASS msg_class,
-                                            HSCMSG_ID,
+                                            HSCMSG_ID msg_id,
                                             STRPTR fname, ULONG x, ULONG y,
                                             STRPTR msg_text));
 extern VOID hsc_set_message_ref(HSCPRC * hp,
-                                VOID(*message_ref) (struct hscprocess * hp,
+                                VOID(*message_ref) (struct hsc_process * hp,
                                                     HSCMSG_CLASS msg_class,
                                                     HSCMSG_ID msg_id,
                                                     STRPTR fname,
                                                     ULONG x, ULONG y,
                                                     STRPTR msg_text));
 extern VOID hsc_set_start_tag(HSCPRC * hp,
-                              VOID(*CB_start_tag) (struct hscprocess * hp,
+                              VOID(*CB_start_tag) (struct hsc_process * hp,
                                                    HSCTAG * tag,
                                                    STRPTR tag_name,
                                                    STRPTR tag_attr,
                                                    STRPTR tag_close));
 extern VOID hsc_set_end_tag(HSCPRC * hp,
-                            VOID(*CB_end_tag) (struct hscprocess * hp,
+                            VOID(*CB_end_tag) (struct hsc_process * hp,
                                                HSCTAG * tag,
                                                STRPTR tag_name,
                                                STRPTR tag_attr,
                                                STRPTR tag_close));
 extern VOID hsc_set_text(HSCPRC * hp,
-                         VOID(*CB_text) (struct hscprocess * hp,
+                         VOID(*CB_text) (struct hsc_process * hp,
                                          STRPTR white_spaces, STRPTR text));
 extern VOID hsc_set_id(HSCPRC * hp,
-                       VOID(*id) (struct hscprocess * hp,
+                       VOID(*id) (struct hsc_process * hp,
                                   HSCATTR * attr, STRPTR id));
 
 /* set-methodes for flags */
@@ -407,11 +410,14 @@ extern ULONG hsc_get_file_column(HSCPRC * hp);
 extern ULONG hsc_get_msg_count(HSCPRC * hp);
 
 /* methodes for messages */
+extern BOOL hsc_get_msg_ignore_notes(HSCPRC * hp);
+extern BOOL hsc_get_msg_ignore_style(HSCPRC * hp);
+extern BOOL hsc_get_msg_ignore_port(HSCPRC * hp);
 extern BOOL hsc_set_msg_ignore_notes(HSCPRC * hp, BOOL value);
 extern BOOL hsc_set_msg_ignore_style(HSCPRC * hp, BOOL value);
 extern BOOL hsc_set_msg_ignore_port(HSCPRC * hp, BOOL value);
-extern BOOL hsc_set_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id, BOOL value);
-extern BOOL hsc_get_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id);
+extern BOOL hsc_set_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id, HSCIGN value);
+extern HSCIGN hsc_get_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id);
 extern BOOL hsc_set_msg_class(HSCPRC * hp, HSCMSG_ID msg_id, HSCMSG_CLASS msg_class);
 extern HSCMSG_CLASS hsc_get_msg_class(HSCPRC * hp, HSCMSG_ID msg_id);
 extern VOID hsc_clear_msg_ignore(HSCPRC * hp);

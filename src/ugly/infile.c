@@ -22,7 +22,7 @@
  *
  * ugly input file functions
  *
- * updated: 10-May-1997
+ * updated: 29-Sep-1997
  * created:  8-Jul-1995
  */
 
@@ -124,7 +124,7 @@ static BOOL default_normch(int ch)
  * "normal" position in input file
  *
  */
-static VOID update_wpos(INFILE *inpf)
+static VOID update_wpos(INFILE * inpf)
 {
     inpf->wpos_x = inpf->pos_x;
     inpf->wpos_y = inpf->pos_y;
@@ -391,7 +391,9 @@ STRPTR infgetcw(INFILE * inpf)
 void set_whtspc(INFILE * inpf, BOOL(*iswsfn) (int ch))
 {
     if (inpf)
+    {
         inpf->is_ws = iswsfn;
+    }
 }
 
 /*
@@ -404,7 +406,9 @@ void set_whtspc(INFILE * inpf, BOOL(*iswsfn) (int ch))
 void set_normch(INFILE * inpf, BOOL(*isncfn) (int ch))
 {
     if (inpf)
+    {
         inpf->is_nc = isncfn;
+    }
 }
 
 /*
@@ -598,8 +602,9 @@ int ugly_infgetc(INFILE * inpf)
          */
         if (inpf->eof_reached == FALSE)
         {
+            /* set last char as result */
             lnbuf_str = estr2str(inpf->lnbuf);
-            result = lnbuf_str[inpf->filepos];  /* set last char as result */
+            result = (UBYTE) lnbuf_str[inpf->filepos];
             if (result)
             {                   /* goto next char in buf */
                 inpf->pos_x++;
@@ -631,9 +636,9 @@ int infgetc(INFILE * inpf)
     /* update word position */
     update_wpos(inpf);
 
-#if 0 /* TODO: remove this */
+#if 0                           /* TODO: remove this */
     /* TODO: this is shit */
-    if (ch=='\n')
+    if (ch == '\n')
     {
         inpf->wpos_y--;
     }
@@ -733,7 +738,7 @@ size_t inungets(STRPTR s, INFILE * inpf)
         {
             ctr++;              /* inc counter */
             p--;                /* goto next char */
-            ch = ugly_inungetc(p[0], inpf);  /* unget current char */
+            ch = ugly_inungetc(p[0], inpf);     /* unget current char */
         }
     }
 
@@ -973,7 +978,7 @@ static VOID del_infilepos_nddata(APTR data)
         (pos->inpf->pos_count)--;
 
         D(fprintf(stderr, DINF "del pos-req: \"%s\" (%lu,%lu); %lu left\n",
-                  pos->inpf->filename ? pos->inpf->filename : (STRPTR) "STDIN",
+               pos->inpf->filename ? pos->inpf->filename : (STRPTR) "STDIN",
                   pos->x, pos->y, pos->inpf->pos_count));
 
         /* free resources alloceted by pos-request */
@@ -1071,7 +1076,7 @@ static INFILEPOS *new_infilepos_node(INFILE * inpfile, ULONG x, ULONG y)
         if (pos)
         {
             fprintf(stderr, DINF "new pos-req: \"%s\" (%d,%d); #%d\n",
-                    (char*)inpfile->filename ? (char*)inpfile->filename : (char*) "STDIN",
+                    (char *) inpfile->filename ? (char *) inpfile->filename : (char *) "STDIN",
                     inpfile->pos_x, inpfile->pos_y, inpfile->pos_count);
         }
         else
@@ -1114,7 +1119,7 @@ INFILEPOS *new_winfilepos(INFILE * inpfile)
 }
 #endif
 
-INFILEPOS *clone_infilepos(INFILEPOS *ipos)
+INFILEPOS *clone_infilepos(INFILEPOS * ipos)
 {
     INFILEPOS *pos = new_infilepos_node(ipos->inpf, ipos->x, ipos->y);
     return pos;
@@ -1164,4 +1169,3 @@ BOOL set_infilepos(INFILE * inpf, INFILEPOS * pos)
 
     return TRUE;                /* TODO: handle out of mem */
 }
-

@@ -22,7 +22,7 @@
  *
  * functions for uri parsing of tag arguments
  *
- * updated: 11-May-1997
+ * updated:  4-Jul-1997
  * created: 16-Jul-1995
  */
 
@@ -75,7 +75,7 @@ VOID conv_path2uri(EXPSTR * dest, STRPTR path)
     set_estr(dest, path);
 
 #elif defined MSDOS /* dos1 */
-#elif defined UNIX
+#elif (defined NEXTSTEP) || (defined BEOS) || (defined UNIX)
     /* simply copy path */
     set_estr(dest, path);
 #else
@@ -133,7 +133,7 @@ VOID conv_uri2path(EXPSTR * dest, STRPTR uri, BOOL weenix)
     set_estr(dest, uri);
 
 #elif defined MSDOS /* dos2 */
-#elif defined UNIX
+#elif (defined NEXTSTEP) || (defined BEOS) || (defined UNIX)
     set_estr(dest, uri);
 #else
 #error "system not supported: conv_uri2path"

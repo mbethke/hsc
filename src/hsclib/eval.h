@@ -26,6 +26,10 @@
 #ifndef HSCLIB_EVAL_H
 #define HSCLIB_EVAL_H
 
+#define DOUBLE_QUOTE '\"'
+#define SINGLE_QUOTE '\''
+#define BACK_QUOTE   '`'
+
 /*
  *
  * extern references
@@ -34,9 +38,10 @@
 #ifndef NOEXTERN_HSCLIB_EVAL_H
 
 extern BOOL check_attrname(HSCPRC * hp, STRPTR name);
+extern VOID choose_quote(HSCPRC * hp, HSCATTR * attr);
 
 extern STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr);
-extern STRPTR eval_cloneattr(HSCPRC * hp, HSCATTR *dest);
+extern STRPTR eval_conditional_assignment(HSCPRC *hp, HSCATTR *dest);
 
 #endif /*  NOEXTERN_HSCLIB_EVAL_H */
 

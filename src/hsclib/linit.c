@@ -112,42 +112,38 @@ static BOOL dbg_old = FALSE;
  * is in the path described in the envvar HSCPREFS
  *
  * result: full path & filename of prefs or NULL if not found
+ *
+ * TODO: This routine sucks because of the static cfgfn[];
+ *       instead a hp->prefs_fname should be used
  */
 static STRPTR find_prefs_fname(HSCPRC * hp)
 {
+#define ENV_HOME "HOME"
     STRPTR prefs_fname = NULL;
     STRPTR paths[] =            /* paths to search for config file */
-    {"", "", CONFIG_PATH,
+    {"", "", "", CONFIG_PATH,
      NULL, NULL};
     STRPTR path = NULL;
     UBYTE path_ctr = 0;
     FILE *cfgf = NULL;          /* prefs file */
-    STRPTR hscenv = NULL;
     EXPSTR *hscpathstr = init_estr(32);         /* buffer to read $HSCPATH */
+    EXPSTR *homepathstr = init_estr(32);        /* buffer to read $HOME */
 
     static STRARR cfgfn[300];   /* TODO: expstr; buffer to create
                                  *   filename of config file */
-    /* setup path from envvar */
-    hscenv = getenv(ENV_HSCPATH);
-    if (hscenv)
+
+    /* add "$HSCPATH/hsc.prefs" to files-to-be-checked */
+    if (link_envfname(hscpathstr, ENV_HSCPATH, NULL, NULL))
     {
-#if 1
-        if (link_envfname(hscpathstr, ENV_HSCPATH, NULL, NULL))
-        {
-            /* add hscenv to paths */
-            paths[1] = estr2str(hscpathstr);
-        }
-#else
-        /* copy envvar to own memory area */
-        hscenv = strclone(hscenv);
+        /* add envval to paths */
+        paths[1] = estr2str(hscpathstr);
+    }
 
-        /* strip linefeeds from hscenv */
-        while (strlen(hscenv) && (hscenv[strlen(hscenv)] == '\n'))
-            hscenv[strlen(hscenv)] = '\0';
-
-        /* add hscenv to paths */
-        paths[1] = hscenv;
-#endif
+    /* add "$HOME/lib/hsc.prefs" to files-to-be-checked */
+    if (link_envfname(homepathstr, ENV_HOME, "lib", NULL))
+    {
+        /* add envval to paths */
+        paths[2] = estr2str(homepathstr);
     }
 
     /* try to open any prefs-file */
@@ -173,11 +169,13 @@ static STRPTR find_prefs_fname(HSCPRC * hp)
         fclose(cfgf);
     }
 
+    del_estr(homepathstr);
     del_estr(hscpathstr);
 
     return (prefs_fname);
 }
 
+#if 0
 /*
  * hsc_read_base_info
  *
@@ -269,6 +267,7 @@ BOOL hsc_copy_base_info(HSCPRC * dest_hp, HSCPRC * dummy_hp)
 
     return (TRUE);
 }
+#endif
 
 /*
  * hsc_read_prefs
@@ -452,6 +451,7 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
         HSC_IF_STR " /SKIPLF /CLOSE " CONDITION_ATTR ":bool>",
         HSC_INSERT_STR " /OBSOLETE TEXT:string TIME:bool FORMAT:string>",
         HSC_INCLUDE_STR " /SKIPLF FILE:string/r " INCLUDE_ATTR ">",
+        HSC_LAZY_STR " /SKIPLF /SPECIAL>",
         HSC_LET_STR " /SKIPLF /SPECIAL>",
         HSC_MACRO_STR " /SKIPLF /SPECIAL>",
         HSC_SOURCE_STR " /SKIPLF PRE:bool>",
@@ -526,6 +526,7 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
         hsc_set_tagCB(hp, HSC_INSERT_STR, handle_hsc_insert, NULL);
         hsc_set_tagCB(hp, HSC_INSEXPR_STR, handle_hsc_insert_expression, NULL);
         hsc_set_tagCB(hp, HSC_COMMENT_STR, handle_hsc_comment, NULL);
+        hsc_set_tagCB(hp, HSC_LAZY_STR, handle_hsc_lazy, NULL);
         hsc_set_tagCB(hp, HSC_LET_STR, handle_hsc_let, NULL);
         hsc_set_tagCB(hp, HSC_MACRO_STR, handle_hsc_macro, NULL);
         hsc_set_tagCB(hp, HSC_MESSAGE_STR, handle_hsc_message, NULL);

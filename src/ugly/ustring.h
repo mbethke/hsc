@@ -51,6 +51,8 @@
 extern STRPTR upstr(STRPTR s);
 extern int upstrcmp(CONSTRPTR s1, CONSTRPTR s2);
 extern int upstrncmp(CONSTRPTR s1, CONSTRPTR s2, size_t n);
+extern STRPTR upstrstr(CONSTRPTR s1, CONSTRPTR s2);
+
 extern void ugly_freestr(STRPTR s, STRPTR file, ULONG line);
 extern STRPTR ugly_strclone(CONSTRPTR oldstr, STRPTR file, ULONG line);
 extern void ugly_reallocstr(STRPTR * oldstr, CONSTRPTR newstr, STRPTR file, ULONG line);

@@ -9,6 +9,9 @@ SetType <Obey$Dir>.srcrename FF8
 | Set the correct type of MakeStubs
 SetType <Obey$Dir>.MakeStubs FC3
 
+| Set the correct type of ReadMe
+SetType <Obey$Dir>.ReadMe FFF
+
 | Run 'srcrename' on the main hsc directory with recursion enabled
 /<Obey$Dir>.srcrename -ro -e c:h:s:o <Obey$Dir>.^
 

@@ -22,7 +22,7 @@
  *
  * status message functions for hsc
  *
- * updated: 27-Feb-1997
+ * updated: 30-Sep-1997
  * created: 30-Jul-1995
  *
  */
@@ -240,7 +240,7 @@ VOID status_error(STRPTR s)
 
     /* display error message */
     strncpy(status_buf, "*** ", MAX_STATUSLEN);
-    strncat(status_buf, s, MAX_STATUSLEN - strlen(status_buf));
+    strncat(status_buf, s, MAX_STATUSLEN);
     status_msg(status_buf);
     status_lf();
 

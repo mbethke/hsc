@@ -26,7 +26,7 @@
  *
  * hsctools/hscpitt.c
  *
- * updated: 31-Mar-1997
+ * updated: 14-Oct-1997
  * created: 15-Oct-1996
  */
 
@@ -44,6 +44,7 @@
 #include "ugly/dllist.h"
 #include "ugly/expstr.h"
 #include "ugly/infile.h"
+#include "ugly/ufile.h"
 #include "ugly/uargs.h"
 #include "ugly/ustrlist.h"
 #include "ugly/prginfo.h"
@@ -113,7 +114,8 @@ static const STRPTR AmigaOS_version = VERSTAG;
         CMD_EXTRACT_STR "|" \
         CMD_DELETE_STR  "|" \
         CMD_ERASE_STR   "|" \
-        CMD_ADD_STR
+        CMD_ADD_STR     "|" \
+        CMD_NEW_STR
 
 /*
  * global vars
@@ -129,6 +131,7 @@ static STRPTR command_name[] =
     CMD_DELETE_STR,
     CMD_ERASE_STR,
     CMD_ADD_STR,
+    CMD_NEW_STR,
     NULL
 };
 
@@ -138,6 +141,7 @@ static STRPTR prjfile = NULL;
 static LONG command = COMMAND_LIST;
 static LONG cmdArgNum = 0;      /* number of args for command (ARG/M) */
 static DLLIST *command_arglist = NULL;
+static BOOL force = FALSE;
 static BOOL quiet = FALSE;
 static BOOL debug = FALSE;
 static BOOL arg_help = FALSE;
@@ -269,6 +273,7 @@ static BOOL args_ok(int argc, char *argv[])
          "command to perform (" COMMAND_ENUMSTR ")",
          "ARG/T/M", &command_arglist, "command argument(s)",
          "PRJFILE/T/K", &prjfile, "project file",
+         "FORCE/S", &force, "disable certain checks",
          "QUIET/S", &quiet, "act quietly",
          "-DEBUG/S", &debug, "enable debugging output",
          "HELP=?=-h=--help/S", &arg_help, "display this text",
@@ -464,6 +469,41 @@ static BOOL chkArgAny(STRPTR command)
 /*-------------------------------------------------------------------*/
 
 /*
+ * command_new
+ *
+ * write an empty project file
+ */
+BOOL command_new(HSCPRJ * project, DLLIST * arglist)
+{
+    BOOL ok = TRUE;
+
+    if (chkArg0(CMD_NEW_STR))
+    {
+        if (fexists(prjfile) && !force)
+        {
+            printf("project file `%s' already exists\n", prjfile);
+            set_return_code(RC_ERROR);
+            ok = FALSE;
+        }
+        else
+        {
+            /* write new project file */
+            if (update_project_file(project))
+            {
+                if (!quiet)
+                {
+                    printf("Created new project file `%s'\n", prjfile);
+                }
+            }
+        }
+    }
+
+    return (ok);
+}
+
+/*-------------------------------------------------------------------*/
+
+/*
  * command_add
  *
  * add new document and source to project
@@ -481,7 +521,7 @@ VOID command_add(HSCPRJ * project, DLLIST * arglist)
         /* try to remove document */
         deleted = hsc_project_del_document(project, docName);
 
-        if (!deleted)
+        if (!deleted || force)
         {
             D(fprintf(stderr, DHP " add doc=`%s'\n    src=`%s'\n",
                       docName, docSource));
@@ -496,7 +536,12 @@ VOID command_add(HSCPRJ * project, DLLIST * arglist)
             {
                 if (!quiet)
                 {
-                    printf("Added document `%s'\n", docName);
+                    STRPTR operation = "Added";
+                    if (deleted)
+                    {
+                         operation = "Replaced";
+                    }
+                    printf("%s document `%s'\n", operation, docName);
                 }
             }
         }
@@ -815,6 +860,9 @@ BOOL process_command(HSCPRJ * project, LONG command, DLLIST * arglist)
     case COMMAND_ADD:
         command_add(project, arglist);
         break;
+    case COMMAND_NEW:
+        ok = command_new(project, arglist);
+        break;
     default:
         {
             D(fprintf(stderr, DHP "unknown command\n"));
@@ -837,7 +885,7 @@ int main(int argc, char *argv[])
 #define BETA 0
 #endif
     /* set program information */
-    set_prginfo("hscpitt", "Tommy-Saftwörx", VERSION, REVISION, BETA,
+    set_prginfo("hscpitt", UGLY_AUTHOR, VERSION, REVISION, BETA,
                 "hsc project interfering'n'trashing tool",
                 "Freeware, type `hscpitt LICENSE' for details.");
 
@@ -858,13 +906,19 @@ int main(int argc, char *argv[])
          */
         return_code = RC_OK;
         project = new_project();
-        if (project
-            && args_ok(argc, argv)
-            && read_project()
-            && process_command(project, command, command_arglist)
-            )
+        if (project && args_ok(argc, argv))
         {
-            return_code = RC_OK;
+            BOOL ok = TRUE;
+
+            if (command != COMMAND_NEW)
+            {
+                ok = read_project();
+            }
+
+            if (ok && process_command(project, command, command_arglist))
+            {
+                return_code = RC_OK;
+            }
         }
     }
     else
@@ -873,3 +927,4 @@ int main(int argc, char *argv[])
     }
     return (return_code);
 }
+

@@ -22,7 +22,7 @@
  *
  * user argument handling for hsc
  *
- * updated: 16-May-1997
+ * updated: 28-Sep-1997
  * created:  1-Jul-1995
  */
 
@@ -128,9 +128,80 @@ static STRPTR arg_ignore_CB(STRPTR arg)
             LONG ignnum;
 
             if (!str2long(nxt_arg, &ignnum))
-                errmsg = "illegal ignore";
+            {
+                errmsg = "unknown `ignore'";
+            }
             else
-                hsc_set_msg_ignore(hp, ignnum, TRUE);
+            {
+                hsc_set_msg_ignore(hp, ignnum, ignore);
+            }
+        }
+
+        /* next arg */
+        nxt_arg = strtok(NULL, "|");
+    }                           /* while(nxt_arg) */
+
+    /* cleanup */
+    ufreestr(arg_clone);
+
+    return (errmsg);
+}
+
+/*
+ * arg_enable_CB
+ *
+ * argument handler for special values that are passed
+ * to "enable=.." several messages are set to be enabled
+ * with the old messages left active
+ */
+static STRPTR arg_enable_CB(STRPTR arg)
+{
+    STRPTR errmsg = NULL;
+    STRPTR arg_clone = strclone(arg);   /* copy of arg; written by strtok() */
+    HSCPRC *hp = arg_hp;
+    STRPTR nxt_arg = strtok(arg_clone, "|");    /* use "|" to tokenize */
+
+    while (nxt_arg)
+    {
+        D(fprintf(stderr, DHSC "  enable `%s'\n", nxt_arg));
+        if (!upstrcmp(nxt_arg, IGNORE_ALL_STR))
+        {
+            /* enable all non-error messages */
+            HSCMSG_ID i;
+
+            for (i = 0; i < MAX_MSGID; i++)
+            {
+                hsc_set_msg_ignore(hp, i, enable);
+            }
+        }
+        else if (!upstrcmp(nxt_arg, IGNORE_NOTES_STR))
+        {
+            /* enable note messages */
+            hsc_set_msg_ignore_notes(hp, FALSE);
+        }
+        else if (!upstrcmp(nxt_arg, IGNORE_BADSTYLE_STR))
+        {
+            /* enable bad style messages */
+            hsc_set_msg_ignore_style(hp, FALSE);
+        }
+        else if (!upstrcmp(nxt_arg, IGNORE_PORTABILITY_STR))
+        {
+            /* enable potability problems */
+            hsc_set_msg_ignore_port(hp, FALSE);
+        }
+        else
+        {
+            /* ignore message # */
+            LONG ignnum;
+
+            if (!str2long(nxt_arg, &ignnum))
+            {
+                errmsg = "unknown `enable'";
+            }
+            else
+            {
+                hsc_set_msg_ignore(hp, ignnum, enable);
+            }
         }
 
         /* next arg */
@@ -182,7 +253,7 @@ static STRPTR arg_mode_CB(STRPTR arg)
 
         for (i = 0; i < MAX_MSGID; i++)
         {
-            hsc_set_msg_ignore(hp, i, FALSE);
+            hsc_set_msg_ignore(hp, i, make_my_day);
         }
 
         /* enable all classes */
@@ -546,7 +617,10 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "define global attribute",
 
                      "IGNORE=IGN/K/M/$", arg_ignore_CB, &ignore_list,
-                     "ignore message number",
+                     "ignore message number or class",
+
+                     "ENABLE=ENA/K/M/$", arg_enable_CB, &ignore_list,
+                     "enable message number or class",
 
                      "MODE/E/K/$", arg_mode_CB, MODE_ENUMSTR, &arg_mode,
                      "mode for syntax check (" MODE_ENUMSTR ")",
@@ -623,6 +697,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     if (ok)
     {
         BOOL use_stdout = FALSE;        /* flag: use stdout as output-file */
+        BOOL any_input_passed = FALSE;  /* flag: any input specified in args */
         STRPTR argfiles[] =
         {OPTION_FILE, NULL};
 
@@ -633,7 +708,8 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
         /* display help, if requested vie HELP switch, or no
          * input to pipe or read is passed */
-        ok &= (!arg_help && (incfile && dll_first(incfile)));
+        any_input_passed = (incfile && dll_first(incfile));
+        ok &= (!arg_help && any_input_passed);
 
         if (arg_license)
         {
@@ -644,9 +720,12 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
         }
         else if (!ok)
         {
-            /* display help, if error in args or HELP-switch set */
-            fprintf_prginfo(stderr);
-            fprintf_arghelp(stderr, hsc_args);
+            if (arg_help || !any_input_passed)
+            {
+                /* display help, if HELP-switch set */
+                fprintf_prginfo(stderr);
+                fprintf_arghelp(stderr, hsc_args);
+            }
             set_return_code(RC_WARN);
         }
         else
@@ -957,10 +1036,33 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                  fprintf(stderr, DHSC "projct: `%s'\n", prjfilename);
                  if (!use_stdout)
                  fprintf(stderr, DHSC "procss: `%s'\n", estr2str(outfilename));
+
+                 /* show classes to be ignored */
+                 fprintf(stderr, DHSC "ignore class:");
+                 if (hsc_get_msg_ignore_notes(hp))
+                 {
+                 fprintf(stderr, " notes");
+                 }
+                 fprintf(stderr, "\n");
+                 /* show messages to be ignored */
                  fprintf(stderr, DHSC "ignore:");
                  for (i = 0; i < MAX_MSGID; i++)
-                 if (hsc_get_msg_ignore(hp, i))
+                 {
+                 if (hsc_get_msg_ignore(hp, i) == ignore)
+                 {
                  fprintf(stderr, " %lu", i);
+                 }
+                 }
+                 fprintf(stderr, "\n");
+                 /* show messages to be enabled */
+                 fprintf(stderr, DHSC "enable:");
+                 for (i = 0; i < MAX_MSGID; i++)
+                 {
+                 if (hsc_get_msg_ignore(hp, i) == enable)
+                 {
+                 fprintf(stderr, " %lu", i);
+                 }
+                 }
                  fprintf(stderr, "\n");
                  }
             );
@@ -1014,3 +1116,4 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     return (FALSE);             /* for arg-debugging */
 #endif
 }
+
