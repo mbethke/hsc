@@ -33,6 +33,7 @@
 #include "hsclib/eval.h"
 #include "hsclib/input.h"
 #include "hsclib/skip.h"
+#include "hsclib/css.h"
 
 /*
  *-------------------------------------
@@ -737,8 +738,7 @@ static VOID set_tag_defaults(HSCPRC * hp, HSCTAG * tag)
  *
  * parse & set all arguments of a tag
  */
-ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
-{
+ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag) {
    INFILE *inpf = hp->inpf;
    BOOL ok = FALSE;
    DLLIST *varlist;
@@ -765,14 +765,12 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
          } else {
             /* if in XHTML mode, ensure there is no attribute after
              * the closing slash */
-            if(hp->xhtml && (tag->option & HT_EMPTY) && !hp->xhtml_emptytag) {
+            if(hp->xhtml && (tag->option & HT_EMPTY) && !hp->xhtml_emptytag)
                hsc_message(hp, MSG_ATTR_AFTER_SLASH,
                      "%a after closing slash in empty tag",
                      nw);
-            }
             /* process attribute */
-            if (NULL != (nw = check_attrname(hp, NULL, nw, FALSE)))
-            {
+            if (NULL != (nw = check_attrname(hp, NULL, nw, FALSE))) {
                set_tag_arg(hp, varlist, nw, tag->name,
                      (BOOL)(tag->option & HT_UNKNOWN),
                      (BOOL)(tag->option & HT_MACRO));
@@ -790,8 +788,7 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
                nw = infgetw(inpf);
          }
       }
-   }
-   while (nw);
+   } while (nw);
 
    /* for all attributes with defaults, but no value,
     * append it to the tag call */
@@ -805,11 +802,8 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
 
    /* check for required attributes */
    if (ok)
-   {
-      ok = check_varlist(hp, varlist);
-      if (!ok)
+      if(!(ok = check_varlist(hp, varlist)))
          inungetcw(inpf);
-   }
 
    if (!ok)
       result_tci = MCI_ERROR;
