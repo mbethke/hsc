@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1993-1997  Thomas Aglassinger
+ * Copyright (C) 1993-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,22 +21,6 @@
  * ugly/expstr.c
  *
  * ugly expandable-string functions
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * updated: 26-Feb-1997
  * created: 12-Sep-1995
@@ -187,7 +171,7 @@ static BOOL do_set_estr_mem(EXPSTR * es, STRPTR new_data, size_t new_size)
 
 BOOL ugly_set_estr_mem(EXPSTR * es, size_t new_size)
 {
-    return (do_set_estr_mem(es, umalloc(new_size), new_size));
+    return (do_set_estr_mem(es, (STRPTR) umalloc(new_size), new_size));
 }
 
 BOOL ugly_dbg_set_estr_mem(EXPSTR * es, size_t new_size, STRPTR file, ULONG line)
@@ -199,7 +183,7 @@ BOOL ugly_dbg_set_estr_mem(EXPSTR * es, size_t new_size, STRPTR file, ULONG line
     else
     {
         ok = do_set_estr_mem(es,
-                             ugly_malloc_tracking(new_size, file, line),
+                             (STRPTR) ugly_malloc_tracking(new_size, file, line),
                              new_size);
     }
 
@@ -432,7 +416,7 @@ BOOL set_estrn(EXPSTR * es, CONSTRPTR s, size_t n)
 
 EXPSTR *ugly_dbg_init_estr(size_t step_size, STRPTR file, ULONG line)
 {
-    EXPSTR *es = ugly_malloc_tracking(sizeof(EXPSTR), file, line);
+    EXPSTR *es = (EXPSTR *) ugly_malloc_tracking(sizeof(EXPSTR), file, line);
 
     if (es)
     {
@@ -456,7 +440,7 @@ EXPSTR *ugly_dbg_init_estr(size_t step_size, STRPTR file, ULONG line)
 
 EXPSTR *ugly_init_estr(size_t step_size)
 {
-    EXPSTR *es = umalloc(sizeof(EXPSTR));
+    EXPSTR *es = (EXPSTR *) umalloc(sizeof(EXPSTR));
 
     if (es)
     {

@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  *
  * message functions for hsc
  *
- * updated:  8-Oct-1997
+ * updated: 16-Dec-1997
  * created: 10-Mar-1996
  *
  */
@@ -32,6 +32,9 @@
 #include "hsclib/inc_base.h"
 
 #include "ugly/returncd.h"
+
+/* forward reference */
+static VOID handle_too_many_messages(HSCPRC *hp);
 
 /*
  * NOTE: see "hsclib/msgid.h" for message-id's and
@@ -169,6 +172,7 @@ static BOOL really_display_message(HSCPRC *hp, HSCMSG_ID msg_id)
     return disp_msg;
 }
 
+
 VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
 {
     HSCMSG_CLASS msg_class = hsc_get_msg_class(hp, msg_id);
@@ -188,7 +192,9 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
 
         /* set fatal-flag, if this is a fatal message */
         if (msg_id > MSG_FATAL)
+        {
             hp->fatal = TRUE;
+        }
 
         /* clear message buffer */
         clr_estr(hp->curr_msg);
@@ -403,10 +409,6 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
             msg_y = 0;
         }
 
-#if 0                           /* TODO: remove */
-        fprintf(stderr, "*** msg_id    = %06lx\n", msg_id);
-        fprintf(stderr, "*** msg_class = %06lx\n", msg_class);
-#endif
         /* send message via callback */
         if (hp->CB_message)
 
@@ -439,12 +441,37 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                 nd = dln_next(nd);
             }
         }
+
+        /* check, if already too many messages or errors have
+         * occured and abort process in case */
+        handle_too_many_messages(hp);
     }
     else
     {
         D(fprintf(stderr, DHL "suppressed msg#%ld\n", msg_id_unmasked));
     }
 }
+
+/* check if there are already too many errors and view an
+ * fatal error "too many messages" */
+static VOID handle_too_many_messages(HSCPRC *hp)
+{
+    if (hp->max_errors != MAXIMUM_MESSAGE_INFINITE)
+    {
+        hp->max_errors -= 1;
+    }
+    if (hp->max_messages != MAXIMUM_MESSAGE_INFINITE)
+    {
+        hp->max_messages -= 1;
+    }
+
+    if ((hp->max_messages == 0) || (hp->max_errors == 0))
+    {
+        hsc_message(hp, MSG_TOO_MANY, "too many errors or messages");
+    }
+}
+
+
 
 /*
  *-------------------------------------
@@ -504,18 +531,17 @@ VOID hsc_msg_unkn_attr_macro(HSCPRC * hp, STRPTR attr, STRPTR macro)
 }
 
 
-#if 1                           /* TODO: get rid of this */
-VOID hsc_msg_eol(HSCPRC * hp)
-{
-    hsc_message(hp, MSG_UNEX_EOL,
-                "unexpected end of line");
-}
-#endif
-
 VOID hsc_msg_noinput(HSCPRC * hp, STRPTR filename)
 {
     hsc_message(hp, MSG_NO_INPUT,
                 "can not open %q for input: %s",
+                filename, strerror(errno));
+}
+
+VOID hsc_msg_read_error(HSCPRC * hp, STRPTR filename)
+{
+    hsc_message(hp, MSG_READ_ERROR,
+                "error reading %s: %s",
                 filename, strerror(errno));
 }
 

@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1993-1997  Thomas Aglassinger
+ * Copyright (C) 1993-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 /*
  * ugly/ustring.c - ugly string functions
  *
- * updated: 11-May-1997
+ * updated: 18-May-1997
  * created: 31-Jul-1993
  */
 
@@ -77,9 +77,9 @@ STRPTR ugly_strclone(CONSTRPTR oldstr, STRPTR file, ULONG line)
 
         /* alloc mem for clone */
 #if DEBUG_UGLY_MEMORY
-        newstr = ugly_malloc_tracking(strlen(oldstr) + 1, file, line);
+        newstr = (STRPTR) ugly_malloc_tracking(strlen(oldstr) + 1, file, line);
 #else
-        newstr = umalloc(strlen(oldstr) + 1);
+        newstr = (STRPTR) umalloc(strlen(oldstr) + 1);
 #endif
 
         if (newstr)             /* alloc sucessful? */

@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,12 @@
  *
  * parse file: handle for entities & tags
  *
- * updated:  4-Oct-1997
+ * updated: 16-Dec-1997
  * created:  1-Jul-1995
  *
  */
+
+#include <ctype.h>
 
 #define NOEXTERN_HSCLIB_PARSE_H
 
@@ -703,13 +705,11 @@ BOOL hsc_parse_tag(HSCPRC * hp)
                 tag_callback = hp->CB_end_tag;
             }
 
-#if 1                           /* TODO: remove conditionals, but leave below code intact */
             /* enable output if necessary */
             if (hp->suppress_output)
             {
                 hp_enable_output(hp, "non-internal tag occured");
             }
-#endif
 
             /* write (flush) white spaces */
             hsc_output_text(hp, "", "");
@@ -726,7 +726,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
         /* skip LF if requested */
         if (tag && (tag->option & HT_SKIPLF))
         {
-            skip_next_lf(hp);   /* TODO: really skip single lf */
+            skip_next_lf(hp);
         }
 
         /* if tag should check for succeeding white spaces,
@@ -848,7 +848,11 @@ BOOL hsc_parse_amp(HSCPRC * hp)
             /* get entity id */
             nxtwd = infgetw(inpf);
 
-            /* TODO: check for white-space */
+            /* check for illegal white-space */
+            if (strlen(infgetcws(inpf)))
+            {
+                hsc_msg_illg_whtspc(hp);
+            }
 
             if (!strcmp(nxtwd, "\\"))
             {
@@ -868,23 +872,51 @@ BOOL hsc_parse_amp(HSCPRC * hp)
             {
                 hp_enable_output(hp, "entity");
 
+                /* append (illegal anyway) white space */
+                app_estr(amp_str, infgetcws(inpf));
+
                 if (!strcmp(nxtwd, "#"))
                 {
                     /*
                      * process numeric entity
                      */
+                    int base = 10;      /* numeric encoding base */
+                    STRPTR digit_start = NULL;  /* start of numeric digits */
 
                     /* append "#" */
                     app_estr(amp_str, infgetcw(inpf));
 
+                    /* get the digit sequence */
                     nxtwd = infgetw(inpf);
+
+                    /* check for illegal white-space */
+                    if (strlen(infgetcws(inpf)))
+                    {
+                        hsc_msg_illg_whtspc(hp);
+                    }
+
+                    /* find out wheter it is an decimal or a hexadecimal
+                     * entity and set base according to it */
+                    if (toupper(nxtwd[0]) == 'X')
+                    {
+                        base = 16;      /* hexadecimal */
+                        digit_start = nxtwd + 1;
+                    }
+                    else
+                    {
+                        base = 10;      /* decimal */
+                        digit_start = nxtwd;
+                    }
+
+                    /* try to convert entity to number */
                     errno = 0;
-                    strtoul(nxtwd, NULL, 0);
-                    if (errno || strlen(infgetcws(inpf)))
+                    strtoul(digit_start, NULL, base);
+                    if (errno)
                     {
                         hsc_message(hp, MSG_ILLG_NUM,   /* illegal numeric entity */
                               "illegal numeric value %n for entity", nxtwd);
                     }
+
                     /* append entity specifier */
                     app_estr(amp_str, nxtwd);
                 }
@@ -1178,13 +1210,6 @@ BOOL hsc_parse(HSCPRC * hp)
                 /* handle text */
                 hsc_parse_text(hp);
             }
-        }
-        else
-        {
-#if 0                           /* TODO: remove, this is now done in hsc_parse_end() */
-            /* output last white spaces at eof */
-            hsc_output_text(hp, "", "");
-#endif
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@ extern VOID hsc_msg_stripped_tag(HSCPRC * hp, HSCTAG * tag, STRPTR why);
 extern VOID hsc_msg_unkn_attr_ref(HSCPRC * hp, STRPTR attr);
 extern VOID hsc_msg_unkn_attr_tag(HSCPRC * hp, STRPTR attr, STRPTR tag);
 extern VOID hsc_msg_unkn_attr_macro(HSCPRC * hp, STRPTR attr, STRPTR macro);
+extern VOID hsc_msg_read_error(HSCPRC * hp, STRPTR filename);
 
 #if 1 /* TODO: get rid of this */
 extern VOID hsc_msg_eol(HSCPRC * hp);

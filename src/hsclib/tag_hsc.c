@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
  * tag callbacks for "<$xx>" and related
  * (for macro callbacks, see "tag_macro.c")
  *
- * updated:  5-Oct-1997
+ * updated: 16-Dec-1997
  * created: 23-Jul-1995
  */
 
@@ -82,11 +82,10 @@ BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag)
  * copy text until '|>' occures;
  * no syntax check or whatsoever is performed
  *
- * TODO: find more reasonable way to send output to client.
  */
 BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag)
 {
-    EXPSTR *content = init_estr(0);
+    EXPSTR *content = init_estr(256);
     if (skip_hsc_verbatim(hp, content))
     {
         /* remove "|>" from content */
@@ -861,7 +860,6 @@ BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
  *-------------------------------------
  */
 BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
-#if 1
 {
     BOOL pre = get_varbool_byname(tag->attr, "PRE");
     BOOL ok = TRUE;
@@ -906,146 +904,6 @@ BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
 
     return (FALSE);
 }
-#else
-{
-    INFILE *inpf = hp->inpf;
-    BOOL pre = get_varbool_byname(tag->attr, "PRE");
-    BOOL ok = TRUE;
-    EXPSTR *bufstr = NULL;
-    EXPSTR *srcstr = NULL;
-    BYTE state = SRST_TEXT;
-    STRPTR nw = NULL;
-    INFILEPOS *base = new_infilepos(hp->inpf);
-
-    /*
-     * read until </$SOURCE> found
-     */
-
-    /* init bufstr */
-    bufstr = init_estr(ES_STEP_SOURCE);
-    srcstr = init_estr(ES_STEP_SOURCE);
-
-    /* avoid nesting of <PRE> */
-    if (hp->inside_pre)
-        pre = FALSE;            /* TODO: lauch warning */
-
-    /* insert leading <PRE> */
-    if (pre)
-    {
-        hsc_include_string(hp, SPECIAL_FILE_ID "insert <PRE>", "<PRE>",
-                           IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
-    }
-
-    while (!((hp->fatal) || (state == SRST_CSOURCE)))
-    {
-
-        /* read next word */
-        if (state == SRST_SLASH)
-            nw = infget_tagid(hp);
-        else if (state != SRST_TAG)
-            nw = infgetw(inpf);
-
-        if (nw)
-        {
-            if (state == SRST_TAG)
-            {
-                /*
-                 * skip inside tags
-                 */
-                BYTE tag_state = TGST_TAG;      /* state var passe to */
-                /*     eot_reached() */
-
-                do
-                {
-                    if (eot_reached(hp, &tag_state))
-                        state = SRST_TEXT;
-
-                    app_estr(srcstr, infgetcws(inpf));
-                    app_estr(srcstr, infgetcw(inpf));
-                }
-                while ((tag_state != TGST_END) && !(hp->fatal));
-            }
-            else
-            {
-                switch (state)
-                {
-                case SRST_TEXT:
-                    if (!strcmp(nw, "<"))
-                        state = SRST_LT;
-                    break;
-
-                case SRST_LT:
-                    if (!strcmp(nw, "/"))
-                        state = SRST_SLASH;
-                    else
-                        state = SRST_TEXT;
-                    break;
-
-                case SRST_SLASH:
-                    if (!upstrcmp(nw, HSC_SOURCE_STR))
-                        state = SRST_CSOURCE;   /* end of source */
-                    else
-                        state = SRST_TEXT;
-                    break;
-
-                }
-
-                if (state == SRST_TEXT)
-                {
-                    /* append bufstr to srcstr, clear bufstr,
-                     * append current word to srcstr
-                     */
-                    if (estrlen(bufstr))
-                    {
-                        app_estr(srcstr, estr2str(bufstr));
-                        clr_estr(bufstr);
-                    }
-                    app_estr(srcstr, infgetcws(inpf));
-                    app_estr(srcstr, infgetcw(inpf));
-                }
-                else
-                {
-                    /* append data to bufstr */
-                    app_estr(bufstr, infgetcws(inpf));
-                    app_estr(bufstr, infgetcw(inpf));
-                }
-            }
-        }
-        else
-        {
-            hsc_msg_eof(hp, "missing </" HSC_SOURCE_STR ">");
-            state = SRST_ERR;
-        }
-    }                           /* while */
-
-    /* check for legal end state */
-    if (state == SRST_CSOURCE)
-    {
-        ok = parse_wd(hp, ">");
-    }
-    /* include source */
-    if (ok)
-    {
-        /* include pseudo-file */
-        hsc_base_include_string(hp, SPECIAL_FILE_ID "source",
-                                estr2str(srcstr),
-                                IH_PARSE_SOURCE | IH_NO_STATUS, base);
-
-        /* insert tailing </PRE> */
-        if (pre)
-        {
-            hsc_include_string(hp, SPECIAL_FILE_ID "insert </PRE>",
-                               "</PRE>\n",
-                               IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
-        }
-    }
-    del_infilepos(base);
-    del_estr(bufstr);
-    del_estr(srcstr);
-
-    return (FALSE);
-}
-#endif
 
 /*
  *-------------------------------------

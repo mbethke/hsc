@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  *
  * project managment input-routines for hsc
  *
- * updated: 10-Sep-1996
+ * updated: 17-Dec-1997
  * created: 10-Sep-1996
  */
 

@@ -9,7 +9,7 @@
 #
 
 #
-# command used to envoke hsc
+# command used to invoke hsc
 #
 HSC	= ///hsc
 #HSC	= ../../../hsc
@@ -23,7 +23,7 @@ DESTDIR	= /object_html/
 #
 # options for hsc
 #
-HSCOPTS   = TO=$(DESTDIR) STATUS=line|verbose
+HSCOPTS   = TO=$(DESTDIR) STATUS="line|verbose"
 
 all : $(DESTDIR)stupid.html $(DESTDIR)hugo/hugo.html $(DESTDIR)main.html 
 

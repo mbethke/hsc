@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1993-1997  Thomas Aglassinger
+ * Copyright (C) 1993-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  *
  * ugly input file functions
  *
- * updated: 29-Sep-1997
+ * updated: 18-Dec-1997
  * created:  8-Jul-1995
  */
 
@@ -44,12 +44,13 @@
 #include "utypes.h"
 #include "expstr.h"
 #include "ustring.h"
-#include "fname.h"              /* for CRLF_SHIT */
+#include "fname.h"              /* to get define for CRLF_SHIT */
 
 #define NOEXTERN_UGLY_FILE_H
 #include "infile.h"
 #include "umemory.h"
 
+#define BOOL short
 /* buffer size for fgets() in ugly_infgetc() */
 #define INF_FGETS_BUFSIZE 1024
 
@@ -279,7 +280,14 @@ static INFILE *init_infile(CONSTRPTR name, size_t buf_step, size_t word_step)
  */
 ULONG infget_x(INFILE * inpf)
 {
-    return (inpf->pos_x + inpf->base_x);
+    if (inpf->wpos_y)
+    {
+        return (inpf->pos_x);
+    }
+    else
+    {
+        return (inpf->pos_x + inpf->base_x);
+    }
 }
 
 /*
@@ -299,7 +307,14 @@ ULONG infget_y(INFILE * inpf)
  */
 ULONG infget_wx(INFILE * inpf)
 {
-    return (inpf->wpos_x + inpf->base_x);
+    if (inpf->wpos_y)
+    {
+        return (inpf->wpos_x);
+    }
+    else
+    {
+        return (inpf->wpos_x + inpf->base_x);
+    }
 }
 
 /*
@@ -330,9 +345,13 @@ BOOL infget_skws(INFILE * inpf)
 STRPTR infget_fname(INFILE * inpf)
 {
     if (inpf->filename)
+    {
         return (inpf->filename);
+    }
     else
+    {
         return (FNAME_STDIN);
+    }
 }
 
 /*
@@ -348,9 +367,13 @@ STRPTR infget_fname(INFILE * inpf)
 int infeof(INFILE * inpf)
 {
     if (inpf->eof_reached == TRUE)
+    {
         return EOF;
+    }
     else
+    {
         return 0;
+    }
 }
 
 /*
@@ -1048,7 +1071,7 @@ VOID del_all_infilepos(INFILE * inpf)
  */
 static INFILEPOS *new_infilepos_node(INFILE * inpfile, ULONG x, ULONG y)
 {
-    INFILEPOS *pos = umalloc(sizeof(INFILEPOS));
+    INFILEPOS *pos = (INFILEPOS *) umalloc(sizeof(INFILEPOS));
 
     if (pos)
     {

@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  *
  * evaluate values for WIDTH and HEIGHT from file
  *
- * updated:  8-Nov-1996
+ * updated: 28-Nov-1996
  * created:  7-Jan-1996
  */
 
@@ -50,6 +50,16 @@ static UBYTE msof[] =
     /* M_SOF15 */ 0xcf,
     /* end     */ 0x00
 };
+
+/* PNG image header */
+static unsigned char id_PNG[] =
+{
+    137, 80, 78, 71, 13, 10, 26, 10
+};
+
+/* file indeces for PNG */
+#define WIDTH_PNG  16
+#define HEIGHT_PNG 20
 
 /*
  * fucking macro to compare fucking unsigned strings without
@@ -137,10 +147,6 @@ static VOID try_setattr(HSCPRC * hp, HSCVAR * attr, ULONG value)
  */
 BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
 {
-#define BUFSIZE  2048
-#define WIDTH_PNG  16           /* file indeces for PNG */
-#define HEIGHT_PNG 20
-
     HSCVAR *asrc = tag->uri_size;
     STRPTR srcuri = NULL;
 
@@ -155,7 +161,7 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
 
     if (hp->getsize && srcuri && (uri_kind(srcuri) != URI_ext))
     {
-        unsigned char *buf = (unsigned char *) umalloc(BUFSIZE);
+        unsigned char *buf = hp->image_buffer;
         EXPSTR *srcpath = init_estr(64);
         EXPSTR *imgpath = init_estr(64);
         ULONG width = 0;
@@ -163,28 +169,39 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
         BOOL transparent = FALSE;
         BOOL progressive = FALSE;
         STRPTR filetype = NULL;
+        STRPTR filename = NULL; /* native filename for image-URI */
         FILE *fref = NULL;      /* file link references to */
         unsigned char id_PNG[] =
         {
             137, 80, 78, 71, 13, 10, 26, 10
         };                      /* PNG image header */
 
+        /* convert URI to native filename */
         conv_hscuri2file(hp, srcpath, srcuri);
+        filename = estr2str(srcpath);
 
         DSZ(fprintf(stderr, DHL "   uri : \"%s\"\n" DHL "   path: \"%s\"\n",
-                    srcuri, estr2str(srcpath)));
+                    srcuri, filename));
 
-        fref = fopen(estr2str(srcpath), "r");
+        fref = fopen(filename, "rb");
 
         if (fref)
         {
+            size_t bytes_read = 0;      /* number of bytes in image buffer */
+
             /* fill buffer with zero */
-            memset(buf, 0, BUFSIZE);
+            memset(buf, 0, IMAGE_BUFFER_SIZE);
 
-            /* read buffer  from file */
-            fread(buf, BUFSIZE, 1, fref);
+            /* read buffer from file */
+            errno = 0;
+            bytes_read = fread(buf, IMAGE_BUFFER_SIZE, 1, fref);
 
-            if (buf[0] == 0xff)
+            if (errno)
+            {
+                /* read error */
+                hsc_msg_read_error(hp, filename);
+            }
+            else if (buf[0] == 0xff)
             {
                 /*
                  * JFIF/JPEG
@@ -194,9 +211,9 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
 
                 /*TODO: recognize and report progressive */
                 /*TODO: warning for progressive */
-                while (!found && (i < BUFSIZE + 8))
+                while (!found && (i < (bytes_read - 8)))
                 {
-                    if (buf[i] == 0xff)
+                    if ((buf[i] == 0xff) && (buf[i + 1] != 0xff))
                     {
                         BOOL is_msof = FALSE;
                         int j = 0;
@@ -209,10 +226,16 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
 
                         /* check if marker is of required type */
                         while (!is_msof && msof[j])
+                        {
                             if (buf[i + 1] == msof[j])
+                            {
                                 is_msof = TRUE;
+                            }
                             else
-                                j++;
+                            {
+                                j += 1;
+                            }
+                        }
 
                         if (is_msof)
                         {
@@ -242,11 +265,11 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                         }
                     }
 
-                    i++;
+                    i += 1;
                 }
 
                 /* check if buffer exeeds */
-                if (i >= (BUFSIZE + 8))
+                if (!found)
                 {
                     hsc_msg_img_corrupt(hp, "image buffer exeeds");
                 }
@@ -257,9 +280,9 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                 /*
                  * GIF
                  */
-                LONG use_global_colormap = (buf[10] & 0x80) >> 7;
-                LONG pixeldepth = (buf[10] & 0x07) + 1;
-                LONG startimg =
+                ULONG use_global_colormap = (buf[10] & 0x80) >> 7;
+                ULONG pixeldepth = (buf[10] & 0x07) + 1;
+                ULONG startimg =
                 13 + use_global_colormap * 3 * (1 << pixeldepth);
                 BOOL fucked_up = FALSE;
 
@@ -297,7 +320,7 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                         while (!fucked_up && (blksize));
 
                         /* check if buffer exeeds */
-                        if (startimg > (BUFSIZE + 9))
+                        if (startimg > (bytes_read - 9))
                         {
                             hsc_msg_img_corrupt(hp, "image buffer exeeds");
                             fucked_up = TRUE;
@@ -340,7 +363,6 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                 /*
                  * PNG
                  */
-
                 filetype = "PNG";
                 width = 0x00800000 * buf[WIDTH_PNG] +
                     0x00010000 * buf[WIDTH_PNG + 1] +
@@ -352,14 +374,14 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                     0x00000001 * buf[HEIGHT_PNG + 3];
 
                 progressive = buf[HEIGHT_PNG + 9];
-                /*TODO: transparent */
+                /*TODO: figure out transparent */
 
 #if DEBUG_SIZE
-                /* disaply whole image buffer */
+                /* display whole image buffer */
                 if (hp->debug)
                 {
                     int i;
-                    for (i = 0; i < BUFSIZE; i++)
+                    for (i = 0; i < bytes_read; i++)
                     {
 
                         fprintf(stderr, "%-2d: $%02x %-3d", i, buf[i], buf[i]);
@@ -385,25 +407,28 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                             estr2str(srcpath));
             }
 
-            DSZ(fprintf(stderr, DHL "  size: \"%s\" (%ldx%ld)\n",
-                        filetype, width, height));
+            if (filetype)
+            {
+                DSZ(fprintf(stderr, DHL "  size: \"%s\" (%ldx%ld)\n",
+                            filetype, width, height));
+            };
 
             fclose(fref);
         }
         else
         {
-            DSZ(fprintf(stderr, DHL "  Can't open image `%s'\n",
+            DSZ(fprintf(stderr, DHL "  can't open image `%s'\n",
                         estr2str(srcpath)));
-            hsc_msg_nouri(hp, estr2str(srcpath), srcuri, "image-size");
+            hsc_msg_nouri(hp, estr2str(srcpath), srcuri, "image dimension");
         }
 
-        /* set values */
+        /* set attribute values */
         if (height && width)
         {
             HSCVAR *awidth = find_varname(tag->attr, "WIDTH");
             HSCVAR *aheight = find_varname(tag->attr, "HEIGHT");
 
-            /* status message */
+            /* status message telling about the dimension */
             app_estr(srcpath, ": ");
             app_estr(srcpath, filetype);
             app_estr(srcpath, ", ");
@@ -411,17 +436,21 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
             app_estr(srcpath, "x");
             app_estr(srcpath, long2str(height));
             if (progressive)
+            {
                 app_estr(srcpath, ", progressive");
+            }
             if (transparent)
+            {
                 app_estr(srcpath, ", transparent");
+            }
             hsc_status_misc(hp, estr2str(srcpath));
 
+            /* now really set them */
             try_setattr(hp, awidth, width);
             try_setattr(hp, aheight, height);
         }
 
         /* free local resources */
-        ufree(buf);
         del_estr(srcpath);
         del_estr(imgpath);
     }

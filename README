@@ -5,7 +5,7 @@ TITLE
 
 VERSION 
 
-  0.915
+  0.916
 
 AUTHOR
 
@@ -21,10 +21,10 @@ DESCRIPTION
   more.
 
   It's mainly intended to create and maintain larger html projects. As
-  a CLI-only tool, it should be used with `make'; a dependency
-  generator is included.
+  a CLI-only tool, it can be used together with `make', and a
+  dependency generator is included.
 
-  Hsc is *not* a tool to make html easier for beginners; It's a tool
+  Hsc is *not* a tool to make html easier for beginners; it's a tool
   to make html a bit less painful and brain-damaged for people who
   already know how to work with it.
 
@@ -38,9 +38,9 @@ FEATURES
     - current time
     - size of files
   - special tags to
-    - include files (also sources)
+    - include files (also verbatim text)
     - execute shell commands (and include output)
-    - add comments in a reasonable way
+    - comment in a reasonable way
   - for local links, checks if file/id exists
   - project relative URIs
   - replaces special characters by entities
@@ -56,27 +56,31 @@ FEATURES
 
 NEW FEATURES
 
-  - ported to NeXTStep, AmigaOS/ixemul.library and BeOS
-  - conditional assignments
-  - as usual, some minor bugfixes and improvements
+  - now aborts if a specifiable number of errors occurred
+  - as usually, some minor bugfixes and improvements
+  - made Postscript version of manual available in a separate archive
 
 SPECIAL REQUIREMENTS
 
-  AmigaOS 2.04, 2MB of regular memory, 68020, some sort of WWW-browser
+  AmigaOS 2.04, 2MB of regular memory, 68020, some sort of w3-browser
   and ASCII editor.
 
   For larger projects, 4MB of memory and 68040 are recommended.
 
-  Different to most other WWW-tools, hsc requires an user-IQ > 50. You
+  Different to many other html-tools, hsc requires an user-IQ > 50. You
   should also know how to work with the CLI and how to write
-  Makefiles. You should already made have some experiences with macro
+  Makefiles. You should already have made some experiences with macro
   processors and some programming language (Rexx should suffice).
 
 AVAILABILITY
 
-  - Every Aminet-mirror, file "text/hyper/hsc.lha"; for example
-    "ftp://wuarchive.wustl.edu/pub/aminet/text/hyper/hsc.lha"
-  - "http://www.giga.or.at/~agi/hsc/"
+  - Every Aminet-mirror, file "text/hyper/hsc.lha", for example:
+
+    ftp://wuarchive.wustl.edu/pub/aminet/text/hyper/hsc.lha
+    ftp://wuarchive.wustl.edu/pub/aminet/text/hyper/hsc-source.lha
+    ftp://wuarchive.wustl.edu/pub/aminet/text/hyper/hsc-ps.lha
+
+  - http://www.giga.or.at/~agi/hsc/
 
 PRICE
 
@@ -88,5 +92,5 @@ DISTRIBUTABILITY
 
 SOURCE CODE
 
-  ANSI-C source code is available in a separate archive (look for
-  `hsc-source.lha' at the same site you've got the binaries from).
+  ANSI-C source code is available in a separate archive named
+  `hsc-source.lha'.

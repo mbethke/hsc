@@ -1,6 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 <HTML><HEAD><TITLE>check operators</TITLE></HEAD><BODY>
 
+susi
+susi-double
+susi-single
+susi-double-in-brackets
+susi-double-in-brackets
 
 
 
@@ -12,6 +17,9 @@ IN
 [hugo ] + [ist doof] = [hugo ist doof] = [hugo ist doof]
 [hugo ist ] + [doof] = [hugo ist doof] = [hugo ist doof]
 
+
+susi and sepp
+hugo, susi and sepp
 
 
 

@@ -1,7 +1,7 @@
 #
 # Makefile for hsc ("html sucks completely")
 #
-# Copyright (C) 1994,95,96,97  Thomas Aglassinger
+# Copyright (C) 1995-1998  Thomas Aglassinger
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -54,11 +54,12 @@ SYS	= -DNEXTSTEP
 
 #------------------------------------------------
 #
-# AmigaOS (using ixemul)
+# AmigaOS with ixemul.library
 #
 #------------------------------------------------
 #CC	= gcc
-#CFLAGS	= -m68020-40 -O2  -fstrength-reduce -s
+#CFLAGS	= -m68020-40 -Wall -W -pedantic -Wno-unused -O2 -s \
+#	-fstrength-reduce -fbaserel	
 #SYS	= -DUNIX -UAMIGA
 
 #------------------------------------------------
@@ -69,6 +70,15 @@ SYS	= -DNEXTSTEP
 #CC	= mwcc
 #CFLAGS	= -ansi off -char unsigned -dialect c
 #SYS	= -DBEOS 
+
+#------------------------------------------------
+#
+# AmigaOS with PowerUp (experimental)
+#
+#------------------------------------------------
+#CC	= vc
+#CFLAGS	= -Iugly
+#SYS	= -DAMIGA
 
 #------------------------------------------------
 #
@@ -189,62 +199,59 @@ sterile : clean all_clean
 #
 
 # --- DO NOT MODIFY THIS LINE -- AUTO-DEPENDS FOLLOW ---
-hsc/all_hsc.o : hsc/all_hsc.c hsc/hsc.c hsc/callback.c hsc/output.c \
-    hsc/args.c hsc/status.c hsc/global.c hsc/status.h hsc/output.h \
-    hsc/callback.h hsc/args.h ugly/returncd.h ugly/uargs.h hscprj/project.h \
-    ugly/prginfo.h hsc/global.h hsc/hsc_rev.h riscos/unixname.h \
-    hscprj/license.h ugly/fname.h hsclib/hsclib.h ugly/infile.h \
-    ugly/utypes.h ugly/umemory.h ugly/utypes.h hsc/hdebug.h ugly/ustring.h \
-    ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/expstr.h hsclib/linit.h \
-    hsclib/include.h hsclib/inc_base.h ugly/dllist.h ugly/udebug.h \
-    hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
-    hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
-    hsclib/ldebug.h
+hsc/all_hsc.o : hsc/args.c hsc/callback.c hsc/global.c hsc/hsc.c \
+    hsc/output.c hsc/status.c hsc/global.h hsc/status.h hscprj/license.h \
+    ugly/fname.h ugly/prginfo.h ugly/returncd.h ugly/uargs.h hsc/callback.h \
+    hsc/output.h hsclib/hsclib.h hsc/args.h hsc/hsc_rev.h hscprj/project.h \
+    riscos/unixname.h hsc/hdebug.h ugly/dllist.h ugly/expstr.h \
+    ugly/infile.h ugly/umemory.h ugly/ustring.h ugly/utypes.h ugly/expstr.h \
+    ugly/utypes.h ugly/umemory.h hsclib/inc_base.h hsclib/include.h \
+    hsclib/linit.h ugly/dllist.h ugly/udebug.h hsclib/attrib.h \
+    hsclib/entity.h hsclib/hscprc.h hsclib/ldebug.h hsclib/lmessage.h \
+    hsclib/lstatus.h hsclib/msgid.h hsclib/tag.h hscprj/document.h
 
-hsclib/all_hscl.o : hsclib/all_hscl.c hsclib/tag_macro.c hsclib/tag_if.c \
-    hsclib/tag_hsc.c hsclib/tag_a.c hsclib/tag_misc.c hsclib/size.c \
-    hsclib/linit.c hsclib/include.c hsclib/parse.c hsclib/deftag.c \
-    hsclib/defattr.c hsclib/posteval.c hsclib/eval.c hsclib/uri.c \
-    hsclib/skip.c hsclib/input.c hsclib/lstatus.c hsclib/hscprc.c \
-    hsclib/idref.c hsclib/attrib.c hsclib/tag.c hsclib/entity.c \
-    hsclib/lmessage.c ugly/ustring.h ugly/infile.h ugly/umemory.h \
-    ugly/expstr.h ugly/dllist.h ugly/utypes.h hsclib/msgid.h \
-    hsclib/ldebug.h ugly/ustrlist.h hsclib/parse.h hsclib/include.h \
-    hsclib/deftag.h hsclib/defattr.h hsclib/inc_tagcb.h hsclib/skip.h \
-    hsclib/eval.h hsclib/tag_if.h hsclib/tag_macro.h hsclib/uri.h \
-    ugly/fname.h hscprj/document.h hsclib/inc_base.h hsclib/tag_misc.h \
-    hsclib/tag_hsc.h hsclib/tag_a.h hsclib/input.h ugly/ufile.h \
-    hsclib/size.h hscprj/project.h hsclib/posteval.h hsclib/idref.h \
-    ugly/returncd.h hsclib/tag.h hsclib/entity.h ugly/utypes.h \
-    ugly/dllist.h ugly/expstr.h ugly/udebug.h ugly/ustring.h \
-    hsclib/hscprc.h hsclib/lstatus.h hsclib/lmessage.h hsclib/attrib.h
+hsclib/all_hscl.o : hsclib/attrib.c hsclib/defattr.c hsclib/deftag.c \
+    hsclib/entity.c hsclib/eval.c hsclib/hscprc.c hsclib/idref.c \
+    hsclib/include.c hsclib/input.c hsclib/ldebug.h hsclib/linit.c \
+    hsclib/lmessage.c hsclib/lstatus.c hsclib/msgid.h hsclib/parse.c \
+    hsclib/posteval.c hsclib/size.c hsclib/skip.c hsclib/tag.c \
+    hsclib/tag_a.c hsclib/tag_hsc.c hsclib/tag_if.c hsclib/tag_macro.c \
+    hsclib/tag_misc.c hsclib/uri.c ugly/dllist.h ugly/expstr.h \
+    ugly/infile.h ugly/umemory.h ugly/ustring.h ugly/utypes.h hsclib/eval.h \
+    hsclib/inc_base.h hsclib/uri.h hsclib/defattr.h hsclib/input.h \
+    hsclib/skip.h hsclib/entity.h hsclib/idref.h hsclib/tag_if.h \
+    hscprj/project.h ugly/fname.h ugly/returncd.h ugly/ustrlist.h \
+    hscprj/document.h hsclib/include.h hsclib/parse.h ugly/ufile.h \
+    hsclib/deftag.h hsclib/tag_a.h hsclib/tag_hsc.h hsclib/tag_macro.h \
+    hsclib/tag_misc.h hsclib/posteval.h hsclib/size.h hsclib/tag.h \
+    hsclib/inc_tagcb.h ugly/utypes.h ugly/dllist.h ugly/expstr.h \
+    ugly/udebug.h hsclib/attrib.h hsclib/hscprc.h hsclib/lmessage.h \
+    hsclib/lstatus.h ugly/ustring.h
 
-hscprj/all_hscp.o : hscprj/all_hscp.c hscprj/writeprj.c hscprj/readprj.c \
-    hscprj/project.c hscprj/license.c hscprj/document.c hscprj/project.h \
-    hscprj/document.h ugly/ustring.h ugly/infile.h ugly/umemory.h \
-    ugly/expstr.h ugly/dllist.h ugly/utypes.h hscprj/pdefs.h \
-    hscprj/pdebug.h hsclib/ldebug.h ugly/utypes.h ugly/dllist.h \
-    ugly/expstr.h ugly/udebug.h
+hscprj/all_hscp.o : hscprj/document.c hscprj/license.c hscprj/project.c \
+    hscprj/readprj.c hscprj/writeprj.c hscprj/document.h ugly/utypes.h \
+    hsclib/ldebug.h hscprj/pdebug.h hscprj/project.h ugly/dllist.h \
+    ugly/expstr.h ugly/infile.h ugly/umemory.h ugly/ustring.h \
+    hscprj/pdefs.h ugly/udebug.h ugly/utypes.h ugly/dllist.h ugly/expstr.h
 
-hsctools/all_depp.o : hsctools/all_depp.c hsctools/hscdepp.c \
-    hscprj/license.h hscprj/project.h hscprj/document.h ugly/returncd.h \
-    ugly/prginfo.h ugly/uargs.h ugly/infile.h ugly/expstr.h ugly/dllist.h \
-    ugly/ustring.h hsctools/depp_rev.h ugly/umemory.h ugly/utypes.h \
-    hsclib/ldebug.h ugly/umemory.h ugly/utypes.h ugly/dllist.h \
-    ugly/expstr.h ugly/udebug.h
+hsctools/all_depp.o : hsctools/hscdepp.c hscprj/document.h hscprj/license.h \
+    hscprj/project.h hsctools/depp_rev.h ugly/dllist.h ugly/expstr.h \
+    ugly/infile.h ugly/prginfo.h ugly/returncd.h ugly/uargs.h \
+    ugly/ustring.h hsclib/ldebug.h ugly/umemory.h ugly/utypes.h \
+    ugly/utypes.h ugly/dllist.h ugly/expstr.h ugly/umemory.h ugly/udebug.h
 
-hsctools/all_pitt.o : hsctools/all_pitt.c hsctools/hscpitt.c \
-    hscprj/license.h hscprj/project.h hscprj/document.h ugly/returncd.h \
-    ugly/prginfo.h ugly/ustrlist.h ugly/uargs.h ugly/ufile.h ugly/infile.h \
-    ugly/expstr.h ugly/dllist.h ugly/ustring.h hsctools/pitt_rev.h \
-    ugly/umemory.h ugly/utypes.h hsclib/ldebug.h ugly/dllist.h \
-    ugly/ustring.h ugly/utypes.h ugly/umemory.h ugly/expstr.h ugly/udebug.h
+hsctools/all_pitt.o : hsctools/hscpitt.c hscprj/document.h hscprj/license.h \
+    hscprj/project.h hsctools/pitt_rev.h ugly/dllist.h ugly/expstr.h \
+    ugly/infile.h ugly/prginfo.h ugly/returncd.h ugly/uargs.h ugly/ufile.h \
+    ugly/ustring.h ugly/ustrlist.h hsclib/ldebug.h ugly/umemory.h \
+    ugly/utypes.h ugly/utypes.h ugly/dllist.h ugly/expstr.h ugly/umemory.h \
+    ugly/ustring.h ugly/udebug.h
 
-ugly/all_ugly.o : ugly/all_ugly.c ugly/prginfo.c ugly/infile.c \
-    ugly/ustrlist.c ugly/uargs.c ugly/ufile.c ugly/dllist.c ugly/fname.c \
-    ugly/expstr.c ugly/ustring.c ugly/umemory.c ugly/udebug.h ugly/utypes.h \
-    ugly/umemory.h ugly/infile.h ugly/fname.h ugly/ustring.h ugly/expstr.h \
-    ugly/ustrlist.h ugly/args_hlp.c ugly/args_prp.c ugly/args_set.c \
-    ugly/args_fre.c ugly/uargs.h ugly/dllist.h ugly/ufile.h ugly/udebug.h
+ugly/all_ugly.o : ugly/dllist.c ugly/expstr.c ugly/fname.c ugly/infile.c \
+    ugly/prginfo.c ugly/uargs.c ugly/udebug.h ugly/ufile.c ugly/umemory.c \
+    ugly/ustring.c ugly/ustrlist.c ugly/dllist.h ugly/umemory.h \
+    ugly/utypes.h ugly/expstr.h ugly/ustring.h ugly/fname.h ugly/infile.h \
+    ugly/args_fre.c ugly/args_hlp.c ugly/args_prp.c ugly/args_set.c \
+    ugly/uargs.h ugly/ufile.h ugly/ustrlist.h ugly/udebug.h
 
 # --- DO NOT MODIFY THIS LINE -- AUTO-DEPENDS PRECEDE ---

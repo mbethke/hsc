@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  *
  * hsc process functions
  *
- * updated:  5-Oct-1997
+ * updated: 16-Dec-1997
  * created: 11-Feb-1996
  */
 
@@ -87,6 +87,8 @@ VOID del_hscprc(HSCPRC * hp)
         ufreestr(hp->filename_document);
         ufreestr(hp->strip_tags);
 
+        ufree(hp->image_buffer);
+
         /* remove project-data */
         del_project(hp->project);
 
@@ -139,8 +141,12 @@ VOID reset_hscprc(HSCPRC * hp)
     /* check for prostitute */
     hp->prostitute = (getenv(ENV_HSCSALARY) != NULL);
 
-    /* reset messages */
-    hp->msg_ignore_notes = FALSE;
+    /* allow infinite number messages */
+    hp->max_messages = MAXIMUM_MESSAGE_INFINITE;
+    hp->max_errors = MAXIMUM_MESSAGE_INFINITE;
+
+    /* enable all messages */
+    hp->msg_ignore_notes = FALSE;      
     hp->msg_ignore_style = FALSE;
     hp->msg_ignore_port = FALSE;
     for (i = 0; i <= MAX_MSGID; i++)
@@ -191,16 +197,14 @@ HSCPRC *new_hscprc(void)
         hp->curr_ref = init_estr(64);
         hp->whtspc = init_estr(0);
 
-#if 0                           /* TODO:remove */
-        hp->filename_project = NULL;
-        hp->filename_document = NULL;
-#endif
-
-        /* alloc message arrays */
+        /* allocate message arrays */
         hp->msg_ignore = (HSCIGN *)
             umalloc((MAX_MSGID + 1) * sizeof(HSCIGN));
         hp->msg_class = (HSCMSG_CLASS *)
             umalloc((MAX_MSGID + 1) * sizeof(HSCMSG_CLASS));
+
+        /* allocate image buffer */
+        hp->image_buffer = (unsigned char *) umalloc(IMAGE_BUFFER_SIZE);
 
         reset_hscprc(hp);
     }
@@ -533,7 +537,7 @@ VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext)
 }
 
 /*
- * set flags
+ * set values
  */
 VOID hsc_set_quote_mode(HSCPRC * hp, LONG new_mode)
 {
@@ -545,6 +549,16 @@ VOID hsc_set_entity_mode(HSCPRC * hp, LONG new_mode)
 {
     hp->entmode = new_mode;
     D(fprintf(stderr, DHL "entity_mode=%ld\n", new_mode));
+}
+
+VOID hsc_set_maximum_messages(HSCPRC * hp, LONG messages)
+{
+    hp->max_messages = messages;
+}
+
+VOID hsc_set_maximum_errors(HSCPRC * hp, LONG errors)
+{
+    hp->max_errors = errors;
 }
 
 /*
@@ -866,14 +880,10 @@ BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text)
 }
 
 /*
- * misc. functions
- */
-
-/*
  * nomem-handler
  */
 BOOL hsc_standard_nomem_handler(size_t size)
-{                               /* TODO: think about this */
+{
     fputs("\n*** out of memory\n\n", stderr);
 
     exit(RC_FAIL);

@@ -17,7 +17,7 @@ HSC	= //hsc
 #
 # options for hsc
 #
-HSCOPTS   = TO= STATUS=line|verbose
+HSCOPTS   = TO= STATUS="line|verbose"
 
 all : stupid.html hugo/hugo.html main.html 
 

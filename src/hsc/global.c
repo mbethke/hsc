@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  *
  * global vars & funs for hsc
  *
- * updated: 16-May-1997
+ * updated: 29-Nov-1997
  * created:  8-Jul-1995
  */
 
@@ -44,7 +44,6 @@ STRPTR msgfilename = NULL;      /* name of message file (def: stderr) */
 STRPTR prjfilename = NULL;      /* name for project-file (def: none) */
 STRPTR prefsfilename = NULL;    /* name for prefs-file (default: search) */
 
-ULONG max_error = 20;           /* abort after too many errors */
 DLLIST *define_list = NULL;     /* defines from user-args */
 DLLIST *incfile = NULL;         /* list of files that should be */
                                        /*   included before main file */
@@ -54,9 +53,7 @@ BOOL msg_ansi = FALSE;          /* use ANIS-sequences in messages */
 STRPTR msg_format = NULL;       /* message format */
 EXPSTR *msgbuf = NULL;          /* buffer for message */
 
-#if defined MSDOS
-STRARR msdosbuf[4097];          /* misc. buffer */
-#endif
+STRARR misc_buffer[6000];       /* misc. buffer (must be >5000) */
 
 /*
  * init_global
@@ -78,7 +75,7 @@ BOOL init_global(VOID)
 
     ok = (inpfilename && msgbuf);
 
-#if (defined MSDOS) /* HSC_PUT */
+#if (defined MSDOS)             /* HSC_PUT */
 #define MEM_SIZE (15*1024*1024)
     {
         /* alloc 15MB ram, fill them twice
@@ -119,4 +116,3 @@ STRPTR get_outfilename(VOID)
     else
         return (STDOUT_NAME);
 }
-

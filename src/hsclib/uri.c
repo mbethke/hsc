@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -319,10 +319,15 @@ VOID conv_hscuri2file(HSCPRC * hp, EXPSTR * dest_fname, STRPTR uri)
  */
 VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
 {
-    STRPTR host = NULL;
-    STRPTR port = NULL;
-    STRPTR path = NULL;
-    STRPTR name = NULL;
+    /* sample URI could be:
+     * http://www.host.at:80/file.html#name
+     */
+    STRPTR protocol = NULL;     /* "http://" */
+    STRPTR host = NULL;         /* "www.sepp.at" */
+    STRPTR port = NULL;         /* ":80" */
+    STRPTR path = NULL;         /* "file.html" */
+    STRPTR name = NULL;         /* stuff after "#" */
+    STRPTR cgiargs = NULL;      /* stuff after "?"  */
 
     clr_estr(dest_uri);
 
@@ -338,6 +343,10 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
                 /*
                  * check global uri
                  */
+                if (!protocol)
+                {
+                    protocol = "";
+                }
                 if (!host)
                 {
                     host = "";
@@ -345,10 +354,6 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
                 if (!port)
                 {
                     port = "";
-                }
-                if (!host)
-                {
-                    host = "";
                 }
 
                 /*
@@ -383,7 +388,7 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
                 noabsuri++;     /* skip ":" */
             }
 
-            /* extract path and #name */
+            /* extract path and #name or ?args */
             if (noabsuri[0] == '#')
             {
                 path = NULL;
@@ -391,11 +396,30 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
             }
             else
             {
-                path = strtok(uri, "#");
-                name = strtok(NULL, "");
-            }
+                path = uri;
+                name = strchr(uri, '#');
+                if (name)
+                {
+                    /* blank out '#' */
+                    name[0] = '\0';
+                    name++;
+                }
+                else
+                {
+#if 1
+                    cgiargs = NULL;
+#else
+                    cgiargs = strchr(uri, '?'); /* TODO: conformant? */
+#endif
+                    if (cgiargs)
+                    {
+                        /* blank out '?' */
+                        cgiargs[0] = '\0';
+                        cgiargs++;
+                    }
 
-            /* TODO: handle HREF="suck.cgi?arg=..." */
+                }
+            }
 
             if (path)
             {
@@ -465,14 +489,21 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
                     add_local_idref(hp, name);
             }
 
-            /* add #name part */
+            /* add #name or ?args part */
             if (name)
             {
                 app_estrch(dest_uri, '#');
                 app_estr(dest_uri, name);
             }
+            else if (cgiargs)
+            {
+                app_estrch(dest_uri, '?');
+                app_estr(dest_uri, cgiargs);
+            }
+
             /* free resources */
             del_estr(dest_fname);
         }                       /* else (rsrc) */
     }                           /* if (uri) */
 }
+

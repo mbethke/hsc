@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  *
  * user argument handling for hsc
  *
- * updated: 28-Sep-1997
+ * updated: 29-Nov-1997
  * created:  1-Jul-1995
  */
 
@@ -39,7 +39,10 @@
 
 #include "hscprj/license.h"
 
+/* default values for some arguments */
 #define DEFAULT_EXTENSION "html"
+#define DEFAULT_MAXERR    "20"
+#define DEFAULT_MAXMSG    "40"
 
 static STRPTR arg_inpfname = NULL;      /* temp vars for set_args() */
 static STRPTR arg_outfname = NULL;
@@ -531,6 +534,8 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     EXPSTR *rel_destdir = init_estr(32);        /* relative destination dir */
     EXPSTR *kack_name = init_estr(0);   /* temp. str for outfilename */
     struct arglist *hsc_args;   /* argument structure */
+    LONG maximum_number_of_errors = strtol(DEFAULT_MAXERR, (char **) NULL, 10);
+    LONG maximum_number_of_messages = strtol(DEFAULT_MAXMSG, (char **) NULL, 10);
 
 #if (defined MSDOS)             /* HSC_GUN */
 #define SWAPSIZE     (32*4)     /* 32 MB */
@@ -607,11 +612,14 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "MSGFORMAT/T/K", &msg_format,
                      "how to display messages",
     /* numeric */
-                     "MAXERR/N/K", &max_error,
-                     "max. number of errors (default: 20)",
+                     "MAXERR/N/K", &maximum_number_of_errors,
+                     "max. number of errors (default: " DEFAULT_MAXERR ")",
+
+                     "MAXMSG/N/K", &maximum_number_of_messages,
+                     "max. number of messages (default: " DEFAULT_MAXMSG ")",
 
                      "EXTENSION/T/K", &arg_extension,
-                   "output-file-extension (default: " DEFAULT_EXTENSION ")",
+                   "output file extension (default: " DEFAULT_EXTENSION ")",
 
                      "DEFINE=DEF/T/K/M", &define_list,
                      "define global attribute",
@@ -1037,14 +1045,14 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                  if (!use_stdout)
                  fprintf(stderr, DHSC "procss: `%s'\n", estr2str(outfilename));
 
-                 /* show classes to be ignored */
+                /* show classes to be ignored */
                  fprintf(stderr, DHSC "ignore class:");
                  if (hsc_get_msg_ignore_notes(hp))
                  {
                  fprintf(stderr, " notes");
                  }
                  fprintf(stderr, "\n");
-                 /* show messages to be ignored */
+                /* show messages to be ignored */
                  fprintf(stderr, DHSC "ignore:");
                  for (i = 0; i < MAX_MSGID; i++)
                  {
@@ -1054,7 +1062,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                  }
                  }
                  fprintf(stderr, "\n");
-                 /* show messages to be enabled */
+                /* show messages to be enabled */
                  fprintf(stderr, DHSC "enable:");
                  for (i = 0; i < MAX_MSGID; i++)
                  {
@@ -1090,6 +1098,17 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
             hsc_set_quote_mode(hp, arg_quotemode);
             hsc_set_strip_tags(hp, arg_striptags);
+
+            /* set message limits; 0 means use the value set by
+             * init_hscprc(), which means infinite */
+            if (maximum_number_of_messages)
+            {
+                hsc_set_maximum_messages(hp, maximum_number_of_messages);
+            }
+            if (maximum_number_of_errors)
+            {
+                hsc_set_maximum_errors(hp, maximum_number_of_errors);
+            }
 
             /* set directories */
             hsc_set_destdir(hp, estr2str(destdir));

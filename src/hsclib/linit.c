@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  *
  * functions to init & read preferences for a hsc-process
  *
- * updated: 15-Apr-1997
+ * updated: 17-Dec-1997
  * created: 19-Feb-1996
  */
 
@@ -113,10 +113,8 @@ static BOOL dbg_old = FALSE;
  *
  * result: full path & filename of prefs or NULL if not found
  *
- * TODO: This routine sucks because of the static cfgfn[];
- *       instead a hp->prefs_fname should be used
  */
-static STRPTR find_prefs_fname(HSCPRC * hp)
+static STRPTR find_prefs_fname(HSCPRC * hp, EXPSTR *cfgfn)
 {
 #define ENV_HOME "HOME"
     STRPTR prefs_fname = NULL;
@@ -128,9 +126,6 @@ static STRPTR find_prefs_fname(HSCPRC * hp)
     FILE *cfgf = NULL;          /* prefs file */
     EXPSTR *hscpathstr = init_estr(32);         /* buffer to read $HSCPATH */
     EXPSTR *homepathstr = init_estr(32);        /* buffer to read $HOME */
-
-    static STRARR cfgfn[300];   /* TODO: expstr; buffer to create
-                                 *   filename of config file */
 
     /* add "$HSCPATH/hsc.prefs" to files-to-be-checked */
     if (link_envfname(hscpathstr, ENV_HSCPATH, NULL, NULL))
@@ -152,12 +147,12 @@ static STRPTR find_prefs_fname(HSCPRC * hp)
         path = paths[path_ctr]; /*   get next path */
         if (path)
         {                       /*   is it the last one? */
-            strcpy(cfgfn, path);        /*   N->generate filename */
-            strcat(cfgfn, CONFIG_FILE);
+            set_estr(cfgfn, path);        /*   N->generate filename */
+            app_estr(cfgfn, CONFIG_FILE);
 
-            DC(fprintf(stderr, DHL "try \"%s\"\n", cfgfn));
+            DC(fprintf(stderr, DHL "try \"%s\"\n", estr2str(cfgfn)));
 
-            cfgf = fopen(cfgfn, "r");   /*      try to open file */
+            cfgf = fopen(estr2str(cfgfn), "r");   /*      try to open file */
         }
         path_ctr++;             /*   process next path */
     }
@@ -165,7 +160,7 @@ static STRPTR find_prefs_fname(HSCPRC * hp)
 
     if (cfgf)
     {
-        prefs_fname = cfgfn;
+        prefs_fname = estr2str(cfgfn);
         fclose(cfgf);
     }
 
@@ -278,10 +273,13 @@ BOOL hsc_copy_base_info(HSCPRC * dest_hp, HSCPRC * dummy_hp)
 BOOL hsc_read_prefs(HSCPRC * hp, STRPTR prefs_fname)
 {
     BOOL ok = FALSE;
+    EXPSTR *prefs_name_buffer = init_estr(32);
 
     /* find prefs file */
     if (!prefs_fname)
-        prefs_fname = find_prefs_fname(hp);
+    {
+        prefs_fname = find_prefs_fname(hp, prefs_name_buffer);
+    }
 
     /* status message */
     if (prefs_fname)
@@ -308,87 +306,11 @@ BOOL hsc_read_prefs(HSCPRC * hp, STRPTR prefs_fname)
                     "can not open preferences file");
     }
 
-    return (ok);
-}
-
-/*
- * callback to display "project-file corrupt"-message
- */
-static VOID msg_corrupt_pf(HSCPRJ * project, STRPTR reason)
-{
-    STRPTR prjtxt = "project-file corrupt";
-    HSCPRC *hp = (HSCPRC *) project->user_data;
-
-    if (reason)
-        hsc_message(hp, MSG_CORRUPT_PRJFILE, "%s (%s)", prjtxt, reason);
-    else
-        hsc_message(hp, MSG_CORRUPT_PRJFILE, "%s", prjtxt);
-}
-
-/*
- * hsc_init_project
- *
- * read project-file
- */
-BOOL hsc_init_project(HSCPRC * hp, STRPTR project_fname)
-{
-    BOOL ok = FALSE;
-
-    /* init project */
-    hp->project = new_project();
-    hp->project->user_data = (APTR) hp;
-    hp->project->debug = hp->debug;
-    hp->project->CB_msg_corrupt_pf = msg_corrupt_pf;
-
-    if (project_fname)
-    {
-        /*
-         * read project-data
-         */
-        D(fprintf(stderr, DHL "read project-file `%s'\n", project_fname));
-
-        hsc_status_file_begin(hp, project_fname);
-
-        /* read project-file */
-        hp->inpf = infopen(project_fname, 0);
-
-        if (hp->inpf)
-        {
-            ok = hsc_project_read_data(hp->project, hp->inpf);
-            infclose(hp->inpf);
-            if (ok)
-            {
-                /* message about success */
-                EXPSTR *msg = init_estr(32);
-                set_estr(msg, project_fname);
-                app_estr(msg, ": project-file read");
-                hsc_status_misc(hp, estr2str(msg));
-                del_estr(msg);
-            }
-
-            hp->inpf = NULL;
-        }
-        else
-        {
-            D(fprintf(stderr, DHL "  can't read project-file\n"));
-            ok = TRUE;
-            /* TODO: message "creating new one" */
-        }
-    }
-    else
-    {
-        D(fprintf(stderr, DHL "no project-file to load\n"));
-        ok = TRUE;
-    }
-
-    if (ok)
-    {
-        /* dettach current document */
-        hsc_project_set_document(hp->project, hp->filename_document);
-    }
+    del_estr(prefs_name_buffer);
 
     return (ok);
 }
+
 
 /*
  * hsc_set_tagCB

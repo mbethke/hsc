@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,8 +54,6 @@
 /*
  * obsolete numbers:
  * - see below
- * #define MSG_NO_OUTPUT          (MSG_FATAL+  4)  / * can't open output file * /
- * #define MSG_NO_OUTFNAME        (MSG_FATAL+  5)  / * can't evaluate outp-filenm. * /
  * #define MSG_WSPC_AROUND_TAG    (MSG_STYLE+  8)  / * white space around tag * /
  *
  */
@@ -66,6 +64,8 @@
 #define MSG_NEW_PRJFILE        (MSG_WARN +  1)  /* creating new project file */
 #define MSG_CORRUPT_PRJFILE    (MSG_FATAL+  2)  /* corrupt project file */
 #define MSG_UNEX_EOF           (MSG_FATAL+  3)  /* unexpected eof */
+#define MSG_READ_ERROR         (MSG_FATAL+  4)  /* read error */
+#define MSG_TOO_MANY           (MSG_FATAL+  5)  /* too many messages/errors */
 #define MSG_NO_INPUT           (MSG_FATAL+  6)  /* can't open input file */
 
 /*
@@ -134,7 +134,7 @@
 #define MSG_ILLG_ATTRNAME      (MSG_ERROR+ 64)  /* illegal attribute identifier */
 #define MSG_UNKN_BINOP         (MSG_ERROR+ 65)  /* unknown binary operator */
 #define MSG_ATTR_CONST         (MSG_ERROR+ 27)  /* can't change constant attr */
-#define MSG_IMG_CORRUPT        (MSG_ERROR+  8)  /* image corrupt * /
+#define MSG_IMG_CORRUPT        (MSG_ERROR+  8)  /* image corrupt */
 
 /*
  * messages from tag handles
@@ -160,7 +160,7 @@
 #define MSG_FRAME_SUX          (MSG_STYLE+ 76)  /* frames are disgusting */
 #define MSG_NO_CONTENT         (MSG_FATAL+ 28)  /* no content */
 #define MSG_REDEFINE_LAZY      (MSG_ERROR+ 56)  /* redefined lazy */
-#define MSG_UNKN_LAZY          (MSG_ERROR+ 32)  /* unknown lazy * /
+#define MSG_UNKN_LAZY          (MSG_ERROR+ 32)  /* unknown lazy */
 
 /*
  * messages within expressions

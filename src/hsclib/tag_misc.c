@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  *
  * misc. tag-callbacks
  *
- * updated: 30-Apr-1997
+ * updated: 16-Dec-1997
  * created: 30-Jul-1995
  */
 
@@ -106,7 +106,7 @@ BOOL handle_heading(HSCPRC * hp, HSCTAG * tag)
 
         sprintf(hstr, "H%ld", hp->prev_heading_num + 1);
         hsc_message(hp, MSG_WRONG_HEADING,
-                     "expected heading %t", hstr);
+                    "expected heading %t", hstr);
     }
 
     hp->prev_heading_num = num;
@@ -121,8 +121,7 @@ BOOL handle_heading(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_img(HSCPRC * hp, HSCTAG * tag)
 {
-    /* TODO: check for GIF file */
-
+    /* ...and I'm happy when it rains */
     return (TRUE);
 }
 
@@ -154,12 +153,10 @@ BOOL handle_end_pre(HSCPRC * hp, HSCTAG * tag)
 /*
  * handle_sgml_comment: tag handle for <!..>
  *
- *
  */
 BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
 {
     BOOL not_stripped = TRUE;
-#if 1
     EXPSTR *content = hp->tag_attr_str;
 
     /* do not maintain content, if comment should be stripped
@@ -170,7 +167,7 @@ BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
     }
 
     /* skip data */
-    skip_sgml_special(hp,content);
+    skip_sgml_special(hp, content);
 
     /* check if comment should be stripped */
     if (hp->strip_cmt)
@@ -178,125 +175,6 @@ BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
         hsc_msg_stripped_tag(hp, tag, "sgml-comment");
         not_stripped = FALSE;
     }
-#else
-    STRPTR nw = infgetw(inpf);
-    INFILE *inpf = hp->inpf;
-
-    if (nw)
-    {
-        BOOL comment = FALSE;
-        BOOL oneword = FALSE;
-        BOOL end_min = FALSE;
-
-        /* append to attribute string */
-        app_estr(hp->tag_attr_str, infgetcws(inpf));
-        app_estr(hp->tag_attr_str, infgetcw(inpf));
-
-        if (!strncmp(nw, "--", 2))
-        {
-            size_t slen = strlen(nw);   /* length of current word */
-
-            comment = TRUE;
-
-            /* check for "--" */
-            if (slen >= 4)
-            {
-                /* word starts with "--" and ends with "--" */
-                end_min = ((nw[slen - 1] == '-') && (nw[slen - 1] == '-'));
-                oneword = TRUE;
-            }
-        }
-
-        /* check for whitespace after "!" */
-        if (strlen(infgetcws(inpf)))
-            hsc_msg_illg_whtspc(hp);
-
-        if (!strcmp(nw, ">"))   /* zero-comment */
-            hsc_message(hp, MSG_ONEW_COMMENT, "empty sgml comment");
-        else if (!comment)
-            skip_until_eot(hp, hp->tag_attr_str);       /* unknown "!"-command: skip */
-        else
-        {
-            /* handle comment */
-            BOOL end_gt = FALSE;
-            BOOL in_quote = FALSE;
-
-            while (!(hp->fatal) && !end_gt)
-            {
-                /* read next word */
-                nw = infgetw(inpf);
-
-                if (nw)
-                {
-                    size_t slen = strlen(nw);
-
-                    /* append word to attribute string */
-                    app_estr(hp->tag_attr_str, infgetcws(inpf));
-                    app_estr(hp->tag_attr_str, infgetcw(inpf));
-
-                    /*
-                     *check for "--"
-                     */
-                    if (slen >= 2)
-                        end_min =
-                            ((nw[slen - 1] == '-') && (nw[slen - 1] == '-'));
-
-                    /*
-                     * check for end-of-comment
-                     */
-                    if (!strcmp(nw, ">"))
-                        if (end_min)
-                            end_gt = TRUE;
-                        else
-                        {
-                            hsc_message(hp, MSG_GT_IN_COMMENT,
-                                        "%q inside sgml-comment", ">");
-                        }
-                    else
-                    {
-                        if (oneword)
-                        {
-                            oneword = FALSE;
-                            end_min = FALSE;
-                        }
-
-                        /* check for LF */
-                        if (!strcmp(nw, "\n"))
-                        {
-                            in_quote = FALSE;
-                            hsc_message(hp, MSG_LF_IN_COMMENT,
-                                        "line feed inside sgml-comment");
-                        }
-                        /* check for quote */
-                        else if (!strcmp(nw, "\"") || !strcmp(nw, "'"))
-                            in_quote = !in_quote;
-                    }
-                }
-                else
-                    hsc_msg_eof(hp, "reading sgml-comment");
-
-                if (end_gt && in_quote)
-                {
-                    hsc_message(hp, MSG_CMTEND_QUOTE,
-                                "sgml-comment ends inside quotes");
-                }
-
-                if (end_gt && oneword)
-                    hsc_message(hp, MSG_ONEW_COMMENT,
-                                "sgml-comment consists of a single word");
-            }
-        }
-
-        /* check if comment should be stripped */
-        if (hp->strip_cmt)
-        {
-            hsc_msg_stripped_tag(hp, tag, "sgml-comment");
-            not_stripped = FALSE;
-        }
-    }
-    else
-        hsc_msg_eof(hp, "reading sgml-comment");
-#endif
 
     return (not_stripped);
 }

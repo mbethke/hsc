@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1993-1997  Thomas Aglassinger
+ * Copyright (C) 1993-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,26 +22,9 @@
  *
  * double linked list processing functions
  *
- * Copyright (C) 1994,95,96  Thomas Aglassinger
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * updated:  9-Mar-1997
+ * updated: 18-Dec-1997
  * created:  1-Mar-1994
  *
- *---------------------------------------------------------
  */
 
 #include <stdlib.h>
@@ -67,7 +50,7 @@ DLLIST *init_dllist(void (*fn_del_data) (APTR data))
 {
     DLLIST *newlist;
 
-    newlist =                   /* alloc mem for list */
+    newlist = (DLLIST *)        /* alloc mem for list */
         umalloc(sizeof(DLLIST));
 
     if (newlist)
@@ -95,7 +78,7 @@ DLNODE *new_dlnode(void)
 {
     DLNODE *newnode;
 
-    newnode =                   /* alloc mem for new node */
+    newnode = (DLNODE *)        /* alloc mem for new node */
         umalloc(sizeof(DLNODE));
 
     if (newnode)

@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1993-1997  Thomas Aglassinger
+ * Copyright (C) 1993-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,23 +22,7 @@
  *
  * ugly set arguments handling functions
  *
- * Copyright (C) 1994,95,96  Thomas Aglassinger
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * updated: 27-Sep-1997
+ * updated: 18-Dec-1997
  * created:  3-Jul-1994
  *
  *===================================================================
@@ -593,7 +577,7 @@ static VOID check_required_set(ARGLIST * al)
 ARGFILE *new_argfile(char *argfname)
 {
 #define SIZE_FGETSBUF 1024
-    ARGFILE *argf = umalloc(sizeof(ARGFILE));
+    ARGFILE *argf = (ARGFILE *) umalloc(sizeof(ARGFILE));
 
     BOOL no_argerr = TRUE;
     if (argf)
@@ -601,7 +585,7 @@ ARGFILE *new_argfile(char *argfname)
         FILE *file = NULL;
 
         argf->argc = 0;
-        argf->argv = umalloc(2 * sizeof(char *));
+        argf->argv = (char **) umalloc(2 * sizeof(char *));
         argf->argv[0] = NULL;
         argf->argv[1] = NULL;
 
@@ -612,7 +596,7 @@ ARGFILE *new_argfile(char *argfname)
         }
         if (file)
         {
-            STRPTR fgetsbuf = umalloc(SIZE_FGETSBUF);   /* alloc buf for fgets() */
+            STRPTR fgetsbuf = (STRPTR) umalloc(SIZE_FGETSBUF);   /* alloc buf for fgets() */
 
             if (fgetsbuf)
             {
@@ -629,7 +613,7 @@ ARGFILE *new_argfile(char *argfname)
                         /* increse argv-array */
                         char **old_argv = argf->argv;
                         argf->argc++;
-                        argf->argv = umalloc((argf->argc + 2) * sizeof(char *));
+                        argf->argv = (char **) umalloc((argf->argc + 2) * sizeof(char *));
 
                         /* copy old argv-array */
                         for (i = 0; i <= (argf->argc); i++)

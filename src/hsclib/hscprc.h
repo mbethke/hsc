@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -117,6 +117,11 @@
 /* prefix char used for special hsc-tags  */
 #define HSC_SPECIAL_PREFIX "$"
 
+/* size of input buffer for getting dimension of image files */
+#define IMAGE_BUFFER_SIZE  2048
+
+#define MAXIMUM_MESSAGE_INFINITE ((ULONG) -1)
+
 /* names for special attributes */
 #define CLICK_HERE_ATTR     "HSC.CLICK-HERE"    /* attribute that holds "click here" words */
 #define COLOR_NAMES_ATTR    "HSC.COLOR-NAMES"
@@ -207,7 +212,10 @@ struct hsc_process
     BOOL msg_ignore_style;
     BOOL msg_ignore_port;
     HSCMSG_CLASS *msg_class;    /* messages with remaped classes */
-    ULONG msg_count;            /* numer of messages occured until now */
+    ULONG msg_count;            /* number of messages/errors occured until now */
+    ULONG max_messages;          /* maximum number of messages/errors allowed */
+    ULONG max_errors;
+    unsigned char *image_buffer;        /* buffer to get image dimension from file */
 
     BOOL chkid;                 /* flag: check existence of URIs/IDs */
     BOOL chkuri;
@@ -249,34 +257,34 @@ struct hsc_process
                                  * set by parse_tag(), if strip_badws = TRUE */
     BOOL strip_next2_whtspc;    /* flag: strip next but one white space */
     /* status callbacks */
-      VOID(*CB_status_misc) (struct hsc_process * hp, STRPTR s);
+    VOID(*CB_status_misc) (struct hsc_process * hp, STRPTR s);
     /* called for verbose messages */
-      VOID(*CB_status_line) (struct hsc_process * hp);
+    VOID(*CB_status_line) (struct hsc_process * hp);
     /* called after new line */
-      VOID(*CB_status_file_begin) (struct hsc_process * hp, STRPTR filename);
+    VOID(*CB_status_file_begin) (struct hsc_process * hp, STRPTR filename);
     /* called when new file is going to be loaded */
-      VOID(*CB_status_file_end) (struct hsc_process * hp);
+    VOID(*CB_status_file_end) (struct hsc_process * hp);
     /* called after file has fully been processed */
 
     /* message callbacks */
-      VOID(*CB_message) (struct hsc_process * hp,
-                         HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
-                         STRPTR fname, ULONG x, ULONG y,
-                         STRPTR msg_text);
-      VOID(*CB_message_ref) (struct hsc_process * hp,
-                             HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
-                             STRPTR fname, ULONG x, ULONG y,
-                             STRPTR msg_text);
+    VOID(*CB_message) (struct hsc_process * hp,
+                       HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
+                       STRPTR fname, ULONG x, ULONG y,
+                       STRPTR msg_text);
+    VOID(*CB_message_ref) (struct hsc_process * hp,
+                           HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
+                           STRPTR fname, ULONG x, ULONG y,
+                           STRPTR msg_text);
 
     /* syntax elements callbacks */
-      VOID(*CB_start_tag) (struct hsc_process * hp,
+    VOID(*CB_start_tag) (struct hsc_process * hp,
           HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close);
-      VOID(*CB_end_tag) (struct hsc_process * hp,
+    VOID(*CB_end_tag) (struct hsc_process * hp,
           HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close);
-      VOID(*CB_text) (struct hsc_process * hp,
-                      STRPTR white_spaces, STRPTR text);
-      VOID(*CB_id) (struct hsc_process * hp,
-                    HSCATTR * attr, STRPTR id);
+    VOID(*CB_text) (struct hsc_process * hp,
+                    STRPTR white_spaces, STRPTR text);
+    VOID(*CB_id) (struct hsc_process * hp,
+                  HSCATTR * attr, STRPTR id);
 
 #ifdef MSDOS
     /* some compilers seem to have problems with this line.. */
@@ -369,6 +377,8 @@ extern BOOL hsc_set_strip_tags(HSCPRC * hp, STRPTR taglist);
 extern BOOL hsc_set_filename_document(HSCPRC * hp, STRPTR filename);
 extern VOID hsc_set_quote_mode(HSCPRC * hp, LONG new_mode);
 extern VOID hsc_set_entity_mode(HSCPRC * hp, LONG new_mode);
+extern VOID hsc_set_maximum_messages(HSCPRC * hp, LONG messages);
+extern VOID hsc_set_maximum_errors(HSCPRC * hp, LONG errors);
 
 /* methodes for include-directories */
 extern BOOL hsc_add_include_directory(HSCPRC * hp, STRPTR dir);

@@ -1,0 +1,41 @@
+HSC_PROJECT
+VERSION 2 
+# Contains all data relevant for project.
+# Maintained by hsc, DO NOT MODIFY!
+# updated: 12-Jan-1998 05:30:53
+DOCUMENT 10 test/simple.html
+SOURCE f test/simple.hsc
+TITLE 0 
+DOCUMENT f test/macro.html
+SOURCE e test/macro.hsc
+TITLE 0 
+DOCUMENT 10 test/macro2.html
+SOURCE f test/macro2.hsc
+TITLE 0 
+DOCUMENT 13 test/msg_macro.html
+SOURCE 12 test/msg_macro.hsc
+TITLE 0 
+DOCUMENT 10 test/assign.html
+SOURCE f test/assign.hsc
+TITLE 0 
+DOCUMENT e test/eval.html
+SOURCE d test/eval.hsc
+TITLE 0 
+DOCUMENT 13 test/autoclose.html
+SOURCE 12 test/autoclose.hsc
+TITLE 0 
+DOCUMENT 12 test/redefine.html
+SOURCE 11 test/redefine.hsc
+TITLE 0 
+DOCUMENT 12 test/sgmlspec.html
+SOURCE 11 test/sgmlspec.hsc
+TITLE 0 
+DOCUMENT 11 test/stripws.html
+SOURCE 10 test/stripws.hsc
+TITLE 0 
+DOCUMENT 15 test/opt_getsize.html
+SOURCE 14 test/opt_getsize.hsc
+TITLE 0 
+DOCUMENT 15 test/opt_rplcent.html
+SOURCE f test/simple.hsc
+TITLE 0 

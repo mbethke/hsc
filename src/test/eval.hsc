@@ -3,10 +3,21 @@
 
 <**************************************
  *                                    *
+ * test string constants              *
+ *                                    *
+ **************************************>
+<$define susi:string>
+<$let susi=susi><(susi)>
+<$let susi="susi-double"><(susi)>
+<$let susi='susi-single'><(susi)>
+<$let susi=("susi-double-in-brackets")><(susi)>
+<$let susi=(susi)><(susi)>
+
+<**************************************
+ *                                    *
  * test string operators              *
  *                                    *
  **************************************>
-
 
 <**************************************
  * checkIn                            *
@@ -32,6 +43,10 @@
 <CheckConcat v1='' v2='' vu=''>
 <CheckConcat v1="hugo " v2="ist doof" vu="hugo ist doof">
 <CheckConcat v1=("hugo "+"ist ") v2="doof" vu="hugo ist doof">
+
+<$let susi="susi">
+<$let susi=(susi+" and sepp")><(susi)>
+<$let susi=("hugo, "+susi)><(susi)>
 
 <**************************************
  *                                    *
@@ -109,7 +124,7 @@ CheckNumeric2: error handling
 <checkNumeric2 v1=1 v2=2 op="+" vu=17>
 
 <**************************************
- * check AND,OR,XOR with 2 operands   *
+ * check numeric with 2 operands      *
  **************************************>
 Check "+" (2):
 <checkNumeric2 v1="1"  v2="2"  op="+" vu="3">

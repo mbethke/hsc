@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,18 +22,12 @@
  *
  *  tag-callback for "<A..>" (anchor)
  *
- *  updated: 13-Oct-1996
+ *  updated: 16-Dec-1997
  *  created:  3-Aug-1995
  */
 
 #include "hsclib/inc_tagcb.h"
 #include "hscprj/document.h"
-
-/*
- *  TODO: strip only HREF part, if a NAME is within <A>
- *  TODO: insabg, insaed: configurable format str for inserted anchors
- *  TODO: local $INSANCH option for A HREF tag
- */
 
 /*
  *  handle_anchor
@@ -53,11 +47,17 @@ BOOL handle_anchor(HSCPRC * hp, HSCTAG * tag)
 
     /* set attribute values */
     if (vhref)
+    {
         href = vhref->text;
+    }
     if (vname)
+    {
         name = vname->text;
+    }
     if (vid)
+    {
         id = vid->text;
+    }
 
     /* tell parser that he is inside an anchor */
     if (href)

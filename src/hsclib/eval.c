@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  *
  * attribute value evaluation functions
  *
- * updated: 19-Oct-1997
+ * updated: 16-Dec-1997
  * created: 11-Oct-1995
  */
 
@@ -58,7 +58,7 @@
 #define OP_LTE_STR "<="
 #define OP_CEQ_STR "=="         /* TODO: case sensitive string comparison */
 #define OP_INSIDE_STR "IN"
-#define OP_CL_BRAKET_STR ")"    /* closing braket */
+#define OP_CL_BRACKET_STR ")"   /* closing bracket */
 
 #define OP_EQ   1
 #define OP_NEQ  2
@@ -68,7 +68,7 @@
 #define OP_LTE  6
 #define OP_CEQ  7
 #define OP_INSIDE 8
-#define OP_CL_BRAKET  10
+#define OP_CL_BRACKET  10
 
 /*
  * boolean operators
@@ -453,7 +453,6 @@ VOID choose_quote(HSCPRC * hp, HSCATTR * attr)
     {
         /* empty value */
         nasty_char = TRUE;
-        /* TODO: warninbg "empty value" */
     }
 
     if (qm == QMODE_KEEP)
@@ -843,9 +842,9 @@ static BYTE eval_op(HSCPRC * hp)
             op = OP_INSIDE;
         }
         /* closing braket */
-        else if (!strcmp(nw, OP_CL_BRAKET_STR))
+        else if (!strcmp(nw, OP_CL_BRACKET_STR))
         {
-            op = OP_CL_BRAKET;
+            op = OP_CL_BRACKET;
         }
         else if (strenum(nw, "<|=|>", '|', STEN_CASE))
         {
@@ -925,7 +924,7 @@ static BYTE eval_op(HSCPRC * hp)
  *
  * result: TRUE
  */
-static BOOL stroptol(HSCPRC *hp, LONG *dest, STRPTR str)
+static BOOL stroptol(HSCPRC * hp, LONG * dest, STRPTR str)
 {
     BOOL ok = TRUE;
 
@@ -951,7 +950,7 @@ static BOOL stroptol(HSCPRC *hp, LONG *dest, STRPTR str)
 /*
  * process_arithmetic_op
  */
-static BOOL process_arithmetic_op(HSCPRC * hp, EXPSTR *result, BYTE op, STRPTR str1, STRPTR str2)
+static BOOL process_arithmetic_op(HSCPRC * hp, EXPSTR * result, BYTE op, STRPTR str1, STRPTR str2)
 {
     BOOL result_set = TRUE;
     LONG int1 = 0;              /* integer value of string operands */
@@ -995,7 +994,7 @@ static BOOL process_arithmetic_op(HSCPRC * hp, EXPSTR *result, BYTE op, STRPTR s
     return result_set;
 }
 
-static BOOL process_boolean_op(HSCPRC *hp, HSCATTR *dest, BYTE op, STRPTR str1, STRPTR str2)
+static BOOL process_boolean_op(HSCPRC * hp, HSCATTR * dest, BYTE op, STRPTR str1, STRPTR str2)
 {
     BOOL bool_val1 = eval_boolstr(str1);
     BOOL bool_val2 = eval_boolstr(str2);
@@ -1273,13 +1272,10 @@ static STRPTR eval_string_expr(HSCPRC * hp, HSCATTR * dest)
  */
 STRPTR eval_string_expr_noquote(HSCPRC * hp, HSCATTR * dest)
 {
-    /* TODO: check for ch==">": attrval missing */
     INFILE *inpf = hp->inpf;
     STRPTR eval_result = NULL;
     EXPSTR *tmpstr = init_estr(TMP_STEPSIZE);
     BOOL end = FALSE;
-
-    /* TODO: check for empty expression */
 
     /*
      * read next char from input file until a
@@ -1342,7 +1338,6 @@ static STRPTR eval_attrref(HSCPRC * hp, HSCATTR * destattr)
 
         if (refvar)
         {
-            /* TODO: type checking */
             destattr->quote = refvar->quote;
             eval_result = refvar->text;
 
@@ -1378,6 +1373,117 @@ static STRPTR eval_attrref(HSCPRC * hp, HSCATTR * destattr)
 }
 
 /*
+ * check_color - check if a color constant is legal
+ */
+static VOID check_color(HSCPRC * hp, HSCATTR * dest, STRPTR value)
+{
+    BOOL ok = FALSE;
+    size_t color_len = strlen("#rrggbb");
+
+    if (value[0] == '#')
+    {
+        /* check RGB-value */
+        if (strlen(value) == color_len)
+        {
+            size_t i = 1;
+
+            ok = TRUE;
+            for (; i < color_len; i++)
+            {
+                if (!isxdigit(value[i]))
+                {
+                    ok = FALSE;
+                }
+            }
+        }
+    }
+    else
+    {
+        /* check color name */
+        if (hp->color_names)
+        {
+            if (strenum(value, hp->color_names, '|', STEN_NOCASE))
+                ok = TRUE;
+        }
+        else
+            ok = TRUE;
+    }
+
+    if (!ok)
+    {
+        /* illegal color value */
+        hsc_message(hp, MSG_ILLG_COLOR,
+                    "illegal color value %q for %A",
+                    value, dest);
+    }
+}
+
+/*
+ * check_integer - check if a integer constant is legal
+ */
+static VOID check_integer(HSCPRC * hp, HSCATTR * dest, STRPTR value)
+{
+    BOOL ok = FALSE;
+    int i = 0;
+
+    if ((value[0] == '+')
+        || (value[0] == '-'))
+    {
+        i = 1;
+    }
+
+    if (strlen(value) - i)
+    {
+        ok = TRUE;
+        while (value[i] && ok)
+        {
+            if (!isdigit(value[i]))
+                ok = FALSE;
+            else
+                i++;
+        }
+    }
+
+    if (!ok)
+    {
+        /* illegal integer value */
+        hsc_message(hp, MSG_ILLG_NUM,
+                    "illegal numeric value %q for %A",
+                    value, dest);
+    }
+}
+
+/*
+ * new_cloned_attr
+ *
+ * create a new attribute and clone the type and flags
+ * of another attribute.
+ *
+ * Normally the cloned attribute has the same name as the
+ * initial target attribute, but in debug mode a more
+ * informative name is used
+ */
+static HSCATTR *new_cloned_attr(STRPTR debug_name, HSCATTR *attr)
+{
+#if DEBUG
+    STRPTR cloned_name = debug_name;
+#else
+    STRPTR cloned_name = attr->name;
+#endif
+    BYTE new_type = attr->vartype;
+    HSCATTR *cloned_attr = new_hscattr(cloned_name);
+
+    /* init cloned attribute */
+    cloned_attr->vartype = attr->vartype;
+    cloned_attr->varflag = attr->varflag;
+    cloned_attr->quote = attr->quote;
+
+
+
+    return cloned_attr;
+}
+
+/*
  * eval_expression
  *
  * params: dest....attribute where to store result in
@@ -1391,19 +1497,17 @@ static STRPTR eval_attrref(HSCPRC * hp, HSCATTR * destattr)
  *   immediatly after the "=" of an attribute. In this case, if no
  *   quotes are found as next char, all chars are read until the next
  *   white-space or LF occures.
- *   If no special char was found until now (only "A".."Z", "_", "-" and
- *   digits occured), we first interpret the string as name for an
- *   attribute reference; if such an attribute does not exist, it is
- *   asumed that the value passed is a string constant (same as it would
- *   have been enclosed in quotes).
  *
  */
 STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
 {
-    /* TODO: endstr needs to be boolean flag only */
     INFILE *inpf = hp->inpf;
-    EXPSTR *vararg = init_estr(TMP_STEPSIZE);
+
     /* used as destination by eval_string_exprXX() */
+    EXPSTR *vararg = init_estr(TMP_STEPSIZE);
+
+    /* create cloned attribute to hold result */
+    HSCATTR *dest1 = new_cloned_attr(PREFIX_TMPATTR "1st.operand", dest);
 
     STRPTR exprstr = NULL;      /* return value */
     int ch;                     /* char read from input */
@@ -1414,47 +1518,59 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
     /* read dest->quote char */
     ch = infgetc(inpf);
     if (!strchr(VQ_STR_QUOTE, ch))
+    {
         if (ch != EOF)
-            dest->quote = VQ_NO_QUOTE;
+        {
+            dest1->quote = VQ_NO_QUOTE;
+        }
         else
+        {
             hsc_msg_eof(hp, "reading attribute");
+        }
+    }
     else
-        dest->quote = ch;
+    {
+        dest1->quote = ch;
+    }
 
     if (ch == '(')
     {
         /* process braket */
-        exprstr = eval_expression(hp, dest, ")");
+        exprstr = eval_expression(hp, dest1, ")");
 
         /* set generic double quote */
         if (!endstr)
-            dest->quote = '\"';
+        {
+            dest1->quote = '\"';
+        }
     }
     else if (ch != EOF)
     {
         /* write current char read back to input buffer */
         inungetc(ch, inpf);
 
-        if (dest->quote != VQ_NO_QUOTE)
+        if (dest1->quote != VQ_NO_QUOTE)
         {
             /* process string expression with quotes */
-            exprstr = eval_string_expr(hp, dest);
+            exprstr = eval_string_expr(hp, dest1);
         }
         else if (endstr)
         {
             BOOL err = FALSE;
 
             /* try to process unary operator */
-            exprstr = try_eval_unary_op(hp, dest, &err);
+            exprstr = try_eval_unary_op(hp, dest1, &err);
 
             /* process attribute reference */
             if (!exprstr && !err)
-                exprstr = eval_attrref(hp, dest);
+            {
+                exprstr = eval_attrref(hp, dest1);
+            }
         }
         else
         {
             /* process string expression without quotes */
-            exprstr = eval_string_expr_noquote(hp, dest);
+            exprstr = eval_string_expr_noquote(hp, dest1);
         }
     }
 
@@ -1465,50 +1581,44 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
         /* evaluate operator */
         op = eval_op(hp);
 
-        if (op == OP_CL_BRAKET)
+        if (op == OP_CL_BRACKET)
         {
             DMSG("  END mark operator reached");
         }
         else if (op != OP_NONE)
         {
-            /* no endmark reached */
-            STRPTR str1 = exprstr;
-
             /* read second operator */
             if (op != OP_NONE)
             {
+                HSCATTR *dest2 = new_cloned_attr(PREFIX_TMPATTR "2nd.operand",
+                                                 dest1);
+                STRPTR str1 = get_vartext(dest1);
                 STRPTR str2 = NULL;
-                HSCATTR *dest1 = new_hscattr(PREFIX_TMPATTR "2nd.operand");
 
-                /* init dummy attribute */
-                dest1->vartype = dest->vartype;
-                dest1->quote = dest->quote;
-
-                /* compute second value */
-                str2 = eval_expression(hp, dest1, endstr);
+                /* compute second operand */
+                str2 = eval_expression(hp, dest2, endstr);
 
                 if (str2)
                 {
-                    process_op(hp, dest, op, str1, str2);
+                    process_op(hp, dest1, op, str1, str2);
                 }
                 else
                 {
                     exprstr = NULL;
                 }
 
-                /* remove result of second value */
-                del_hscattr((APTR) dest1);
+                /* remove temporary resources */
+                del_hscattr((APTR) dest2);
             }
             else
             {
-                /* TODO: skip expression until ">" */
                 exprstr = NULL;
             }
 
             if (exprstr)
             {
                 /* store result */
-                exprstr = get_vartext(dest);
+                exprstr = get_vartext(dest1);
             }
         }
         else
@@ -1521,110 +1631,48 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
     {
         if (exprstr && !endstr)
         {
-            if ((dest->vartype != VT_BOOL)
-                && !(dest->varflag & (VF_MACRO | VF_KEEP_QUOTES)))
+            /* choose quote (only for tag attributes) */
+            if ((dest1->vartype != VT_BOOL)
+                && !(dest1->varflag & (VF_MACRO | VF_KEEP_QUOTES)))
             {
-                choose_quote(hp, dest);
+                choose_quote(hp, dest1);
             }
 
-            /*
-             * check enum type
-             */
-            if (dest->vartype == VT_ENUM)
+            /* check enum type */
+            if (dest1->vartype == VT_ENUM)
             {
-                if (!strenum(exprstr, dest->enumstr, '|', STEN_NOCASE))
+                if (!strenum(exprstr, dest1->enumstr, '|', STEN_NOCASE))
                 {
                     /* unknown enum value */
                     hsc_message(hp, MSG_ENUM_UNKN,
                                 "unknown value %q for enumerator %A",
-                                exprstr, dest);
+                                exprstr, dest1);
                 }
             }
-            /*
-             * check color value
-             */
-            else if (dest->vartype == VT_COLOR)
+            else if (dest1->vartype == VT_COLOR)
             {
-                BOOL ok = FALSE;
-                size_t color_len = strlen("#rrggbb");
-
-                if (exprstr[0] == '#')
-                {
-                    /* check RGB-value */
-                    if (strlen(exprstr) == color_len)
-                    {
-                        size_t i = 1;
-
-                        ok = TRUE;
-                        for (; i < color_len; i++)
-                            if (!isxdigit(exprstr[i]))
-                                ok = FALSE;
-                    }
-                }
-                else
-                {
-                    /* check color name */
-                    if (hp->color_names)
-                    {
-                        if (strenum(exprstr, hp->color_names, '|', STEN_NOCASE))
-                            ok = TRUE;
-                    }
-                    else
-                        ok = TRUE;
-                }
-
-                if (!ok)
-                    /* illegal color value */
-                    hsc_message(hp, MSG_ILLG_COLOR,
-                                "illegal color value %q for %A",
-                                exprstr, dest);
+                /* check color value */
+                check_color(hp, dest1, exprstr);
             }
-            /*
-             * check numeric value
-             */
-            else if (dest->vartype == VT_NUM)
+            else if (dest1->vartype == VT_NUM)
             {
-                BOOL ok = FALSE;
-                int i = 0;
-
-                if ((exprstr[0] == '+')
-                    || (exprstr[0] == '-'))
-                {
-                    i = 1;
-                }
-                if (strlen(exprstr) - i)
-                {
-                    ok = TRUE;
-                    while (exprstr[i] && ok)
-                    {
-                        if (!isdigit(exprstr[i]))
-                            ok = FALSE;
-                        else
-                            i++;
-                    }
-                }
-                if (!ok)
-                {
-                    /* unknown enum value */
-                    hsc_message(hp, MSG_ILLG_NUM,
-                                "illegal numeric value %q for %A",
-                                exprstr, dest);
-                }
+                /* check numeric value */
+                check_integer(hp, dest1, exprstr);
             }
-            /*
-             * for boolean attributes, set the name
-             * of the attribute if TRUE, or set an
-             * empty string, if FALSE
-             */
-            else if (dest->vartype == VT_BOOL)
+            else if (dest1->vartype == VT_BOOL)
             {
+                /*
+                 * for boolean attributes, set the name
+                 * of the attribute if TRUE, or set an
+                 * empty string, if FALSE
+                 */
                 if (eval_boolstr(exprstr))
                 {
-                    set_vartext(dest, dest->name);
+                    set_vartext(dest1, dest1->name);
                 }
                 else
                 {
-                    set_vartext(dest, "");
+                    set_vartext(dest1, "");
                 }
             }
 
@@ -1632,22 +1680,22 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
              * checks performed only for tags,
              * but are skipped for macros
              */
-            if (!(dest->varflag & VF_MACRO))
+            if (!(dest1->varflag & VF_MACRO))
             {
                 /*
                  * parse uri (convert abs.uris, check existence)
                  */
-                if (dest->vartype == VT_URI)
+                if (dest1->vartype == VT_URI)
                 {
                     EXPSTR *dest_uri = init_estr(32);
 
                     parse_uri(hp, dest_uri, exprstr);
-                    set_vartext(dest, estr2str(dest_uri));
+                    set_vartext(dest1, estr2str(dest_uri));
 
                     del_estr(dest_uri);
                 }
             }
-            exprstr = get_vartext(dest);
+            exprstr = get_vartext(dest1);
         }
         else
         {
@@ -1662,6 +1710,16 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
         }
     }
 
+    /* assign result to destination attribute */
+    if (exprstr)
+    {
+        set_vartext(dest, exprstr);
+        dest->quote = dest1->quote;
+        exprstr = get_vartext(dest);
+    }
+
+    /* remove temporary resources */
+    del_hscattr((APTR) dest1);
     del_estr(vararg);
 
     return (exprstr);

@@ -2,6 +2,66 @@
 CHANGES
 =======
 
+This file describes improvements and fixes compared to earlier
+versions of hsc. The current version is mentioned first, for
+older versions look below.
+
+---------------------------------------------------------------------
+
+Version 0.916, 12-Jan-1998
+ (fixes and code cleanup)
+
+ hsc:
+ - fixed bug: assignments like "sepp=(''+sepp)" resulted into an
+   empty string, independent of the value of sepp
+ - fixed bug in comment parser: "<* *x> *>" aborted comment context
+   too soon, and the second ">", that actually closed the comment,
+   caused message#30 (unmatched `>') [Olaf Burkart]
+ - fixed bug: column in message position sometimes had strange
+   values within nested macros
+ - fixed bug: on scanning image size, buffer exceeding was
+   recognised too late (used "+" instead of "-"...)
+ - fixed a portability problem when reading images: now it uses
+   `fopen(file, "rb")' instead of just `fopen(file, "r")' [Walter
+   Doerwald]
+ - fixed some minor problems in the error handling of image files
+ - added message#4 "error reading file"
+ - added message#5 "too many errors or messages"
+ - added CLI option MAXMSG
+ - added support for CLI option MAXERR to make it work as described
+   in the documentation
+ - added support for hexadecimal entities (like "&#x6c34;")
+ - added (again) detection of illegal white space within entities
+   [Oliver Roberts]
+ - removed some static string arrays and replaced them by dynamic
+   ones
+ - validated the correctness of the jfif/jpeg-scanner and removed
+   entry from "known bugs"
+
+ documentation:
+
+ - added Postscript-version of manual and made it available in
+   separate archive (hsc-ps.lha)
+ - added "docs/usecases.html" describing how to accomplish certain
+   tasks of maybe common interest
+ - added "docs/changes.html" describing everything new for the
+   current release. This is generated from the files CHANGES and
+   NEWS, which still describe all releases.
+ - added two missing pixels to the ghosted version of the
+   Contents-icon
+ - rewrote "docs/project/index.html"
+
+ hsc.prefs:
+
+ - still contains the same rotten stuff as in the last release, but
+   see "docs/usecases.html" for a experimental "hsc.prefs" for
+   html-4.0
+
+ miscellaneous:
+ - compiled with gcc 2.7.2.1
+
+---------------------------------------------------------------------
+
 Version 0.915, 2-Nov-1997
  (some more systems supported, minor fixes and improvements)
 

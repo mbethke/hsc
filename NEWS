@@ -7,6 +7,23 @@ complete list of improvements and bug-fixes, refer to `CHANGES'.
 
 ---------------------------------------------------------------------
 
+Version 0.916
+
+- Hsc does no more create a new project file if you specify a
+  non-existent one with the CLI-option PRJFILE. Instead, you will have
+  to create it using "hscpitt new" before.
+
+  If you are not already familiar with hscpitt, maybe you will want to
+  give a short look to `docs/project/index.html', because it now
+  contains a short sort-of tutorial to the basic commands of hscpitt
+  and hscdepp.
+
+- There is no more `hsc-all.lha', but only a `hsc-source.lha' that now
+  also contains the documentation, and therefore the same contents as
+  `hsc-all.lha' in earlier versions.
+
+---------------------------------------------------------------------
+
 Version 0.915
 
 - For those who need to compile everything on there own: the whole

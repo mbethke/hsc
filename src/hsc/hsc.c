@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@
  *
  */
 /*
- * hsc - HTML sucks completely
+ * hsc - html sucks completely
  *
- * Another stupid HTML-preprocessor
+ * Another stupid html-preprocessor
  *
  *-------------------------------------------------------------------
  *
@@ -31,7 +31,7 @@
  *
  * hsc/hsc.c
  *
- * updated: 14-Oct-1997
+ * updated: 17-Dec-1997
  * created:  1-Jul-1995
  */
 
@@ -143,6 +143,90 @@ static VOID cleanup(VOID)
     fflush(stderr);
 #endif
 
+}
+
+/*
+ * callback to display "project-file corrupt"-message
+ */
+static VOID msg_corrupt_pf(HSCPRJ * project, STRPTR reason)
+{
+    EXPSTR *msg = init_estr(32);
+    set_estr(msg, infget_fname(project->inpf));
+    app_estr(msg, ": project file corrupt");
+    if (reason)
+    {
+        app_estr(msg, " (");
+        app_estr(msg, reason);
+        app_estr(msg, ")");
+    }
+    status_error(estr2str(msg));
+    del_estr(msg);
+}
+
+
+/*
+ * hsc_init_project
+ *
+ * read project-file
+ */
+static BOOL hsc_init_project(HSCPRC * hp, STRPTR project_fname)
+{
+    BOOL ok = FALSE;
+
+    /* init project */
+    hp->project = new_project();
+    hp->project->user_data = (APTR) hp;
+    hp->project->debug = hp->debug;
+    hp->project->CB_msg_corrupt_pf = msg_corrupt_pf;
+
+    if (project_fname)
+    {
+        /*
+         * read project-data
+         */
+        D(fprintf(stderr, DHL "read project-file `%s'\n", project_fname));
+
+        hsc_status_file_begin(hp, project_fname);
+
+        /* read project-file */
+        hp->inpf = infopen(project_fname, 0);
+
+        if (hp->inpf)
+        {
+            ok = hsc_project_read_data(hp->project, hp->inpf);
+            infclose(hp->inpf);
+            if (ok)
+            {
+                /* message about success */
+                EXPSTR *msg = init_estr(32);
+                set_estr(msg, project_fname);
+                app_estr(msg, ": project-file read");
+                hsc_status_misc(hp, estr2str(msg));
+                del_estr(msg);
+            }
+
+            hp->inpf = NULL;
+        }
+        else
+        {
+            fprintf(stderr, "%s: error reading project file: %s\n",
+                    project_fname, strerror(errno));
+            ok = FALSE;
+        }
+    }
+    else
+    {
+        D(fprintf(stderr, DHL "no project-file to load\n"));
+        ok = TRUE;
+    }
+
+    if (ok)
+    {
+        /* dettach current document */
+        hsc_project_set_document(hp->project, hp->filename_document);
+    }
+
+    return (ok);
 }
 
 /*

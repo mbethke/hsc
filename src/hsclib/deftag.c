@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  *
  * define new tag from input file
  *
- * updated: 11-Oct-1997
+ * updated: 11-Jan-1998
  * created: 13-Oct-1995
  */
 
@@ -387,7 +387,7 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
          */
         while (nw && (strcmp(nw, ">")))
         {
-            if (strcmp(nw, "("))
+            if (strcmp(nw, "["))
             {
                 /* define classic attribute */
                 inungetcw(inpf);
@@ -395,7 +395,7 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
             }
             else
             {
-                /* insert lazy attribute list */
+                /* insert attribute list */
                 STRPTR name = infget_tagid(hp);
                 if (nw)
                 {
@@ -409,7 +409,7 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
                         hsc_message(hp, MSG_UNKN_LAZY, "unknown %l", name);
                     }
                 }
-                parse_wd(hp, ")");
+                parse_wd(hp, "]");
             }
             nw = infgetw(inpf);
 

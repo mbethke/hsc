@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -111,7 +111,6 @@ extern STRPTR msgfilename;
 extern STRPTR prjfilename;
 extern STRPTR prefsfilename;
 
-extern ULONG max_error;
 extern DLLIST *define_list;
 extern DLLIST *incfile;
 extern STRPTR msg_format;

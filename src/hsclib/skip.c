@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 1995-1997  Thomas Aglassinger
+ * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  *
  * functions for skipping several things
  *
- * updated: 13-Oct-1997
+ * updated: 27-Nov-1997
  * created:  8-Oct-1995
  */
 
@@ -86,12 +86,7 @@ static VOID dbg_printc(int ch)
  */
 BOOL skip_next_lf(HSCPRC * hp)
 {
-    /* TODO: skip white-spaces after linefeed,
-     * if COMPACT set; but this has to be performed
-     * at another part of the code... */
-    /* TODO: what did I mean with the above??? */
     INFILE *inpf = hp->inpf;
-
     int nc = infgetc(inpf);
 
     /* handle "\r\n", single "\r" and single "\n" */
@@ -100,116 +95,17 @@ BOOL skip_next_lf(HSCPRC * hp)
         nc = infgetc(inpf);
     }
     if (nc != '\n')
+    {
         inungetc(nc, inpf);
+    }
 
     return ((BOOL) (nc == EOF));
-}
-
-static BOOL eot_reached(HSCPRC * hp, BYTE * state)
-{
-    INFILE *inpf = hp->inpf;
-    STRPTR nw = infgetw(inpf);
-
-    if (nw)
-    {
-        switch (*state)
-        {
-        case TGST_TAG:
-            if (!strcmp(nw, "\""))
-                *state = TGST_DQUOTE;
-            else if (!strcmp(nw, "'"))
-                *state = TGST_QUOTE;
-/* TODO: skip references & expressions */
-#if 0
-            else if (!strcmp(nw, "<"))
-                *state = TGST_REF;
-#endif
-            else if (!strcmp(nw, ">"))
-                *state = TGST_END;
-            break;
-
-        case TGST_REF:
-        case TGST_QUOTE:
-        case TGST_DQUOTE:
-
-            if (strcmp(nw, "\n"))
-            {
-                switch (*state)
-                {
-
-                case TGST_REF:
-                    if (!strcmp(nw, ">"))
-                        *state = TGST_TAG;
-                    break;
-
-                case TGST_QUOTE:
-                    if (!strcmp(nw, "'"))
-                        *state = TGST_TAG;
-                    break;
-
-                case TGST_DQUOTE:
-                    if (!strcmp(nw, "\""))
-                        *state = TGST_TAG;
-                    break;
-                }
-            }
-            else
-            {
-                /* unexpected end of line */
-                hsc_msg_eol(hp);
-                *state = TGST_TAG;      /* go on reading inside tag */
-            }
-
-            break;
-        }
-    }
-    else
-    {
-        hsc_msg_eof(hp, "`>' expected");
-        *state = TGST_ERR;
-    }
-
-    return ((BOOL) ((*state == TGST_END) || (*state == TGST_ERR)));
-}
-
-/*
- * skip_until_eot_args
- *
- * skip until end of tag reached,
- * with user definable status vars
- *
- * params: inpf.....input file
- *         quote....status for quote (TRUE=inside quote)
- *         dquote...status for double quote
- *         argattr..status for quote
- * result: TRUE, if no fatal error
- * errors: return FALSE
- */
-static BOOL skip_until_eot_state(HSCPRC * hp, BYTE * state, EXPSTR * logstr)
-{
-    INFILE *inpf = hp->inpf;
-
-    while (!eot_reached(hp, state))
-        if (logstr)
-        {
-            app_estr(logstr, infgetcws(inpf));
-            app_estr(logstr, infgetcw(inpf));
-        }
-
-    /* append ">" */
-    if (logstr)
-    {
-        app_estr(logstr, infgetcws(inpf));
-        app_estr(logstr, infgetcw(inpf));
-    }
-
-    return ((BOOL) ! (hp->fatal));
 }
 
 /*
  * skip_until_eot
  *
- * skip until end of tag reached
+ * skip until end of tag reached (">" found)
  *
  * params: inpf..input file
  * result: TRUE, if no fatal error
@@ -217,9 +113,21 @@ static BOOL skip_until_eot_state(HSCPRC * hp, BYTE * state, EXPSTR * logstr)
  */
 BOOL skip_until_eot(HSCPRC * hp, EXPSTR * logstr)
 {
-    BYTE state = TGST_TAG;
+    INFILE *inpf = hp->inpf;
+    STRPTR nw = NULL;
 
-    return (skip_until_eot_state(hp, &state, logstr));
+    do
+    {
+        nw = infgetw(inpf);
+        if (nw && logstr)
+        {
+            app_estr(logstr, infgetcws(inpf));
+            app_estr(logstr, infgetcw(inpf));
+        }
+    }
+    while (nw && strcmp(nw, ">"));
+
+    return ((BOOL) ! (hp->fatal));
 }
 
 /*
@@ -381,6 +289,10 @@ BOOL skip_hsc_comment(HSCPRC * hp, EXPSTR * content)
                 {
                     end = TRUE;
                 }
+            }
+            else
+            {
+              state = CMST_TEXT;
             }
 
             break;
