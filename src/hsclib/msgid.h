@@ -48,7 +48,7 @@
  * next message number
  *=========================
  */
-#define MAX_MSGID (95-1)
+#define MAX_MSGID (96-1)
 
 /*
  * obsolete numbers:
@@ -150,6 +150,7 @@
 #define MSG_NO_EXTURI          (MSG_WARN + 93)  /* external URI does not exist (server returned 4xx/5xx) */
 #define MSG_DUBIOUS_EXTURI     (MSG_WARN + 94)  /* external URI may not exist (server returned something
                                                    other than [245]xx */
+#define MSG_NO_EXTCHECK        (MSG_ERROR+ 95)  /* cannot check external URI due to network problems */
 
 /*
  * messages from tag handles
