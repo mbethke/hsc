@@ -27,6 +27,8 @@
 
 #include "hsclib/tcpip.h"
 #include "hsclib/ldebug.h"
+#include "hsclib/lmessage.h"
+#include "hsclib/msgid.h"
 #ifdef UNIX
 #include <ctype.h>
 #include <stdio.h>
@@ -44,8 +46,12 @@
 #define HTTP_METHOD ("HEAD ")
 #define HTTP_VERSION (" HTTP/1.0")
 
-static BOOL get_http_hdr(CONSTRPTR host, CONSTRPTR res, unsigned short port) {
-   EXPSTR *message = init_estr(32);
+/* the following protocols are only supported via proxy */
+#define check_ftp_uri(h,u,p) (check_proxyonly_uri(h,u,p))
+#define check_gopher_uri(h,u,p) (check_proxyonly_uri(h,u,p))
+
+static BOOL get_http_hdr(HSCPRC *hp, CONSTRPTR uri, CONSTRPTR host, CONSTRPTR res, unsigned short port) {
+   EXPSTR *message;
    BOOL ret = FALSE;
    char rcvbuf[16]={0};
    int sock;
@@ -54,6 +60,8 @@ static BOOL get_http_hdr(CONSTRPTR host, CONSTRPTR res, unsigned short port) {
    char *reqbuf;
 
    
+   D(fprintf(stderr,DHL "get_http_hdr(%s,%s,%s,%hd)\n",uri,host,res,port);)
+
    /* top directories must be requested as "/", even though they are sometimes
     * not explicitly given in the URI */
    if('\0' == *res) res = "/";
@@ -91,62 +99,77 @@ static BOOL get_http_hdr(CONSTRPTR host, CONSTRPTR res, unsigned short port) {
                      break;
                   case '4' :
                   case '5' :
-                     fputs("Not found!\n",stderr);
+                     hsc_message(hp, MSG_NO_EXTURI,
+                           "external URI \"%s\" does not exist",uri);
                      break;
                   default :
-                     set_estr(message,"Dubious URI status: ");
-                     app_estr(message,rcvbuf+9);
+                     message = init_estr(32);
+                     set_estr(message,rcvbuf+9);
                      /* read rest of response */
                      rcvbuf[1] = '\0';
+                     /* yes, this sucks */
                      while(1) {
                         read(sock,rcvbuf,1);
                         if('\r' == rcvbuf[0]) break;
                         app_estr(message,rcvbuf);
                      }
-                     app_estr(message,"\n");
-                     fputs(estr2str(message),stderr);
+                     hsc_message(hp, MSG_NO_EXTURI,
+                           "dubious external URI \"%s\": server said \"%s\"",uri,estr2str(message));
+                     del_estr(message);
                      ret = TRUE; /* we'll count this as OK... */
                      break;
                }
             } else {
-               fprintf(stderr,"HTTP/0.9 servers are not supported!\n");
-               D(fprintf(stderr,DHL "Server response: '%s'\n",rcvbuf);)
+               D(fprintf(stderr,DHL "Apparently HTTP/0.9; server response: '%s'\n",rcvbuf);)
             }
          } else perror("HSC");
       }
       ufree(reqbuf);
       close(sock);
    } else perror("HSC");
-   del_estr(message);
    return ret;
 }
 
-static BOOL check_http_uri(CONSTRPTR uri, CONSTRPTR proxy) {
+/* parse_proxy_addr
+ *
+ * Splits a Lynx-style proxy URI into host part, stored in the EXPSTR <host>,
+ * and a port, stored numerically in the short int pointed to by <port>
+ * Returns TRUE on success, FALSE for NULL proxy or missing "http://" prefix.
+ */
+static BOOL parse_proxy_addr(CONSTRPTR proxy, EXPSTR *host, unsigned short *port) {
+   BOOL done;
+   CONSTRPTR p;
+
+   if((NULL == proxy) || (0 != strncmp(proxy,"http://",7)))
+      return FALSE;
+   *port = 3128;   /* Squid default */
+   for(p = proxy+7, done=FALSE; !done; ++p) {
+      switch(*p) {
+         case '\0' :
+         case '/' :
+            done = TRUE;
+            break;
+         case ':' :
+            *port = atoi(++p);
+            while(isdigit(*p)) ++p;
+            break;
+         default :
+            app_estrch(host,*p);
+            break;
+      }
+   }
+   return TRUE;
+}
+
+static BOOL check_http_uri(HSCPRC *hp, CONSTRPTR uri, CONSTRPTR proxy) {
    EXPSTR *host = init_estr(32);
    EXPSTR *res = init_estr(32);
    unsigned short port=80;
    BOOL ret,done;
    const char *p;
 
-   if((NULL != proxy) && (0 == strncmp(proxy,"http://",7))) {
-      /* send entire URI to proxy:port */
-      port = 3128;   /* Squid default */
-      for(p = proxy+7, done=FALSE; !done; ++p) {
-         switch(*p) {
-            case '\0' :
-            case '/' :
-               done = TRUE;
-               break;
-            case ':' :
-               port = atoi(++p);
-               while(isdigit(*p)) ++p;
-               break;
-            default :
-               app_estrch(host,*p);
-               break;
-         }
-      }
-   } else {
+   if(!parse_proxy_addr(proxy,host,&port)) {
+      /* no valid proxy specified, so <uri> has to be parsed */
       for(p = uri+7, done=FALSE; !done; ++p) {
          switch(*p) {
             case '\0' :
@@ -165,19 +188,42 @@ static BOOL check_http_uri(CONSTRPTR uri, CONSTRPTR proxy) {
                break;
          }
       }
+      /* without a proxy, only the server-relative part must be
+       * sent in the request! */
       uri = estr2str(res);
    }
-   ret = get_http_hdr(estr2str(host),uri,port);
+   ret = get_http_hdr(hp,uri,estr2str(host),uri,port);
 
    del_estr(host);
    del_estr(res);
    return ret;
 }
 
-BOOL check_ext_uri(char *uri) {
+static BOOL check_proxyonly_uri(HSCPRC *hp, CONSTRPTR uri, CONSTRPTR proxy) {
+   EXPSTR *host = init_estr(32);
+   unsigned short port=80;
+   BOOL ret;
+
+   if(!parse_proxy_addr(proxy,host,&port)) {
+      /* FTP is only supported via proxy */
+      ret = TRUE;
+   } else {
+      ret = get_http_hdr(hp,uri,estr2str(host),uri,port);
+   }
+
+   del_estr(host);
+   return ret;
+}
+
+BOOL check_ext_uri(HSCPRC *hp, char *uri) {
    while(isspace(*uri)) ++uri;
    if(0 == strncmp(uri,"http://",7)) {
-      return check_http_uri(uri,getenv("http_proxy"));
+      return check_http_uri(hp,uri,getenv("http_proxy"));
+   } else if(0 == strncmp(uri,"ftp://",6)) {
+      return check_ftp_uri(hp,uri,getenv("ftp_proxy"));
+   } else if(0 == strncmp(uri,"gopher://",9)) {
+      return check_gopher_uri(hp,uri,getenv("gopher_proxy"));
    }
+   /* URI scheme is not supported, so we'll just assume it's OK */
    return TRUE;
 }
