@@ -32,6 +32,7 @@ extern BOOL hsc_copy_base_info(HSCPRC * dest_hp, HSCPRC * dummy_hp);
 
 extern BOOL hsc_init_hscprc(HSCPRC * hp, STRPTR prefs_fname);
 
+extern void add_env_include_dirs(HSCPRC *hp);
 extern BOOL hsc_init_tagsNattr(HSCPRC * hp);
 extern BOOL hsc_init_basicEntities(HSCPRC * hp);
 extern BOOL hsc_assign_tagCBs(HSCPRC * hp);
