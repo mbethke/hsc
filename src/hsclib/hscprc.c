@@ -492,6 +492,11 @@ VOID hsc_set_lctags(HSCPRC * hp, BOOL new_lctags) {
    D(fprintf(stderr, DHL "flag: lctags=%d\n", new_lctags));
 }
 
+VOID hsc_set_checkext(HSCPRC * hp, BOOL new_checkext) {
+   hp->checkext = new_checkext;
+   D(fprintf(stderr, DHL "flag: checkext=%d\n", new_checkext));
+}
+
 VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml) {
     if((hp->xhtml = new_xhtml)) {
        hp->lctags = TRUE;            /* XHTML implies LOWERCASETAGS */

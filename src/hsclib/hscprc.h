@@ -247,6 +247,7 @@ struct hsc_process
     BOOL prostitute;            /* use "prostitute" or "jerk"? */
     BOOL nested_errors;         /* show "location of previous call" msgs */
     BOOL lctags;                /* force all tags to lowercase */
+    BOOL checkext;              /* check external links */
     BOOL xhtml;                 /* try to be XHTML compatible */
     BOOL validate_css;          /* validate contents of STYLE attributes */
 
@@ -364,6 +365,7 @@ extern VOID hsc_set_strip_cmt(HSCPRC * hp, BOOL new_strip_cmt);
 extern VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext);
 extern VOID hsc_set_nested_errors(HSCPRC * hp, BOOL new_nested_errors);
 extern VOID hsc_set_lctags(HSCPRC * hp, BOOL new_lctags);
+extern VOID hsc_set_checkext(HSCPRC * hp, BOOL new_checkext);
 extern VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml);
 extern VOID hsc_set_vcss(HSCPRC * hp, BOOL new_vcss);
 
