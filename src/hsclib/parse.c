@@ -129,6 +129,43 @@ static BOOL check_mbinaw(HSCPRC * hp, HSCTAG * tag)
    return ok;
 }
 
+/* check if an AUTOCLOSE should be done despite the current opening tag not
+ * being the same as the last on the container stack. If so, remove all
+ * intervening tags and return TRUE.
+ */
+static BOOL check_autoclose_anyway(HSCPRC *hp, DLNODE *nd) {
+   DLNODE *cnd; /* current node */
+   DLNODE *tnd; /* temp node */
+   BOOL anyway = TRUE;
+
+   for(cnd = dll_last(hp->container_stack);
+         (cnd != nd) && anyway;
+         cnd = dln_prev(cnd)) {
+      anyway = (BOOL)(((HSCTAG*)dln_data(cnd))->option & HT_AUTOCLOSE);
+      D(fprintf(stderr, DHL "  /AC-stackcheck: <%s> [%s]\n",
+               ((HSCTAG*)dln_data(cnd))->name, anyway ? "YES" : "NO"));
+   }
+
+   if(anyway) {
+      /* there are only /AUTOCLOSE tags between the end of stack
+       * and the current tag, so remove all of them.
+       * Example: <dl><dt>foo<dd>bar</dl>
+       * -> <dd> autocloses <dt> (which is /AC) but not <dl>
+       */
+      for(cnd = dll_last(hp->container_stack);
+            cnd != nd;
+            cnd = tnd) {
+         D(fprintf(stderr,
+                  DHL "  autoclosing extra <%s> \n",
+                  ((HSCTAG*)dln_data(cnd))->name));
+         tnd = cnd->prev;
+         del_dlnode(hp->container_stack,cnd);
+      }
+      return TRUE;
+   }
+   return FALSE;
+} 
+
 /* enable output for a process */
 void hp_enable_output(HSCPRC * hp, STRPTR cause)
 {
@@ -155,7 +192,8 @@ void hp_enable_output(HSCPRC * hp, STRPTR cause)
  */
 DLNODE *find_end_tag_node(HSCPRC * hp, STRPTR tagname)
 {
-   return find_dlnode_bw(dll_last(hp->container_stack), (APTR) tagname, cmp_strtag);
+   return find_dlnode_bw(dll_last(hp->container_stack),
+         (APTR) tagname, cmp_strtag);
 }
 
 /*
@@ -257,39 +295,47 @@ HSCTAG *append_end_tag(HSCPRC * hp, HSCTAG * tag)
 VOID remove_end_tag(HSCPRC * hp, HSCTAG * tag)
 {
    /* search for tag on stack of occured tags */
-   DLNODE *nd = find_dlnode_bw(dll_last(hp->container_stack), (APTR) tag->name, cmp_strtag);
+   DLNODE *nd = find_dlnode_bw(dll_last(hp->container_stack),
+         (APTR) tag->name, cmp_strtag);
+
    if (nd == NULL) {
       /* closing tag not found on stack */
       /* ->unmatched closing tag without previous opening tag */
       hsc_message(hp, MSG_UNMA_CTAG, "unmatched %C", tag);
    } else {
       /* closing tag found on stack */
-      HSCTAG *end_tag = (HSCTAG *) dln_data(nd);
-      STRPTR foundnm = (STRPTR) end_tag->name;
-      STRPTR lastnm = (STRPTR)(((HSCTAG*)dln_data(dll_last(hp->container_stack)))->name);
+      HSCTAG *end_tag, *last_tag;
+      STRPTR foundnm, lastnm;
+
+      /* check for any /AC tags and remove them */
+      if(!is_hsc_tag(tag))
+         check_autoclose_anyway(hp, nd);
+
+      end_tag = (HSCTAG*) dln_data(nd);
+      foundnm = (STRPTR) end_tag->name;
+      lastnm = ((HSCTAG*)dln_data(dll_last(hp->container_stack)))->name;
 
       /* check if name of closing tag is -not- equal
        * to the name of the last tag last on stack
        * ->illegal tag nesting
        */
-      if (upstrcmp(lastnm, foundnm)
-            && !(tag->option & HT_MACRO)
-            && !(is_hsc_tag(tag)))
-      {
-         hsc_message(hp, MSG_CTAG_NESTING,
-               "illegal end tag nesting (expected %c, found %C)",
-               lastnm, tag);
+      if(upstrcmp(lastnm, foundnm) &&
+            !(tag->option & HT_MACRO) && !is_hsc_tag(tag)) {
+         if(NULL != (last_tag = find_strtag(hp->deftag,lastnm))) {
+            if(!is_hsc_tag(last_tag))
+               hsc_message(hp, MSG_CTAG_NESTING,
+                     "illegal end tag nesting (expected %c, found %C)",
+                     lastnm, tag);
+         }
       }
 
-      /* if closing tag has any attributes defined,
-       * it must be a closing macro tag. so copy
-       * the attributes of the closing tag to the
-       * attributes of the macro tag. therefor,
-       * the closing macro tag inherits the
-       * attributes of his opening macro
+      /* if closing tag has any attributes defined, it must be a closing macro
+       * tag. so copy the attributes of the closing tag to the attributes of the
+       * macro tag. therefore, the closing macro tag inherits the attributes of
+       * its opening macro
        */
-      if (end_tag->attr)
-         set_local_varlist(tag->attr, end_tag->attr, MCI_APPCTAG);
+      if (end_tag->attr) set_local_varlist(tag->attr, end_tag->attr,
+            MCI_APPCTAG);
 
       /* remove node for closing tag from container_stack */
       del_dlnode(hp->container_stack, nd);
@@ -477,40 +523,29 @@ BOOL hsc_parse_tag(HSCPRC * hp)
          }
 
          /* for AUTOCLOSE-tags, remove potential end tags on stack */
-         if (tag->option & HT_AUTOCLOSE)
-         {
+         if (tag->option & HT_AUTOCLOSE) {
             DLNODE *nd = find_end_tag_node(hp, tag->name);
 
-            if (nd)
-            {
-               if (nd == dll_last(hp->container_stack))
+            if (nd) {
+               if ((nd == dll_last(hp->container_stack)) ||
+                     check_autoclose_anyway(hp,nd))
                {
                   D(fprintf(stderr, DHL "  autoclose </%s> before\n",
                            tag->name));
                   remove_end_tag(hp, tag);
-               }
-               else
-               {
-#if DEBUG
-                  HSCTAG *end_tag =
-                     (HSCTAG*)dln_data(dll_last(hp->container_stack));
-
+               } else {
                   D(fprintf(stderr,
                            DHL "  no autoclose because of <%s> \n",
-                           end_tag->name));
-#endif
+                           ((HSCTAG*)
+                            dln_data(dll_last(hp->container_stack)))->name));
                }
-            }
-            else
-            {
-               D(fprintf(stderr, DHL "  no autoclose neccessary\n"));
+            } else {
+                  D(fprintf(stderr, DHL "  no autoclose neccessary\n"));
             }
          }
 
          /* end-tag required? */
-         if ((tag->option & HT_CLOSE)
-               || (tag->option & HT_AUTOCLOSE))
-         {
+         if ((tag->option & HT_CLOSE) || (tag->option & HT_AUTOCLOSE)) {
             /* yes: push current tag to container stack;
              * (current values of attributes will be
              * remembered */
@@ -575,9 +610,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
                 * remove end-tag from stack
                 */
                remove_end_tag(hp, tag);
-            }
-            else
-            {
+            } else {
                /* illegal closing tag */
                hsc_message(hp, MSG_ILLG_CTAG,      /* tag not found */
                      "illegal %c", nxtwd);
@@ -607,20 +640,14 @@ BOOL hsc_parse_tag(HSCPRC * hp)
          } else if (hp->strip_tags &&
                     strenum(tag->name, hp->strip_tags, '|', STEN_NOCASE)) {
             /* strip tag requested by user */
-            if (!(tag->option & HT_SPECIAL))
-            {
+            if (!(tag->option & HT_SPECIAL)) {
                if (open_tag)
-               {
                   hsc_msg_stripped_tag(hp, tag, "as requested");
-               }
                hnd = NULL; /* don't call handle */
                write_tag = FALSE;  /* don't output tag */
             }
-            else
-            {
-               hsc_message(hp, MSG_TAG_CANT_STRIP,
-                     "can not strip special tag %T", tag);
-            }
+            else hsc_message(hp, MSG_TAG_CANT_STRIP,
+                  "can not strip special tag %T", tag);
 
             /*
              * get values for size from reference
@@ -662,8 +689,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
          hnd_result = (*hnd) (hp, tag);
 
       /* write whole tag out */
-      if (write_tag && hnd_result)
-      {
+      if (write_tag && hnd_result) {
          VOID(*tag_callback) (HSCPRC * hp, HSCTAG * tag,
                STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close) = NULL;
 
@@ -679,8 +705,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
          /* write (flush) white spaces */
          hsc_output_text(hp, "", "");
 
-         if (tag_callback)
-         {
+         if (tag_callback) {
             (*tag_callback) (hp, tag,
                              estr2str(hp->tag_name_str),
                              estr2str(hp->tag_attr_str),
@@ -694,8 +719,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
 
       /* if tag should check for succeeding white spaces,
        * tell this hscprc now */
-      if (now_tag_strip_whtspc)
-      {
+      if (now_tag_strip_whtspc) {
          D(fprintf(stderr, "  requested to check for succ.whtspc\n"));
          hp->tag_next_whtspc = now_tag_strip_whtspc;
       }
