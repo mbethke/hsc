@@ -1,6 +1,8 @@
 /*
 ** output.c
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** output functions for hsc
 **
 ** updated: 31-Oct-1995

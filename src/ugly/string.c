@@ -5,10 +5,10 @@
 **
 ** (W) by Tommy-Saftwörx in 1993,94,95
 **
-** updated:  3-Oct-1995
+** updated: 18-Nov-1995
 ** created: 31-Jul-1993
 **
-** $VER: string.c 1.2.0 (3.10.95)
+** $VER: string.c 1.2.1 (18.11.95)
 */
 
 
@@ -49,9 +49,9 @@ STRPTR ugly_strclone( CONSTRPTR oldstr, STRPTR file, ULONG line )
 
         newstr =                           /* alloc mem for clone */
 #ifdef UMEM_TRACKING
-            ugly_malloc( strlen( oldstr ) +1, file, line );
+            ugly_malloc_tracking( strlen( oldstr ) +1, file, line );
 #else
-            malloc(  strlen( oldstr ) +1 );
+            umalloc(  strlen( oldstr ) +1 );
 #endif
 
         if ( newstr )                      /* alloc sucessful? */

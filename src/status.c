@@ -1,6 +1,8 @@
 /*
 ** status.c
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** status messages
 **
 ** updated: 30-Jul-1995

@@ -35,7 +35,6 @@ void pr( STRPTR comment )
 int main( void )
 {
     LONG i;
-    STRPTR hugo = NULL;
 
     atexit( atexit_uglymemory );
 
@@ -49,6 +48,7 @@ int main( void )
     es  = init_estr( 8 ); pe( "init  ") ;
     res = init_estr( 8 ); pr( "init  ") ;
 
+#if 1
     printf( "** test set & append\n" );
     set_estr( es, "hugo ist doof." ); pe( "set   " );
 
@@ -63,10 +63,6 @@ int main( void )
     get_right_estr( es, res, 5 ); pe( "right " );          /* "auch." */
     get_left_estr( es, res, 4 );  pe( "left  " );          /* "hugo" */
 
-    /* enforcer hit */
-    printf( "enforcer: hugo=%p, hugo data=%x\n", hugo, *hugo );
-    *hugo = 3;
-
     /* test special cases for cutting funtions */
     printf( "** test get-part\n" );
     set_estr( res, "hugo" );      pr( "res=hugo " );
@@ -77,6 +73,7 @@ int main( void )
     get_left_estr( es, res, 4 );  pe( "lef(4)   " );
     get_right_estr( es, res, 5 ); pe( "rig(5)   " );
     get_right_estr( es, res, 4 ); pe( "rig(4)   " );
+#endif
 
     del_estr( es ); del_estr( res );
 

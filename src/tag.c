@@ -1,9 +1,11 @@
 /*
 ** tag.c
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** hsc-tag funcs for hsc
 **
-** updated: 16-Oct-1995
+** updated: 20-Nov-1995
 ** created:  8-Sep-1995
 **
 */
@@ -59,7 +61,7 @@ STRPTR last_anchor = NULL;             /* stores prev URL of last anchor; */
 HSCTAG *new_hsctag( STRPTR newid )
 {
 
-    HSCTAG *newtag = (HSCTAG*) malloc( sizeof(HSCTAG) );
+    HSCTAG *newtag = (HSCTAG*) umalloc( sizeof(HSCTAG) );
 
     if (newtag) {
 
@@ -201,7 +203,7 @@ VOID remove_ctag( HSCTAG *tag, INFILE *inpf )
         if ( !( tag->option & HT_SMARTCLOSE ) ) {
 
             message( MSG_UNMA_CTAG, inpf );
-            errstr( "Unmatched closing tag " );
+            errstr( "unmatched closing tag " );
             errctag( tag->name );
             errlf();
 
@@ -223,7 +225,7 @@ VOID remove_ctag( HSCTAG *tag, INFILE *inpf )
         {
 
             message( MSG_CTAG_NESTING, inpf );
-            errstr( "Illegal closing tag nesting (expected " );
+            errstr( "illegal closing tag nesting (expected " );
             errctag( lastnm );
             errstr( ", found " );
             errctag( tag->name );
@@ -239,12 +241,8 @@ VOID remove_ctag( HSCTAG *tag, INFILE *inpf )
         ** the closing macro tag inherits the
         ** attributes of his opening macro
         */
-        if ( ctag->attr ) {
-
-            if ( !set_local_varlist( tag->attr, ctag->attr, MCI_APPCTAG ) )
-                err_mem( inpf );
-
-        }
+        if ( ctag->attr )
+            set_local_varlist( tag->attr, ctag->attr, MCI_APPCTAG );
 
         /* remove node for closing tag from cltags-list */
         del_dlnode( cltags, nd );
@@ -271,15 +269,12 @@ HSCTAG *app_tag( DLLIST *taglist, STRPTR tagid )
     HSCTAG *newtag;
 
     newtag = new_hsctag( tagid );
-    if ( newtag ) {
-        if (app_dlnode( taglist, newtag ) == NULL ) {
+    if (app_dlnode( taglist, newtag ) == NULL ) {
 
-            del_tag( (APTR) newtag );
-            newtag = NULL;
+        del_tag( (APTR) newtag );
+        newtag = NULL;
 
-        }
-    } else
-        err_mem( NULL );
+    }
 
     return (newtag);
 }

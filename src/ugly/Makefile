@@ -23,14 +23,14 @@
 #**
 #** sas/c AMIGA
 #**
-#sys  = DEFINE=AMIGA
-#dest = t:
-#ign  = IGNORE=93
-#opts = STRICT ANSI STRINGMERGE SMALLCODE SMALLDATA NOICONS MEMORYSIZE=HUGE
-#norm = $(sys) $(opts) DEFINE=UMEM_TRACKING DEBUG=LINE
-#optim= $(sys) $(opts) NODBG STRIPDEBUG SMALLCODE OPT OPTSIZE IGN=304
-#link = sc LINK $(ign)
-#comp = sc
+sys  = DEFINE=AMIGA
+dest = t:
+ign  = IGNORE=93
+opts = STRICT ANSI STRINGMERGE SMALLCODE SMALLDATA NOICONS MEMORYSIZE=HUGE 
+norm = $(sys) $(opts) DEFINE=UMEM_TRACKING DEBUG=SF
+optim= $(sys) $(opts) NODBG STRIPDEBUG SMALLCODE OPT OPTSIZE DEBUG=LINE
+link = sc LINK $(ign)
+comp = sc
 
 
 #**
@@ -42,30 +42,30 @@
 #**
 #** gcc UNIX
 #**
-dest =
-sys  = -DUNIX
+#dest =
+#sys  = -DUNIX
 
 #**
 #** gcc (any system)
 #**
-norm = $(sys) -DUMEM_TRACKING -ansi -g
-optim= $(sys) -ansi -O
-comp = cc -c
-link = cc -o $@
-ign  =
+#norm = $(sys) -DUMEM_TRACKING -ansi -ggdb
+#optim= $(sys) -ansi -O
+#comp = gcc -c
+#link = gcc -o $@
+#ign  =
 
 #**
 #** compiler mode 
 #**   norm...create developer version (mem tracking, debugging code)
 #**   optim..official release (optimised)
 #**
-#mode = $(optim)
-mode = $(norm)
+mode = $(optim)
+#mode = $(norm)
 
 #
 # test files
 #
-all: test_es test_fn test_args test_file test_mem test_out test_str
+all: test_es test_fn test_args test_file test_list test_mem test_out test_str
 
 
 
@@ -104,7 +104,7 @@ fname.o   : types.h string.h fname.h fname.c
 	$(comp) fname.c $(mode)
 
 memory.o   : types.h memory.c memory.h dllist.h
-	$(comp) memory.c
+	$(comp) memory.c $(mode)
 
 prginfo.o : types.h prginfo.c
 	$(comp) prginfo.c $(mode)

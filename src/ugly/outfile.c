@@ -3,12 +3,12 @@
 **
 ** ugly input file functions
 **
-** Version 1.0.0, (W) by Tommy-Saftwörx in 1995
+** Version 1.0.1, (W) by Tommy-Saftwörx in 1995
 **
-** updated: 26-Oct-1995
+** updated: 18-Nov-1995
 ** created: 26-Oct-1995
 **
-** $VER: outfile.c 1.0.0 (26.10.1995)
+** $VER: outfile.c 1.0.0 (18.11.1995)
 **
 */
 
@@ -77,7 +77,7 @@ void del_outfile( OUTFILE *outf )
 */
 OUTFILE *init_outfile( CONSTRPTR name, size_t step_size )
 {
-    OUTFILE *outf = (OUTFILE *) malloc( sizeof(OUTFILE) );
+    OUTFILE *outf = (OUTFILE *) umalloc( sizeof(OUTFILE) );
 
     if ( outf ) {
 
@@ -90,6 +90,9 @@ OUTFILE *init_outfile( CONSTRPTR name, size_t step_size )
             outf->filename = strclone( name );
         else
             outf->filename = NULL;
+
+        /* init file */
+        outf->outfile = NULL;
 
         /* init wordbuffers */
         outf->buf = init_estr( step_size );
@@ -191,12 +194,8 @@ int outfclose1( OUTFILE *outf, BOOL write )
         if ( outf->filename ) {
 
             outf->outfile = fopen( outf->filename, "w" );
-            if ( !(outf->outfile) ) {
-
-                del_outfile( outf );
+            if ( !(outf->outfile) )
                 result = EOF;
-
-            }
 
         } else
             outf->outfile = stdout;

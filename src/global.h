@@ -61,10 +61,23 @@
                       MODE_NORMAL_STR "|" \
                       MODE_RELAXED_STR
 
-#define MODE_PEDANTIC 0
-#define MODE_NORMAL   1
-#define MODE_RELAXED  2
+#define MODE_PEDANTIC 1
+#define MODE_NORMAL   2
+#define MODE_RELAXED  3
 
+#define DEFAULT_MODE_STR MODE_NORMAL_STR
+
+/* attribute that holds "click here" words */
+#define CLICK_HERE_ATTR "__CLICK_HERE__"
+
+/* attribute that tells operating system */
+#ifdef AMIGA
+#define OS_ATTR "__AMIGA__"
+#elif defined UNIX
+#define OS_ATTR "__UNIX__"
+#else
+#error "system not supported: OS_ATTR"
+#endif
 
 /*
 ** special values for ignore
@@ -123,9 +136,14 @@ extern time_t now;
 
 extern STRPTR destfname;
 extern STRPTR rel_destdir;
+extern STRPTR click_here_str;
 
 extern EXPSTR *tmpstr;
 extern EXPSTR *IF_stack;
+extern EXPSTR *tag_name_str;
+extern EXPSTR *tag_attr_str;
+extern EXPSTR *tag_close_str;
+
 extern BOOL    suppress_output;
 extern BOOL    docbase_set;
 

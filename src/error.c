@@ -1,9 +1,11 @@
 /*
 ** error.c
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** error vars & funs for hsc
 **
-** updated:  2-Nov-1995
+** updated: 14-Dec-1995
 ** created:  9-Jul-1995
 **
 ** TODO: programable desription string to format error messages
@@ -131,6 +133,7 @@ int errqstr( CONSTRPTR str )
 
                     errch ( '\\' );
                     errstr( long2str( (LONG) str[0] ) );
+                    errch ( ';' );
 
                 } else
                     errch( str[0] );
@@ -335,7 +338,6 @@ int cmp_msg( APTR data1, APTR data2 )
 int message( ULONG id, INFILE *f )
 {
     int ctr = 0;
-    ULONG id_masked = id & MASK_MESSAGE; /* mask out message class */
 
     /* oppress message if an fatal error occured before */
     display_message = ( !(fatal_error) );
@@ -345,7 +347,7 @@ int message( ULONG id, INFILE *f )
 
         display_message = FALSE;
         D( fprintf( stderr, "** oppressed message #%d (0x%x)\n",
-                            id_masked, id ) );
+                            id & MASK_MESSAGE, id ) );
 
     }
 
@@ -407,18 +409,25 @@ VOID err_streol( INFILE *inpf )
     errlf();
 }
 
-VOID err_mem( INFILE *inpf )
+#if 0
+VOID err_mem( INFILE *inpf ) /* TODO: remove this */
 {
     message( MSG_NO_MEM, inpf );
     errstr( "out of memory" );
     errlf();
 }
+#endif
 
 VOID err_write( OUTFILE *outf )
 {
+    STRPTR outfnm = outfilename;
+
+    if ( outf )
+        outfnm = outfget_fname( outf );
+
     message( MSG_WRITE_ERR, NULL );
     errstr( "error writing to " );
-    errqstr( outfget_fname( outf ) );
+    errqstr( outfnm );
     errstr( ": " );
     errstr( strerror( errno ) );
     errlf();
@@ -466,4 +475,19 @@ void call_panic( STRPTR text, STRPTR file, ULONG line )
     fprintf( stderr, "\n##\n## illegal state in \"%s\" (%d): %s\n##\n",
              file, line, text );
 }
+
+/*
+**-------------------------------------
+** nomem-handler
+**-------------------------------------
+*/
+BOOL hsc_nomem_handler( size_t size )
+{
+    message( MSG_NO_MEM, NULL );
+    errstr( "out of memory" );
+    errlf();
+
+    return( FALSE ); /* immediatly abort */
+}
+
 

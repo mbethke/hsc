@@ -129,7 +129,7 @@ struct arglist {
     STRPTR          al_name;           /* name (only for debugging) */
     struct dllist  *al_list;           /* argument template */
     struct arginfo *al_multiple;       /* entry with /M flag set */
-    struct arginfo *al_nokeywd;        /* entry w/o /K flag */
+    struct arginfo *al_nokeywd;        /* entry w/o /K flag; TODO: remove */
 };
 
 

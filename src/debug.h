@@ -53,6 +53,13 @@
 #define D(x) /* nufin */
 #endif
 
+#if DEBUG
+#define DMSG(msg) ((debug) ? (fprintf( stderr, "** " msg "\n" )) : NULL )
+#else
+#define DMSG(msg) /* nufin */
+#endif
+
+
 #if DEBUG_ATTRVAL
 #define DAV(x) if ( debug ) x
 #else

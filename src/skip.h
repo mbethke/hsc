@@ -34,8 +34,8 @@ extern BOOL skip_lf( INFILE *inpf );
 extern BOOL skip_hsc_comment( INFILE *inpf );
 extern BOOL copy_until_gt( INFILE *inpf ); /* TODO: remove this */
 
-extern BOOL skip_until_eot_state( INFILE *inpf, BYTE *state );
-extern BOOL skip_until_eot( INFILE *inpf );
+extern BOOL skip_until_eot_state( INFILE *inpf, BYTE *state, EXPSTR *logstr );
+extern BOOL skip_until_eot( INFILE *inpf, EXPSTR *logstr );
 extern BOOL eot_reached( INFILE *inpf, BYTE *state );
 extern BOOL eoc_reached( INFILE *inpf, BYTE *state, LONG *nest );
 

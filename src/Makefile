@@ -11,13 +11,13 @@
 #**
 #** sas/c AMIGA
 #**
-#sys  = DEF=AMIGA
-#dest = t:
-#norm = $(sys) DEF=UMEM_TRACKING DBG=SF OBJNAME=$(dest) DEF=DEBUG
-#optim= $(sys) NODBG STRIPDEBUG SMALLCODE OPT OPTSIZE IGN=304
-#link = sc LINK
-#comp = sc
-#ign  =
+sys  = DEF=AMIGA
+dest = t:
+norm = $(sys) DEF=UMEM_TRACKING DBG=SF OBJNAME=$(dest) DEF=DEBUG
+optim= $(sys) NODBG STRIPDEBUG SMALLCODE OPT OPTSIZE IGN=304 DEBUG=LINE
+link = sc LINK
+comp = sc
+ign  =
 
 
 #**
@@ -29,35 +29,33 @@
 #**
 #** gcc UNIX
 #**
-dest =
-sys  = -DUNIX
+#dest =
+#sys  = -DUNIX
 
 
 #**
 #** gcc (any system)
 #**
-norm = $(sys) -DUMEM_TRACKING -ansi -g
-optim= $(sys) -ansi -O
-comp = cc -c
-link = cc -o $@
-ign  =
+#norm = $(sys) -DUMEM_TRACKING -ansi -ggdb
+#optim= $(sys) -ansi -O
+#comp = gcc -c
+#link = gcc -o $@
+#ign  =
 
 #
 # compiler mode
 # (norm/optim)
 #
-#mode = $(optim)
-mode = $(norm)
+mode = $(optim)
+#mode = $(norm)
 
 #
-# copy symbol
+# copy symbols: this one copies the newly compiled hsc to several
+# locations on developer's harddisk; no need for you to enable them
 #
-#copy1 = copy $(dest)hsc prog:hsc				# AMIGA
-#copy2 = copy $(dest)hsc c:hsc
-#copy3 = copy $(dest)hsc arc/hsc/hsc
-#copy1 = 							# UNIX
-#copy2 =
-#copy3 =
+copy1 = copy $(dest)hsc prog:hsc
+copy2 = copy $(dest)hsc c:hsc
+copy3 = copy $(dest)hsc arc/hsc/hsc
 
 #---------------------------------
 

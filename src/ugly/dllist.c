@@ -5,10 +5,10 @@
 **
 ** (W) by Tommy-Saftwörx in 1994,95
 **
-** updated:  1-Aug-1995
+** updated: 18-Nov-1995
 ** created:  1-Mar-1994
 **
-** $VER: dllist.c 1.3.2 (1.8.1995)
+** $VER: dllist.c 1.3.3 (18.11.1995)
 **
 **---------------------------------------------------------
 */
@@ -45,7 +45,7 @@ struct dllist *init_dllist( void (*fn_del_data) ( APTR data ) )
     struct dllist *newlist;
 
     newlist =                          /* alloc mem for list */
-        malloc( sizeof( struct dllist ) );
+        umalloc( sizeof( struct dllist ) );
 
     if ( newlist ) {
         newlist->first     = NULL;     /* init new list */
@@ -73,7 +73,7 @@ struct dlnode *new_dlnode( void )
     struct dlnode *newnode;
 
     newnode =                          /* alloc mem for new node */
-        malloc( sizeof( struct dlnode ) );
+        umalloc( sizeof( struct dlnode ) );
 
     if ( newnode ) {                   /* alloc successful? */
         newnode->prev = NULL;          /* Y-> init node */
@@ -117,7 +117,7 @@ void del_dlnode( struct dllist *list, struct dlnode *node )
         node->next = NULL;
         node->data = NULL;
 
-        free( node );                  /*     free node */
+        ufree( node );                 /*     free node */
     }
 }
 

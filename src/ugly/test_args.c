@@ -109,7 +109,7 @@ int main( int argc, char *argv[] )
 #endif
 #if 1
               "Ignore=ign/N/K/M/$", arg_ignore, &ignore_list, "ignore message number",
-              "Mode/E/K/$"        , arg_mode, "hugo|sepp|resi", &mode,
+              "Mode/E/K/$"        , arg_mode, "hugo|sepp|resi", &mode, "set the fucking mode",
               "ERRFILE/K", &errfile, "error file",
               "VERBOSE/S", &verb, "verbose flag",
               "StartLine=SL/R/K" , 0, 2048, &line, NULL,

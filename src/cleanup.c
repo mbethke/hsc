@@ -1,9 +1,11 @@
 /*
 ** cleanup.c
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** cleanup function for hsc
 **
-** updated:  3-Nov-1995
+** updated: 27-Nov-1995
 ** created:  1-Jul-1995
 */
 
@@ -48,6 +50,9 @@ void cleanup( void )
     /* release expstrings */
     del_estr( IF_stack );
     del_estr( tmpstr );
+    del_estr( tag_name_str );
+    del_estr( tag_attr_str );
+    del_estr( tag_close_str );
     del_estr( vararg );
 
     /* misc. work */

@@ -1,9 +1,11 @@
 /*
 ** tag_misc
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** misc tag handles
 **
-** updated: 16-Oct-1995
+** updated: 27-Nov-1995
 ** created: 30-Jul-1995
 */
 
@@ -60,6 +62,22 @@ BOOL handle_base( INFILE *inpf, HSCTAG *tag )
 
 
 /*
+** handle_blink: tag handle for <BLINK>
+**
+** just tell the user that blink sucks
+*/
+BOOL handle_blink( INFILE *inpf, HSCTAG *tag )
+{
+    message( MSG_BLINK_SUX, inpf );
+    errtag( "BLINK" );
+    errstr( " sucks" );
+    errlf();
+
+    return (TRUE);
+}
+
+
+/*
 ** handle_heading: tag handle for <H1>..<H6>
 **
 ** compute number of haeding,
@@ -97,7 +115,6 @@ BOOL handle_heading( INFILE *inpf, HSCTAG *tag )
     prev_heading_num = num;
 
     return (TRUE);
-
 }
 
 
@@ -118,6 +135,10 @@ BOOL handle_sgml_comment( INFILE *inpf, HSCTAG *tag )
         BOOL comment = FALSE;
         BOOL oneword = FALSE;
         BOOL end_min  = FALSE;
+
+        /* append to attribute string */
+        app_estr( tag_attr_str, infgetcws( inpf ) );
+        app_estr( tag_attr_str, infgetcw( inpf ) );
 
         if ( !strncmp( nw, "--", 2 ) ) {
 
@@ -151,7 +172,7 @@ BOOL handle_sgml_comment( INFILE *inpf, HSCTAG *tag )
             errlf();
 
         } else if ( !comment )
-            skip_until_eot( inpf );     /* unknown "!"-command: skip */
+            skip_until_eot( inpf, tag_attr_str );/* unknown "!"-command: skip */
         else {
 
             /* handle comment */
@@ -166,6 +187,10 @@ BOOL handle_sgml_comment( INFILE *inpf, HSCTAG *tag )
                 if ( nw ) {
 
                     size_t slen = strlen( nw );
+
+                    /* append word to attribute string */
+                    app_estr( tag_attr_str, infgetcws( inpf ) );
+                    app_estr( tag_attr_str, infgetcw( inpf ) );
 
                     /*
                     **check for "--"
@@ -236,6 +261,6 @@ BOOL handle_sgml_comment( INFILE *inpf, HSCTAG *tag )
     } else
         err_eof( inpf, "reading SGML-comment" );
 
-    return (TRUE);
+    return ( TRUE );
 }
 

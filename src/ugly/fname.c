@@ -331,7 +331,7 @@ STRPTR app_fname( STRPTR dir, STRPTR fn )
 */
 STRPTR tmpnamstr( void )
 {
-    STRPTR s = (STRPTR) ugly_malloc( L_tmpnam, __FILE__, __LINE__ );
+    STRPTR s = (STRPTR) umalloc( L_tmpnam );
     STRPTR tnm;
 
     if ( s ) {

@@ -1,10 +1,11 @@
 /*
-**
 ** skip.c
+**
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
 **
 ** functions for skipping several things
 **
-** updated:  2-Nov-1995
+** updated: 27-Nov-1995
 ** created:  8-Oct-1995
 */
 
@@ -54,6 +55,7 @@ BOOL skip_lf( INFILE *inpf )
     return ( (BOOL) (nc==EOF) );
 }
 
+#if 0
 /*
 ** copy_until_gt
 */
@@ -103,6 +105,7 @@ BOOL skip_until_gt( INFILE *inpf )
 
     return (BOOL)(fatal_error);
 }
+#endif
 
 BOOL eot_reached( INFILE *inpf, BYTE *state )
 {
@@ -117,8 +120,11 @@ BOOL eot_reached( INFILE *inpf, BYTE *state )
                     *state = TGST_DQUOTE;
                 else if ( !strcmp( nw, "'" ) )
                     *state = TGST_QUOTE;
+/* TODO: skip references & expressions */
+#if 0
                 else if ( !strcmp( nw, "<" ) )
                     *state = TGST_REF;
+#endif
                 else if ( !strcmp( nw, ">" ) )
                     *state = TGST_END;
                 break;
@@ -182,10 +188,23 @@ BOOL eot_reached( INFILE *inpf, BYTE *state )
 ** result: TRUE, if no fatal error
 ** errors: return FALSE
 */
-BOOL skip_until_eot_state( INFILE *inpf, BYTE *state )
+BOOL skip_until_eot_state( INFILE *inpf, BYTE *state, EXPSTR *logstr )
 {
     while( !eot_reached( inpf, state ) )
-         /* do nufin */;
+        if ( logstr ) {
+
+            app_estr( logstr, infgetcws( inpf ) );
+            app_estr( logstr, infgetcw( inpf ) );
+
+        }
+
+    /* append ">" */
+    if ( logstr ) {
+
+        app_estr( logstr, infgetcws( inpf ) );
+        app_estr( logstr, infgetcw( inpf ) );
+
+    }
 
     return( (BOOL) !fatal_error );
 }
@@ -200,11 +219,11 @@ BOOL skip_until_eot_state( INFILE *inpf, BYTE *state )
 ** result: TRUE, if no fatal error
 ** errors: return FALSE
 */
-BOOL skip_until_eot( INFILE *inpf )
+BOOL skip_until_eot( INFILE *inpf, EXPSTR *logstr )
 {
     BYTE state = TGST_TAG;
 
-    return( skip_until_eot_state( inpf, &state ) );
+    return( skip_until_eot_state( inpf, &state, logstr ) );
 }
 
 /*
@@ -250,7 +269,7 @@ BOOL eoc_reached( INFILE *inpf, BYTE *state, LONG *nest )
                 else if ( !strcmp( nw, ">" ) )
                     if ( *nest ) {
 
-                        *nest--;
+                        (*nest)--;
                         *state = CMST_TEXT;
 
                     } else
@@ -264,7 +283,7 @@ BOOL eoc_reached( INFILE *inpf, BYTE *state, LONG *nest )
                 else {
 
                     if ( !strcmp( nw, "*" ) )
-                        *nest++;
+                        (*nest)++;
                     *state = CMST_TEXT;
 
                 }
@@ -297,16 +316,6 @@ BOOL skip_hsc_comment( INFILE *inpf )
     while ( !end && !fatal_error ) {
 
         end = eoc_reached( inpf, &cstate, &cnest );
-#if 0
-        /* TODO: remove this */
-        /* write out word, if requested */
-        if ( copy ) {
-
-            outstr( infgetcws( inpf ) );
-            outstr( infgetcw( inpf ) );
-
-        }
-#endif
 
     }
 

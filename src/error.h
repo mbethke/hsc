@@ -84,13 +84,15 @@ extern int message( ULONG id, INFILE *f );
 extern VOID err_eof( INFILE *inpf, STRPTR descr );
 extern VOID err_eol( INFILE *inpf );
 extern VOID err_streol( INFILE *inpf );
-extern VOID err_mem( INFILE *inpf );
+/* extern VOID err_mem( INFILE *inpf ); */
 extern VOID err_write( OUTFILE *outf );
 extern VOID err_longstr( INFILE *inpf );
 extern VOID err_illgwspc( INFILE *inpf );
 extern VOID err_wst( INFILE *inpf );
 
 extern void call_panic( STRPTR text, STRPTR file, ULONG line );
+
+extern BOOL hsc_nomem_handler( size_t size );
 
 #endif /* NOEXTERN_HSC_ERROR */
 #endif /* HSC_ERROR_H */

@@ -1,9 +1,11 @@
 /*
 ** tag_a.c
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** tag handle for "<A..>" (anchor)
 **
-** updated: 12-Sep-1995
+** updated: 27-Nov-1995
 ** created:  3-Aug-1995
 */
 
@@ -20,6 +22,7 @@
 #include "msgid.h"
 #include "output.h"
 #include "parse.h"
+#include "uri.h"
 
 #include "tag.h"
 #include "vars.h"
@@ -31,13 +34,10 @@
 ** - local INSANCH option for A HREF tag
 */
 
-/*
-** this flag is set by handle_anchor if the HREF goes to
-** an global URI. if this  flag and the STRIPURI
-** option is enabled, handle_clanchor will not write
-** a </A> to the output
+/* flag that tells parse if he is currently inside
+** an anchor (need for "click here" syndrome)
 */
-BOOL was_ext_uri = FALSE;
+BOOL inside_anchor = FALSE; /* TODO: move this to "global.c" */
 
 /*
 ** handle_anchor
@@ -56,14 +56,13 @@ BOOL handle_anchor( INFILE *inpf, HSCTAG *tag )
     STRPTR  href   = NULL;
     STRPTR  name   = NULL;
 
-    /* reset some vars */
-    ufreestr( last_anchor );
-    last_anchor = NULL;
-    was_ext_uri = FALSE;
-
     /* set attribute values */
     if ( vhref ) href = vhref->text;
     if ( vname ) name = vname->text;
+
+    /* tell parser that he is inside an anchor */
+    if ( href )
+        inside_anchor = TRUE;
 
     /* check for both HREF and NAME missing */
     if ( (!href) && (!name) ) {
@@ -76,10 +75,9 @@ BOOL handle_anchor( INFILE *inpf, HSCTAG *tag )
 
 
     /* write whole tag */
-    if ( !(was_ext_uri && stripuri) ) {
+/*    outstr( infget_log(inpf) ); */
 
-        outstr( infget_log(inpf) );
-
+#if 0 /* TODO: remove this */
     } else {
 
         if ( href ) {
@@ -91,6 +89,7 @@ BOOL handle_anchor( INFILE *inpf, HSCTAG *tag )
 
         }
     }
+#endif
 
     return (TRUE);
 }
@@ -104,28 +103,10 @@ BOOL handle_anchor( INFILE *inpf, HSCTAG *tag )
 */
 BOOL handle_canchor( INFILE *inpf, HSCTAG *tag)
 {
-    if ( !(was_ext_uri && stripuri) ) {
+    inside_anchor = FALSE;
 
-        outstr( infget_log(inpf) );
-
-    } else {
-
-        /* write URI of anchor */
-        if ( last_anchor ) {
-
-            /* write out italic URI */
-            outstr( " (" );
-            outstr( last_anchor );
-            outstr( ") " );
-
-            /* release mem used by URI */
-            last_anchor = NULL;
-        }
-
-    }
-
-    ufreestr( last_anchor );
-    last_anchor = NULL;
+    /* write whole tag */
+/*    outstr( infget_log(inpf) ); */
 
     return (TRUE);
 

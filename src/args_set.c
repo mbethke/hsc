@@ -3,7 +3,7 @@
 **
 ** ugly set arguments handling functions
 **
-** updated: 10-Dec-1995
+** updated:  3-Nov-1995
 ** created:  3-Jul-1994
 **
 **===================================================================
@@ -176,7 +176,7 @@ void reset_nokeywd( struct arglist *al )
 void find_nxt_nokeywd( struct arglist *al )
 {
     if ( al->al_nokeywd ) {
-#if 0
+
         /*
         ** find entry in al_list pointing to al_nokeywd 
         */
@@ -204,31 +204,9 @@ void find_nxt_nokeywd( struct arglist *al )
 
 
         };
-#endif
-        /*
-        ** find entry in al_list pointing to al_nokeywd 
-        */
-        struct dlnode  *nd = al->al_list->first;
-        struct arginfo *ai;
 
-        /*
-        ** find next entry in al_list w/o ARG_KEYWORD
-        */
-        al->al_nokeywd = NULL;
-        while ( nd && ( al->al_nokeywd == NULL ) ) {
-
-            ai = ( struct arginfo * ) nd->data;
-
-            if ( (ai->ai_flags & ARG_KEYWORD)
-                 || (ai->ai_type & ARG_SWITCH)
-                 || (ai->ai_set)
-            )
-                nd = nd->next;
-            else
-                al->al_nokeywd = ai;
-
-        }
     }
+
 }
 
 
@@ -554,10 +532,10 @@ BOOL set_args( int argc, char *argv[], struct arglist *al )
 
         } else {
 
-            find_nxt_nokeywd( al );
             if ( al->al_nokeywd ) {
                 
                 argidx += set_arg_value( al->al_nokeywd, argv[ argidx ], arg2, FALSE );
+                find_nxt_nokeywd( al );
 
             } else
                 set_argerr( ASE_UNKNOWN_KEYWORD, argv[ argidx ] );

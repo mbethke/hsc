@@ -3,12 +3,12 @@
 **
 ** ugly input file functions
 **
-** Version 1.4.2, (W) by Tommy-Saftwörx in 1995
+** Version 1.4.3, (W) by Tommy-Saftwörx in 1995
 **
-** updated:  3-Oct-1995
+** updated:  3-Dec-1995
 ** created:  8-Jul-1995
 **
-** $VER: infile.c 1.4.2 (3.10.1995)
+** $VER: infile.c 1.4.3 (3.12.1995)
 **
 */
 
@@ -141,7 +141,7 @@ void del_infile( INFILE *inpf )
 */
 INFILE *init_infile( CONSTRPTR name, size_t step_size )
 {
-    INFILE *inpf = (INFILE *) malloc( sizeof(INFILE) );
+    INFILE *inpf = (INFILE *) umalloc( sizeof(INFILE) );
 
     if ( inpf ) {
 
@@ -476,8 +476,12 @@ int infgetc( INFILE *inpf )
             ok = app_estrch( inpf->logstr, result );
 
         /* update line number */
-        if ( result == '\n' )
+        if ( result == '\n' ) {
+
             inpf->flnctr++;
+            inpf->lnctr = 0;
+
+        }
 
         if ( !ok )
             /* TODO: handle out of mem */;
@@ -505,7 +509,7 @@ int inungetc( int ch, INFILE *inpf )
 {
     int result = EOF;
 
-    if ( inpf && ( inpf->lnctr ) ) {
+    if ( inpf && ( inpf->filepos ) ) {
 
         STRPTR lnbuf_str = estr2str( inpf->lnbuf );
 
@@ -528,7 +532,7 @@ int inungetc( int ch, INFILE *inpf )
             inpf->flnctr--;
             inpf->lnctr = 0;
 
-        } else
+        } else if ( inpf->lnctr )
             inpf->lnctr--;
 
     }

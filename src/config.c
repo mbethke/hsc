@@ -1,9 +1,11 @@
 /*
 ** config.c
 **
-** config handling for hsc; reads "hscdef.cfg"
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
 **
-** updated:  3-Nov-1995
+** config handling for hsc; reads "hsc.prefs"
+**
+** updated: 14-Dec-1995
 ** created: 12-Jul-1995
 */
 
@@ -50,6 +52,7 @@
 #include "tagargs.h"
 #include "tag_a.h"
 #include "tag_hsc.h"
+#include "tag_if.h"
 #include "tag_macr.h"
 #include "tag_misc.h"
 
@@ -90,8 +93,10 @@ void prt_tag( FILE *stream, APTR data )
             fprintf( stream, "/r" );
         if ( tag->option & HT_ONLYONCE )
             fprintf( stream, "/1" );
+#if 0
         if ( tag->option & HT_NOCOPY )
             fprintf( stream, "/c" );
+#endif
         if ( tag->option & HT_NOHANDLE )
             fprintf( stream, "/h" );
         if ( tag->option & HT_SMARTCLOSE )
@@ -150,7 +155,8 @@ BOOL read_config_file( void )
         sprintf( msg, "Reading prefs from \"%s\"", cfgfn );
         status_msg( msg );
 
-        ok = include_hsc( "[config]", cfgf, outfile, IH_PARSE_HSC );
+        ok = include_hsc( "[config]", cfgf, outfile,
+                          IH_PARSE_HSC | IH_NO_STATUS );
 
     } else {
 
@@ -200,48 +206,41 @@ BOOL read_hsctags( void )
     BOOL    open_tag;
     HSCTAG *tag;
 
-    /* string to define hsc tags */
     STRPTR hsc_prefs[] = {
-        HSC_COMMENT_STR  " NOCOPY SKIPLF IGNOREARGS>",
-        HSC_ONLYCOPY_STR " NOCOPY IGNOREARGS>",
-        HSC_DEFENT_STR   " NOCOPY SKIPLF NAME:string/r RPLC:string>",
-        HSC_DEFTAG_STR   " NOCOPY SKIPLF IGNOREARGS>",
-        HSC_ELSE_STR     " NOCOPY SKIPLF>",
-        HSC_EXEC_STR     " NOCOPY SKIPLF COMMAND:string/r>",
-        HSC_IF_STR       " NOCOPY SKIPLF IGNOREARGS CLOSE>",
-        HSC_INSERT_STR   " NOCOPY TEXT:string TIME:bool FORMAT:string>",
-        HSC_INCLUDE_STR  " NOCOPY SKIPLF FILE:string/r PRE:bool SOURCE:bool>",
-        HSC_LET_STR      " NOCOPY SKIPLF IGNOREARGS>",
-        HSC_MACRO_STR    " NOCOPY SKIPLF IGNOREARGS>",
-        HSC_SOURCE_STR   " NOCOPY SKIPLF PRE:bool>",
+        /*
+        ** define hsc tags
+        */
+        HSC_COMMENT_STR  " SKIPLF IGNOREARGS>",
+        HSC_ONLYCOPY_STR " IGNOREARGS>",
+        HSC_DEFENT_STR   " SKIPLF NAME:string/r RPLC:string NUM:string>",
+        HSC_DEFTAG_STR   " SKIPLF IGNOREARGS>",
+        HSC_ELSE_STR     " SKIPLF>",
+        HSC_MESSAGE_STR  " SKIPLF TEXT:string/r CLASS:enum(note|warning|error|fatal)='note'>",
+        HSC_EXEC_STR     " SKIPLF COMMAND:string/r>",
+        HSC_IF_STR       " SKIPLF IGNOREARGS CLOSE>",
+        HSC_INSERT_STR   " TEXT:string TIME:bool FORMAT:string>",
+        HSC_INCLUDE_STR  " SKIPLF FILE:string/r PRE:bool SOURCE:bool>",
+        HSC_LET_STR      " SKIPLF IGNOREARGS>",
+        HSC_MACRO_STR    " SKIPLF IGNOREARGS>",
+        HSC_SOURCE_STR   " SKIPLF PRE:bool>",
         NULL
     };
 
-#if 0
-    /*
-    ** NOTE: the tags <|> and <*> are NOT added with
-    ** the other hsc-tags above simpy because they
-    ** do not require a leading "$"
-    */
-
-    /* create coment tag */
-    tag = app_tag( deftag, HSC_COMMENT_STR );
-    if ( tag ) {
-        tag->option   = HT_NOCOPY | HT_IGNOREARGS | HT_SKIPLF;
-        tag->o_handle = handle_hsc_comment;
-    } else
-        err_mem( NULL );
-
-    /* create only-copy tag */
-    tag = app_tag( deftag, HSC_ONLYCOPY_STR );
-    if ( tag ) {
-        tag->option   = HT_NOCOPY | HT_IGNOREARGS;
-        tag->o_handle = handle_hsc_onlycopy;
-    } else
-        err_mem( NULL );
+    STRPTR hsc_attribs[] = {
+        /*
+        ** define hsc attributes
+        */
+#if defined AMIGA
+        "__SYSTEM__:string='AMIGA'>",
+#elif defined UNIX
+        "__SYSTEM__:string='UNIX'>",
+#else
+#error "system not supported: __SYSTEM__-attribute"
 #endif
+        NULL };
 
     /* define hsc-tags */
+    i = 0;
     while ( !fatal_error && hsc_prefs[i] ) {
 
         INFILE *inpf =
@@ -253,12 +252,30 @@ BOOL read_hsctags( void )
             ok = ( tag && def_tag_args( deftag, tag, inpf, &open_tag ) );
             infclose( inpf );
 
-        } else
-            err_mem( NULL );
+        }
 
         i++;
 
     }
+
+    /* init hsc-attributes */
+    i = 0;
+    while ( !fatal_error && hsc_attribs[i] ) {
+
+        INFILE *inpf =
+            infopen_str( "[init]", hsc_attribs[i], 60 );
+
+        if ( inpf ) {
+
+            handle_hsc_let( inpf, NULL );
+            infclose( inpf );
+
+        }
+
+        i++;
+
+    }
+
 
     /* add tag handles for hsc-tags */
     if ( ok ) {
@@ -273,6 +290,7 @@ BOOL read_hsctags( void )
         add_tag_handle( deftag, HSC_INSERT_STR  , handle_hsc_insert  , NULL );
         add_tag_handle( deftag, HSC_LET_STR     , handle_hsc_let     , NULL );
         add_tag_handle( deftag, HSC_MACRO_STR   , handle_hsc_macro   , NULL );
+        add_tag_handle( deftag, HSC_MESSAGE_STR , handle_hsc_message , NULL );
         add_tag_handle( deftag, HSC_ONLYCOPY_STR, handle_hsc_onlycopy, NULL );
         add_tag_handle( deftag, HSC_SOURCE_STR  , handle_hsc_source  , NULL );
 
@@ -291,15 +309,16 @@ BOOL config_tag_handles( void )
 {
     BOOL ok = TRUE;
 
-    add_tag_handle( deftag, "!"   , handle_sgml_comment, NULL );
-    add_tag_handle( deftag, "A"   , handle_anchor, handle_canchor );
-    add_tag_handle( deftag, "BASE", handle_base, NULL );
-    add_tag_handle( deftag, "H1"  , handle_heading, NULL );
-    add_tag_handle( deftag, "H2"  , handle_heading, NULL );
-    add_tag_handle( deftag, "H3"  , handle_heading, NULL );
-    add_tag_handle( deftag, "H4"  , handle_heading, NULL );
-    add_tag_handle( deftag, "H5"  , handle_heading, NULL );
-    add_tag_handle( deftag, "H6"  , handle_heading, NULL );
+    add_tag_handle( deftag, "!"    , handle_sgml_comment, NULL );
+    add_tag_handle( deftag, "A"    , handle_anchor, handle_canchor );
+    add_tag_handle( deftag, "BASE" , handle_base, NULL );
+    add_tag_handle( deftag, "BLINK", handle_blink, NULL );
+    add_tag_handle( deftag, "H1"   , handle_heading, NULL );
+    add_tag_handle( deftag, "H2"   , handle_heading, NULL );
+    add_tag_handle( deftag, "H3"   , handle_heading, NULL );
+    add_tag_handle( deftag, "H4"   , handle_heading, NULL );
+    add_tag_handle( deftag, "H5"   , handle_heading, NULL );
+    add_tag_handle( deftag, "H6"   , handle_heading, NULL );
 
 
     /* entities */
@@ -337,9 +356,12 @@ BOOL config_ok( void )
     vars    = init_dllist( del_var );
 
     /* init vararg (defined in "vars.c") */
-    IF_stack = init_estr( 0 );
-    vararg   = init_estr( ES_STEP_VARARG );
-    tmpstr   = init_estr( 0 );
+    IF_stack      = init_estr( 0 );
+    vararg        = init_estr( ES_STEP_VARARG );
+    tag_name_str  = init_estr( 128 ); /* TODO: use define size */
+    tag_attr_str  = init_estr( 128 ); /* TODO: use define size */
+    tag_close_str = init_estr( 0 );
+    tmpstr        = init_estr( 0 );
 
     if ( cltags && defent && deftag && IF_stack
          && tmpstr && vararg )
@@ -348,6 +370,8 @@ BOOL config_ok( void )
         ok = read_hsctags();
         if ( ok ) ok = read_config_file();
         if ( ok ) ok = config_tag_handles();
+
+        click_here_str = get_vartext_byname( vars, CLICK_HERE_ATTR );
 
         /* printf list of entities & tags */
         DC( if ( ok ) {
@@ -386,8 +410,7 @@ BOOL config_ok( void )
             }
         } ) /* DC */
 
-    } else
-        err_mem( NULL );
+    }
 
     return( ok );
 }

@@ -3,7 +3,7 @@
 **
 ** defines for message-ids (warnings, errors,..)
 **
-** updated:  6-Nov-1995
+** updated: 27-Nov-1995
 ** created: 30-Jul-1995
 */
 
@@ -29,7 +29,7 @@
 ** next message number
 **=========================
 */
-#define MAX_MSGID (63-1)
+#define MAX_MSGID (67-1)
 
 /*
 ** obsolete numbers:
@@ -75,6 +75,7 @@
 #define MSG_ILLG_WHTSPC        (ERROR+ 47)  /* illegal whitespace */
 #define MSG_MBI                (ERROR+ 60)  /* must be inside */
 #define MSG_NAW                (ERROR+ 61)  /* not allowed with */
+#define MSG_ILLG_CTAG          (ERROR+ 66)  /* illegal closing tag */
 
 /*
 ** messages within entities
@@ -94,24 +95,25 @@
 #define MSG_UNKN_SYMB_REF      (ERROR+ 24)  /* unknown symbol reference */
 
 #define MSG_UNEX_ATTR_TYPE     (ERROR+ 25)  /* illegal symbol type */
-#define MSG_ILLEGAL_SYMB_TYPE  (ERROR+ 25)  /* TODO: remove this */
 
 #define MSG_SYMB_2ND_DEFAULT   (ERROR+ 26)  /* default value already set */
-#define MSG_SYMB_BOOL_DEFAULT  (ERROR+ 27)  /* default vaule for bool */
+#define MSG_SYMB_BOOL_DEFAULT  (ERROR+ 27)  /* default value for bool */
 #define MSG_ENUM_UNKN          (ERROR+ 35)  /* unknown enum value */
 #define MSG_ENUM_SUSPICIOUS    (WARN + 36)  /* suspicios enum value */
-#define MSG_MISSING_ATTR       (ERROR+ 39)  /* required attr. missing */
 #define MSG_ARG_BOOL_ATTR      (ERROR+ 41)  /* argument for bool attr */
 #define MSG_NOARG_ATTR         (ERROR+ 42)  /* attr requires arg */
 #define MSG_UNKN_ATTR_OPTION   (ERROR+ 43)  /* unknown attr option */
 #define MSG_MISS_REQ_ATTR      (ERROR+ 44)  /* required attr missing */
+#define MSG_ATTR_REDEFINED     (WARN + 63)  /* attr already defined */
+#define MSG_ILLG_ATTRNAME      (ERROR+ 64)  /* illegal attribute identifier */
+#define MSG_UNKN_BINOP         (ERROR+ 65)  /* unknown binary operator */
 
 /*
 ** messages from tag handles
 */
 #define MSG_EXPT_H1            (STYLE+ 28)  /* Hx: first heading H1 */
 #define MSG_ANCH_NO_NMHR       (ERROR+ 29)  /* A : no NAME or HREF */
-#define MSG_CL_MACR_ARG        (ERROR+ 62)  /* args for closing macro */
+#define MSG_CL_TAG_ARG         (ERROR+ 62)  /* args for closing tag */
 #define MSG_LF_IN_COMMENT      (WARN + 48)  /* LF within comment */
 #define MSG_GT_IN_COMMENT      (WARN + 49)  /* GT within comment */
 #define MSG_CMTEND_QUOTE       (WARN + 50)  /* SGML-comment ends in quotes */
@@ -126,6 +128,8 @@
 #define MSG_DEFTAG_NO_OPEN     (FATAL+ 57)  /* no opening tag for deftag cl.*/
 #define MSG_REDEFINE_TAG       (FATAL+ 58)  /* tried to redefine tag */
 #define MSG_REDEFINE_MACRO     (WARN + 59)  /* redefined & replaced macro */
+#define MSG_USER_MESSAGE       (       39)  /* user message */
+#define MSG_BLINK_SUX          (STYLE+ 25)  /* blink sucks  */
 
 /*
 ** misc. messages
@@ -135,7 +139,7 @@
 #define MSG_ILLEGAL_NUM        (ERROR+ 32)  /* illegal numeric value */
 #define MSG_STR_EOL            (ERROR+ 33)  /* string exeeds line */
 #define MSG_UNEX_EOL           (ERROR+ 34)  /* unexpected eol */
-#define MSG_UNMA_QUOTE         (WARN + 51)  /* quote inside text */
+#define MSG_UNMA_QUOTE         (MSG  + 51)  /* quote inside text */
 
 /*
 ** soon obsolete errors (hopefully)

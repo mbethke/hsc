@@ -3,7 +3,7 @@
 **
 ** ugly argument preparation functions
 **
-** updated:  2-Nov-1995
+** updated: 18-Nov-1995
 ** created:  3-Jul-1994
 **
 **===================================================================
@@ -97,7 +97,7 @@ struct arglist *prepare_args( STRPTR arglist_name, ... )
     ** alloc & init _new_arglist
     */
     new_arglist = ( struct arglist *)
-        malloc( sizeof( struct arglist ) );
+        umalloc( sizeof( struct arglist ) );
 
     if ( new_arglist ) {
 
@@ -138,7 +138,7 @@ struct arglist *prepare_args( STRPTR arglist_name, ... )
 
             if ( nxtdef ) {
 
-                newarg = malloc( sizeof( struct arginfo) );
+                newarg = umalloc( sizeof( struct arginfo) );
 
                 if ( newarg ) {
 

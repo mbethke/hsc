@@ -3,12 +3,12 @@
 **
 ** ugly program info functions
 **
-** Version 1.0.2, (W) by Tommy-Saftwörx in 1994
+** Version 1.0.3, (C) by Tommy-Saftwörx in 1995
 **
-** updated:  2-Nov-1995
+** updated: 28-Nov-1995
 ** created:  3-Jul-1994
 **
-** $VER: prginfo.c 1.0.1 (26.9.1995)
+** $VER: prginfo.c 1.0.3 (28.11.1995)
 **
 **=========================================================
 ** TODO:
@@ -100,7 +100,7 @@ int fprintf_prginfo( FILE *stream )
                         pi_revision );
     err += fprintf( stream, " (%s-%s-%s)\n",               /* date */
                     pi_dt_day, pi_dt_month, pi_dt_year );
-    err += fprintf( stream, "(W) by %s. %s\n",             /* copyright */
+    err += fprintf( stream, "(C) %s. %s\n",                /* copyright */
                     pi_authname, pi_copystat );
 
     return( err );

@@ -1,9 +1,11 @@
 /*
 ** tag_macr.c
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** tag handles for "<$MACRO>" and "<macro>"
 **
-** updated:  1-Nov-1995
+** updated:  4-Dec-1995
 ** created:  5-Aug-1995
 */
 
@@ -91,6 +93,8 @@ BOOL handle_macro( BOOL open_mac, INFILE *inpf, HSCTAG *macro )
 
         /* create pseudo-filename */
         ok = set_estr( fname, "[macro " );
+        if ( !open_mac )
+            app_estrch( fname, '/' );
         ok &= app_estr( fname, macro->name );
         ok &= app_estr( fname, "]" );
 
@@ -118,7 +122,7 @@ BOOL handle_macro( BOOL open_mac, INFILE *inpf, HSCTAG *macro )
     /* debugging message */
     DMC( fprintf( stderr, "**-ENDMACRO <%s>\n", macro->name ) );
 
-    return ( ok );
+    return ( FALSE );
 }
 
 /*
@@ -153,8 +157,11 @@ BOOL handle_cl_macro( INFILE *inpf, HSCTAG *tag )
 */
 BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
 {
-    BOOL    ok = FALSE;
+    BOOL    ok     = FALSE;
     EXPSTR *macstr = NULL;
+    STRPTR nw      = NULL;     /* word read from input */
+    BYTE   state   = MAST_TEXT;/* current state */
+    LONG   nesting = 0;
 
     /* init an EXPSTR for macro text */
     if ( open_mac ) {
@@ -165,179 +172,168 @@ BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
         macstr         = macro->cl_text;
     }
 
-    if ( macstr ) {                    /* init sucessfull? */
+    /* skip first LF if any */
+    skip_lf( inpf );
 
-        STRPTR nw        = NULL;     /* word read from input */
-        BYTE   state     = MAST_TEXT;/* current state */
-        LONG   nesting   = 0;
+    /* init rmt_str */
+    rmt_str = init_estr( ES_STEP_MACRO );
 
-        /* skip first LF if any */
-        skip_lf( inpf );
+    while ( !(fatal_error || (state==MAST_CMACRO) ) ) {
 
-        /* init rmt_str */
-        rmt_str = init_estr( ES_STEP_MACRO );
-        if ( !rmt_str )
-            err_mem( inpf );
+        /* read next word */
+        if ( state == MAST_SLASH )
+            nw = infget_tagid( inpf  );
+        else if ( state != MAST_TAG )
+            nw = infgetw( inpf  );
 
+        if ( nw ) {
 
-        while ( !(fatal_error || (state==MAST_CMACRO) ) ) {
+            if ( state == MAST_TAG ) {
 
-            /* read next word */
-            if ( state == MAST_SLASH )
-                nw = infget_tagid( inpf  );
-            else if ( state != MAST_TAG )
-                nw = infgetw( inpf  );
+                /*
+                ** skip inside tags
+                */
+                BYTE   tag_state = TGST_TAG; /* state var passe to */
+                                             /*     eot_reached() */
 
-            if ( nw ) {
+                do {
 
-                if ( state == MAST_TAG ) {
+                    if ( eot_reached( inpf, &tag_state ) );
+                        state = MAST_TEXT;
 
-                    /*
-                    ** skip inside tags
+                    if ( !( app_estr( macstr, infgetcws( inpf ) )
+                            && app_estr( macstr, infgetcw( inpf ) )
+                    ) )
+                        /* err_mem( inpf ) */;
+
+                } while ( (tag_state!=TGST_END) && !fatal_error );
+
+            } else {
+
+                switch ( state ) {
+
+                    case MAST_TEXT:
+                        if ( !strcmp( nw, "<" ) )
+                            state = MAST_LT;
+                        break;
+
+                    case MAST_LT:
+                        if ( !strcmp( nw, "/" ) )
+                            state = MAST_SLASH;
+                        else if ( !upstrcmp( nw, HSC_COMMENT_STR ) ) {
+
+                            state = MAST_COMT;
+
+                        } else {
+
+                            /* handle "<$MACRO" (open macro) */
+                            if ( !upstrcmp( nw, HSC_MACRO_STR ) )
+                                nesting++; /* incr. macro nesting */
+                            state = MAST_TAG;
+
+                        }
+                        break;
+
+                    case MAST_SLASH:
+                        if ( !upstrcmp( nw, HSC_MACRO_STR ) )
+
+                            /* handle "</$MACRO" (close macro) */
+                            if ( nesting )
+                                nesting--;   /* decr. macro nesting */
+                            else
+                                state = MAST_CMACRO; /* end of macro */
+                        else
+                            state = MAST_TAG;
+                        break;
+
+                }
+
+                if ( state == MAST_TEXT ) {
+
+                    /* append current white spaces & word to macstr */
+                    if ( !( app_estr( macstr, infgetcws( inpf ) )
+                            && app_estr( macstr, infgetcw( inpf ) )
+                    ) )
+                        /* err_mem( inpf ) */;
+
+                } else if ( ( state == MAST_COMT )
+                            || ( state == MAST_TAG ) )
+                {
+
+                    /* append rmt_str to macstr, clear rmt_str,
+                    ** append current word to macstr
                     */
-                    BYTE   tag_state = TGST_TAG; /* state var passe to */
-                                                 /*     eot_reached() */
-
-                    do {
-
-                        if ( eot_reached( inpf, &tag_state ) );
-                            state = MAST_TEXT;
-
-                        if ( !( app_estr( macstr, infgetcws( inpf ) )
-                                && app_estr( macstr, infgetcw( inpf ) )
-                        ) )
-                            err_mem( inpf );
-
-                    } while ( (tag_state!=TGST_END) && !fatal_error );
+                    if ( !( app_estr( macstr, estr2str(rmt_str) )
+                            && set_estr( rmt_str, "" )
+                            && app_estr( macstr, infgetcws( inpf ) )
+                            && app_estr( macstr, infgetcw( inpf ) )
+                    ) )
+                        /* err_mem( inpf ) */;
 
                 } else {
 
-                    switch ( state ) {
+                    /* append current white spaces & word to macstr */
+                    if ( !( app_estr( rmt_str, infgetcws( inpf ) )
+                            && app_estr( rmt_str, infgetcw( inpf ) )
+                    ) )
+                        /* err_mem( inpf )*/;
 
-                        case MAST_TEXT:
-                            if ( !strcmp( nw, "<" ) )
-                                state = MAST_LT;
-                            break;
+                }
 
-                        case MAST_LT:
-                            if ( !strcmp( nw, "/" ) )
-                                state = MAST_SLASH;
-                            else if ( !upstrcmp( nw, HSC_COMMENT_STR ) ) {
+                /*
+                ** skip hsc comment
+                */
+                if ( state == MAST_COMT ) {
 
-                                state = MAST_COMT;
+                    BYTE cstate = CMST_TEXT; /* vars for eoc_reached() */
+                    LONG cnest  = 0;
+                    BOOL end    = FALSE;     /* end of comment reached? */
 
-                            } else {
+                    while ( !end && !fatal_error ) {
 
-                                /* handle "<$MACRO" (open macro) */
-                                if ( !upstrcmp( nw, HSC_MACRO_STR ) )
-                                    nesting++; /* incr. macro nesting */
-                                state = MAST_TAG;
-
-                            }
-                            break;
-
-                        case MAST_SLASH:
-                            if ( !upstrcmp( nw, HSC_MACRO_STR ) )
-
-                                /* handle "</$MACRO" (close macro) */
-                                if ( nesting )
-                                    nesting--;   /* decr. macro nesting */
-                                else
-                                    state = MAST_CMACRO; /* end of macro */
-                            else
-                                state = MAST_TAG;
-                            break;
-
-                    }
-
-                    if ( state == MAST_TEXT ) {
-
-                        /* append current white spaces & word to macstr */
+                        end = eoc_reached( inpf, &cstate, &cnest );
                         if ( !( app_estr( macstr, infgetcws( inpf ) )
                                 && app_estr( macstr, infgetcw( inpf ) )
                         ) )
-                            err_mem( inpf );
-
-                    } else if ( ( state == MAST_COMT )
-                                || ( state == MAST_TAG ) )
-                    {
-
-                        /* append rmt_str to macstr, clear rmt_str,
-                        ** append current word to macstr
-                        */
-                        if ( !( app_estr( macstr, estr2str(rmt_str) )
-                                && set_estr( rmt_str, "" )
-                                && app_estr( macstr, infgetcws( inpf ) )
-                                && app_estr( macstr, infgetcw( inpf ) )
-                        ) )
-                            err_mem( inpf );
-
-                    } else {
-
-                        /* append current white spaces & word to macstr */
-                        if ( !( app_estr( rmt_str, infgetcws( inpf ) )
-                                && app_estr( rmt_str, infgetcw( inpf ) )
-                        ) )
-                            err_mem( inpf );
+                            /* err_mem( inpf )*/;
 
                     }
 
-                    /*
-                    ** skip hsc comment
-                    */
-                    if ( state == MAST_COMT ) {
-
-                        BYTE cstate = CMST_TEXT; /* vars for eoc_reached() */
-                        LONG cnest  = 0;
-                        BOOL end    = FALSE;     /* end of comment reached? */
-
-                        while ( !end && !fatal_error ) {
-
-                            end = eoc_reached( inpf, &cstate, &cnest );
-                            if ( !( app_estr( macstr, infgetcws( inpf ) )
-                                    && app_estr( macstr, infgetcw( inpf ) )
-                            ) )
-                                err_mem( inpf );
-
-                        }
-
-                        state = MAST_TEXT; /* reset state after comment */
-                    }
+                    state = MAST_TEXT; /* reset state after comment */
                 }
-            } else {
-
-                err_eof( inpf, "missing </" HSC_MACRO_STR ">" );
-                state = MAST_ERR;
-
             }
+        } else {
 
-        } /* while */
-
-        /* check for legal end state */
-        if ( state == MAST_CMACRO ) {
-
-            ok = parse_wd( inpf, ">" );
+            err_eof( inpf, "missing </" HSC_MACRO_STR ">" );
+            state = MAST_ERR;
 
         }
 
-        /* if last char of macrotext is LF,
-        ** replace it with a white space
-        */
-        if ( ok ) {
+    } /* while */
 
-            STRPTR ms  = estr2str( macstr );
-            size_t len = strlen( ms );
+    /* check for legal end state */
+    if ( state == MAST_CMACRO ) {
 
-            /* TODO: better call leftstr() here and strip last ch */
-            if ( len && ( ms[len-1]=='\n' ) )
-                ms[len-1] = ' ';
+        ok = parse_wd( inpf, ">" );
 
-            DMC( fprintf( stderr, "** Macro text: \"%s\"\n", estr2str( macstr ) ) );
+    }
 
-        }
+    /* if last char of macrotext is LF,
+    ** replace it with a white space
+    */
+    if ( ok ) {
 
-    } else
-        err_mem( inpf );
+        STRPTR ms  = estr2str( macstr );
+        size_t len = strlen( ms );
+
+        /* TODO: würg! better call leftstr() here and strip last ch */
+        if ( len && ( ms[len-1]=='\n' ) )
+            ms[len-1] = '\0';
+
+        DMC( fprintf( stderr, "** Macro text: \"%s\"\n", estr2str( macstr ) ) );
+
+    }
+
 
 
     /* release rmt_str */
@@ -390,6 +386,6 @@ BOOL handle_hsc_macro( INFILE *inpf, HSCTAG *tag )
 
     }
 
-    return ( ok );
+    return ( FALSE );
 }
 

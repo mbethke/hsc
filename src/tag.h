@@ -31,6 +31,7 @@
 #define HSC_INSERT_STR   HSC_TAGID "INSERT"
 #define HSC_LET_STR      HSC_TAGID "LET"
 #define HSC_MACRO_STR    HSC_TAGID "MACRO"
+#define HSC_MESSAGE_STR  HSC_TAGID "MESSAGE"
 #define HSC_SOURCE_STR   HSC_TAGID "SOURCE"
 
 #define HSC_TEXT_STR     "TEXT"
@@ -93,8 +94,8 @@ typedef struct hsctag {
 #define TO_NOCOPY_SHT      "NCP"
 #define TO_NOHANDLE_STR    "NOHANDLE"
 #define TO_NOHANDLE_SHT    "NHD"
-#define TO_SMARTCLOSE_STR  "SMARTCLOSE"
-#define TO_SMARTCLOSE_SHT  "SMC"
+#define TO_SMARTCLOSE_STR  "AUTOCLOSE"
+#define TO_SMARTCLOSE_SHT  "AC"
 #define TO_ONLYONCE_STR    "ONLYONCE"
 #define TO_ONLYONCE_SHT    "1"
 #define TO_OBSOLETE_STR    "OBSOLETE"

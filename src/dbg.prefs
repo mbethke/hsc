@@ -1,8 +1,9 @@
 <*********************>
 <*** HTML 1.0 tags ***>
 <*********************>
+<$deftag LI AUTOCLOSE MBI="ul|ol|dir|menu">
 <$deftag ! IGNOREARGS>
-<$deftag A CLOSE NOCOPY NAW="A" HREF:uri NAME:string REL:string>
+<$deftag A CLOSE NAW="A" HREF:uri NAME:string REL:string>
 <$deftag B CLOSE>
 <$deftag BODY CLOSE ONLYONCE>
 <$deftag BR>
@@ -10,10 +11,13 @@
 <$deftag HTML CLOSE ONLYONCE>
 <$deftag HEAD CLOSE ONLYONCE>
 <$deftag H1 CLOSE>
-<$deftag LI SMARTCLOSE MBI="ul|ol|dir|menu">
-<$deftag IMG SRC:uri ALT:string ALIGN:enum(top|bottom|middle|*) ISMAP:bool>
+<$deftag IMG SRC:uri ALT:string ALIGN:enum(top|bottom|middle) ISMAP:bool>
 <$deftag I CLOSE>
-<$deftag P SMARTCLOSE>
+<$deftag P AUTOCLOSE>
+<$deftag PRE CLOSE>
 <$deftag TT CLOSE>
 <$deftag TITLE CLOSE ONLYONCE>
 <$deftag UL CLOSE>
+
+<** "Click here" syndrome **>
+<$LET __CLICK_HERE__:string="click|here">

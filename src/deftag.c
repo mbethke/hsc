@@ -1,9 +1,11 @@
 /*
 ** deftag.c
 **
-** define new tag from iput file
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
 **
-** updated: 27-Oct-1995
+** define new tag from input file
+**
+** updated: 10-Dec-1995
 ** created: 13-Oct-1995
 **
 */
@@ -22,10 +24,13 @@
 #include "global.h"
 #include "error.h"
 #include "msgid.h"
+#include "skip.h"
 #include "tagargs.h"
 
 #include "vars.h"
 #include "tag.h"
+
+#include "eval.h"
 
 /*
 ** global vars
@@ -235,16 +240,10 @@ BOOL check_tag_option( STRPTR option, HSCTAG *tag, STRPTR id, STRPTR sid, ULONG 
 */
 BOOL parse_tag_option( STRPTR option, HSCTAG *tag, INFILE *inpf )
 {
-    BOOL   ok = FALSE;
-    HSCVAR attr;
+    BOOL    ok = FALSE;
+    HSCVAR *attr = new_hscvar( "[MBI/NAW]" );
 
-    /* init attr */
-    attr.name    = "[MBI/NAW]";
-    attr.deftext = NULL;
-    attr.text    = NULL;
-    attr.enumstr = NULL;
-    attr.vartype = VT_STRING;
-    attr.varflag = VF_NOQUOTE;
+    attr->vartype = VT_STRING;
 
     if ( !(upstrcmp(option,TO_MBI_STR)
            && upstrcmp(option,TO_MBI_SHT) ) )
@@ -252,18 +251,13 @@ BOOL parse_tag_option( STRPTR option, HSCTAG *tag, INFILE *inpf )
 
         if ( parse_eq( inpf ) ) {
 
-            STRPTR strmbi = parse_vararg( &attr, inpf );
+            STRPTR strmbi = eval_expression( attr, inpf, NULL );
 
             if ( strmbi ) {
 
                 tag->mbi = strclone( strmbi );
-                if ( tag->mbi ) {
-
-                    DDT( fprintf( stderr, "**   mbi = \"%s\"\n", tag->mbi ) );
-                    ok = TRUE;
-
-                } else
-                    err_mem( inpf );
+                DDT( fprintf( stderr, "**   mbi = \"%s\"\n", tag->mbi ) );
+                ok = TRUE;
 
             }
         }
@@ -274,18 +268,13 @@ BOOL parse_tag_option( STRPTR option, HSCTAG *tag, INFILE *inpf )
         if ( parse_eq( inpf ) ) {
 
 
-            STRPTR strnaw = parse_vararg( &attr, inpf );
+            STRPTR strnaw = eval_expression( attr, inpf, NULL );
 
             if ( strnaw ) {
 
                 tag->naw = strclone( strnaw );
-                if ( tag->naw ) {
-
-                    DDT( fprintf( stderr, "**   naw = \"%s\"\n", tag->naw ) );
-                    ok = TRUE;
-
-                } else
-                    err_mem( inpf );
+                DDT( fprintf( stderr, "**   naw = \"%s\"\n", tag->naw ) );
+                ok = TRUE;
 
             }
         }
@@ -313,6 +302,9 @@ BOOL parse_tag_option( STRPTR option, HSCTAG *tag, INFILE *inpf )
 
     }
 
+    /* remove temp. attribute */
+    del_var( attr );
+
     return( ok );
 }
 
@@ -324,6 +316,9 @@ BOOL parse_tag_var( STRPTR varname, HSCTAG *tag, INFILE *inpf, BOOL open_tag )
     BOOL ok = FALSE;
     DLLIST *varlist;
     HSCVAR *var;
+
+    /* writeback ":" */
+    inungetcw( inpf );
 
     /* select var list to add new var to */
     varlist = tag->attr;
@@ -365,23 +360,18 @@ BOOL def_tag_args( DLLIST *taglist, HSCTAG *tag, INFILE *inpf, BOOL *open_tag )
 
                     STRPTR pw = strclone( nw );
 
-                    if ( pw ) {
+                    nw = infgetw( inpf );
+                    if ( !strcmp( nw, ":" ) )
+                        /* define new tag var */
+                        parse_tag_var( pw, tag, inpf, *open_tag );
+                    else {
 
-                        nw = infgetw( inpf );
-                        if ( !strcmp( nw, ":" ) )
-                            /* define new tag var */
-                            parse_tag_var( pw, tag, inpf, *open_tag );
-                        else {
+                        /* set new tag option */
+                        inungetcw( inpf );
+                        parse_tag_option( pw, tag, inpf );
 
-                            /* set new tag option */
-                            inungetcw( inpf );
-                            parse_tag_option( pw, tag, inpf );
-
-                        }
-                        ufreestr( pw );
-
-                    } else
-                        err_mem( inpf );
+                    }
+                    ufreestr( pw );
 
                     nw = infgetw( inpf );
 
@@ -425,6 +415,9 @@ BOOL set_tag_arg( STRPTR varname, DLLIST *varlist, INFILE *inpf )
 
     DAV( fprintf( stderr, "**    set attr %s\n", varname ) );
 
+    /* append attribute name to log */
+    app_estr( tag_attr_str, infgetcw( inpf ) );
+
     if ( !var ) {                      /* attribute not found */
 
         /* assign to pseudo-attribute */
@@ -448,22 +441,32 @@ BOOL set_tag_arg( STRPTR varname, DLLIST *varlist, INFILE *inpf )
     nw  = infgetw( inpf );
     if ( !strcmp( nw, "=" ) ) {
 
-        arg = parse_vararg( var, inpf );
+        /* append "=" to log */
+        app_estr( tag_attr_str, infgetcws( inpf ) );
+        app_estr( tag_attr_str, infgetcw( inpf ) );
+
+        /* parse expression */
+        arg = eval_expression( var, inpf, NULL );
+
+        /* append value to log */
+        if ( var->quote != VQ_NO_QUOTE )
+            app_estrch( tag_attr_str, var->quote );
+        if ( get_vartext( var ) )
+            app_estr( tag_attr_str, get_vartext( var ) );
+        if ( var->quote != VQ_NO_QUOTE )
+            app_estrch( tag_attr_str, var->quote );
+
         if ( arg ) {
 
-            if ( set_vartext( var, arg ) ) {
-
-                DAV( fprintf( stderr, "**    \"%s\"\n", arg ) );
-                ok = TRUE;
-
-            }
+            DAV( fprintf( stderr, "**   \"%s\"\n", arg ) );
+            ok = TRUE;
 
         }
 
     } else {
 
         arg = NULL;
-        inungets( nw, inpf );
+        inungetcw( inpf );
         ok = TRUE;
 
     }
@@ -503,7 +506,6 @@ BOOL set_tag_arg( STRPTR varname, DLLIST *varlist, INFILE *inpf )
         clr_vartext( var );
 
     return( ok );
-
 }
 
 
@@ -515,7 +517,7 @@ BOOL set_tag_arg( STRPTR varname, DLLIST *varlist, INFILE *inpf )
 */
 ULONG set_tag_args( HSCTAG *tag, INFILE *inpf, BOOL open_tag )
 {
-    BOOL    ok = FALSE;
+    BOOL    ok  = FALSE;
     DLLIST *varlist;
     ULONG   result_tci = get_mci();    /* resulting tag_call_id */
     STRPTR  nw = infgetw( inpf );
@@ -523,14 +525,24 @@ ULONG set_tag_args( HSCTAG *tag, INFILE *inpf, BOOL open_tag )
     /* evaluate which varlist to use */
     varlist = tag->attr;
 
+    /* clear string that logs all attributes passed to tag */
+    clr_estr( tag_attr_str );
+
     /* read args */
-    if ( strcmp( nw, ">" ) ) {
+    do {
 
-        while ( nw ) {
+        if ( !nw )
+            err_eof( inpf, "read attributes" );
+        else {
 
-            if ( !nw )
-                err_eof( inpf, "read attributes" );
-            else if ( !strcmp( nw, ">" ) ) {
+            /*
+            ** process next attribute
+            */
+
+            /* append white spaces to log */
+            app_estr( tag_attr_str, infgetcws( inpf ) );
+
+            if ( !strcmp( nw, ">" ) ) {
 
                 nw = NULL;
                 ok = TRUE;
@@ -539,27 +551,42 @@ ULONG set_tag_args( HSCTAG *tag, INFILE *inpf, BOOL open_tag )
 
                 if ( strcmp( nw, "\n" ) ) {
 
+                    /* process attribute */
+                    if ( check_attrname( nw, inpf ) )
+                        set_tag_arg( nw, varlist, inpf );
+                    else {
 
-                    set_tag_arg( nw, varlist, inpf );
+                        /* append empty value */
+                        app_estr( tag_attr_str, "\"\"" );
+                        skip_until_eot( inpf, NULL );
+                        nw = NULL;
+
+                    }
+                } else {
+
+                    /* skip blank line */
+                    app_estr( tag_attr_str, infgetcw( inpf ) );
 
                 }
 
+                /* read next attribute */
                 nw = infgetw( inpf );
 
             }
         }
 
-        /* check for required attributes */
-        if ( ok )
-            ok = check_varlist( varlist, inpf );
+    } while ( nw );
 
-    } else
-        ok = TRUE;
+    /* set all undefined bool. attr to FALSE */
+    clr_varlist_bool( varlist );
+
+    /* check for required attributes */
+    if ( ok )
+        ok = check_varlist( varlist, inpf );
 
     if ( !ok )
         result_tci = MCI_ERROR;
 
     return( result_tci );
 }
-
 

@@ -35,13 +35,6 @@
 #include "args.h"
 
 /*
-** why this? i dont know
-*/
-#ifdef GCC
-typedef char  *va_list;
-#endif
-
-/*
 **
 ** include sub-modules
 **

@@ -1,26 +1,38 @@
 /*
-** hsc.c - HTML sucks completely
+** hsc
 **
-** updated: 15-Oct-1995
+** A dirty, clumsy and stupid HTML somehow-preprocessor
+**
+** Copyright (C) 1995  Thomas Aglassinger
+**
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+**
+**-------------------------------------------------------------------
+**
+** Author : Thomas Aglassinger
+** Email  : agi@sbox.tu-graz.ac.at
+** Address: Lissagasse 12/II/9
+**          8020 Graz
+**          AUSTRIA
+**
+**-------------------------------------------------------------------
+**
+** hsc.c
+**
+** updated: 28-Nov-1995
 ** created:  1-Jul-1995
-*/
-
-/*
-** TODO:
-** - input.c
-** - check for comments inside $macro and $if
-** - set error messages <$ERROR "..">
-** - set configurable error string
-** - handler for break signal
-** - HT_NOBP. HT_NOAP (no <P> before/after tag allowd)
-** - HT_SMART_CLOSE for <P> and <LI>
-** - HT_STRIP_EXTERNAL to strip whole tag
-**   if it references to an external URI
-**
-** - <$GOTO> and <$LABEL> (??)
-** - <$WHILE> (??)
-** - check "NAME" with <A>
-** - hsc.refs
 */
 
 /*
@@ -60,14 +72,21 @@ int main( int argc, char *argv[] )
     BOOL ok = FALSE;
 
     /* set program information */
-    set_prginfo( "hsc", "Tommy-Saftwörx", 0, 9, 3,
-        "HTML Sucks Completely", "This is FreeWare." );
+    set_prginfo( "hsc", "Tommy-Saftwörx", 0, 9, 4,
+        "HTML Sucks Completely",
+        "Freeware, type \"hsc LICENSE\" for details." );
 
 #ifdef UMEM_TRACKING
+
     /* display a memory tracking report */
     /* at end of execution */
     atexit( atexit_uglymemory );
+
 #endif
+
+    /* install nomem-handler */
+    ugly_nomem_handler = hsc_nomem_handler;
+
 
     /* use cleanup() as additional exit func */
     atexit( cleanup );
@@ -84,9 +103,9 @@ int main( int argc, char *argv[] )
         if ( open_error()              /* init error file */
              && open_output()          /* open output file */
              && config_ok()            /* read config */
-             && include_ok() )        /* read include files */
+             && include_ok() )         /* read include files (macros) */
         {
-            /* include file parsed in args */
+            /* process main file */
             ok = include_hsc_file( inpfilename, outfile, IH_PARSE_END );
         }
 

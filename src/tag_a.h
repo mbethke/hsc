@@ -3,8 +3,6 @@
 **
 ** tag handle for "<A xx>"
 **
-** updated: 10-Sep-1995
-** created:  3-Aug-1995
 */
 
 #ifndef HSC_TAG_A_H
@@ -14,6 +12,8 @@
 #include "ugly/infile.h"
 
 #include "tag.h"
+
+extern BOOL inside_anchor;
 
 extern BOOL handle_anchor( INFILE *inpf, HSCTAG *tag );
 extern BOOL handle_canchor( INFILE *inpf, HSCTAG *tag);

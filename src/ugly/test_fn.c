@@ -58,6 +58,7 @@ void test_getfne( void )
 
 }
 
+#if 0
 void old_test_reldir( STRPTR absn, STRPTR curp )
 {
     /*
@@ -123,7 +124,7 @@ void old_test_reldir( STRPTR absn, STRPTR curp )
     ufreestr( ocurp );
     ufreestr( absop );
 }
-
+#endif
 
 STRPTR get_relfname( STRPTR absn, STRPTR curp )
 {

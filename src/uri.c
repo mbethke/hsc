@@ -1,12 +1,15 @@
 /*
-**
 ** uri.c
+**
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
 **
 ** functions for uri parsing of tag arguments
 **
-** updated: 28-Oct-1995
+** updated: 17-Nov-1995
 ** created: 16-Jul-1995
 */
+
+/* TODO: fix problem with ":../" */
 
 /*
 ** ansi includes
@@ -261,21 +264,29 @@ STRPTR parse_uri( STRPTR uri, INFILE *inpf )
 
             /* evaluate kind of URI */
             if ( kind == URI_abs )
-                uri++;
+                uri++; /* skip ":" */
 
+            /* if a <BASE HREF=".."> was found before,
+            ** also treat URI as absolute
+            */
             if ( docbase_set && (kind == URI_rel) )
                 kind = URI_abs;
 
 
             /* extract path and #name */
             if ( uri[0] == '#' ) {
-                path = "";
+
+                path = NULL;  /* TODO: set path to current filename */
                 name = uri+1; /* skip '#' */
+
             } else {
+
                 path = strtok( uri, "#" );
                 name = strtok( NULL, "" );
+
             }
 
+            /* reset destination filename */
             strcpy( dest_fname, projdir );
 
             if ( path ) {
@@ -365,6 +376,8 @@ STRPTR parse_uri( STRPTR uri, INFILE *inpf )
             } else { /* if (path) */
 
                path = "";
+               strcpy( dest_uri, path );
+               uri = dest_uri;
 
             }
 

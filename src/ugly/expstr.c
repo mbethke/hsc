@@ -1,14 +1,14 @@
 /*
-** ugly/string.c
+** ugly/expstr.c
 **
 ** ugly expandable-string functions
 **
 ** (W) by Tommy-Saftwörx in 1995
 **
-** updated: 12-Sep-1995
-** created:  6-Sep-1993
+** updated: 18-Nov-1995
+** created: 12-Sep-1995
 **
-** $VER: expstr.c 1.0.3 (12.9.95)
+** $VER: expstr.c 1.0.4 (18.11.95)
 */
 
 
@@ -46,7 +46,7 @@
 BOOL set_estr_mem( EXPSTR *es, size_t new_size )
 {
     BOOL ok = TRUE;
-    STRPTR new_data = malloc( new_size );
+    STRPTR new_data = umalloc( new_size );
 
     if ( new_data ) {
 
@@ -114,7 +114,7 @@ BOOL clr_estr( EXPSTR *es )
 
 EXPSTR *init_estr( size_t step_size )
 {
-    EXPSTR *es = malloc( sizeof( EXPSTR ) );
+    EXPSTR *es = umalloc( sizeof( EXPSTR ) );
 
     if ( es ) {
 

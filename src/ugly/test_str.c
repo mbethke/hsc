@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include "types.h"
+#include "memory.h"
 #include "string.h"
 
 
@@ -29,8 +30,15 @@ int main( void )
     LONG i;
     STRPTR nam;
 
-    printf( "Testing ugly string functions:\n\n" );
+#ifdef UMEM_TRACKING
 
+    /* display a memory tracking report */
+    /* at end of execution */
+    atexit( atexit_uglymemory );
+
+#endif
+
+    printf( "Testing ugly string functions:\n\n" );
 
 #if 1
     /*
@@ -43,6 +51,16 @@ int main( void )
     test_enumstr( "hugo", "sepp|hugo|resi", '|', STEN_CASE );
     test_enumstr( "RESI", "sepp|hugo|resi", '|', STEN_NOCASE );
     test_enumstr( "RESI", "sepp|hugo|resi", '|', STEN_CASE );
+#endif
+
+
+#if 1
+    /*
+    ** test strclone
+    */
+    nam = strclone( "hugo" );
+    printf( "CLONE: \"%s\"\n", nam );
+    ufreestr( nam );
 #endif
 
     return( 0 );

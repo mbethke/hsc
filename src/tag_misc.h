@@ -16,6 +16,7 @@
 extern BOOL handle_sgml_comment( INFILE *inpf, HSCTAG *tag );
 
 extern BOOL handle_base( INFILE *inpf, HSCTAG *tag );
+extern BOOL handle_blink( INFILE *inpf, HSCTAG *tag );
 extern BOOL handle_heading( INFILE *inpf, HSCTAG *tag );
 
 #endif /* HSC_TAG_MISC_H */

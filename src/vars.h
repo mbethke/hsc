@@ -20,20 +20,24 @@
 #define VT_BOOL   3                    /* boolean */
 #define VT_NUM    4                    /* numeric */
 #define VT_ENUM   5                    /* enumerator */
-#define VT_TEXT   6                    /* text (without quotes) */
+#define VT_ID     6                    /* TODO: id (name reference) */
+#define VT_COLOR  7                    /* TODO: jerk's color */
 
 #define VT_STR_URI    "URI"            /* uri */
 #define VT_STR_STRING "STRING"         /* text string */
 #define VT_STR_BOOL   "BOOL"           /* boolean */
 #define VT_STR_NUM    "NUM"            /* numeric */
 #define VT_STR_ENUM   "ENUM"           /* enumerator */
-#define VT_STR_TEXT   "TEXT"           /* text (without quotes) TODO: remove */
+#define VT_STR_ID     "ID"             /* id (name reference) */
+#define VT_STR_COLOR  "COLOR"          /* color */
 
 /* variable flags */
 #define VF_ONLYONCE   (1<<0)           /* attribute may occure only once */
 #define VF_REQUIRED   (1<<1)           /* attribute is required */
-#define VF_NOQUOTE    (1<<2)           /* does not require quote */
+#define VF_NOQUOTE    (1<<2)           /* does not require quote: TODO: remove */
 #define VF_JERK       (1<<3)           /* attribute for jerks */
+#define VF_UPDATE     (1<<4)           /* update existing var <$LET> */
+
 #define VF_MACRO      (1<<7)           /* macro attr (see below) */
 
 /*
@@ -52,7 +56,7 @@
 
 #define VF_JERK_STR     "JERK"         /* attr only used by jerks */
 #define VF_JERK_SHT     "J"
-#define VF_ONLYONCE_STR "ONLYONCE"     /* attr mey appear only once in tag */
+#define VF_ONLYONCE_STR "ONLYONCE"     /* attr may appear only once in tag */
 #define VF_ONLYONCE_SHT "1"
 #define VF_REQUIRED_STR "REQUIRED"     /* attr is required */
 #define VF_REQUIRED_SHT "R"
@@ -60,15 +64,19 @@
 #define VF_NOQUOTE_SHT  "Q"
 
 /* chars that act like opening/closing quote */
-#define VQ_STR_QUOTE "\"'<"
+#define VQ_STR_QUOTE "\"'"
 
 /* "no quote" value for quote in HSCVAR */
 #define VQ_NO_QUOTE 0
 
 /* error return value for set_macro_args() to set var->macro_id with */
+#define MCI_GLOBAL  0          /* indicate global attributes */
 #define MCI_ERROR   0xffffffff
 #define MCI_APPCTAG 0xfffffffe /* used by app_ctag(); see "tag.c" */
 
+/* boolean attribute constants */
+#define VC_TRUE  "__true__"
+#define VC_FALSE ""
 
 /* variable structure */
 typedef struct hscvar {
@@ -99,12 +107,24 @@ extern void del_var( APTR data );
 extern HSCVAR *find_varname( DLLIST *varlist, STRPTR name );
 extern HSCVAR *app_var( STRPTR newname );
 
+extern BOOL check_enumstr( HSCVAR *var, STRPTR value, INFILE *inpf );
+
+#if 0
 extern STRPTR parse_vararg( HSCVAR *var, INFILE *inpf);
+#endif
 extern STRPTR set_vartext( HSCVAR *var, STRPTR newtext );
+extern BOOL   set_vartext_bool( HSCVAR *attr, BOOL value );
 extern BOOL   clr_vartext( HSCVAR *var );
+extern VOID   clr_attrdef( HSCVAR *attr );
 extern BOOL   clr_varlist( DLLIST *varlist );
-extern STRPTR get_vartext( DLLIST *varlist, STRPTR name );
-extern BOOL   get_varbool( DLLIST *varlist, STRPTR name );
+extern VOID   clr_varlist_bool( DLLIST *varlist );
+
+extern STRPTR get_vartext_byname( DLLIST *varlist, STRPTR name );
+extern STRPTR get_vartext( HSCVAR *var );
+extern BOOL   get_varbool_byname( DLLIST *varlist, STRPTR name );
+extern BOOL   get_varbool( HSCVAR *attr );
+
+extern STRPTR get_vardeftext( HSCVAR *var );
 
 /* attribute list manipulation */
 extern BOOL copy_local_varlist( DLLIST *destlist, DLLIST *varlist, ULONG mci );

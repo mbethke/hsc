@@ -15,8 +15,8 @@ int main( void )
 
     atexit( atexit_uglymemory );
 
-    hugo1 = malloc( 100 );
-    hugo2 = malloc( 200 );
+    hugo1 = umalloc( 100 );
+    hugo2 = umalloc( 200 );
     ufree( hugo2 );
     hugo3 = strclone( "hugo3" );
     hugo4 = (APTR) 0x123;
@@ -25,7 +25,7 @@ int main( void )
     ufreestr( hugo3 );
     ufree( hugo2 );
     ufree( hugo4 );
-    hugo4 = malloc(400);
+    hugo4 = umalloc(400);
 
     umem_report( "hugo after free" );
 

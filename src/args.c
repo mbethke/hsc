@@ -1,9 +1,11 @@
 /*
 ** args.c
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** user argument handling for hsc
 **
-** updated:  6-Nov-1995
+** updated:  4-Dec-1995
 ** created:  1-Jul-1995
 */
 
@@ -91,6 +93,7 @@ STRPTR arg_ignore( STRPTR arg )
     return( errmsg );
 }
 
+
 /*
 ** arg_mode
 **
@@ -121,6 +124,10 @@ STRPTR arg_mode( STRPTR arg )
         clr_ignore_msg();
         arg_ignore( IGNORE_NOTES_STR );
         enable_ignore( MSG_MISS_REQTAG );
+        enable_ignore( MSG_UNMA_QUOTE );
+        enable_ignore( MSG_WRONG_HEADING );
+        enable_ignore( MSG_EXPT_H1 );
+        enable_ignore( MSG_LF_IN_COMMENT );
 
     } else if ( mode == MODE_RELAXED ) {         /* relaxed */
 
@@ -146,6 +153,32 @@ STRPTR arg_mode( STRPTR arg )
 
     return( errmsg );
 }
+
+/*
+** show_license
+**
+** display short description of GPL
+*/
+VOID show_license( VOID )
+{
+    fprintf( stderr,
+        "\nThis program is free software; you can redistribute it and/or modify\n"
+        "it under the terms of the GNU General Public License as published by\n"
+        "the Free Software Foundation; either version 2 of the License, or\n"
+        "(at your option) any later version.\n\n"
+
+        "This program is distributed in the hope that it will be useful,\n"
+        "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+        "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+        "GNU General Public License for more details.\n\n"
+
+        "You should have received a copy of the GNU General Public License\n"
+        "along with this program; if not, write to the Free Software\n"
+        "Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\n" );
+
+
+}
+
 /*
 ** args_ok
 **
@@ -159,6 +192,7 @@ BOOL args_ok( int argc, char *argv[] )
     BOOL   ok; /* return value */
     STRPTR destdir_arg  = NULL; /* temp vars for set_args() */
     STRPTR projdir_arg  = NULL;
+    BOOL   license      = FALSE;/* flag: display license message */
     DLLIST *ignore_list = NULL; /* dummy */
     struct arglist *hsc_args;   /* argument structure */
 
@@ -166,6 +200,7 @@ BOOL args_ok( int argc, char *argv[] )
     clr_ignore_msg();
     clr_error_msg();
 
+    arg_mode( DEFAULT_MODE_STR );
 
     /* create arg-table */
     hsc_args = prepare_args( "HSC_ARGS",
@@ -175,13 +210,14 @@ BOOL args_ok( int argc, char *argv[] )
               "ErrFile=ef/T/K"  , &errfilename, "error file (default: stderr)",
               "DestDir/K"       , &destdir_arg, "destination directory",
               "Include=inc/K/M" , &incfile    , "file(s) to be included",
+#if 0
               "ProjDir/K"       , &projdir_arg, "project main directory (rel.path)",
-
+#endif
               /* numeric */
               "MaxErr/N/K"      , &max_error  , "max. number of errors (default:20)",
               "Ignore=ign/N/K/M/$", arg_ignore, &ignore_list, "ignore message number",
               "Mode/E/K/$"        , arg_mode, MODE_ENUMSTR, &mode,
-                                                "mode for syntax check",
+                                    "mode for syntax check (" MODE_ENUMSTR ")",
               /* switches */
               "CheckUri=cu/S"   , &chkuri     , "check existence of local URIs",
 #if 0
@@ -201,7 +237,11 @@ BOOL args_ok( int argc, char *argv[] )
 #endif
               /* help */
               "HELP=?/S"        , &need_help  , "display this text",
+              "LICENSE/S"       , &license    , "display license",
 #if 0
+              /* ..I never can remember that f**king syntax
+              ** of my own functions..
+              */
               "SourceMode=SM/E/K", "ASC|BIN|HEX", &sourcemd, NULL,
               "StartLine=SL/R/K" , 0, 2048, &startline, NULL,
               "NLQ/S"            , &nlq, "enable fast conversion",
@@ -223,15 +263,17 @@ BOOL args_ok( int argc, char *argv[] )
         ok = set_args( argc, argv, hsc_args );
         ok &= ( !need_help && ( inpfilename || pipe_in ) );
 
-        if ( !ok ) {
+        if ( license ) {
+
+            /* display license text */
+            fprintf_prginfo( stderr );
+            show_license();
+
+        } else if ( !ok ) {
 
             /* display help, if error in args or HELP-switch set */
             fprintf_prginfo( stderr );
             fprintf_arghelp( stderr, hsc_args );
-
-        } else if ( !outfnbuf ) {
-
-            err_mem( NULL );
 
         } else {
 
@@ -259,8 +301,6 @@ BOOL args_ok( int argc, char *argv[] )
             /* compute project directory */
             projdir = strclone( app_fname( projdir_arg, NULL ) );
             destdir = strclone( app_fname( destdir_arg, NULL ) );
-            if ( !projdir || !destdir )
-                err_mem( NULL );
 
             /*
             ** if no destdir or output-filename given,
@@ -296,9 +336,6 @@ BOOL args_ok( int argc, char *argv[] )
                     if ( outfilename ) {
 
                         outfilename = strclone( app_fname( destdir, outfilename ) );
-                        if ( !outfilename )
-                            err_mem( NULL );
-
 
                     } else {
 
@@ -308,12 +345,9 @@ BOOL args_ok( int argc, char *argv[] )
                             /* ->outfilename = destdir + inpfilename + ".html" */
 
                             /* link destdir & input filename */
-                            if ( !set_estr( outfnbuf, set_fext( inpfilename, "html" ) ) )
-                                err_mem( NULL );
+                            set_estr( outfnbuf, set_fext( inpfilename, "html" ) );
 
                             outfilename = strclone( app_fname( destdir, estr2str( outfnbuf ) ) );
-                            if ( !outfilename )
-                                err_mem( NULL );
 
                         } else
                             fnsux = TRUE;

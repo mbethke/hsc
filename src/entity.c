@@ -1,9 +1,11 @@
 /*
 ** entity.c
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** entity structure, variables and functions ( "&xx;")
 **
-** updated: 26-Sep-1995
+** updated: 18-Nov-1995
 ** created:  8-Sep-1995
 **
 */
@@ -52,7 +54,7 @@ DLLIST *defent = NULL;
 HSCENT *new_hscent( STRPTR newid )
 {
 
-    HSCENT *newent = (HSCENT*) malloc( sizeof(HSCENT) );
+    HSCENT *newent = (HSCENT*) umalloc( sizeof(HSCENT) );
 
     if (newent) {
 
@@ -157,8 +159,7 @@ HSCENT *app_entnode( STRPTR entid )
             newent = NULL;
 
         }
-    } else
-        err_mem( NULL );
+    }
 
     return (newent);
 }
@@ -169,26 +170,16 @@ HSCENT *app_entnode( STRPTR entid )
 */
 BOOL add_ent( STRPTR entid, STRPTR entreplace, LONG num )
 {
-    BOOL    ok = FALSE;
     HSCENT *newent = app_entnode( entid );
 
-    if ( newent ) {
+    if ( entreplace )
+        newent->replace = strclone( entreplace );
 
-        if ( entreplace ) {
-
-            newent->replace = strclone( entreplace );
-            if ( !entreplace )
-                err_mem( NULL );
-        }
-        newent->numeric = num;
-        ok = TRUE;
-
-    } else
-        err_mem( NULL );
+    newent->numeric = num;
 
     DDE( fprintf( stderr, "** defent: %s\n", entid ) );
 
-    return (ok);
+    return (TRUE);
 
 }
 

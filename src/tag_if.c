@@ -1,9 +1,11 @@
 /*
 ** tag_if.c
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** tag handles for <$IF> and <$ELSE>
 **
-** updated:  2-Nov-1995
+** updated: 27-Nov-1995
 ** created:  7-Oct-1995
 */
 
@@ -29,6 +31,7 @@
 #include "entity.h"
 #include "tag.h"
 #include "vars.h"
+#include "eval.h"
 
 /*
 */
@@ -51,9 +54,14 @@
 #define IFST_TAG   8 /* inside a tag */
 #define IFST_ERR  99 /* error occured */
 
-/* chars that represent TRUE and FALSE on IF_stack */
+/* chars that represent TRUE, FALSE and
+** UNDEF (error in if-expression) on IF_stack
+*/
 #define ISTK_FALSE '0'
 #define ISTK_TRUE  '1'
+#define ISTK_UNDEF 'x'
+
+typedef BYTE if_t;
 
 /* error message */
 void message_unma_else( INFILE *inpf, HSCTAG *tag )
@@ -75,20 +83,15 @@ BOOL handle_hsc_cif( INFILE *inpf, HSCTAG *tag );
 **-------------------------------------
 */
 
-/*
-**
-*/
-
 /* is_push: add a new value to the if-stack */
-VOID is_push( BOOL value )
+VOID is_push( if_t value )
 {
     BYTE ch;
 
     if ( value ) ch = ISTK_TRUE;
     else         ch = ISTK_FALSE;
 
-    if ( !app_estrch( IF_stack, ch ) )
-        err_mem( NULL );
+    app_estrch( IF_stack, ch );
 
     DIF( fprintf( stderr, "** push IF-stack: \"%s\"\n", estr2str( IF_stack ) ) );
 
@@ -96,9 +99,9 @@ VOID is_push( BOOL value )
 }
 
 /* is_get: get first value from the if-stack */
-BOOL is_get( VOID )
+if_t is_get( VOID )
 {
-    BOOL value = FALSE;
+    if_t value = ISTK_FALSE;
 
     if ( IF_stack ) {
 
@@ -128,15 +131,14 @@ BOOL is_get( VOID )
 }
 
 /* is_pop: remove first value of the if-stack */
-BOOL is_pop( VOID )
+if_t is_pop( VOID )
 {
-    BOOL value = is_get();
+    if_t value = is_get();
 
     if ( !strlen(estr2str(IF_stack)) )
         DIF( panic( "Popping empty IF_stack" ) );
 
-    if ( !get_left_estr( IF_stack, IF_stack, strlen(estr2str(IF_stack))-1 ) )
-        err_mem( NULL );
+    get_left_estr( IF_stack, IF_stack, strlen(estr2str(IF_stack))-1 );
 
     DIF( fprintf( stderr, "** pop  IF-stack: \"%s\"\n", estr2str( IF_stack ) ) );
 
@@ -339,7 +341,7 @@ BYTE skip_if( INFILE *inpf )
         }
 #endif
         if ( !parse_wd( inpf, ">" ) )
-            skip_until_eot( inpf );
+            skip_until_eot( inpf, NULL );
         DIF(  {
             if ( state==IFST_CIF )
                 fprintf( stderr, "** </$IF> reached\n" );
@@ -366,29 +368,48 @@ BYTE skip_if( INFILE *inpf )
 */
 BOOL handle_hsc_if( INFILE *inpf, HSCTAG *tag )
 {
-    BOOL ok    = TRUE;
-    BOOL err   = FALSE; /* error flag */
-    BOOL value = eval_bool( inpf, &err, ">" );
-    HSCTAG *if_tag = find_strtag( deftag, HSC_IF_STR );
+    if_t value;         /* boolean result of expression */
+    HSCTAG *if_tag   = find_strtag( deftag, HSC_IF_STR );
+    HSCVAR *ifresult = new_hscvar( "__ifresult__" );
+    STRPTR ifstr     = NULL;
 
+    ifresult->vartype = VT_BOOL;
 
+    ifstr    = eval_expression( ifresult, inpf, NULL );
 
-    if ( !value ) {
+    /* check for closing ">" */
+    parse_gt( inpf );
+
+    if ( ifstr )
+        if ( get_varbool( ifresult ) )
+            value = ISTK_TRUE;
+        else
+            value = ISTK_FALSE;
+    else
+        value = ISTK_UNDEF;
+
+    if ( value != ISTK_TRUE ) {
 
         BYTE state;
 
-        DIF( fprintf( stderr, "** IF: refused\n" ) );
+        DIF( DMSG( "IF: refused" ) );
         state = skip_if( inpf );
         if ( state == IFST_ELSE ) {
 
-            DIF( fprintf( stderr, "** IF: process ELSE\n" ) );
-#if 0
-            if ( is_empty() )
-                message_unma_else( inpf, tag );
-            else
-                /* TODO: is_pop() ???*/;
-                /* NOTE: is_pop() is done by skip_if() */
-#endif
+            if ( value != ISTK_UNDEF ) {
+
+                DIF( DMSG( "IF: process ELSE" ) );
+
+            } else {
+
+                DIF( DMSG( "ELSE: refused (undef)" ) );
+                state = skip_if( inpf );
+                if ( state == IFST_ELSE )
+                    message_unma_else( inpf, tag );
+                remove_cif_tag( inpf );
+
+            }
+
         } else
             remove_cif_tag( inpf );
 
@@ -403,11 +424,14 @@ BOOL handle_hsc_if( INFILE *inpf, HSCTAG *tag )
         /* assign standard handler for </$IF> */
         if_tag->c_handle = handle_hsc_cif;
 
-        DIF( fprintf( stderr, "** IF: GRANTED\n" ) );
+        DIF( DMSG( " IF: GRANTED" ) );
 
     }
 
-    return ( ok );
+    /* remove temp attribute */
+    del_var( (APTR) ifresult );
+
+    return ( FALSE );
 }
 
 /*
@@ -417,8 +441,6 @@ BOOL handle_hsc_if( INFILE *inpf, HSCTAG *tag )
 */
 BOOL handle_hsc_cif( INFILE *inpf, HSCTAG *tag )
 {
-    BOOL ok = TRUE;
-
     DIF( fprintf( stderr, "** IF: standard closing handler\n" ) );
 
     is_pop();                          /* remove if-value from stack */
@@ -428,7 +450,7 @@ BOOL handle_hsc_cif( INFILE *inpf, HSCTAG *tag )
         skip_until_eot( inpf );
 #endif
 
-    return ( ok );
+    return ( FALSE );
 }
 
 /*
@@ -438,12 +460,10 @@ BOOL handle_hsc_cif( INFILE *inpf, HSCTAG *tag )
 */
 BOOL handle_hsc_cif_else( INFILE *inpf, HSCTAG *tag )
 {
-    BOOL ok = TRUE;
-
     DIF( fprintf( stderr, "** IF: closing handler after ELSE\n" ) );
     /* DON'T call is_pop(), because <$ELSE> has done this before */
 
-    return ( ok );
+    return ( FALSE );
 }
 
 /*
@@ -453,8 +473,6 @@ BOOL handle_hsc_cif_else( INFILE *inpf, HSCTAG *tag )
 */
 BOOL handle_hsc_else( INFILE *inpf, HSCTAG *tag )
 {
-    BOOL ok = TRUE;
-
     if ( is_empty() ) {
 
         message_unma_else( inpf, tag );
@@ -462,16 +480,14 @@ BOOL handle_hsc_else( INFILE *inpf, HSCTAG *tag )
     } else {
 
         HSCTAG *if_tag = find_strtag( deftag, HSC_IF_STR );
+        if_t    value  = is_pop();
 
         /* assign handler for </$IF> after <$ELSE> (see above) */
         if_tag->c_handle = handle_hsc_cif_else;
 
-
-        if ( !is_pop() ) {
-
+        if ( value == ISTK_FALSE ) {
 
             DIF( fprintf( stderr, "** ELSE: GRANTED\n" ) );
-
 
         } else {
 
@@ -479,18 +495,14 @@ BOOL handle_hsc_else( INFILE *inpf, HSCTAG *tag )
 
             DIF( fprintf( stderr, "** ELSE: refused\n" ) );
             state = skip_if( inpf );
-            if ( state == IFST_ELSE ) {
-
+            if ( state == IFST_ELSE )
                 message_unma_else( inpf, tag );
-
-            }
 
             remove_cif_tag( inpf );
 
         }
     }
 
-
-    return ( ok );
+    return ( FALSE );
 }
 

@@ -1,9 +1,11 @@
 /*
 ** vars.c
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** hsc-variable funcs for hsc
 **
-** updated: 22-Oct-1995
+** updated: 10-Dec-1995
 ** created:  2-Sep-1995
 **
 */
@@ -29,11 +31,7 @@
 #define NOEXTERN_HSC_VARS
 #include "vars.h"
 
-/*
-** TODO:
-**
-*/
-
+#include "eval.h"
 
 /*
 ** global vars
@@ -62,18 +60,18 @@ void prt_var( FILE *stream, APTR data )
             varquote = '.';
 
         /* name & type & macro_id */
-        fprintf( stream, "%s (%d,%d) ",
+        fprintf( stream, "%s (type:%d,mci:%d) ",
                  var->name, var->vartype, var->macro_id );
         /* text value */
         if ( var->text )
-            fprintf( stream, "%c%s%c",
+            fprintf( stream, "cur:%c%s%c",
                      var->quote, var->text, varquote );
         else
             fprintf( stream, "<NULL>" );
         fprintf( stream, " " );
         /* default text */
         if ( var->deftext )
-            fprintf( stream, "%c%s%c",
+            fprintf( stream, "def:%c%s%c",
                      var->quote, var->deftext, varquote );
         else
             fprintf( stream, "<NULL>" );
@@ -126,7 +124,7 @@ void del_var( APTR data )
 HSCVAR *new_hscvar( STRPTR newname )
 {
 
-    HSCVAR *newvar = (HSCVAR*) malloc( sizeof(HSCVAR) );
+    HSCVAR *newvar = (HSCVAR*) umalloc( sizeof(HSCVAR) );
 
     if (newvar) {
 
@@ -240,8 +238,10 @@ BYTE str2vartype( STRPTR s )
         vartype = VT_NUM;
     else if ( !upstrcmp( VT_STR_ENUM, s ) )
         vartype = VT_ENUM;
-    else if ( !upstrcmp( VT_STR_TEXT, s ) )
-        vartype = VT_TEXT;
+    else if ( !upstrcmp( VT_STR_ID, s ) )
+        vartype = VT_ID;
+    else if ( !upstrcmp( VT_STR_COLOR, s ) )
+        vartype = VT_COLOR;
 
     return( vartype );
 }
@@ -258,16 +258,37 @@ BYTE str2vartype( STRPTR s )
 */
 STRPTR set_vartext( HSCVAR *var, STRPTR newtext )
 {
-    ufreestr( var->text );
-    if ( newtext ) {
+    if ( newtext != var->text ) {
 
-        var->text = strclone( newtext );
-        if ( !var->text )
-            err_mem( NULL );
+        ufreestr( var->text );
+        var->text = NULL;
+        if ( newtext )
+            var->text = strclone( newtext );
 
     }
 
     return (var->text);
+}
+
+
+/*
+** set_vartext_bool
+**
+** set value of a boolean attr
+**
+** params: var....var to set
+**         value..new value to set
+** result: value
+** errors: if out of mem, display error message
+*/
+BOOL set_vartext_bool( HSCVAR *attr, BOOL value )
+{
+    if ( value )
+        set_vartext( attr, attr->name );
+    else
+        set_vartext( attr, "" );
+
+    return ( value );
 }
 
 
@@ -297,6 +318,19 @@ BOOL clr_vartext( HSCVAR *var )
 }
 
 /*
+** clr_attrdef
+**
+** clear attributes default text
+**
+** params: attr..attr to clear
+*/
+VOID clr_attrdef( HSCVAR *attr )
+{
+    ufreestr( attr->deftext );
+    attr->deftext = NULL;
+}
+
+/*
 ** clr_varlist
 **
 ** clear all vars to default text
@@ -318,11 +352,35 @@ BOOL clr_varlist( DLLIST *varlist )
 }
 
 /*
-** get_vartext: get text value of a var
+** clr_varlist_bool
+**
+** set all "empty" (=NULL) boolean attributes of
+** an attr list to FALSE
+**
+** params: varlist..varlist to process
+*/
+VOID clr_varlist_bool( DLLIST *varlist )
+{
+    DLNODE *nd = varlist->first;
+    BOOL    ok = TRUE;
+
+    while ( nd && ok ) {
+
+        HSCVAR *attr = (HSCVAR*) nd->data;
+
+        if ( ( attr->vartype == VT_BOOL ) && !( attr->text ) )
+            set_vartext_bool( attr, FALSE );
+
+        nd = nd->next;
+    }
+}
+
+/*
+** get_vartext_byname: get text value of a var
 **
 **
 */
-STRPTR get_vartext( DLLIST *varlist, STRPTR name )
+STRPTR get_vartext_byname( DLLIST *varlist, STRPTR name )
 {
     HSCVAR *var     = find_varname( varlist, name );
     STRPTR  vartext = NULL;
@@ -334,17 +392,54 @@ STRPTR get_vartext( DLLIST *varlist, STRPTR name )
 }
 
 /*
-** get_varbool: get value of a boolean var
+** get_vartext: get text value of a var
+**
 */
-BOOL get_varbool( DLLIST *varlist, STRPTR name )
+STRPTR get_vartext( HSCVAR *var )
+{
+    STRPTR text = NULL;
+
+    if ( var )
+        text = var->text;
+
+    return( text );
+}
+
+/*
+** get_varbool: get valueof a boolean attr
+*/
+BOOL get_varbool( HSCVAR *attr )
 {
     BOOL set = FALSE;
-    HSCVAR *var  = find_varname( varlist, name );
-
-    if ( var && var->text )
+    if ( attr && ( attr->text[0] ) )
         set = TRUE;
 
     return( set );
+}
+
+/*
+** get_varbool_byname: get value of a boolean var
+*/
+BOOL get_varbool_byname( DLLIST *varlist, STRPTR name )
+{
+    HSCVAR *var  = find_varname( varlist, name );
+
+    return( get_varbool( var ) );
+}
+
+
+/*
+** get_vardeftext: get default text value of a var
+**
+*/
+STRPTR get_vardeftext( HSCVAR *var )
+{
+    STRPTR deftext = NULL;
+
+    if ( var )
+        deftext = var->deftext;
+
+    return( deftext );
 }
 
 
@@ -395,249 +490,15 @@ BOOL check_varlist( DLLIST *varlist, INFILE *inpf )
 **-------------------------------------
 */
 
-/*
-** check_enumstr: check if a given value is a legal enum value
-*/
-BOOL check_enumstr( HSCVAR *var, STRPTR value, INFILE *inpf )
-{
-    STRPTR enumcp = strclone( var->enumstr ); /* clone of enumstr */
-    BOOL   found  = FALSE; /* flag: TRUE, if value found within enumstr */
-    BOOL   any    = FALSE; /* flag: TRUE, if "*" was within enumstr */
-
-    if ( enumcp ) {
-
-        STRPTR word = strtok( enumcp, "|" );
-
-        /* search for value in enumcp */
-        while ( word && !found ) {
-
-            if ( !strcmp( word, "*" ) )
-                any = TRUE;
-            if ( !upstrcmp( word, value ) )
-                found = TRUE;
-            word = strtok( NULL, "|" );
-
-        }
-        ufreestr( enumcp );
-
-        /* check result, display messages if neccessary */
-        if ( !found ) {
-
-            if ( !any ) {
-
-                /* unknown enum value */
-                message( MSG_ENUM_UNKN, inpf );
-                errstr( "unknown" );
-
-            } else {
-
-                /* suspicious enum value */
-                message( MSG_ENUM_SUSPICIOUS, inpf );
-                errstr( "suspicious" );
-
-            }
-            errstr( " value " );
-            errqstr( value );
-            errstr( " for" );
-            errsym( var->name );
-            errlf();
-
-        } else DDA( fprintf( stderr, "**   enum \"%s\" ok for %s\n",
-                             value, var->name ) );
-    } else
-        err_mem( inpf );
-
-    return( found );
-}
-
-
+#if 0
 /*
 ** parse_vararg: read & check a attribute value
 */
 STRPTR parse_vararg( HSCVAR *var, INFILE *inpf )
 {
-    STRPTR str_vararg = NULL;          /* return value */
-    int    ch;                         /* char read from input */
-
-    /* TODO: handle "<>" (reset var->text to NULL) */
-
-    infskip_ws( inpf );
-
-    /* disable log */
-    inflog_disable( inpf );
-
-    /* read var->quote char */
-    ch = infgetc( inpf );
-    if ( !strchr( VQ_STR_QUOTE, ch ) )
-        if ( ch != EOF )
-            var->quote = VQ_NO_QUOTE;
-        else
-            err_eof( inpf, "reading attribute" );
-    else
-        var->quote = ch;
-
-    /* warning if no quote */
-    if ( ( var->quote == VQ_NO_QUOTE )
-         && !( var->varflag & VF_NOQUOTE ) )
-    {
-
-        message( MSG_ARG_NO_QUOTE, inpf );
-        errstr( "Argument without quote\n" );
-
-    }
-
-    /* read arg string */
-    if ( var->quote == '<' ) {
-
-        /*
-        ** get arg from other var
-        */
-        STRPTR nw = infgetw( inpf );
-
-        if ( nw ) {
-
-            HSCVAR *refvar = find_varname( vars, nw );
-
-            if ( refvar ) {
-
-                /* TODO: type checking */
-                var->quote = refvar->quote;
-                str_vararg = refvar->text;
-
-                /* check empty/circular reference */
-                if ( !str_vararg ) {
-
-                    message( MSG_EMPTY_SYMB_REF, inpf );
-                    errstr( "Empty reference to" );
-                    errsym( var->name );
-                    errlf();
-
-                }
-
-                /* debugging message */
-                DDA( fprintf( stderr, "**    %s refers to <%s>\n",
-                              var->name, refvar->name ) );
-
-            } else {
-
-                /* reference to unknown var */
-                message( MSG_UNKN_SYMB_REF, inpf );
-                errstr( "reference to unknown" );
-                errsym( nw );
-                errlf();
-
-            }
-
-            if ( (!refvar) || (!str_vararg ) ) {
-
-                /* return empty var */
-                var->quote = '"';
-                str_vararg = "";
-            }
-
-            parse_gt( inpf );
-
-        } else
-            err_eof( inpf, "reading attribute" );
-
-    } else if ( var->quote != EOF ) {
-
-        /*
-        ** get arg from input file
-        */
-        BOOL   end = FALSE;
-
-        /* clear vararg or set with first char read */
-        if ( var->quote == VQ_NO_QUOTE )
-            end = !set_estr( vararg, ch2str( ch ) );
-        else
-            end = !clr_estr( vararg );
-        if ( end )
-            err_mem( inpf );
-
-        /*
-        ** read next char from input file until a
-        ** closing quote if found.
-        ** if the arg had no quote, a white space
-        ** or a '>' is used to detect end of arg.
-        ** if a LF is found, view error message
-        */
-        while ( !end ) {
-
-            ch = infgetc( inpf );
-
-            end = TRUE;
-
-            if ( ch == EOF )
-                err_eof( inpf, "reading attribute" );
-            else if ( (ch==var->quote)
-                      || ( ch==CH_LF )
-                      || ( (var->quote==VQ_NO_QUOTE)
-                           && ( inf_isws(ch,inpf) || ( ch=='>' ) ) )
-                    )
-            {
-
-                /* end of arg reached */
-                str_vararg = estr2str( vararg );
-                if ( var->quote == VQ_NO_QUOTE ) {
-
-                    if ( ch==CH_LF )
-                        err_streol( inpf );
-                    inungetc( ch, inpf );
-
-                }
-
-            } else {
-
-                /* append next char to vararg */
-                if ( !app_estrch( vararg, ch ) )
-                    err_mem( inpf );
-                else
-                    end = FALSE; /* continue loop */
-
-            }
-        }
-    }
-
-    if ( str_vararg && var )
-        /*
-        ** check enum type
-        */
-        if (var->vartype == VT_ENUM)
-            check_enumstr( var, str_vararg, inpf );
-        /*
-        ** parse uri (only if no macro-attr)
-        ** (convert abs.uris, check existence)
-        */
-        else if (var->vartype == VT_URI )
-
-            if ( !(var->varflag & VF_MACRO) )
-                str_vararg = parse_uri( str_vararg, inpf );
-            else {
-
-                DDA( fprintf( stderr, "**    didn't parse uri \"%s\"\n",
-                              str_vararg ) );
-
-            }
-
-    /* update and enable log */
-    if ( !fatal_error ) {
-
-        BOOL ok = TRUE;
-
-        if ( var->quote != VQ_NO_QUOTE )                   
-            ok &= inflog_app( inpf, ch2str( var->quote ) );/* append quote */
-        inflog_app( inpf, str_vararg );                    /* append arg */
-        if ( var->quote != VQ_NO_QUOTE )
-            ok &= inflog_app( inpf, ch2str( var->quote ) );/* append quote */
-        inflog_enable( inpf );                             /* enable log */
-
-        if ( !ok )
-            err_mem( NULL );
-    }
-
-    return ( str_vararg );
+    return( eval_expression( var, inpf, NULL ) );
 }
+#endif
 
 /*
 ** read_enum_str
@@ -662,9 +523,8 @@ BOOL read_enum_str( HSCVAR *var, INFILE *inpf )
     }; 
 
     /* check result */
-    if ( !ok )
-        err_mem( inpf );
-    else if ( ch == EOF )
+    if ( ok )
+    if ( ch == EOF )
         err_eof( inpf, "reading enumerator" );
     else if ( ch ==CH_LF )
         err_eol( inpf );
@@ -674,8 +534,7 @@ BOOL read_enum_str( HSCVAR *var, INFILE *inpf )
 
         DDA( fprintf( stderr, "**   enum: %s\n", estr2str( tmpstr ) ) );
         var->enumstr = strclone( estr2str( tmpstr ) );
-        if ( !(var->enumstr) )
-            err_mem( inpf );
+
     }
 
 
@@ -733,165 +592,194 @@ HSCVAR *define_var( STRPTR varname, DLLIST *varlist, INFILE *inpf, UBYTE flag )
 {
     HSCVAR *var        = NULL;                   /* result */
     BOOL    ok         = FALSE;
-    STRPTR str_vartype = infgetw( inpf );        /* var-type (string) */
     BYTE   val_vartype = VT_NONE;                /* var-type (numeric) */
+    BOOL   newattr     = FALSE;
+    STRPTR nw          = infgetw( inpf );        /* next word read from input */
 
-    /* evaluate var type */
-    if ( str_vartype )
-        val_vartype = str2vartype( str_vartype );
-    else
+    /* read (optional) var type */
+    if ( nw ) {
+        if ( !strcmp( nw, ":" ) ) {
+
+            nw = infgetw( inpf );
+            if ( nw )
+                val_vartype = str2vartype( nw );
+            else
+                err_eof( inpf, "defining attribute" );
+
+        } else
+            inungetcw( inpf );
+    } else
         err_eof( inpf, "defining attribute" );
 
-    if ( val_vartype == VT_NONE ) {
+    /* look if attr already exist, */
+    var = find_varname( varlist, varname );
+    if ( !var ) {
 
-        /* illegal var type */
-        message( MSG_ILLEGAL_SYMB_TYPE, inpf );
-        errstr( "Illegal variable type \"" );
-        errstr( str_vartype );
-        errstr( "\"\n" );
+        /* create new attr */
+        DDA( fprintf( stderr, "** new attr: %s\n", varname ) );
+        var = app_var( varlist, varname );
 
-    } else {
+        if ( val_vartype == VT_NONE ) {
 
-        /* look if var already exist, */
-        /* create new var if neccessary */
-        var = find_varname( varlist, varname );
-        if ( !var ) {
+            /* TODO: error message "attr type expected" */
 
-            DDA( fprintf( stderr, "** new var: %s\n", varname ) );
-            var = app_var( varlist, varname );
+            /* asume generic attribute type "STRING" */
+            val_vartype = VT_STRING;
 
         }
 
-        if ( !var )
-            err_mem( inpf );
-        else {
+        /* set type */
+        var->vartype = val_vartype;
 
-            STRPTR nw;                 /* next word from input file */
+        /* init enum-attribute */
+        if ( var->vartype == VT_ENUM ) {
 
-            /* set vartype */
-            var->vartype = val_vartype;
+            var->varflag |= VF_NOQUOTE;
+            read_enum_str( var, inpf );
 
-            /* init enum-attribute */
-            if ( var->vartype == VT_ENUM ) {
+        }
 
-                var->varflag |= VF_NOQUOTE;
-                read_enum_str( var, inpf );
+        newattr = TRUE;
+
+    } else {
+
+        /* check for illegal redefinance */
+        if ( !( flag & VF_UPDATE ) ) {
+
+            message( MSG_ATTR_REDEFINED, inpf );
+            errstr( "redefinance of" );
+            errsym( varname );
+            errlf();
+
+        }
+
+        /* attr already exists: check for type consistence */
+        if ( ( val_vartype != VT_NONE ) && ( val_vartype != var->vartype ) ) {
+
+            /* TODO: error message attr type inconsistent */
+
+        }
+    }
+
+    /* get next word */
+    nw = infgetw( inpf );
+    if ( !nw )
+        err_eof( inpf, "defining attribute" );
+
+    /*
+    ** loop: handle flags and deftext value
+    */
+    while ( nw ) {
+
+        if ( !strcmp( nw, "=" ) ) {
+
+            /* get new deftext value */
+            STRPTR new_deftext;
+
+            if ( !(var->deftext) )
+                new_deftext = eval_expression( var, inpf, NULL );
+            else {
+
+                STRPTR dummy;
+
+                message( MSG_SYMB_2ND_DEFAULT, inpf  );
+                errstr( "default value for" );
+                errsym( var->name );
+                errstr( "already set\n" );
+
+                /* skip illegal default value */
+                dummy = eval_expression( var, inpf, NULL );
 
             }
 
-            /* get next word */
-            nw = infgetw( inpf );
-            if ( !nw )
-                err_eof( inpf, "defining attribute" );
+            /* store default text value */
+            if ( new_deftext )
+                var->deftext = strclone( new_deftext );
 
-            /*
-            ** loop: handle flags and deftext value
-            */
-            while ( nw ) {
+            /* check deftext value */
+            if ( var->vartype == VT_BOOL ) {
 
-                if ( !strcmp( nw, "=" ) ) {
+                /* check boolean value */
+                message( MSG_SYMB_BOOL_DEFAULT, inpf );
+                errstr( "no default value for boolean" );
+                errsym( var->name );
+                errstr( "allowed\n" );
 
-                    /* get new deftext value */
-                    STRPTR new_deftext;
+            } else if ( var->vartype == VT_NUM ) {
 
-                    if ( !(var->deftext) )
-                        new_deftext = parse_vararg( var, inpf );
-                    else {
+                /* TODO: test-set value with default value */
+                /* check numeric value */
+                LONG num;
 
-                        message( MSG_SYMB_2ND_DEFAULT, inpf  );
-                        errstr( "Default value for" );
-                        errsym( var->name );
-                        errstr( "already set\n" );
+                if ( sscanf( var->text, "%d", &num ) != strlen(var->text) ) {
 
-                    }
-
-                    /* store default text value */
-                    if ( new_deftext )
-                        var->deftext = strclone( new_deftext );
-
-                    /* check deftext value */
-                    if ( var->deftext && clr_vartext( var ) ) {
-
-                        if ( var->vartype == VT_BOOL ) {
-
-                            /* check boolean value */
-                            message( MSG_SYMB_BOOL_DEFAULT, inpf );
-                            errstr( "No default value for boolean" );
-                            errsym( var->name );
-                            errstr( "allowed\n" );
-
-                        } else if ( var->vartype == VT_NUM ) {
-
-                            /* check numeric value */
-                            LONG num;
-
-                            if ( sscanf( var->text, "%d", &num ) != strlen(var->text) ) {
-
-                                ok = FALSE;
-                                message( MSG_ILLEGAL_NUM, inpf );
-                                errstr( "Illegal numeric value: " );
-                                errstr( var->text );
-                                errlf();
-
-                            }
-                        }
-                    } else
-                        err_mem( inpf );
-
-                    /* clear boolean var */
-                    if ( var->vartype == VT_BOOL ) {
-
-                        var->quote = VQ_NO_QUOTE;
-                        var->deftext = strclone( "" );
-                        if ( !var->deftext )
-                            err_mem( inpf );
-
-                    }
-
-                } else if ( !strcmp( nw, "/" ) ) {
-
-                    /* set flag */
-                    nw = infgetw( inpf );
-                    if ( nw ) {
-
-                        BOOL ok = FALSE;
-
-                        ok |= check_attr_option( nw, var,
-                                  VF_JERK_STR, VF_JERK_SHT, VF_JERK );
-                        ok |= check_attr_option( nw, var,
-                                  VF_NOQUOTE_STR, VF_NOQUOTE_SHT, VF_NOQUOTE );
-                        ok |= check_attr_option( nw, var,
-                                  VF_ONLYONCE_STR, VF_ONLYONCE_SHT, VF_ONLYONCE );
-                        ok |= check_attr_option( nw, var,
-                                  VF_REQUIRED_STR, VF_REQUIRED_SHT, VF_REQUIRED );
-                        if ( !ok ) {
-
-                            message( MSG_UNKN_ATTR_OPTION, inpf );
-                            errstr( "Unknown attribute option " );
-                            errqstr( nw );
-                            errlf();
-
-                        }
-
-                    } else
-                        err_eof( inpf, "defining attribute" );
-
-                } else {
-
-                    /* end of var definition reached */
-                    inungets( nw, inpf );
-                    nw = NULL;
-                    ok = TRUE;
+                    ok = FALSE;
+                    message( MSG_ILLEGAL_NUM, inpf );
+                    errstr( "Illegal numeric value: " );
+                    errstr( var->text );
+                    errlf();
 
                 }
+            }
 
-                /* get next word */
-                if ( nw )
-                    nw = infgetw( inpf );
+            /* clear boolean var */
+            /* TODO: why set new bool to ""? */
+            if ( var->vartype == VT_BOOL ) {
 
-            } /* while(nw) */
-        } /* if(!var) */
-    } /* if(val_vartype..) */
+                var->quote = VQ_NO_QUOTE;
+                var->deftext = strclone( "" );
+
+            }
+
+        } else if ( !strcmp( nw, "/" ) ) {
+
+            /* set flag */
+            nw = infgetw( inpf );
+            if ( flag & VF_UPDATE ) {
+
+                if ( nw ) {
+
+                    BOOL ok = FALSE;
+
+                    ok |= check_attr_option( nw, var,
+                              VF_JERK_STR, VF_JERK_SHT, VF_JERK );
+                    ok |= check_attr_option( nw, var,
+                              VF_NOQUOTE_STR, VF_NOQUOTE_SHT, VF_NOQUOTE );
+                    ok |= check_attr_option( nw, var,
+                              VF_ONLYONCE_STR, VF_ONLYONCE_SHT, VF_ONLYONCE );
+                    ok |= check_attr_option( nw, var,
+                              VF_REQUIRED_STR, VF_REQUIRED_SHT, VF_REQUIRED );
+                    if ( !ok ) {
+
+                        message( MSG_UNKN_ATTR_OPTION, inpf );
+                        errstr( "Unknown attribute option " );
+                        errqstr( nw );
+                        errlf();
+
+                    }
+
+                } else
+                    err_eof( inpf, "defining attribute" );
+
+            } else {
+
+                /* TODO: error message "no attr flags when updating" */
+
+            }
+        } else {
+
+            /* end of var definition reached */
+            inungets( nw, inpf );
+            nw = NULL;
+            ok = TRUE;
+
+        }
+
+        /* get next word */
+        if ( nw )
+            nw = infgetw( inpf );
+
+    } /* while(nw) */
 
     if ( !ok && var ) {
 
@@ -920,16 +808,11 @@ HSCVAR *copy_local_var( DLLIST *destlist, HSCVAR *locvar, ULONG mci )
 {
     HSCVAR *var = app_var( destlist, locvar->name );
 
-    if ( var ) {
-
-        var->macro_id = mci;
-        var->vartype = locvar->vartype;
-        var->varflag = locvar->varflag & (~VF_MACRO) ; /* disable VF_MACRO */
-        set_vartext( var, locvar->text );
-        var->quote = locvar->quote;
-
-    } else
-        err_mem( NULL );
+    var->macro_id = mci;
+    var->vartype = locvar->vartype;
+    var->varflag = locvar->varflag & (~VF_MACRO) ; /* disable VF_MACRO */
+    set_vartext( var, locvar->text );
+    var->quote = locvar->quote;
 
     return( var );
 }
@@ -959,8 +842,6 @@ BOOL copy_local_varlist( DLLIST *destlist, DLLIST *varlist, ULONG mci )
             nd  =  nd->next;
 
         }
-
-        /* TODO: out of mem message? */
     }
 
     return( ok );

@@ -1,9 +1,11 @@
 /*
 ** global.c
 **
+** Copyright (C) 1995  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+**
 ** global vars & funs for hsc
 **
-** updated:  3-Nov-1995
+** updated: 27-Nov-1995
 ** created:  8-Jul-1995
 */
 
@@ -47,12 +49,19 @@ BOOL verbose   = FALSE;                /* flag: verbose output */
 time_t now;                            /* used to store current time */
                                        /*     (initialised in config.c) */
 
-STRPTR destfname   = NULL;             /* filename part of outfilename */
-STRPTR rel_destdir = NULL;             /* dir part of input filename */
+STRPTR destfname      = NULL;          /* filename part of outfilename */
+STRPTR rel_destdir    = NULL;          /* dir part of input filename */
+STRPTR click_here_str = NULL;          /* words that indicate "click here" */
 
 EXPSTR *tmpstr   = NULL;               /* temp. string used by several fncs */
                                        /* parse.c   - parse_text() */
 EXPSTR *IF_stack = NULL;               /* IF-stack pointer */
+
+/* vars for use inside handles */
+EXPSTR *tag_name_str  = NULL;          /* name of tag, including "<" */
+EXPSTR *tag_attr_str  = NULL;          /* logs all tag attributes */
+EXPSTR *tag_close_str = NULL;          /* closing ">" for tag */
+
 BOOL    suppress_output = TRUE;        /* flag checked by outch() */
 BOOL    docbase_set = FALSE;           /* TRUE, if <BASE ..> occured */
 

@@ -2,6 +2,27 @@
                    hsc version history
                    ===================
 
+Version 0.9.4, 14-Dec-1995
+ - distributing archive under GNU General public
+   license (read "GNU_GPL" for details)
+ - renamed "hsc.html" to "index.html" (docs)
+ - MAJOR CHANGE: introducing new concept for
+   handling of arguments to attributes (see
+   docs, chapter "Expressions"); references to
+   other attributes MUST NOT be enclosed in "<"
+   and ">" anymore.
+ - added message for "click here" syndrome
+ - added global attribute "__CLICK_HERE__" for
+   keywords that should envoke a "click here"
+   warning if found in anchor text.
+ - added global attribute "__SYSTEM__", that
+   contains an ID for the used operating system.
+ - fixed bug: using an end tag for a non-container
+   caused enforcer hit
+ - fixed bug that lead to wrong file positions in
+   error messages after some line-feeds
+ - several minor bugs fixed
+
 Version 0.9.3,  20-Nov-1995 (internal release only)
  - added special values for IGNORE
  - added PRE option for <$INCLUDE>

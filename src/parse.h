@@ -21,6 +21,7 @@
 #define IH_PARSE_HSC    (1<<3) /* include text of a special */
                                /* hsc-command (eg $insert time) */
 #define IH_PARSE_SOURCE (1<<4) /* include source (replace special chars) */
+#define IH_NO_STATUS    (1<<5) /* oppress status message */
 
 /*
 ** global funcs
@@ -28,6 +29,9 @@
 #ifndef NOEXTERN_PARSE_H
 
 extern int cmp_strmac( APTR cmpstr, APTR macdata );
+
+extern BOOL hsc_normch( int ch );
+extern BOOL hsc_whtspc( int ch );
 
 extern BOOL parse_end( INFILE *inpf );
 
