@@ -803,7 +803,7 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
                      nw);
             }
             /* process attribute */
-            if (NULL != (nw = check_attrname(hp, nw, FALSE)))
+            if (NULL != (nw = check_attrname(hp, NULL, nw, FALSE)))
             {
                BOOL tag_unknown = (BOOL)(tag->option & HT_UNKNOWN);
                BOOL is_macro_tag = (BOOL)(tag->option & HT_MACRO);
