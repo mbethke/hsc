@@ -38,12 +38,14 @@
 /*
  * system-dependant defines
  */
-#ifdef AMIGA
+#if defined(AMIGA) || defined(AROS)
 #define CONFIG_FILE "hsc.prefs"
 #define OPTION_FILE "hsc.options", "env:hsc.options"
 #define CONFIG_PATH "PROGDIR:"
 
-#define UNIX 1                  /* utilize POSIX-layer of BeOS */
+/* TODO: find out what the hell this did here in the first place
+#define UNIX 1       */           /* utilize POSIX-layer of BeOS */
+
 #elif defined RISCOS
 #define CONFIG_FILE "hsc:hsc.prefs"
 #define CONFIG_PATH "hsc:"
@@ -141,6 +143,9 @@
 #define SYSTEM_ATTR     "hsc.System"
 #ifdef AMIGA
 #define SYSTEM_ATTR_ID "Amiga"
+
+#elif defined AROS
+#define SYSTEM_ATTR_ID "AROS"
 
 #elif defined BEOS
 #define SYSTEM_ATTR_ID "BeOS"
