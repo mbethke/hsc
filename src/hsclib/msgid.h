@@ -48,7 +48,7 @@
  * next message number
  *=========================
  */
-#define MAX_MSGID (97-1)
+#define MAX_MSGID (99-1)
 
 /*
  * obsolete numbers:
@@ -126,11 +126,11 @@
 #define MSG_UNKN_ATTR_TAG      (MSG_WARN + 84)  /* unknown tag attribute */
 #define MSG_UNKN_ATTR_MACRO    (MSG_ERROR+ 85)  /* unknown macro attribute */
 #define MSG_NO_URIPATH         (MSG_WARN + 21)  /* path to URI not found */
-#define MSG_SERVER_URI         (MSG_WARN + 36)  /* suspicios enum value */
+#define MSG_INVALID_URI        (MSG_WARN + 98)  /* URI is syntactically invalid */
+#define MSG_SERVER_URI         (MSG_WARN + 36)  /* server relative URI */
 #define MSG_ARG_NO_QUOTE       (MSG_PORT + 22)  /* argument without quote */
 #define MSG_EMPTY_SYMB_REF     (MSG_ERROR+ 23)  /* empty symbol reference */
-#define MSG_ILLG_ATTR_FLAG     (MSG_WARN + 24)  /* attribute flag not allowed
-                                                   here */
+#define MSG_ILLG_ATTR_FLAG     (MSG_WARN + 24)  /* attribute flag not allowed here */
 #define MSG_UNEX_ATTR_TYPE     (MSG_ERROR+ 25)  /* illegal symbol type */
 #define MSG_UNEX_ATTR_VALUE    (MSG_WARN + 45)  /* unexpected attribute value */
 #define MSG_SYMB_2ND_DEFAULT   (MSG_ERROR+ 26)  /* default value already set */
@@ -140,14 +140,12 @@
 #define MSG_MISS_REQ_ATTR      (MSG_ERROR+ 44)  /* required attr missing */
 #define MSG_MISS_RCMD_ATTR     (MSG_STYLE+ 90)  /* recommended attr missing */
 #define MSG_ATTR_REDEFINED     (MSG_WARN + 63)  /* attr already defined */
-#define MSG_ILLG_ATTRNAME      (MSG_ERROR+ 64)  /* illegal attribute
-                                                   identifier */
+#define MSG_ILLG_ATTRNAME      (MSG_ERROR+ 64)  /* illegal attribute identifier */
 #define MSG_UNKN_BINOP         (MSG_ERROR+ 65)  /* unknown binary operator */
 #define MSG_ATTR_CONST         (MSG_ERROR+ 27)  /* can't change constant attr */
 #define MSG_IMG_CORRUPT        (MSG_ERROR+  8)  /* image corrupt */
 #define MSG_ATTR_OBSOLETE      (MSG_WARN + 87)  /* attribute is obsolete */
-#define MSG_ATTR_AFTER_SLASH   (MSG_ERROR+ 89)  /* attribute after closing slash
-                                                   in XHTML mode */
+#define MSG_ATTR_AFTER_SLASH   (MSG_ERROR+ 89)  /* attribute after closing slash in XHTML mode */
 #define MSG_NO_EXTURI          (MSG_WARN + 93)  /* external URI does not exist (server returned 4xx/5xx) */
 #define MSG_DUBIOUS_EXTURI     (MSG_WARN + 94)  /* external URI may not exist (server returned something
                                                    other than [245]xx */
@@ -187,6 +185,7 @@
 #define MSG_ILLG_COLOR         (MSG_WARN + 72)  /* illegal color value */
 #define MSG_REQU_QUOTE         (MSG_WARN + 81)  /* value required quotes */
 #define MSG_CHANGED_QUOTE      (MSG_NOTE + 82)  /* not assign quote requested */
+#define MSG_ILLG_REGEX         (MSG_ERROR+ 97)  /* error in regular expression */
 
 /*
  * misc. messages
