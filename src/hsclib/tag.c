@@ -241,7 +241,7 @@ HSCTAG *app_tag(DLLIST * taglist, STRPTR tagid)
 /* decides if a tag is a hsc-tag */
 BOOL is_hsc_tag(HSCTAG * tag)
 {
-    return ((!upstrncmp(tag->name, HSC_TAGID, strlen(HSC_TAGID)))
+    return (BOOL)((!upstrncmp(tag->name, HSC_TAGID, strlen(HSC_TAGID)))
           || (!upstrcmp(tag->name, HSC_COMMENT_STR))
           || (!upstrcmp(tag->name, HSC_VERBATIM_STR))
           || (!upstrcmp(tag->name, HSC_INSEXPR_STR)));
