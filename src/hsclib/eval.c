@@ -1703,13 +1703,9 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
                str2 = eval_expression(hp, dest2, endstr);
 
                if (str2)
-               {
                   process_op(hp, dest1, op, str1, str2);
-               }
                else
-               {
                   exprstr = NULL;
-               }
 
                /* remove temporary resources */
                del_hscattr((APTR) dest2);
@@ -1822,7 +1818,7 @@ static STRPTR assign_conditional_attr(HSCPRC * hp, HSCATTR * dest, STRPTR source
 
    if (source_name)
    {
-      HSCATTR *tmpdest = new_hscattr(PREFIX_TMPATTR "check_attrname");
+      HSCATTR *tmpdest = new_hscattr(PREFIX_TMPATTR "check.attrname");
 
       if (NULL != (source_name = check_attrname(hp,tmpdest,source_name,TRUE)))
       {
@@ -1838,6 +1834,7 @@ static STRPTR assign_conditional_attr(HSCPRC * hp, HSCATTR * dest, STRPTR source
             hsc_msg_unkn_attr_ref(hp, source_name);
          }
       }
+      del_hscattr(tmpdest);
    }
    else
    {
@@ -1875,40 +1872,32 @@ STRPTR eval_conditional_assignment(HSCPRC * hp, HSCATTR * dest)
 
    D(fprintf(stderr, DHL "  conditional assignment\n"));
 
-   if (nw)
-   {
+   if (nw) {
       /* temp. attribute to store name of source attribute if it
        * is specified with an expression */
       HSCATTR *tmp_attr = NULL;
       STRPTR source_name = NULL;    /* name of source attribute */
 
-      if (!strcmp(nw, "("))
-      {
+      if (!strcmp(nw, "(")) {
          /* get attribute name from expression */
          tmp_attr = new_hscattr(PREFIX_TMPATTR "conditional.assignment");
          source_name = eval_expression(hp, tmp_attr, ")");
-      }
-      else
-      {
+      } else {
          /* attribute name was simply specified */
          source_name = nw;
       }
 
-      if (source_name)
-      {
+      if (source_name) {
          D(fprintf(stderr, DHL "    assign from %s\n", source_name));
          attr_val = assign_conditional_attr(hp, dest, source_name);
       }
 
       /* free resources */
-      if (tmp_attr)
-      {
+      if (tmp_attr) {
          del_hscattr(tmp_attr);
       }
 
-   }
-   else
-   {
+   } else {
       hsc_msg_eof(hp, "conditional attribute identifier expected");
    }
 

@@ -425,8 +425,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
           */
 
          /* check for obsolete tag */
-         if (tag->option & HT_OBSOLETE)
-         {
+         if (tag->option & HT_OBSOLETE) {
             hsc_message(hp, MSG_TAG_OBSOLETE,
                   "%T is obsolete", tag);
          }
@@ -436,28 +435,24 @@ BOOL hsc_parse_tag(HSCPRC * hp)
             (BOOL)((tag->option & HT_EMPTY) && hp->xhtml);
 
          /* check for jerk-tag */
-         if (tag->option & HT_JERK)
-         {
+         if (tag->option & HT_JERK) {
             hsc_message(hp, MSG_TAG_JERK,
                   "%T is only used by %j", tag);
          }
 
          /* only-once-tag occured twice? */
-         if ((tag->option & HT_ONLYONCE) && (tag->occured))
-         {
+         if ((tag->option & HT_ONLYONCE) && (tag->occured)) {
             hsc_message(hp, MSG_TAG_TOO_OFTEN,
                   "%T occured too often", tag);
          }
 
          /* set occured-flag */
-         if (tag->option & (HT_ONLYONCE | HT_REQUIRED))
-         {
+         if (tag->option & (HT_ONLYONCE | HT_REQUIRED)) {
             tag->occured = TRUE;
          }
 
          /* check for "must be inside"/"not allowed within"-tags */
-         if (!check_mbinaw(hp, tag))
-         {
+         if (!check_mbinaw(hp, tag)) {
             hnd = NULL;
          }
 
@@ -465,11 +460,9 @@ BOOL hsc_parse_tag(HSCPRC * hp)
          clr_varlist(tag->attr);
 
          /* set attributes or check for ">" */
-         if (!(tag->option & HT_SPECIAL))
-         {
+         if (!(tag->option & HT_SPECIAL)) {
             tci = set_tag_args(hp, tag);
-            if (tci == MCI_ERROR)
-            {
+            if (tci == MCI_ERROR) {
                skip_until_eot(hp, NULL);
                hnd = NULL;
             }
