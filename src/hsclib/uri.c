@@ -31,6 +31,7 @@
 
 #include "hsclib/inc_base.h"
 #include "hsclib/idref.h"
+#include "hsclib/regmatch.h"
 #include "hscprj/project.h"
 #include "hsclib/uri.h"
 #ifdef UNIX
@@ -125,7 +126,7 @@ VOID conv_uri2path(EXPSTR * dest, STRPTR uri, BOOL weenix)
  *
  * evaluate kind of uri
  */
-URIKIND uri_kind(STRPTR uri)
+URIKIND uri_kind(CONSTRPTR uri)
 {
     URIKIND kind = URI_abs;
 
@@ -334,13 +335,13 @@ VOID conv_hscuri2file(HSCPRC * hp, EXPSTR * dest_fname, STRPTR uri)
 /*
  * parse_uri
  *
- * check uri-string for syntatic correctnes;
- * if the uri refers to an local file, convert its absolute
+ * check URI-string for syntatic correctness;
+ * If the URI refers to an local file, convert its absolute
  * path to a relative path and check its existence.
  *
  * uri = "rsrc_type://host.domain:port/pathname#id"
  */
-VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
+VOID parse_uri(HSCPRC * hp, EXPSTR *dest_uri, STRPTR uri)
 {
    /* sample URI could be:
     * http://www.host.at:80/file.html#name
@@ -359,6 +360,9 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
    if (uri) {
       /* check for valid uri */
       URIKIND kind = uri_kind(uri);
+      if(!hscregmatch_pc(uri,NULL,hp->re_uri)) {
+         hsc_message(hp,MSG_INVALID_URI,"URI %q is syntactically invalid",uri);
+      }
       if ((kind == URI_ext) ||
             ((kind == URI_relserv) && !(estrlen(hp->server_dir)))) {
          if (kind == URI_ext) {
@@ -382,7 +386,7 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
             /*
              * TODO: parse global uris
              */
-#ifdef UNIX
+#if defined(UNIX) || defined(AMIGA)
             if(hp->checkext) check_ext_uri(hp,uri);
 #endif
          } else if (kind == URI_relserv) {
