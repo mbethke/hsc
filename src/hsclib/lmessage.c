@@ -175,8 +175,7 @@ static BOOL really_display_message(HSCPRC * hp, HSCMSG_ID msg_id)
     return disp_msg;
 }
 
-VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
-{
+VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...) {
     HSCMSG_CLASS msg_class = hsc_get_msg_class(hp, msg_id);
     HSCMSG_ID msg_id_unmasked = msg_id & MASK_MESSAGE;
     INFILE *msg_inpf = NULL;
@@ -185,8 +184,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
     ULONG msg_y = 0;
     BOOL disp_msg = really_display_message(hp, msg_id);     /* display message? */
 
-    if (disp_msg)
-    {
+    if (disp_msg) {
         va_list ap;
 
         /* increase message-counter */
@@ -194,19 +192,15 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
 
         /* set fatal-flag, if this is a fatal message */
         if (msg_id > MSG_FATAL)
-        {
             hp->fatal = TRUE;
-        }
 
         /* clear message buffer */
         clr_estr(hp->curr_msg);
 
         /* create message string */
         va_start(ap, format);
-        while (format[0])
-        {
-            if (format[0] == '%')
-            {
+        while (format[0]) {
+            if (format[0] == '%') {
                 STRPTR s = NULL;
                 HSCTAG *tag = NULL;
                 HSCTAG *lazy = NULL;
@@ -214,8 +208,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                 HSCENT *ent = NULL;
 
                 format++;
-                switch (format[0])
-                {
+                switch (format[0]) {
 
                 case 'd':
                     /*
@@ -232,10 +225,8 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                     s = va_arg(ap, STRPTR);
 
                     app_estrch(hp->curr_msg, '`');
-                    while (s[0])
-                    {
-                        switch (s[0])
-                        {
+                    while (s[0]) {
+                        switch (s[0]) {
 
                         case '\n':
                             app_estr(hp->curr_msg, "\\n");
@@ -244,14 +235,12 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                             app_estr(hp->curr_msg, "\\\"");
                             break;
                         default:
-                            if (((unsigned char) s[0]) < ' ')
-                            {
+                            if (((unsigned char) s[0]) < ' ') {
                                 app_estrch(hp->curr_msg, '\\');
                                 app_estr(hp->curr_msg,
                                          long2str((LONG) s[0]));
                                 app_estrch(hp->curr_msg, ';');
-                            }
-                            else
+                            } else
                                 app_estrch(hp->curr_msg, s[0]);
                         }
                         s++;    /* process next char */
@@ -340,8 +329,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                      * append unknown
                      */
                     app_estrch(hp->curr_msg, '%');
-                    if (format[0] && (format[0] != '%'))
-                    {
+                    if (format[0] && (format[0] != '%')) {
                         app_estrch(hp->curr_msg, '%');
                         format--;
                     }
@@ -349,59 +337,46 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                 }
             }
             else
-            {
                 app_estrch(hp->curr_msg, format[0]);
-            }
 
             if (format[0])
-            {
                 format++;
-            }
         }
         va_end(ap);
 
         /* evaluate message position */
-        if (hp->inpf)
-        {
+        if (hp->inpf) {
             msg_inpf = hp->inpf;
 
             msg_fname = infget_fname(msg_inpf);
 
             /* use parent file for position? */
-            if (is_child_file(msg_fname))
-            {
+            if (is_child_file(msg_fname)) {
                 DLNODE *nd = dll_first(hp->inpf_stack);
 
                 msg_inpf = NULL;
                 msg_fname = NULL;
 
                 if (nd)
-                    do
-                    {
+                    do {
                         D(fprintf(stderr, DHL "skip parent file `%s'\n", msg_fname));
 
                         /* use position of file on stack */
                         msg_inpf = (INFILE *) dln_data(nd);
                         msg_fname = infget_fname(msg_inpf);
                         nd = dln_next(nd);
-                    }
-                    while (nd && is_child_file(msg_fname));
+                    } while (nd && is_child_file(msg_fname));
             }
 
-            if (msg_inpf)
-            {
+            if (msg_inpf) {
                 msg_x = infget_wx(msg_inpf) + 1;
                 msg_y = infget_wy(msg_inpf) + 1;
-            }
-            else
-            {
+            } else {
                 msg_fname = "hsc-internal.hsc";
                 msg_x = 0;
                 msg_y = 0;
             }
-        }
-        else
-        {
+        } else {
             msg_fname = NULL;
             msg_x = 0;
             msg_y = 0;
@@ -409,7 +384,6 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
 
         /* send message via callback */
         if (hp->CB_message)
-
             (*(hp->CB_message))
                 (hp,
                  msg_class, msg_id_unmasked,
@@ -418,12 +392,10 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                 );
 
         /* process nested files */
-        if (hp->CB_message_ref && hp->nested_errors)
-        {
+        if (hp->CB_message_ref && hp->nested_errors) {
             DLNODE *nd = dll_first(hp->inpf_stack);
 
-            while (nd)
-            {
+            while (nd) {
                 msg_inpf = dln_data(nd);
                 msg_fname = infget_fname(msg_inpf);
                 msg_x = infget_wx(msg_inpf) + 1;
@@ -443,11 +415,8 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
         /* check, if already too many messages or errors have
          * occured and abort process in case */
         handle_too_many_messages(hp);
-    }
-    else
-    {
+    } else
         D(fprintf(stderr, DHL "suppressed msg#%ld\n", msg_id_unmasked));
-    }
 }
 
 /* check if there are already too many errors and view an
