@@ -194,7 +194,7 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
 
     /* if we got a path part earlier, remove the corresponding incdir node */
     if(0 != estrlen(fpath)) {
-       del_dlnode(hp->include_dirs,dll_first(hp->include_dirs));
+       del_dlnode(hp->include_dirs,dll_last(hp->include_dirs));
     }
     del_estr(fpath);
     return (ok);
