@@ -26,6 +26,7 @@
 
 #ifndef HSC_ATTRIBUTE_H
 #define HSC_ATTRIBUTE_H
+#include "ugly/infile.h"
 
 /* variable types */
 #define VT_NONE   0             /* no type; only after init */

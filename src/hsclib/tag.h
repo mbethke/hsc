@@ -28,6 +28,8 @@
 
 #ifndef HSCLIB_TAG_H
 #define HSCLIB_TAG_H
+#include "ugly/dllist.h"
+#include "hsclib/attrib.h"
 
 /*
  * defines

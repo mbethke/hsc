@@ -26,6 +26,7 @@
 
 #ifndef HSCLIB_MESSAGE_H
 #define HSCLIB_MESSAGE_H
+#include "hsclib/hscprc.h"
 
 #ifndef NOEXTERN_HSCLIB_MESSAGE_H
 
