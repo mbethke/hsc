@@ -275,7 +275,8 @@ VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_fname, S
        STRPTR optimized_name = NULL;
        optimize_fname(&optimized_name, estr2str(dest_fname));
        set_estr(dest_fname, optimized_name);
-       ufree(optimized_name);
+       if(optimized_name)
+          ufree(optimized_name);
     }
 
     /* debug */
