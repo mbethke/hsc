@@ -312,7 +312,8 @@ static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
       ok |= check_tag_option(hp, option, tag,
             TO_JERK_STR, TO_JERK_SHT, HT_JERK);
       ok |= check_tag_option(hp, option, tag,
-            TO_AUTOCLOSE_STR, TO_AUTOCLOSE_SHT, hp->xhtml ? HT_CLOSE : HT_AUTOCLOSE);
+            TO_AUTOCLOSE_STR, TO_AUTOCLOSE_SHT,
+            hp->xhtml ? HT_CLOSE : HT_AUTOCLOSE);
       ok |= check_tag_option(hp, option, tag,
             TO_EMPTY_STR, TO_EMPTY_SHT, HT_EMPTY);
       ok |= check_tag_option(hp, option, tag,
@@ -483,7 +484,8 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
    HSCATTR skipvar;            /* dummy-attribute to skip unknown */
    EXPSTR *attr_str = init_estr(40);   /* string for attribute name */
    EXPSTR *val_str = init_estr(40);    /* string for "=" and value */
-
+   BOOL is_styleattr = (0 == upstrcmp(varname,"STYLE"));
+   
    DAV(fprintf(stderr, DHL "   set attr %s\n", varname));
 
    /* don't process pseudo-attribute "/" in XHTML mode */
@@ -676,11 +678,16 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
       clr_vartext(attr);
    }
 
-   /* append & cleanup attribute and value string */
-   app_estr(hp->tag_attr_str, estr2str(attr_str));
-   del_estr(attr_str);
-   del_estr(val_str);
-
+   if(is_styleattr) {
+      fprintf(stderr,"##### STYLE: a='%s', v='%s'\n",
+            estr2str(attr_str),estr2str(val_str));
+   }
+   {
+      /* append & cleanup attribute and value string */
+      app_estr(hp->tag_attr_str, estr2str(attr_str));
+      del_estr(attr_str);
+      del_estr(val_str);
+   }
    return (ok);
 }
 
@@ -783,11 +790,9 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
             /* process attribute */
             if (NULL != (nw = check_attrname(hp, NULL, nw, FALSE)))
             {
-               BOOL tag_unknown = (BOOL)(tag->option & HT_UNKNOWN);
-               BOOL is_macro_tag = (BOOL)(tag->option & HT_MACRO);
-
                set_tag_arg(hp, varlist, nw, tag->name,
-                     tag_unknown, is_macro_tag);
+                     (BOOL)(tag->option & HT_UNKNOWN),
+                     (BOOL)(tag->option & HT_MACRO));
             } else {
                /* append empty value */
 #if 0
