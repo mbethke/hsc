@@ -498,12 +498,18 @@ BOOL get_relfname(EXPSTR * dest, STRPTR absn, STRPTR curp)
    del_estr(abspa);
    del_estr(tmpp1);
    del_estr(tmpp2);
+
+   /* handle special case of paths that reference the directory they are
+    * relative to */
+   if('\0' == estr2str(dest)[0])
+      set_estr(dest,"./");
+
    return (ok_fnl_fpath(dest));
 }
 
 BOOL optimize_fname(STRPTR *target_name, STRPTR source_name)
 {
-   /* Some system dependant defines */
+   /* Some system dependent defines */
 #if defined AMIGA
 #define PARENT_DIRECTORY_BEGIN  "/"
 #define PARENT_DIRECTORY_INSIDE "//"
@@ -524,55 +530,8 @@ BOOL optimize_fname(STRPTR *target_name, STRPTR source_name)
         }                               \
     }
 
-/* Set this to 1 for debugging output */
-#if 0
-/* Use asterix to mark characters to be skipped. This can cause problems as
- * this character might be used in filenames on some systems, but it is
- * much nicer for debugging. */
-#define SKIP_CHARACTER '*'
-
-/* Show debug output for every remarkable filename manipulation */
-#define PRINT_FILENAME(heading)                          \
-    {                                                    \
-        STRPTR debug_scan = filename;                    \
-                                                         \
-        if (heading[0] != '\0')                          \
-        {                                                \
-            printf(":::-- %s\n", heading);               \
-        }                                                \
-                                                         \
-        printf(":::  `%s'\n", filename);                 \
-        printf(":::   ");                                \
-        while (debug_scan[0] != 0)                       \
-        {                                                \
-            if (debug_scan == next_parent_inside)        \
-            {                                            \
-                printf("n");                             \
-            }                                            \
-            else if (debug_scan == previous_directory)   \
-            {                                            \
-                printf("p");                             \
-            }                                            \
-            else if (debug_scan == filename_fun_start)   \
-            {                                            \
-                printf("f");                             \
-            }                                            \
-            else if (debug_scan == filename_scan)        \
-            {                                            \
-                printf("s");                             \
-            }                                            \
-            else                                         \
-            {                                            \
-                printf(" ");                             \
-            }                                            \
-            debug_scan += 1;                             \
-        }                                                \
-        printf("\n");                                    \
-    }
-#else
 #define SKIP_CHARACTER '\a' /* Use the invisible bell character */
 #define PRINT_FILENAME(heading) /* Do nufin */
-#endif
 
     STRPTR filename = strclone(source_name);
     STRPTR filename_fun_start = filename;
@@ -640,7 +599,7 @@ BOOL optimize_fname(STRPTR *target_name, STRPTR source_name)
              * |       filename_fun_start
              * filename
              *
-             * Therefor we need to scan backwards for the next "/"
+             * Therefore, we need to scan backwards for the next "/"
              */
             char fun_start_character = filename_fun_start[0];
 
