@@ -98,17 +98,13 @@ typedef struct arginfo
     STRPTR ai_id;               /* arg id string */
     LONG ai_type;               /* arg type */
     LONG ai_flags;              /* arg flags */
-    union
-    {
+    union {
         STRPTR ai_enum;         /*   enumerator string */
         LONG ai_lolim;          /*   lower limit for range */
-    }
-    ai_misc1;                   /* type depending information */
-    union
-    {
+    } ai_misc1;                 /* type depending information */
+    union {
         LONG ai_uplim;          /*   upper limit for range */
-    }
-    ai_misc2;                   /* type depending information */
+    } ai_misc2;                 /* type depending information */
     APTR ai_dest;               /* ptr to destination var */
       STRPTR(*ai_func) (STRPTR);        /* additional arg handling function */
     STRPTR ai_help;             /* help text */

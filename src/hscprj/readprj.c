@@ -250,7 +250,7 @@ static int read_header(HSCPRJ * hp) {
         } else
             hsc_msg_project_corrupt(hp, "unknown version");
     }
-    return (int)(ok ? version : ok);
+    return (int)(ok ? version : 0UL);
 }
 
 

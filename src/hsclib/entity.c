@@ -52,7 +52,7 @@ HSCENT *new_hscent(STRPTR newid) {
        newent->name = strclone(newid);
        newent->replace[0] = newent->replace[1] = '\0';
        newent->numeric = 0;
-       newent->prefnum = FALSE;
+       newent->flags = 0;
     }
     return (newent);
 }
@@ -67,7 +67,8 @@ VOID del_entity(APTR data) {
     fprintf(stderr, DHL "   del_enty %s\n", ent->name);
 #endif
 
-    ufreestr(ent->name);
+    if(NULL != ent->name)
+       ufreestr(ent->name);
     ent->replace[0] = '\0';
     ent->numeric = 0;
     ufree(ent);
@@ -101,18 +102,18 @@ HSCENT *cpy_hscent(HSCENT * oldent) {
  * of a HSCENT-entry
  */
 int cmp_strent(APTR cmpstr, APTR entdata) {
-    STRPTR entstr = NULL;
+   STRPTR entstr = NULL;
 
-    if (entdata)
-        entstr = ((HSCENT*)entdata)->name;
+   if (entdata)
+      entstr = ((HSCENT*)entdata)->name;
 
-    if (entstr) {
-        if (!strcmp(cmpstr, entstr))
-            return -1;
-        else
-            return 0;
-    }
-    return 0;
+   if(NULL != entstr) {
+      if (!strcmp(cmpstr, entstr))
+         return -1;
+      else
+         return 0;
+   }
+   return 0;
 }
 
 /*
@@ -182,13 +183,13 @@ HSCENT *app_entnode(DLLIST * entlist, STRPTR entid) {
 /*
  * add_ent
  */
-void add_ent(DLLIST * entlist, STRPTR entid, char entreplace, short num, BOOL prefnum) {
+void add_ent(DLLIST * entlist, STRPTR entid, char entreplace, short num, char flags) {
     HSCENT *newent = app_entnode(entlist, entid);
 
     if(NULL != newent) {
        newent->replace[0] = entreplace;
        newent->numeric = num;
-       newent->prefnum = prefnum;
+       newent->flags = flags;
     }
 }
 

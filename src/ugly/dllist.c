@@ -239,8 +239,7 @@ DLNODE *add_dlnode(DLLIST * list, APTR data)
  */
 void del_dllist(DLLIST * list)
 {
-    if (list)
-    {
+    if (list) {
         /* remove all nodes */
         while (list->first)
             del_dlnode(list, list->first);
@@ -262,12 +261,10 @@ void del_dllist(DLLIST * list)
  */
 void do_dllist(DLLIST * list, void (*func) (APTR data))
 {
-    if (list)
-    {
+    if (list) {
         DLNODE *nd = list->first;
 
-        while (nd)
-        {
+        while (nd) {
             (*func) (nd->data);
             nd = nd->next;
         }
@@ -283,16 +280,13 @@ void do_dllist(DLLIST * list, void (*func) (APTR data))
 void fprintf_dllist(FILE * stream, DLLIST * list,
                     void (*fprintf_data) (FILE * stream, APTR data))
 {
-    if (list)
-    {
+    if (list) {
         DLNODE *node;
         ULONG i = 1;
 
         node = list->first;
-        if (node)
-        {
-            while (node)
-            {
+        if (node) {
+            while (node) {
                 fprintf(stream, "%4lu: ", i++);
                 if (fprintf_data)
                     (*fprintf_data) (stream, node->data);
@@ -300,11 +294,9 @@ void fprintf_dllist(FILE * stream, DLLIST * list,
                     fprintf(stream, "%s\n", (STRPTR) node->data);
                 node = node->next;
             }
-        }
-        else
+        } else
             fprintf(stream, "  [empty list]\n");
-    }
-    else
+    } else
         fprintf(stream, "  [no list]\n");
 }
 

@@ -590,41 +590,49 @@ BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag) {
    STRPTR rplc = get_vartext_byname(tag->attr, "RPLC");
    STRPTR nums = get_vartext_byname(tag->attr, "NUM");
    BOOL prefnum= get_varbool_byname(tag->attr, "PREFNUM");
+   BOOL nonstd = get_varbool_byname(tag->attr, "NONSTD");
    LONG num = 0;
+   char flags = (prefnum ? HSCENTF_PREFNUM : 0) | (nonstd  ? HSCENTF_NONSTD : 0);
 
-   if (nums) {
-      if (str2long(nums, &num)) {
-         if ((NULL == rplc) || (strlen(rplc) <= 1)) {
-            if ((num >= 128) && (num <= 65535)) {
-               DLNODE *nd = NULL;
+   if((NULL == nums) && (NULL == name)) {
+      msg_illegal_defent(hp, "specify at least one of NAME and NUM");
+      return FALSE;
+   }
+   if((NULL != nums) && (!str2long(nums, &num))) {
+      msg_illegal_defent(hp, "illegal value for NUM");
+      return FALSE;
+   }
+   if ((NULL == rplc) || (strlen(rplc) == 1)) {
+      if ((num >= 160) && (num <= 65535)) {
+         DLNODE *nd = NULL;
 
-               if((num > 255) && (NULL != rplc) && strlen(rplc)) {
-                  msg_dubious_defent(hp, "RPLC specified for NUM > 255");
-               }
-               if(NULL != (nd = find_dlnode(hp->defent->first, (APTR)name, cmp_strent))) {
-                  if(num == ((HSCENT*)(dln_data(nd)))->numeric) {
-                     msg_dubious_defent(hp, "duplicate entity - updating flags");
-                     ((HSCENT*)(dln_data(nd)))->prefnum = prefnum;
-                     ((HSCENT*)(dln_data(nd)))->replace[0] = *rplc;
-                  } else
-                     msg_illegal_defent(hp, "NAME defined with different NUM");
-               } else if(NULL != (nd = find_dlnode(hp->defent->first, (APTR)num, cmp_nument))) {
-                  if(0 == strcmp(name,((HSCENT*)(dln_data(nd)))->name)) {
-                     msg_dubious_defent(hp, "duplicate NUM - updating flags");
-                     ((HSCENT*)(dln_data(nd)))->prefnum = prefnum;
-                     ((HSCENT*)(dln_data(nd)))->replace[0] = *rplc;
-                  } else
-                     msg_illegal_defent(hp, "NUM defined with different NAME");
-               } else
-                  add_ent(hp->defent, name, rplc[0], num, prefnum);
+         if((num > 255) && (NULL != rplc) && strlen(rplc)) {
+            msg_dubious_defent(hp, "RPLC specified for NUM > 255");
+         }
+         if((NULL != name) && 
+               (NULL != (nd = find_dlnode(hp->defent->first, (APTR)name, cmp_strent))))
+         {
+            if(num == ((HSCENT*)(dln_data(nd)))->numeric) {
+               msg_dubious_defent(hp, "duplicate entity - updating flags");
+               ((HSCENT*)(dln_data(nd)))->flags = flags;
+               ((HSCENT*)(dln_data(nd)))->replace[0] = *rplc;
             } else
-               msg_illegal_defent(hp, "illegal range for NUM (must be 128<=NUM<=65535)");
+               msg_illegal_defent(hp, "NAME defined with different NUM");
+         } else if((NULL != nums) &&
+            (NULL != (nd = find_dlnode(hp->defent->first, (APTR)num, cmp_nument))))
+         {
+            if(0 == strcmp(name,((HSCENT*)(dln_data(nd)))->name)) {
+               msg_dubious_defent(hp, "duplicate NUM - updating flags");
+               ((HSCENT*)(dln_data(nd)))->flags = flags;
+               ((HSCENT*)(dln_data(nd)))->replace[0] = *rplc;
+            } else
+               msg_illegal_defent(hp, "NUM defined with different NAME");
          } else
-            msg_illegal_defent(hp, "RPLC not a single character");
+            add_ent(hp->defent, name, (NULL == rplc) ? '\0' : rplc[0], num, flags);
       } else
-         msg_illegal_defent(hp, "illegal value for NUM");
+         msg_illegal_defent(hp, "illegal range for NUM (must be 160<=NUM<=65535)");
    } else
-      msg_illegal_defent(hp, "NUM missing");
+      msg_illegal_defent(hp, "RPLC not a single character");
 
    return (FALSE);
 }

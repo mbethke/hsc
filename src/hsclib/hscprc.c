@@ -488,8 +488,8 @@ VOID hsc_set_nested_errors(HSCPRC * hp, BOOL new_nested_errors) {
 }
 
 VOID hsc_set_lctags(HSCPRC * hp, BOOL new_lctags) {
-    hp->lctags = new_lctags;
-    D(fprintf(stderr, DHL "flag: lctags=%d\n", new_lctags));
+   hp->lctags = new_lctags;
+   D(fprintf(stderr, DHL "flag: lctags=%d\n", new_lctags));
 }
 
 VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml) {
@@ -503,29 +503,31 @@ VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml) {
 }
 
 VOID hsc_set_vcss(HSCPRC * hp, BOOL new_vcss) {
-    hp->validate_css = new_vcss;
-    D(fprintf(stderr, DHL "flag: validatecss=%d\n", new_vcss));
+   hp->validate_css = new_vcss;
+   D(fprintf(stderr, DHL "flag: validatecss=%d\n", new_vcss));
 }
 
 /*
  * set values
  */
 VOID hsc_set_quote_mode(HSCPRC * hp, LONG new_mode) {
-    hp->quotemode = new_mode;
-    D(fprintf(stderr, DHL "quote_mode=%ld\n", new_mode));
+   hp->quotemode = new_mode;
+   D(fprintf(stderr, DHL "quote_mode=%ld\n", new_mode));
 }
 
 VOID hsc_set_entity_mode(HSCPRC * hp, LONG new_mode) {
-    hp->entitymode = new_mode;
-    D(fprintf(stderr, DHL "entity_mode=%ld\n", new_mode));
+   if(EMODE_INVALID == new_mode)
+      new_mode = EMODE_KEEP;    /* default if unspecified */
+   hp->entitymode = new_mode;
+   D(fprintf(stderr, DHL "entity_mode=%ld\n", new_mode));
 }
 
 VOID hsc_set_maximum_messages(HSCPRC * hp, LONG messages) {
-    hp->max_messages = messages;
+   hp->max_messages = messages;
 }
 
 VOID hsc_set_maximum_errors(HSCPRC * hp, LONG errors) {
-    hp->max_errors = errors;
+   hp->max_errors = errors;
 }
 
 /*

@@ -575,9 +575,8 @@ void atexit_uglymemory_real(void)
 /*
  * atexit_uglymemory_dummy
  */
-void atexit_uglymemory_dummy(void)
-{
-    /* do nufin */
+void atexit_uglymemory_dummy(void) {
+   /* do nufin */
 }
 
 /*
@@ -590,113 +589,102 @@ void atexit_uglymemory_dummy(void)
  * ugly_malloc_notracking
  */
 void *ugly_malloc_notracking(size_t size) {
-    void *mem;
-    BOOL retry;
+   void *mem;
+   BOOL retry;
 
-    do
-    {
-       mem = malloc(size);
-       if (!mem && ugly_nomem_handler) {
-	    /* call nomem-handler */
-	    retry = (*ugly_nomem_handler) (size);
-	    if (!retry)
-          exit(EXIT_FAILURE);	/* abort programm */
-       } else retry = FALSE;
-    } while (retry);
+   do
+   {
+      mem = malloc(size);
+      if (!mem && ugly_nomem_handler) {
+         /* call nomem-handler */
+         retry = (*ugly_nomem_handler) (size);
+         if (!retry)
+            exit(EXIT_FAILURE);	/* abort programm */
+      } else retry = FALSE;
+   } while (retry);
 
-    return (mem);
+   return (mem);
 }
 
 /*
  * ugly_malloc_tracking
  */
-void *ugly_malloc_tracking(size_t size, STRPTR file, ULONG line)
-{
-    void *mem = NULL;
-    UGLYMEM *umem = NULL;
+void *ugly_malloc_tracking(size_t size, STRPTR file, ULONG line) {
+   void *mem = NULL;
+   UGLYMEM *umem = NULL;
 
 #if DEBUG_UGLY_MEMORY==2
-    fprintf(stderr, "*memory* UMALLOC() from `%s' (%lu)\n", file, line);
+   fprintf(stderr, "*memory* UMALLOC() from `%s' (%lu)\n", file, line);
 #endif
-    if (size)
-    {
-	/* update num. of calls to umalloc() */
-	ugly_umalloc_count++;
+   if (size) {
+      /* update num. of calls to umalloc() */
+      ugly_umalloc_count++;
 
-	/* alloc new uglymem */
-	umem = new_uglymem(size, file, line);
-	if (umem)
-	{
-	    mem = umem->ptr;
+      /* alloc new uglymem */
+      umem = new_uglymem(size, file, line);
+      if (umem) {
+         mem = umem->ptr;
 
-	    /* update memory usage and num of nodes */
-	    ugly_curmem_usage += size;
-	    ugly_real_curmem_usage += modfit(size, UMEM_BLOCKSIZE);
-	    if (ugly_curmem_usage > ugly_maxmem_usage)
-		ugly_maxmem_usage = ugly_curmem_usage;
-	    if (ugly_real_curmem_usage > ugly_real_maxmem_usage)
-		ugly_real_maxmem_usage = ugly_real_curmem_usage;
-	    ugly_curnod_usage++;
-	    if (ugly_curnod_usage > ugly_maxnod_usage)
-		ugly_maxnod_usage = ugly_curnod_usage;
-	}
-    }
-    else
-    {
-	/* zero-alloc */
+         /* update memory usage and num of nodes */
+         ugly_curmem_usage += size;
+         ugly_real_curmem_usage += modfit(size, UMEM_BLOCKSIZE);
+         if (ugly_curmem_usage > ugly_maxmem_usage)
+            ugly_maxmem_usage = ugly_curmem_usage;
+         if (ugly_real_curmem_usage > ugly_real_maxmem_usage)
+            ugly_real_maxmem_usage = ugly_real_curmem_usage;
+         ugly_curnod_usage++;
+         if (ugly_curnod_usage > ugly_maxnod_usage)
+            ugly_maxnod_usage = ugly_curnod_usage;
+      }
+   } else {
+      /* zero-alloc */
 
-	/* update num. of failed calls to umalloc() */
-	ugly_umalloc_count_fail++;
+      /* update num. of failed calls to umalloc() */
+      ugly_umalloc_count_fail++;
 
-	uglymem_message("MALLOC: zero-sized allocation");
-	uglymem_meminfo(NULL, file, line);
-    }
+      uglymem_message("MALLOC: zero-sized allocation");
+      uglymem_meminfo(NULL, file, line);
+   }
 
-    return (mem);
+   return (mem);
 }
 
 /*
  * ugly_free
  */
-void ugly_free(void *ptr, STRPTR file, ULONG line)
-{
+void ugly_free(void *ptr, STRPTR file, ULONG line) {
 #if DEBUG_UGLY_MEMORY==2
-    fprintf(stderr, "*memory* UFREE() from `%s' (%lu)\n", file, line);
+   fprintf(stderr, "*memory* UFREE() from `%s' (%lu)\n", file, line);
 #elif 0
-    fputc('.', stderr);		/* still alive? */
-    fflush(stderr);
+   fputc('.', stderr);		/* still alive? */
+   fflush(stderr);
 #endif
-    if (ptr)
-    {
+   if (ptr) {
+      UGLYMEM *umem = find_umem(ptr);
 
-	UGLYMEM *umem = find_umem(ptr);
+      if (umem) {
+         /* update num. of calls to ufree() */
+         ugly_ufree_count++;
 
-	if (umem)
-	{
-	    /* update num. of calls to ufree() */
-	    ugly_ufree_count++;
+         /* update memory usage */
+         ugly_curmem_usage -= umem->size;
+         ugly_real_curmem_usage -= modfit(umem->size, UMEM_BLOCKSIZE);
 
-	    /* update memory usage */
-	    ugly_curmem_usage -= umem->size;
-	    ugly_real_curmem_usage -= modfit(umem->size, UMEM_BLOCKSIZE);
+         /* remove node from mem-list */
+         del_uglymem(umem);
+         ugly_curnod_usage--;
+      } else {
+         /* ptr has never been allocated */
 
-	    /* remove node from mem-list */
-	    del_uglymem(umem);
-	    ugly_curnod_usage--;
-	}
-	else
-	{
-	    /* ptr has never been allocated */
+         /* update num. of calls to ufree() */
+         ugly_ufree_count_fail++;
 
-	    /* update num. of calls to ufree() */
-	    ugly_ufree_count_fail++;
-
-	    /* -> error message */
-	    uglymem_message("*** FREE: memory never allocated "
-			    " or released twice");
-	    uglymem_meminfo(ptr, file, line);
-	}
-    }
+         /* -> error message */
+         uglymem_message("*** FREE: memory never allocated "
+               " or released twice");
+         uglymem_meminfo(ptr, file, line);
+      }
+   }
 }
 
 /*
@@ -704,19 +692,17 @@ void ugly_free(void *ptr, STRPTR file, ULONG line)
  *
  * replacement of realloc()
  */
-void *ugly_realloc(void *ptr, size_t size, STRPTR file, ULONG line)
-{
-    void *newptr = ugly_malloc_tracking(size, file, line);
-    UGLYMEM *umem = find_umem(ptr);
+void *ugly_realloc(void *ptr, size_t size, STRPTR file, ULONG line) {
+   void *newptr = ugly_malloc_tracking(size, file, line);
+   UGLYMEM *umem = find_umem(ptr);
 
-    if (newptr && umem)
-    {
-	/* copy old data */
-	memcpy(newptr, umem->ptr, umem->size);
-	/* free old memory */
-	ugly_free(ptr, file, line);
-    }
-    return (newptr);
+   if (newptr && umem) {
+      /* copy old data */
+      memcpy(newptr, umem->ptr, umem->size);
+      /* free old memory */
+      ugly_free(ptr, file, line);
+   }
+   return (newptr);
 }
 
 /*
@@ -724,15 +710,13 @@ void *ugly_realloc(void *ptr, size_t size, STRPTR file, ULONG line)
  *
  * replacement of calloc()
  */
-void *ugly_calloc(size_t count, size_t size, STRPTR file, ULONG line)
-{
-    /* alloc new mem */
-    void *mem = ugly_malloc_tracking(count * size, file, line);
+void *ugly_calloc(size_t count, size_t size, STRPTR file, ULONG line) {
+   /* alloc new mem */
+   void *mem = ugly_malloc_tracking(count * size, file, line);
 
-    /* fill mem with zero */
-    if (mem)
-    {
-	memset(mem, 0, size * count);
-    }
-    return (mem);
+   /* fill mem with zero */
+   if (mem) {
+      memset(mem, 0, size * count);
+   }
+   return (mem);
 }

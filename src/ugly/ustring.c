@@ -68,12 +68,10 @@ int last_ch(STRPTR s)
  * errors: out of memory: returns NULL
  *
  */
-STRPTR ugly_strclone(CONSTRPTR oldstr, STRPTR file, ULONG line)
-{
+STRPTR ugly_strclone(CONSTRPTR oldstr, STRPTR file, ULONG line) {
     STRPTR newstr = NULL;
 
-    if (oldstr)
-    {
+    if (oldstr) {
         /* alloc mem for clone */
 #if DEBUG_UGLY_MEMORY
         newstr = (STRPTR) ugly_malloc_tracking(strlen(oldstr) + 1, file, line);
@@ -95,8 +93,7 @@ STRPTR ugly_strclone(CONSTRPTR oldstr, STRPTR file, ULONG line)
  * params: *s...string to convert
  *
  */
-STRPTR lowstr(STRPTR s)
-{
+STRPTR lowstr(STRPTR s) {
     STRPTR s_old = s;
 
     if (s)
@@ -111,8 +108,7 @@ STRPTR lowstr(STRPTR s)
  * params: *s...string to convert
  *
  */
-STRPTR upstr(STRPTR s)
-{
+STRPTR upstr(STRPTR s) {
     STRPTR s_old = s;
 
     if (s)
@@ -128,40 +124,21 @@ STRPTR upstr(STRPTR s)
  * string compare, ignore case
  *
  * params: *s1, *s2...ptr to strings to compare
- * result: -1: s1 < s2
+ * result: <0: s1 < s2
  *          0: s1 = s2
- *          1: s1 > s2
+ *         >0: s1 > s2
  *
  */
-int upstrcmp(CONSTRPTR s1, CONSTRPTR s2)
-{
-#define QUICKY 1
-#if !QUICKY
-    int equal;                  /* result of _strcp() */
-#endif
+int upstrcmp(CONSTRPTR s1, CONSTRPTR s2) {
     unsigned char c1, c2;       /* chars currently comparing */
     size_t i = 0;               /* string index counter */
 
-    do
-    {
+    do {
         c1 = toupper(s1[i]);
         c2 = toupper(s2[i]);
-        i++;
-    }
-    while (c1 && c2 && (c1 == c2));
-
-#if QUICKY
+        ++i;
+    } while (c1 && c2 && (c1 == c2));
     return (c2 - c1);
-#else
-    if (c1 < c2)
-        equal = -1;             /* s1 < s2 */
-    else if (c1 > c2)
-        equal = +1;             /* s1 > s2 */
-    else
-        equal = 0;              /* s1 = s2 */
-
-    return (equal);             /* return result */
-#endif
 }
 
 /*
@@ -176,28 +153,16 @@ int upstrcmp(CONSTRPTR s1, CONSTRPTR s2)
  *          1: s1 > s2
  *
  */
-int upstrncmp(CONSTRPTR s1, CONSTRPTR s2, size_t n)
-{
-    int equal;                  /* result of _strcp() */
-    unsigned char c1, c2;       /* char of string currently comparing */
-    size_t i = 0;               /* string index counter */
+int upstrncmp(CONSTRPTR s1, CONSTRPTR s2, size_t n) {
+   unsigned char c1, c2;       /* char of string currently comparing */
+   size_t i = 0;               /* string index counter */
 
-    do
-    {
-        c1 = toupper(s1[i]);
-        c2 = toupper(s2[i]);
-        i++;
-    }
-    while (c1 && c2 && (c1 == c2) && (i < n));
-
-    if (c1 < c2)
-        equal = -1;             /* s1 < s2 */
-    else if (c1 > c2)
-        equal = +1;             /* s1 > s2 */
-    else
-        equal = 0;              /* s1 = s2 */
-
-    return (equal);             /* return result */
+   do {
+      c1 = toupper(s1[i]);
+      c2 = toupper(s2[i]);
+      ++i;
+   } while (c1 && c2 && (c1 == c2) && (i < n));
+   return c2-c1;
 }
 
 /*
@@ -206,29 +171,22 @@ int upstrncmp(CONSTRPTR s1, CONSTRPTR s2, size_t n)
  * find a sub-string (case insensitive)
  *
  */
-STRPTR upstrstr(CONSTRPTR s1, CONSTRPTR s2)
-{
+STRPTR upstrstr(CONSTRPTR s1, CONSTRPTR s2) {
     const char *c1;
     const char *c2;
 
-    do
-    {
+    do {
         c1 = s1;
         c2 = s2;
 
-        while (*c1 != '\0' && (toupper(c1[0]) == toupper(c2[0])))
-        {
-            c1++;
-            c2++;
+        while (*c1 != '\0' && (toupper(c1[0]) == toupper(c2[0]))) {
+            ++c1;
+            ++c2;
         }
 
         if (*c2 == '\0')
-        {
             return (char *) s1;
-        }
-    }
-    while (*s1++ != '\0');
-
+    } while (*s1++ != '\0');
     return NULL;
 }
 
@@ -244,8 +202,7 @@ STRPTR upstrstr(CONSTRPTR s1, CONSTRPTR s2)
  *       ufree(). this will avoid problems when using
  *       the memory-tracking feature of ugly.o
  */
-void ugly_freestr(STRPTR s, STRPTR file, ULONG line)
-{
+void ugly_freestr(STRPTR s, STRPTR file, ULONG line) {
 #if DEBUG_UGLY_MEMORY
     ugly_free(s, file, line);
 #else
@@ -265,8 +222,7 @@ void ugly_freestr(STRPTR s, STRPTR file, ULONG line)
  * IMPORTANT: old string has to be initialies like "oldstr = NULL;" before !!
  *            first call like "reallocstr( &oldstr, "<new data>" );"
  */
-void ugly_reallocstr(STRPTR * oldstr, CONSTRPTR newstr, STRPTR file, ULONG line)
-{
+void ugly_reallocstr(STRPTR * oldstr, CONSTRPTR newstr, STRPTR file, ULONG line) {
 #if DEBUG_UGLY_MEMORY
     ugly_freestr(*oldstr, file, line);  /* free old string */
     *oldstr = ugly_strclone(newstr, file, line);        /* clone new string */
@@ -292,8 +248,7 @@ void ugly_reallocstr(STRPTR * oldstr, CONSTRPTR newstr, STRPTR file, ULONG line)
  *         on string funtions, e.g s = strclone( ch2str( 'x' ) );
  *
  */
-STRPTR ch2str(const char ch)
-{
+STRPTR ch2str(const char ch) {
     static char ch2str_buffer[2];       /* internal buffer */
 
     ch2str_buffer[0] = ch;
@@ -315,13 +270,11 @@ STRPTR ch2str(const char ch)
  * NOTE:   this is a clone of none-ansi-c function _strrpbrk()
  *
  */
-STRPTR ustrrpbrk(CONSTRPTR str, CONSTRPTR set)
-{
+STRPTR ustrrpbrk(CONSTRPTR str, CONSTRPTR set) {
     size_t i;
     STRPTR result = NULL;
 
-    if (str && ('\0' != str[0]))
-    {
+    if (str && ('\0' != str[0])) {
 
         i = strlen(str) - 1;
 
@@ -332,7 +285,6 @@ STRPTR ustrrpbrk(CONSTRPTR str, CONSTRPTR set)
             result = (STRPTR) & (str[i]);
     }
     return result;
-
 }
 
 /*
@@ -346,14 +298,11 @@ STRPTR ustrrpbrk(CONSTRPTR str, CONSTRPTR set)
  * errors: returen FALSE
  *
  */
-BOOL str2long(STRPTR s, LONG * num)
-{
+BOOL str2long(STRPTR s, LONG * num) {
     BOOL conv_ok = FALSE;
 
     if (sscanf(s, "%d", (int *) num))
-    {
         conv_ok = TRUE;
-    }
     return conv_ok;
 }
 
@@ -367,16 +316,13 @@ BOOL str2long(STRPTR s, LONG * num)
  * errors: returns NULL
  *
  */
-STRPTR long2str(LONG num)
-{
+STRPTR long2str(LONG num) {
     static char num2str_buffer[10];     /* internal buffer */
 
     STRPTR result_str = NULL;
 
     if (sprintf(num2str_buffer, "%d", (int) num))
-    {
         result_str = num2str_buffer;
-    }
     return result_str;
 }
 
@@ -402,33 +348,24 @@ LONG strenum(CONSTRPTR str, CONSTRPTR set, char sep, BYTE options)
     STRPTR s = strclone(set);
     LONG found = 0;
 
-    if (s)
-    {
+    if (s) {
 
         STRPTR nxtstr = strtok(s, ch2str(sep));
         LONG count = 1;
 
-        while (!found && nxtstr)
-        {
+        while (!found && nxtstr) {
 
-            if (options & STEN_NOCASE)
-            {
+            if (options & STEN_NOCASE) {
                 if (!upstrcmp(str, nxtstr))
                     found = count;
-            }
-            else if (!strcmp(str, nxtstr))
+            } else if (!strcmp(str, nxtstr))
                 found = count;
 
             count++;
             nxtstr = strtok(NULL, ch2str(sep));
-
         }
-
         ufreestr(s);
-
-    }
-    else
+    } else
         found = -1;
-
     return (found);
 }

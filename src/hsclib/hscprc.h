@@ -91,6 +91,7 @@
 #define EMODE_NUMERIC  (3)        /* always replace with numeric entity (&#123;) */
 #define EMODE_SYMBOLIC (4)        /* always replace with symbolic entity (&uuml;) */
 #define EMODE_UTF8     (5)        /* always replace with UTF-8 representation */
+#define EMODE_INVALID  (-1)       /* option has not been set */
 
 /*
  * misc. defines for files & envvars

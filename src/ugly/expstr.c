@@ -560,32 +560,26 @@ VOID del_estr(EXPSTR * es)
 *
 ******************************************************************************
 */
-BOOL ugly_app_estrch(EXPSTR * es, int ch)
-{
+BOOL ugly_app_estrch(EXPSTR * es, int ch) {
     BOOL ok = TRUE;
 
-    if (es->es_len >= es->es_size)
-    {                           /* enough mem left? */
+    if (es->es_len >= es->es_size) { /* enough mem left? */
 
         STRPTR old_data = es->es_data;  /* N->remeber old data ptr */
 
-        if (set_estr_mem(es,
-                         es->es_size + es->es_step))
-        {                       /*    set new mem sucessful? */
+        if (set_estr_mem(es, es->es_size + es->es_step)) {
+           /* set new mem sucessful? */
 
             strcpy(es->es_data, /*    Y->copy old data */
                    old_data);
             ufree(old_data);    /*       release old data */
 
-        }
-        else
-        {
+        } else {
             /*    N->return error */
             ok = FALSE;
         }
     }
-    if (ok)
-    {
+    if (ok) {
 
         STRPTR s;
         s = es->es_data;
@@ -597,43 +591,32 @@ BOOL ugly_app_estrch(EXPSTR * es, int ch)
     return (ok);
 }
 
-BOOL ugly_dbg_app_estrch(EXPSTR * es, int ch, STRPTR file, ULONG line)
-{
+BOOL ugly_dbg_app_estrch(EXPSTR * es, int ch, STRPTR file, ULONG line) {
     BOOL ok = TRUE;
 
-    if (!es)
-    {
+    if (!es) {
         es_null("app_estrch", file, line);
         ok = FALSE;
-    }
-    else if (es->es_len >= es->es_size)
-    {                           /* enough mem left? */
+    } else if (es->es_len >= es->es_size) { /* enough mem left? */
 
         STRPTR old_data = es->es_data;  /* N->remeber old data ptr */
 
-        if (ugly_dbg_set_estr_mem(es,
-                                  es->es_size + es->es_step, file, line))
-        {
+        if (ugly_dbg_set_estr_mem(es, es->es_size + es->es_step, file, line)) {
             /*    set new mem sucessfully? */
 
             strcpy(es->es_data, /*    Y->copy old data */
                    old_data);
             ufree(old_data);    /*       release old data */
-        }
-        else
-        {                       /*    N->return error */
+        } else {                       /*    N->return error */
             ok = FALSE;
         }
     }
-    if (ok)
-    {
-
+    if (ok) {
         STRPTR s;
         s = es->es_data;
         s[es->es_len - 1] = ch; /* append new char to expstr */
         s[es->es_len] = 0;
         es->es_len++;           /* incr. expstr length */
-
     }
     return (ok);
 }

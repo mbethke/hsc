@@ -881,19 +881,28 @@ BOOL hsc_parse_amp(HSCPRC * hp) {
 
       /* output whole entity */
       if (estrlen(amp_str)) {
-         if(invalid_ent || (EMODE_KEEP == hp->entitymode)) {
-            /* output entity as found in source */
+         if(invalid_ent) {
+            /* output invalid entity as found in source */
             hsc_output_text(hp, "", estr2str(amp_str));
          } else {
             char tbuf[8];
             char *ent_out = tbuf;
 
             switch(hp->entitymode) {
+               case EMODE_KEEP :
+                  if((NULL != entity) &&
+                        (entity->flags & HSCENTF_NONSTD)) {
+                     /* nonstandard entities must be converted to numeric */
+                     ENTITY_NUM2TEXT(tbuf,numeric_ent);
+                  } else
+                     ent_out = estr2str(amp_str);
+                  break;
+
                case EMODE_REPLACE :
                   if(NULL != entity) {
-                     if(entity->prefnum)
+                     if(entity->flags & (HSCENTF_PREFNUM | HSCENTF_NONSTD))
                         /* entity should be output numerically */
-                        ENTITY_NUM2TEXT(tbuf,entity->numeric);
+                        ENTITY_NUM2TEXT(tbuf,numeric_ent);
                      else {
                         /* reconstruct symbolic name (entity may have been
                          * specified numerically! */
@@ -905,10 +914,12 @@ BOOL hsc_parse_amp(HSCPRC * hp) {
                   } else
                      ent_out = estr2str(amp_str);
                   break;
+
                case EMODE_NUMERIC :
                   /* if !invalid_ent, numeric_ent has been set */
                   ENTITY_NUM2TEXT(tbuf,numeric_ent);
                   break;
+
                case EMODE_SYMBOLIC :
                   /* if entity was found, reconstruct symbolic name, otherwise
                    * use what was in the source */
@@ -919,6 +930,7 @@ BOOL hsc_parse_amp(HSCPRC * hp) {
                   }
                   ent_out = estr2str(amp_str);
                   break;
+
                case EMODE_UTF8 :
                   /* simply convert numeric_ent to UTF-8, unless numeric_ent==0,
                    * which means entity is one of lt/gt/quot/amp and should be
@@ -928,6 +940,7 @@ BOOL hsc_parse_amp(HSCPRC * hp) {
                   else
                      ent_out = estr2str(amp_str);
                   break;
+
                default :
                   ent_out = estr2str(amp_str);
                   break;
@@ -935,10 +948,8 @@ BOOL hsc_parse_amp(HSCPRC * hp) {
             hsc_output_text(hp, "", ent_out);
          }
       }
-
       del_estr(amp_str);
    }
-
    return (BOOL) (!hp->fatal);
 }
 

@@ -253,7 +253,7 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp) {
         HSC_INSEXPR_STR " /SPECIAL>",
     /* tags starting with HSC_TAGID */
         HSC_CONTENT_STR " /SKIPLF>",
-        HSC_DEFENT_STR " /SKIPLF NAME:string/r RPLC:string NUM:num>",
+        HSC_DEFENT_STR " /SKIPLF NAME:string RPLC:string NUM:num PREFNUM:bool NONSTD:bool>",
         HSC_DEFSTYLE_STR " /SKIPLF NAME:string/r VAL:string>",
         HSC_DEFICON_STR " /SKIPLF NAME:string/r>",
         HSC_DEFINE_STR " /SKIPLF /SPECIAL>",

@@ -90,17 +90,17 @@ typedef char TEXT;
 #endif
 
 #ifndef TRUE
-#define TRUE            1
+#define TRUE            (1)
 #endif
 #ifndef FALSE
-#define FALSE           0
+#define FALSE           (0)
 #endif
 #ifndef NULL
-#define NULL            0L
+#define NULL            ((void*)0L)
 #endif
 
-#define BYTEMASK        0xFF
-#define WORDMASK        0xFFFF
+#define BYTEMASK        (0xFF)
+#define WORDMASK        (0xFFFF)
 
 #endif /* AMIGA */
 

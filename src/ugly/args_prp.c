@@ -101,8 +101,7 @@ void fprintf_arginfo(FILE * stream, APTR data)
  * convert argument definitions to dllist of struct arginfo
  *
  */
-struct arglist *prepare_args(STRPTR arglist_name,...)
-{
+struct arglist *prepare_args(STRPTR arglist_name,...) {
     va_list ap;
     struct dllist *newlist;
     struct arginfo *newarg;
@@ -118,36 +117,26 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
     new_arglist = (struct arglist *)
         umalloc(sizeof(struct arglist));
 
-    if (new_arglist)
-    {
-
+    if (new_arglist) {
         new_arglist->al_name = arglist_name;
         new_arglist->al_list = NULL;
         new_arglist->al_multiple = NULL;
         new_arglist->al_nokeywd = NULL;
-
-    }
-    else
+    } else
         set_preperr(APE_NO_MEM, 0);
-
-    /*
-     * TODO: don't go into if(), when new_arglist failed
-     */
 
     /*
      * convert template to double linked list
      */
     newlist = init_dllist(del_arginfo);
 
-    if (newlist)
-    {
+    if(new_arglist && newlist) {
 
         STRPTR nxtdef = NULL;   /* next template definition */
 
         va_start(ap, arglist_name);
 
-        do
-        {
+        do {
 
             ufreestr(nxtdef);
             nxtdef = va_arg(ap, STRPTR);        /* get next definition */
@@ -158,16 +147,13 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
             nxtdef = strclone(nxtdef);
             prep_error_idx++;
 
-            if (nxtdef)
-            {
+            if (nxtdef) {
 
                 DA(fprintf(stderr, DUA "  `%s'\n", nxtdef));
 
                 newarg = (struct arginfo *) umalloc(sizeof(struct arginfo));
 
-                if (newarg)
-                {
-
+                if (newarg) {
                     STRPTR new_id;
                     STRPTR typestr;
                     STRPTR flagstr = NULL;
@@ -194,14 +180,11 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
                     /*
                      * get argument type
                      */
-                    if (typestr)
-                    {
+                    if (typestr) {
 
-                        if (strlen(typestr) == 1)
-                        {
+                        if (strlen(typestr) == 1) {
 
-                            switch (toupper(typestr[0]))
-                            {
+                            switch (toupper(typestr[0])) {
 
                             case 'T':
                                 new_type = ARG_TEXT;
@@ -226,37 +209,28 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
                             }
 
                             if (new_type)       /* arg-type specified? */
-                                flagstr =       /* Y-> get next flag */
-                                    strtok(NULL, "/");
-                            else
-                            {
+                               flagstr = strtok(NULL, "/"); /* Y-> get next flag */
+                                    
+                            else {
 
                                 flagstr = typestr;      /* N-> must be flag */
                                 new_type = ARG_TEXT;    /*     set type to text */
 
                             }
-
-                        }
-                        else
+                        } else
                             set_preperr(APE_INVALID_TEMPLATE, 0);
 
-                    }
-                    else
-                    {           /* no type at all */
-
+                    } else {           /* no type at all */
                         flagstr = NULL;         /* -> no flags also */
                         new_type = ARG_TEXT;    /*    set type to text */
-
                     }           /* if typestr */
 
                     /*
                      * get argument flags
                      */
-                    while (flagstr && flagstr[0] && no_preperr)
-                    {
+                    while (flagstr && flagstr[0] && no_preperr) {
 
-                        switch (toupper(flagstr[0]))
-                        {
+                        switch (toupper(flagstr[0])) {
 
                         case 'M':
                             new_flags |= ARG_MULTIPLE;
@@ -285,25 +259,20 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
                         }       /* switch */
 
                         flagstr = strtok(NULL, "/");
-
                     }           /* while */
 
-                    if (no_preperr)
-                    {
+                    if (no_preperr) {
 
                         /*
                          * get additional arguments
                          */
-                        if (new_flags & ARG_HANDLEFUNC)
-                        {
-
+                        if (new_flags & ARG_HANDLEFUNC) {
                             /*
                              * get handler function
                              */
-#if 1
                             APTR func_tmp = va_arg(ap, STRPTR);
                             newarg->ai_func = (STRPTR(*)(STRPTR)) func_tmp;
-#else
+#if 0
                             /* tricky type-cast, 1-step-version, does */
                             /* not work with several compilers */
                             newarg->ai_func = va_arg(ap, STRPTR(*)(STRPTR));
@@ -311,8 +280,7 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
 
                         }
 
-                        if (new_type == ARG_LONG_RANGE)
-                        {
+                        if (new_type == ARG_LONG_RANGE) {
 
                             /*
                              * get range limits
@@ -320,9 +288,7 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
                             rnlolim = va_arg(ap, LONG);
                             rnhilim = va_arg(ap, LONG);
 
-                        }
-                        else if (new_type == ARG_ENUM)
-                        {
+                        } else if (new_type == ARG_ENUM) {
 
                             /*
                              * get enum string
@@ -331,8 +297,7 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
 
                         }
 
-                        if (no_preperr)
-                        {
+                        if (no_preperr) {
 
                             newarg->ai_id = strclone(new_id);   /* sux */
                             newarg->ai_type = new_type;
@@ -345,8 +310,7 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
                              * set additional argument information
                              * (->misc1, ->misc2)
                              */
-                            switch (new_type)
-                            {
+                            switch (new_type) {
 
                             case ARG_ENUM:
                                 newarg->ai_misc1.ai_enum = strclone(enumstr);
@@ -366,7 +330,6 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
                              */
                             if (newarg->ai_dest == NULL)
                                 set_preperr(APE_DESTVAR_IS_NULL, 0);
-
                         }
 
                         /*
@@ -384,42 +347,25 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
                          * append new argument entry to list
                          */
                         if (no_preperr)
-                            if (app_dlnode(newlist, (APTR) newarg)
-                                == NULL)
+                            if (app_dlnode(newlist, (APTR) newarg) == NULL)
                                 set_preperr(APE_NO_MEM, 0);
 
                         /* free _newarg if any error occured */
                         if (any_preperr)
                             del_arginfo((APTR) newarg);
-
                     }
-
-                }
-                else
-                    set_preperr(APE_NO_MEM, 0);
-
-            }
-            else
-            {
-
+                } else
+                   set_preperr(APE_NO_MEM, 0);
+            } else {
                 DA(fprintf(stderr, DUA "  (end prepare)\n"));
-
             }
 
-        }
-        while (nxtdef && no_preperr);
+        } while (nxtdef && no_preperr);
 
         /* free last value of nxtdef */
         ufreestr(nxtdef);
-
-#if 0
-        while (nxtdef)          /* flush arguments */
-            nxtdef = va_arg(ap, STRPTR);        /* (in error case) */
-#endif
         va_end(ap);
-
-    }
-    else
+    } else
         set_preperr(APE_NO_MEM, 0);
 
     /*
@@ -432,20 +378,15 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
     /*
      * free newlist, if any error occured
      */
-    if (any_preperr)
-    {
-
+    if (any_preperr) {
         /* free newlist */
         del_dllist(newlist);
         ufree(new_arglist);
         newlist = NULL;
         new_arglist = NULL;
-
-    }
-    else
+    } else
         new_arglist->al_list = newlist;
 
     return new_arglist;
-
 }
 

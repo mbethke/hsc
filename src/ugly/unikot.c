@@ -44,12 +44,13 @@
         unikot_internal_error(__FILE__, __LINE__, m); \
     }
 
-static void unikot_internal_error(char *file, long int line, char *message)
-{
+#if 0
+static void unikot_internal_error(char *file, long int line, char *message) {
     fprintf(stderr, "*** internal error at `%s' (%ld): %s\n",
             file, line, message);
     exit(255);
 }
+#endif
 
 /**** ugly/utf8_to_ucs4 *********************************************
  * NAME
@@ -73,19 +74,16 @@ static void unikot_internal_error(char *file, long int line, char *message)
  *   If there was an error in the UTF-8 encoding, this value will be
  *   zero or negative.
  *******************************************************************/
-int utf8_to_ucs4(ucs4_t * ucs4, const utf8_t * utf8str)
-{
+int utf8_to_ucs4(ucs4_t * ucs4, const utf8_t * utf8str) {
     int skip = 1;
 
-    if (utf8str[0] >= 192)
-    {
+    if (utf8str[0] >= 192) {
         /* blimy! This must be an extended char */
         char ch_to_read = 0;
         utf8_t i = utf8str[0];
         ucs4_t first_ch_mask = 0x3f;
 
-        while (i & 0x40)
-        {
+        while (i & 0x40) {
             ch_to_read += 1;
             i = (i << 1) & 0x7f;
             first_ch_mask = first_ch_mask >> 1;
@@ -96,48 +94,39 @@ int utf8_to_ucs4(ucs4_t * ucs4, const utf8_t * utf8str)
         DUC(fprintf(stderr, "%02x: %d chars, mask=0x%02x\n",
                     utf8str[0], ch_to_read, first_ch_mask));
 
-        do
-        {
+        do {
             utf8_t ch = 0;
 
             /* get next char */
             ch = utf8str[skip];
 
-            if ((ch & 0xc0) == 0x80)
-            {
+            if ((ch & 0xc0) == 0x80) {
                 /* add it to to current ucs4-value */
                 *ucs4 = (*ucs4 << 6) + (ch & 0x3f);
                 ch_to_read -= 1;
                 skip += 1;
-            }
-            else
-            {
+            } else {
                 /* encoding error */
                 DUC(fprintf(stderr, UNIKOT "*** encoding error: 0x%02x != 10xxxxxx\n", ch));
                 skip = ERR_UNIKOT_LATER_CHAR;
             }
         }
         while (ch_to_read && (skip > 0));
-    }
-    else if (utf8str[0] >= 128)
-    {
+    } else if (utf8str[0] >= 128) {
         /* encoding error */
         DUC(fprintf(stderr, UNIKOT "*** encoding error: 128<ch<192\n"));
         skip = ERR_UNIKOT_FIRST_CHAR;
-    }
-    else
-    {
+    } else {
         /* it is just a simple ASCII-char */
         *ucs4 = utf8str[0];
         skip = 1;
     }
-
     return skip;
 }
 
 /**** ugly/ucs4_to_utf8 *********************************************
  * NAME
- *   ucs4_to_utf8 - convert utf8-string to a ucs4-value
+ *   ucs4_to_utf8 - convert a ucs4-value to a utf8-string
  * SYNOPSIS
  * FUNCTION
  *   Converts a 31-bit UCS-4 code into a UTF-8 string.
@@ -145,8 +134,8 @@ int utf8_to_ucs4(ucs4_t * ucs4, const utf8_t * utf8str)
  *   No trailing zero will be stored.
  * INPUTS
  *   utf8 - target string where the UTF-8 string will be written to
- *          (without a trailing zero). Therefor, this buffer must
- *          at least be alble to store six characters, or seven, if
+ *          (without a trailing zero). Therefore, this buffer must
+ *          at least be able to store six characters, or seven, if
  *          you want to be able to append a '\0' after the call.
  *   ucs4 - source UCS-4 code
  * RESULT
@@ -154,20 +143,15 @@ int utf8_to_ucs4(ucs4_t * ucs4, const utf8_t * utf8str)
  *   result. This can be used to increase the string pointer and call
  *   this routine again, or to expand or flush the buffer
  *******************************************************************/
-int ucs4_to_utf8(utf8_t * utf8str, ucs4_t ucs4)
-{
+int ucs4_to_utf8(utf8_t * utf8str, ucs4_t ucs4) {
     int skip = 0;
-    if (ucs4 < 128)
-    {
+    if (ucs4 < 128) {
         /* it is just a simple ASCII-char */
         utf8str[0] = (utf8_t) ucs4;
         skip = 1;
-    }
-    else
-    {
-        /* blimy! This must be an extended char */
-        static const utf8_t first_char_mask[] =
-        {
+    } else {
+        /* blimey! This must be an extended char */
+        static const utf8_t first_char_mask[] = {
             0xc0,               /* 110xxxxx */
             0xe0,               /* 1110xxxx */
             0xf0,               /* 11110xxx */
@@ -191,31 +175,11 @@ int ucs4_to_utf8(utf8_t * utf8str, ucs4_t ucs4)
          *   0400 0000-7FFF FFFF   1111110x 10xxxxxx ... 10xxxxxx
          */
         if (ucs4 <= 0x0000ffff)
-        {
-            if (ucs4 <= 0x007ff)
-            {
-                skip = 2;
-            }
-            else
-            {
-                skip = 3;
-            }
-        }
+            skip = (ucs4 <= 0x007ff) ? 2 : 3;
         else if (ucs4 < 0x03ffffff)
-        {
-            if (ucs4 <= 0x001fffff)
-            {
-                skip = 4;
-            }
-            else
-            {
-                skip = 5;
-            }
-        }
+            skip = (ucs4 <= 0x001fffff) ? 4 : 5;
         else
-        {
             skip = 6;
-        }
 
         first_char = first_char_mask[skip - 2];
 
@@ -224,13 +188,12 @@ int ucs4_to_utf8(utf8_t * utf8str, ucs4_t ucs4)
 
         /* compute every but first character */
         i = skip - 1;
-        while (i > 0)
-        {
+        while (i > 0) {
             ch = 0x80 + (ucs4 & 0x3f);
             ucs4 = ucs4 >> 6;
             utf8str[i] = ch;
             DUC(fprintf(stderr, UNIKOT "  i=%d ch=%02x\n", i, ch));
-            i -= 1;
+            --i;
         }
 
         DUC(internal_error(first_char & ucs4, "bits overlapping"));
@@ -239,7 +202,6 @@ int ucs4_to_utf8(utf8_t * utf8str, ucs4_t ucs4)
         first_char = first_char | ucs4;
         utf8str[0] = first_char;
     }
-
     return skip;
 }
 
