@@ -1,16 +1,29 @@
 /*
 ** hsc.c - HTML sucks completely
 **
-** updated:  7-Aug-1995
+** updated: 12-Sep-1995
 ** created:  1-Jul-1995
 */
 
 /*
 ** TODO:
-** - HT_NONEST, HT_NOBP. HT_NOAP (no <P> before/after tag allowd)
+** - BUG: write whspc twice after (opening?) tag
+** - support " > ", " < " and " & "
+** - <$defent>
+** - options for attributes
+** - HT_NOBP. HT_NOAP (no <P> before/after tag allowd)
+** - HT_SMART_CLOSE for <P> and <LI>
+** - HT_STRIP_EXTERNAL to strip whole tag
+**   if it references to an external URI
+** - set error messages
+** - set configurable error string
 ** - ignore warnings
-** - &&, &>, &<
+** - also skip arg after unknown attribute
+** - handler for break signal
 **
+** - <$IF>
+** - check "NAME" with <A>
+** - hsc.refs
 */
 
 /*
@@ -48,13 +61,13 @@
 int main( int argc, char *argv[] )
 {
 #ifdef AMIGA
-    STRPTR version_string = "$VER: 0.8.1 hsc (10.9.1995)";
+    static STRPTR version_string = "$VER: 0.9.0 hsc (4.10.1995)";
 #endif
     BOOL ok = FALSE;
 
     /* set program information */
-    set_prginfo( "hsc", "Tommy-Saftwörx", 0, 8, 1,
-        "HTML Sucks Completely", "This is FreeWare!" );
+    set_prginfo( "hsc", "Tommy-Saftwörx", 0, 9, 0,
+        "HTML Sucks Completely", "This is FreeWare." );
 
 #ifdef UMEM_TRACKING
     /* display a memory tracking report */
@@ -79,17 +92,12 @@ int main( int argc, char *argv[] )
              && config_ok() )          /* read config */
         {
             /* include file parsed in args */
-            ok = include_hsc( inpfilename, outfile, IH_PARSE_END );
+            ok = include_hsc_file( inpfilename, outfile, IH_PARSE_END );
 
         }
 
     }
 
-    /* TODO: set return value 0,5,10,20 */
-    /* ->define symbols like RC_FAIL, vars like any_warn */
-    if ( ok )
-        return( 0 ); /* successful */
-    else
-        return( 20 );
+    return( return_code );
 }
 

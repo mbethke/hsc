@@ -226,7 +226,7 @@ void test_setfext( STRPTR fn, STRPTR ext )
     printf( "set_fext: \"%s\" with \"%s\" -> \"%s\"\n", fn, ext, newfn );
 }
 
-void main( void )
+int main( void )
 {
     LONG i;
     STRPTR nam;
@@ -323,7 +323,7 @@ void main( void )
 
 #endif
 
-
+    return( 0 );
 
 }
 

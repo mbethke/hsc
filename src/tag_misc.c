@@ -3,18 +3,28 @@
 **
 ** misc tag handles
 **
-** updated: 30-Jul-1995
+** updated: 12-Sep-1995
 ** created: 30-Jul-1995
 */
 
+/*
+** ansi includes
+*/
 #include <stdio.h>
 #include <time.h>
 
+/*
+** ugly includes
+*/
 #include "ugly/types.h"
-#include "ugly/dllist.h"
-#include "ugly/infile.h"
 #include "ugly/string.h"
+#include "ugly/args.h"
+#include "ugly/memory.h"
+#include "ugly/prginfo.h"
 
+/*
+** local includes
+*/
 #include "global.h"
 #include "output.h"
 #include "tagargs.h"
@@ -22,26 +32,38 @@
 #include "error.h"
 #include "msgid.h"
 
-UBYTE prev_heading_num = 0;
+#include "tag.h"
+
+UBYTE prev_heading_num = 0; /* stores previous heading */
+
 /*
 **
 ** global funs
 **
 */
 
+
 /*
-** handle_heading
+** handle_heading: tag handle for <H1>..<H6>
 **
+** compute number of haeding,
+** compare it with previous heading,
+** check first heading to be <H1>
 **
 */
-BOOL check_heading( UBYTE num, INFILE *inpf )
+BOOL handle_heading( INFILE *inpf, HSCTAG *tag )
 {
+    BYTE num = (tag->name[1] - '0'); /* num of heading (1..6) */
+
+    if ( debug )
+        fprintf( stderr, "**   heading %d\n", num);
+
     if ( (prev_heading_num-num) < (-1) )
         if (prev_heading_num) {
 
             char hstr[4];
 
-            message( STYLE_WRONG_HEADING, inpf );
+            message( MSG_WRONG_HEADING, inpf );
             errstr( "next heading should be " );
             sprintf( hstr, "H%d", prev_heading_num+1 );
             errtag( hstr );
@@ -49,7 +71,7 @@ BOOL check_heading( UBYTE num, INFILE *inpf )
 
         } else {
 
-            message( STYLE_WRONG_HEADING, inpf );
+            message( MSG_EXPT_H1, inpf );
             errstr( "first heading should be " );
             errtag( "H1" );
             errlf();
@@ -59,51 +81,16 @@ BOOL check_heading( UBYTE num, INFILE *inpf )
     prev_heading_num = num;
 
     return (TRUE);
+
 }
 
 
 /*
-** handle_headingX
+** handle_sgml_comment: tag handle for <!..>
 **
 **
 */
-BOOL handle_heading1( INFILE *inpf )
-{
-    return ( check_heading(1, inpf) );
-}
-
-BOOL handle_heading2( INFILE *inpf )
-{
-    return ( check_heading(2, inpf) );
-}
-
-BOOL handle_heading3( INFILE *inpf )
-{
-    return ( check_heading(3, inpf) );
-}
-
-BOOL handle_heading4( INFILE *inpf )
-{
-    return ( check_heading(4, inpf) );
-}
-
-BOOL handle_heading5( INFILE *inpf )
-{
-    return ( check_heading(5, inpf) );
-}
-
-BOOL handle_heading6( INFILE *inpf )
-{
-    return ( check_heading(6, inpf) );
-}
-
-
-/*
-** handle_comment
-**
-**
-*/
-BOOL handle_comment( INFILE *inpf )
+BOOL handle_sgml_comment( INFILE *inpf, HSCTAG *TAG )
 {
     /*
     ** TODO: - correct abort

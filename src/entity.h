@@ -20,11 +20,12 @@
 */
 
 /*
-** structures & typdefs for entities, tags and macros
+** structures & typdefs for entities
 */
 typedef struct hscent {
-    STRPTR name;
-    STRPTR source;
+    STRPTR name;    /* name/id (eg &"uuml"; ) */
+    STRPTR replace; /* replace by (eg "ü" ) */
+    LONG   numeric; /* numeric code of entity ( eg &#"123"; ) */
 } HSCENT;
 
 /*
@@ -50,9 +51,10 @@ extern DLLIST *defent;
 extern HSCENT *new_hscent( STRPTR newid );
 extern void    del_entity( APTR data );
 extern int     cmp_strent( APTR cmpstr, APTR entdata );
+extern int     cmp_rplcent( APTR cmpstr, APTR entdata );
 
 extern HSCENT *app_entnode( STRPTR entid );
-extern BOOL    add_ent( STRPTR entid, STRPTR entsource );
+extern BOOL    add_ent( STRPTR entid, STRPTR entreplace, LONG num );
 
 #endif /* NOEXTERN_HSC_ENTITY_H */
 

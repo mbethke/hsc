@@ -42,7 +42,7 @@ int cmp_str( APTR data1, APTR data2 )
 /*
 ** main: create a list of strings and play with it
 */
-void main( int argc, char *argv[] )
+int main( int argc, char *argv[] )
 {
 
     DLLIST *tl = init_dllist( del_str );
@@ -128,6 +128,7 @@ void main( int argc, char *argv[] )
 
     umem_report( "testargs - end" );
 
+    return( 0 );
 
 }
 

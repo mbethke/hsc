@@ -14,7 +14,9 @@
 
 #include "types.h"
 
-#define EXPSTR_MEMSTEP 16
+#define EXPSTR_MEMSTEP 96
+#define ES_MIN_MEMSTEP 8 /* min. memory step for init( step_size ) */
+
 #define modadj(x,by) ((by)*(((x)+(by))/(by)))
 
 typedef struct {
@@ -22,6 +24,7 @@ typedef struct {
     STRPTR  es_data; /* ptr to string data */
     size_t  es_len;  /* current len */
     size_t  es_size; /* current size of mem allocated */
+    size_t  es_step; /* size of memory step */
 
 } EXPSTR;
 
@@ -31,7 +34,7 @@ typedef struct {
 
 #ifndef NOEXTERN_UGLY_EXPSTR_H
 
-extern EXPSTR *init_estr( void );
+extern EXPSTR *init_estr( size_t step_size );
 extern void del_estr( EXPSTR *es );
 
 extern BOOL set_estr( EXPSTR *es, CONSTRPTR s );

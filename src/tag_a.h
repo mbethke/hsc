@@ -13,7 +13,10 @@
 #include "ugly/types.h"
 #include "ugly/infile.h"
 
+#include "tag.h"
+
 extern BOOL handle_anchor( INFILE *inpf, HSCTAG *tag );
+extern BOOL handle_canchor( INFILE *inpf, HSCTAG *tag);
 
 #if 0
 extern BOOL handle_anchor( INFILE *inpf );

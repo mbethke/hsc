@@ -3,10 +3,9 @@
 **
 ** hsc-tag funcs for hsc
 **
-** updated: 10-Sep-1995
+** updated:  3-Oct-1995
 ** created:  8-Sep-1995
 **
-** TODO: a lot
 */
 
 #include <stdio.h>
@@ -33,23 +32,14 @@
 /*
 ** global vars
 */
-DLLIST *deftag = NULL;                 /* list for defined tags */
-DLLIST *cltags = NULL;                 /* history for closing tags */
-
-char    this_tag[MAX_TAGLEN];          /* id of tag currently processed */
-HSCTAG *this_tag_data = NULL;          /* ptr to tag currently processed */
+DLLIST *deftag  = NULL;                /* list for defined tags */
+DLLIST *cltags  = NULL;                /* history for closing tags */
+DLLIST *hsctags = NULL;                /* list for hsc tags ("$xx") */
 
 STRPTR last_anchor = NULL;             /* stores prev URL of last anchor; */
                                        /* used within tag_a.c, but must be */
                                        /* released within cleanup.c */
 ULONG tag_call_id = 0;
-
-/* TODO: remove nesting vars */
-ULONG anchor_nesting = 0;
-ULONG body_nesting   = 0;
-ULONG head_nesting   = 0;
-ULONG list_nesting   = 0;
-ULONG title_nesting  = 0;
 
 /*
 **
@@ -76,16 +66,18 @@ HSCTAG *new_hsctag( STRPTR newid )
     if (newtag) {
 
         /* init new tag item */
-        newtag->name     = upstr( strclone(newid) );        /* set id */
-        newtag->option   = 0;
-        newtag->vers     = 0;
-        newtag->o_handle = NULL;       /* no handle functions */
-        newtag->c_handle = NULL;
-        newtag->occured  = FALSE;
-        newtag->op_fname = NULL;
-        newtag->cl_fname = NULL;
-        newtag->op_args  = init_dllist( del_var );
-        newtag->cl_args  = init_dllist( del_var );
+        newtag->name        = upstr( strclone(newid) );        /* set id */
+        newtag->option      = 0;
+        newtag->vers        = 0;
+        newtag->nest_count  = 0;
+        newtag->o_handle    = NULL;       /* no handle functions */
+        newtag->c_handle    = NULL;
+        newtag->occured     = FALSE;
+        newtag->op_text     = NULL;
+        newtag->cl_text     = NULL;
+        newtag->op_args     = init_dllist( del_var );
+        newtag->cl_args     = init_dllist( del_var );
+        newtag->only_inside = NULL;
 
         if ( !( newtag->name && newtag->op_args && newtag->cl_args ) ) {
 
@@ -96,7 +88,6 @@ HSCTAG *new_hsctag( STRPTR newid )
     }
 
     return (newtag);
-
 }
 
 /*
@@ -106,21 +97,25 @@ void del_tag( APTR data )
 {
     HSCTAG *tag = (HSCTAG *)data;
 
-    /* remove temp. files */
-    if ( tag->op_fname && tag->op_fname[0] && (!debug))
-        remove( tag->op_fname );
-    if ( tag->cl_fname && tag->cl_fname[0] && (!debug))
-        remove( tag->cl_fname );
-
     /* release mem */
     ufreestr( tag->name );
     ufreestr( tag->name );
-    ufreestr( tag->op_fname );
-    ufreestr( tag->cl_fname );
+    del_estr( tag->op_text  );
+    del_estr( tag->cl_text  );
+    ufreestr( tag->only_inside );
     del_dllist( tag->op_args );
     del_dllist( tag->cl_args );
-    ufree( tag );
 
+    /* clear values */
+    tag->option     = 0;
+    tag->vers       = 0;
+    tag->nest_count = 0;
+    tag->op_text    = NULL;
+    tag->cl_text    = NULL;
+    tag->op_args    = NULL;
+    tag->cl_args    = NULL;
+
+    ufree( tag );
 }
 
 
@@ -156,9 +151,9 @@ int cmp_strtag( APTR cmpstr, APTR tagdata )
 /*
 ** find_strtag
 */
-HSCTAG *find_strtag( STRPTR name )
+HSCTAG *find_strtag( DLLIST *taglist, STRPTR name )
 {
-    DLNODE *nd = find_dlnode( deftag->first, (APTR) name, cmp_strtag );
+    DLNODE *nd = find_dlnode( taglist->first, (APTR) name, cmp_strtag );
     HSCTAG *tag = NULL;
 
     if ( nd )
@@ -202,18 +197,18 @@ int cmp_strctg( APTR cmpstr, APTR tagstr )
 /*
 ** app_tag
 **
-** create a new tag and append it to the deftag-list
+** create a new tag and append it to tag-list
 **
 ** params: tagid..name of the new tag (eg "IMG")
 ** result: ptr to the new tag or NULL if no mem
 */
-HSCTAG *app_tag( STRPTR tagid )
+HSCTAG *app_tag( DLLIST *taglist, STRPTR tagid )
 {
     HSCTAG *newtag;
 
     newtag = new_hsctag( tagid );
     if ( newtag ) {
-        if (app_dlnode( deftag, newtag ) == NULL ) {
+        if (app_dlnode( taglist, newtag ) == NULL ) {
 
             del_tag( (APTR) newtag );
             newtag = NULL;
@@ -225,42 +220,6 @@ HSCTAG *app_tag( STRPTR tagid )
     return (newtag);
 }
 
-#if 0
-/*
-** add_tag
-*/
-HSCTAG *add_tag(
-  STRPTR tagid,
-  ULONG  optn,
-  ULONG  version,
-  BOOL   (*op_handle)(INFILE *inpf),
-  BOOL   (*cl_handle)(INFILE *inpf)
-)
-{
-    HSCTAG *newtag = app_tag( tagid );
-
-    if ( newtag ) {
-
-        newtag->option   = optn;
-        newtag->vers     = version;
-        newtag->o_handle = op_handle;
-        newtag->c_handle = cl_handle;
-
-    } else
-        err_mem( NULL );
-
-    return (newtag);
-
-}
-
-/*
-** add_stag: add simple tag (no version & handles)
-*/
-HSCTAG *add_stag( STRPTR tagid, ULONG optn )
-{
-    return ( add_tag( tagid, optn, 0, NULL, NULL) );
-}
-#endif
 
 /*
 **-------------------------------------
@@ -272,7 +231,7 @@ HSCTAG *add_stag( STRPTR tagid, ULONG optn )
 ** get_tag_name
 **
 */
-HSCTAG *def_tag_name( INFILE *inpf, BOOL *open_tag )
+HSCTAG *def_tag_name( DLLIST *taglist, INFILE *inpf, BOOL *open_tag )
 {
     STRPTR  nw = infgetw( inpf );
     HSCTAG *tag = NULL;
@@ -287,7 +246,7 @@ HSCTAG *def_tag_name( INFILE *inpf, BOOL *open_tag )
             nw = infgetw( inpf );
             if ( nw ) {
 
-                tag = find_strtag( nw );
+                tag = find_strtag( taglist, nw );
                 if ( tag )
                     /* set closing flag */
                     tag->option |= HT_CLOSE;
@@ -302,7 +261,7 @@ HSCTAG *def_tag_name( INFILE *inpf, BOOL *open_tag )
         } else {
 
             /* create a new opening tag */
-            tag = app_tag( nw );
+            tag = app_tag( taglist, nw );
         }
     } else
         err_eof( inpf );
@@ -333,8 +292,7 @@ BOOL check_tag_option( STRPTR option, HSCTAG *tag, STRPTR id, STRPTR sid, ULONG 
 
     if ( !( (upstrcmp(option,id )) && (upstrcmp(option,sid )) ) ) {
 
-        if ( debug )
-            fprintf( stderr, "**   option %s\n", id );
+        DDT( fprintf( stderr, "**   option %s\n", id ) );
         tag->option |= value;
         found = TRUE;
 
@@ -350,15 +308,20 @@ BOOL parse_tag_option( STRPTR option, HSCTAG *tag, INFILE *inpf )
 {
     BOOL ok = FALSE;
 
-    ok |= check_tag_option( option, tag, TO_NOHANDLE_STR, TO_NOHANDLE_SHT, HT_NOHANDLE );
+    ok |= check_tag_option( option, tag, TO_CLOSE_STR, TO_CLOSE_SHT, HT_CLOSE );
+    ok |= check_tag_option( option, tag, TO_IGNOREARGS_STR, TO_IGNOREARGS_SHT, HT_IGNOREARGS );
     ok |= check_tag_option( option, tag, TO_JERK_STR, TO_JERK_SHT, HT_JERK );
+    ok |= check_tag_option( option, tag, TO_NOCOPY_STR, TO_NOCOPY_SHT, HT_NOCOPY );
+    ok |= check_tag_option( option, tag, TO_NOHANDLE_STR, TO_NOHANDLE_SHT, HT_NOHANDLE );
+    ok |= check_tag_option( option, tag, TO_NONESTING_STR, TO_NONESTING_SHT, HT_NONESTING );
     ok |= check_tag_option( option, tag, TO_OBSOLETE_STR, TO_OBSOLETE_SHT, HT_OBSOLETE );
     ok |= check_tag_option( option, tag, TO_ONLYONCE_STR, TO_ONLYONCE_SHT, HT_ONLYONCE );
     ok |= check_tag_option( option, tag, TO_REQUIRED_STR, TO_REQUIRED_SHT, HT_REQUIRED );
+    ok |= check_tag_option( option, tag, TO_SKIPLF_STR, TO_SKIPLF_SHT, HT_SKIPLF );
 
     if ( !ok ) {
 
-        message( UNKN_TAG_OPTION, inpf );
+        message( MSG_UNKN_TAG_OPTION, inpf );
         errstr( "Unknown tag option " );
         errqstr( option );
         errlf();
@@ -385,6 +348,10 @@ BOOL parse_tag_var( STRPTR varname, HSCTAG *tag, INFILE *inpf, BOOL open_tag )
 
     var = define_var( varname, varlist, inpf, 0 );
 
+    /* set macro attribute flag for macro tags */
+    if ( var && (tag->option & HT_MACRO) )
+        var->varflag |= VF_MACRO;
+
     return( ok );
 }
 
@@ -392,7 +359,7 @@ BOOL parse_tag_var( STRPTR varname, HSCTAG *tag, INFILE *inpf, BOOL open_tag )
 ** def_tag_args
 **
 */
-BOOL def_tag_args( HSCTAG *tag, INFILE *inpf, BOOL *open_tag )
+BOOL def_tag_args( DLLIST *taglist, HSCTAG *tag, INFILE *inpf, BOOL *open_tag )
 {
     BOOL    ok = FALSE;
     STRPTR  nw;
@@ -412,14 +379,14 @@ BOOL def_tag_args( HSCTAG *tag, INFILE *inpf, BOOL *open_tag )
                     nw = NULL;
                     ok = TRUE;
 
-                } else  {
+                } else  if ( strcmp( nw, "\n" ) ) {
 
                     STRPTR pw = strclone( nw );
 
                     if ( pw ) {
 
                         nw = infgetw( inpf );
-                        if ( !strcmp( nw, "=" ) )
+                        if ( !strcmp( nw, ":" ) )
                             /* define new tag var */
                             parse_tag_var( pw, tag, inpf, *open_tag );
                         else {
@@ -436,7 +403,9 @@ BOOL def_tag_args( HSCTAG *tag, INFILE *inpf, BOOL *open_tag )
 
                     nw = infgetw( inpf );
 
-                }
+                } else /* skip LF */
+                    nw = infgetw( inpf );
+
             }
 
             if ( !(ok || fatal_error) )
@@ -444,13 +413,24 @@ BOOL def_tag_args( HSCTAG *tag, INFILE *inpf, BOOL *open_tag )
 
             if ( !ok ) {
                 del_dlnode(
-                    deftag,
-                    find_dlnode( deftag->first, (APTR) tag->name, cmp_strtag )
+                    taglist,
+                    find_dlnode( taglist->first, (APTR) tag->name, cmp_strtag )
                 );
                 tag = NULL;
             }
         } else
             ok = TRUE;
+
+        /* check args for closing tag */
+        if ( !(*open_tag) && (tag->cl_args) && (tag->cl_args->first) ) {
+
+            message( MSG_CL_MACR_ARG, inpf );
+            errstr( "attributes for closing tag/macro" );
+            errlf();
+            /* TODO: remove list of closing args */
+
+        }
+
     }
 
     return( ok );
@@ -468,69 +448,87 @@ BOOL set_tag_arg( STRPTR varname, DLLIST *varlist, INFILE *inpf )
     STRPTR  arg = NULL;
     BOOL    ok  = FALSE;
     STRPTR  nw;
+    HSCVAR  skipvar;
 
-    if ( var ) {
+    DAV( fprintf( stderr, "**    set attr %s\n", varname ) );
 
-        var = find_varname( varlist, varname );
-        if ( debug )
-            fprintf( stderr, "**    set var %s", varname );
+    if ( !var ) {                      /* attribute not found */
 
-        /* get argument */
-        nw  = infgetw( inpf );
-        if ( !strcmp( nw, "=" ) ) {
+        /* assign to pseudo-attribute */
+        var = &skipvar;
+        var->name = varname;
+        var->deftext = NULL;
+        var->text    = NULL;
+        var->enumstr = NULL;
+        var->vartype = VT_STRING;
+        var->varflag = VF_NOQUOTE;
 
-            arg = parse_vararg( var, inpf );
-            if ( arg ) {
-
-                if ( set_vartext( var, arg ) ) {
-
-                    if ( debug )
-                        fprintf( stderr, "=\"%s\"\n", arg );
-                    ok = TRUE;
-
-                }
-
-            }
-
-        } else {
-
-            arg = NULL;
-            inungets( nw, inpf );
-            ok = TRUE;
-
-        }
-
-        if ( arg ) {
-
-            /* todo: bool var doesn't require arg */
-
-        } else {
-
-            if ( var->vartype == VT_BOOL ) {
-
-                /* set boolean var */
-                if ( debug )
-                    fprintf( stderr, " (bool)\n", var->name );
-                set_vartext( var, var->name );
-                var->quote = VQ_NO_QUOTE;
-
-            } else {
-
-                /* todo:non-bool var requires arg */
-
-            }
-        }
-
-
-    } else {
-
-        /* reference to unknown var */
-        message( VAR_UNKN, inpf );
+        /* message: reference to unknown attribute */
+        message( MSG_UNKN_SYMB, inpf );
         errstr( "Unknown" );
         errsym( varname );
         errlf();
 
     }
+
+    /* get argument */
+    nw  = infgetw( inpf );
+    if ( !strcmp( nw, "=" ) ) {
+
+        arg = parse_vararg( var, inpf );
+        if ( arg ) {
+
+            if ( set_vartext( var, arg ) ) {
+
+                DAV( fprintf( stderr, "**    \"%s\"\n", arg ) );
+                ok = TRUE;
+
+            }
+
+        }
+
+    } else {
+
+        arg = NULL;
+        inungets( nw, inpf );
+        ok = TRUE;
+
+    }
+
+    if ( arg ) {
+
+        if ( var->vartype == VT_BOOL ) {
+
+            message( MSG_ARG_BOOL_ATTR, inpf );
+            errstr( "value for boolean" );
+            errsym( var->name );
+            errlf();
+
+        }
+    } else {
+
+        if ( var->vartype == VT_BOOL ) {
+
+            /* set boolean attribute */
+            DAV( fprintf( stderr, " (bool)\n", var->name ) );
+            set_vartext( var, var->name );
+            var->quote = VQ_NO_QUOTE;
+
+        } else {
+
+            /* todo:non-bool var requires arg */
+            message( MSG_NOARG_ATTR, inpf );
+            errstr( "missing value for" );
+            errsym( var->name );
+            errlf();
+
+        }
+    }
+
+    /* cleanup pseudo-attr */
+    if ( var == &skipvar )
+        clr_vartext( var );
+
     return( ok );
 
 }
@@ -544,9 +542,18 @@ BOOL set_tag_arg( STRPTR varname, DLLIST *varlist, INFILE *inpf )
 ULONG set_tag_args( HSCTAG *tag, INFILE *inpf, BOOL open_tag )
 {
     BOOL    ok = FALSE;
+    DLLIST *varlist;
+    ULONG   result_tci;        /* resulting tag_call_id */
     STRPTR  nw = infgetw( inpf );
 
     tag_call_id++;
+    result_tci = tag_call_id;
+
+    /* evaluate which varlist to use */
+    if ( open_tag )
+        varlist = tag->op_args;
+    else
+        varlist = tag->cl_args;
 
     /* read args */
     if ( strcmp( nw, ">" ) ) {
@@ -564,12 +571,7 @@ ULONG set_tag_args( HSCTAG *tag, INFILE *inpf, BOOL open_tag )
 
                 if ( strcmp( nw, "\n" ) ) {
 
-                    DLLIST *varlist;
 
-                    if ( open_tag )
-                        varlist = tag->op_args;
-                    else
-                        varlist = tag->cl_args;
                     set_tag_arg( nw, varlist, inpf );
 
                 }
@@ -579,15 +581,17 @@ ULONG set_tag_args( HSCTAG *tag, INFILE *inpf, BOOL open_tag )
             }
         }
 
-        /* todo: check for required args */
+        /* check for required attributes */
+        if ( ok )
+            ok = check_varlist( varlist, inpf );
 
     } else
         ok = TRUE;
 
     if ( !ok )
-        tag_call_id = MCI_ERROR;
+        result_tci = MCI_ERROR;
 
-    return( tag_call_id );
+    return( result_tci );
 }
 
 

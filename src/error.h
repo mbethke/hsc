@@ -3,8 +3,6 @@
 **
 ** error funcs for hsc
 **
-** updated:  3-Sep-1995
-** created:  9-Jul-1995
 */
 
 #ifndef HSC_ERROR_H
@@ -17,12 +15,40 @@
 
 #include "global.h"
 
+/* function called if invalid state didected */
 #define panic(text) call_panic(text,__FILE__,__LINE__)
+
+/*
+** define values for return code
+*/
+#ifdef AMIGA
+
+#define RC_OK     0
+#define RC_WARN   5
+#define RC_ERROR 10
+#define RC_FATAL 20
+
+#else
+#ifdef UNIX
+
+#define RC_OK     0 /* TODO: insert standard unix rc's */
+#define RC_WARN   5
+#define RC_ERROR 10
+#define RC_FATAL 20
+
+#else
+#error "system not supported: return codes"
+
+#endif /* UNIX */
+#endif /* AMIGA */
+
 
 /*
 ** global funcs
 */
 #ifndef NOEXTERN_HSC_ERROR
+
+extern int return_code;
 
 extern ULONG message_limit;
 extern BOOL fatal_error;
@@ -43,7 +69,7 @@ extern int message( ULONG id, INFILE *f );
 
 extern int err_eof( INFILE *inpf );
 extern int err_wst( INFILE *inpf, STRPTR );
-
+extern int err_eol( INFILE *inpf );
 extern int err_mem( INFILE *inpf );
 extern int err_write( FILE *inpf );
 extern int err_streol( INFILE *inpf );

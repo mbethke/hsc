@@ -5,10 +5,10 @@
 **
 ** (W) by Tommy-Saftwörx in 1995
 **
-** updated:  7-Sep-1995
+** updated: 12-Sep-1995
 ** created:  6-Sep-1993
 **
-** $VER: expstr.c 1.0.1 (7.9.95)
+** $VER: expstr.c 1.0.3 (12.9.95)
 */
 
 
@@ -75,7 +75,7 @@ BOOL set_estr( EXPSTR *es, CONSTRPTR s )
     size_t new_len  = strlen(s)+1;
     STRPTR old_data = es->es_data;
 
-    if ( set_estr_mem( es, modadj( new_len, EXPSTR_MEMSTEP ) ) )
+    if ( set_estr_mem( es, modadj( new_len, es->es_step ) ) )
     {
 
         strcpy( es->es_data, s );      /* copy & release old data */
@@ -106,13 +106,16 @@ BOOL clr_estr( EXPSTR *es )
 */
 
 
-EXPSTR *init_estr( void )
+EXPSTR *init_estr( size_t step_size )
 {
     EXPSTR *es = malloc( sizeof( EXPSTR ) );
 
     if ( es ) {
 
+        if ( step_size < ES_MIN_MEMSTEP )
+            step_size = ES_MIN_MEMSTEP;
         es->es_data = NULL;
+        es->es_step = step_size;
         if ( !clr_estr( es ) ) {
 
             ufree( es );
@@ -133,6 +136,7 @@ void del_estr( EXPSTR *es )
         ufreestr( es->es_data );
         es->es_len  = 0;
         es->es_size = 0;
+        es->es_step = 0;
         ufree( es );
 
     }
@@ -153,7 +157,7 @@ BOOL app_estrch( EXPSTR *es, int ch )
         STRPTR old_data = es->es_data;           /* N->remeber old data ptr */
 
         if ( set_estr_mem(es,
-                 es->es_size+EXPSTR_MEMSTEP ) )
+                 es->es_size + es->es_step ) )
         {                                        /*    set new mem sucessful? */
 
             strcpy( es->es_data,                 /*    Y->copy old data */
@@ -180,9 +184,8 @@ BOOL app_estr( EXPSTR *es, CONSTRPTR s )
 {
     size_t i;
     BOOL   ok = TRUE;
-    size_t len = strlen( s );
 
-    for ( i=0; ( (i<=len) && ok ); i++ )
+    for ( i=0; ( (s[i]) && ok ); i++ )
         ok &= app_estrch( es, s[i] );
 
     return( ok );
@@ -219,7 +222,7 @@ BOOL app_estr( EXPSTR *es, CONSTRPTR s )
 BOOL get_mid_estr( EXPSTR *dest, EXPSTR *src, size_t from, size_t num )
 {
     BOOL   ok = FALSE;
-    EXPSTR *tmp = init_estr();
+    EXPSTR *tmp = init_estr( dest->es_step );
 
     if ( tmp ) {
 
@@ -232,7 +235,7 @@ BOOL get_mid_estr( EXPSTR *dest, EXPSTR *src, size_t from, size_t num )
             num = src->es_len - from - 1;
 
         /* set new mem for tmp */
-        ok = set_estr_mem( tmp, modadj( num+1, EXPSTR_MEMSTEP ) );
+        ok = set_estr_mem( tmp, modadj( num+1, tmp->es_step ) );
 
         if ( ok ) {
 

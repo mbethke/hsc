@@ -3,8 +3,8 @@
 **
 ** output functions for hsc
 **
-** updated:  9-Sep-1995
-** created: 01-Jul-1995
+** updated: 10-Sep-1995
+** created:  1-Jul-1995
 */
 
 #include <stdio.h>
@@ -39,11 +39,12 @@ BOOL open_output( void )
 
         if ( !result ) {
 
-            message( NO_OUTPUT, NULL );
+            message( MSG_NO_OUTPUT, NULL );
+            errstr( "can not open " );
             errqstr( outfilename );
-            errstr( ": can not open output file: " );
+            errstr( " for output: " );
             errstr( strerror( errno ) );
-            errch( '\n' );
+            errlf();
 
         } else if ( debug ) {
 
@@ -98,6 +99,7 @@ BOOL copy_until_gt( INFILE *inpf )
     while ( (!infeof(inpf)) && (nxtch!='>') ) {
         nxtch = infgetc(inpf);
         outch( nxtch );
+        /* TODO: eof */
     }
 
     return (BOOL)(fatal_error);

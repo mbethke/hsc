@@ -3,7 +3,7 @@
 **
 ** cleanup function for hsc
 **
-** updated:  8-Sep-1995
+** updated: 26-Sep-1995
 ** created:  1-Jul-1995
 */
 
@@ -21,7 +21,6 @@
 #include "error.h"
 
 #include "entity.h"
-#include "macro.h"
 #include "tag.h"
 #include "vars.h"
 
@@ -41,15 +40,19 @@ void cleanup( void )
     del_dllist( defent );
     del_dllist( deftag );
     del_dllist( cltags );
-    del_dllist( macros );
     del_dllist( vars );
-#if 0
-    /* todo: remove this */
-    del_dllist( macarg );
-#endif
+    del_dllist( hsctags );
+
+    del_dllist( ignore );
+
+    /* release expstrings */
+    del_estr( vararg );
+    del_estr( tmpstr );
 
     /* misc. work */
     ufreestr( outfilename );
+    ufreestr( destdir );
+    ufreestr( projdir );
     ufreestr( rel_destdir );
     ufreestr( last_anchor );
 }

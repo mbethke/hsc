@@ -1,96 +1,137 @@
 ##
 ## makefile for "html sucks completely"
 ##
+## (W) by Tommy-Saftworx in 1995
+## 
+
+#
+# compiler symbols
+#
+
+#**
+#** sas/c AMIGA
+#**
+sys  = DEF=AMIGA
+dest = t:
+norm = $(sys) DEF=UMEM_TRACKING DBG=SF OBJNAME=$(dest) DEF=DEBUG DEF=DEBUG_CONFIG
+optim= $(sys) NODBG STRIPDEBUG SMALLCODE OPT OPTSIZE IGN=304
+link = sc LINK
+comp = sc
+ign  = IGNORE=93
+
+
+#**
+#** gcc AMIGA
+#**
+#dest =
+#sys  = -DAMIGA -noixemul
+
+#**
+#** gcc UNIX
+#**
+#dest =
+#sys  = -DUNIX
+
+
+#**
+#** gcc (any system)
+#**
+#norm = $(sys) -DUMEM_TRACKING -ansi -ggdb
+#optim= $(sys) -ansi -O
+#comp = gcc -c
+#link = gcc -o $@
+#ign  =
+
+#
+# compiler mode
+# (norm/optim)
+#
+mode = $(optim)
+
+#
+# copy symbol
+#
+copy = copy $(dest)hsc prog:hsc					# AMIGA
+#copy = 							# UNIX
+
+#---------------------------------
+
+#
+# ugly modules
+#
+ugly_mod= ugly/args.o ugly/dllist.o ugly/expstr.o ugly/fname.o ugly/infile.o ugly/memory.o ugly/prginfo.o ugly/string.o
+
+tag_handles = $(dest)tag_a.o $(dest)tag_misc.o
 
 all : hsc
 
-hsc : hsc.o args.o cleanup.o config.o error.o find.o global.o macro.o output.o parse.o status.o tagargs.o  tag_hsc.o tag_a.o tag_macr.o tag_misc.o tag_img.o tag_list.o vars.o ugly/ugly_dbg.o
-	gcc -o hsc $(opts) hsc.o args.o cleanup.o config.o error.o find.o global.o macro.o output.o parse.o status.o tagargs.o tag_a.o tag_macr.o tag_misc.o tag_hsc.o tag_img.o tag_list.o vars.o ugly/ugly_dbg.o
-	if not warn
-	copy hsc prog:hsc quiet clone
-	copy hsc c:hsc quiet clone
-	endif
+#
+# compile hsc
+#
+#
+hsc : $(dest)hsc.o $(dest)args.o $(dest)cleanup.o $(dest)config.o $(dest)entity.o $(dest)error.o           \
+	    $(dest)global.o $(dest)output.o $(dest)parse.o $(dest)status.o $(dest)tagargs.o $(dest)tag.o   \
+	    $(dest)tag_macr.o $(dest)tag_hsc.o $(dest)vars.o $(dest)uri.o $(tag_handles) $(ugly_mod) 
+	$(link) $(sys) $(dest)hsc.o $(dest)args.o $(dest)cleanup.o $(dest)config.o $(dest)entity.o $(dest)error.o \
+	    $(dest)global.o $(dest)output.o $(dest)parse.o $(dest)status.o $(dest)tagargs.o  $(dest)tag.o  \
+	    $(dest)tag_macr.o  $(dest)tag_hsc.o $(dest)vars.o $(dest)uri.o $(tag_handles) $(ugly_mod)	
+	$(copy)
 
-hsc_op : hsc
-	gcc -c $(opts) hsc.c
-	gcc -c $(opts) args.c
-	gcc -c $(opts) cleanup.c
-	gcc -c $(opts) config.c
-	gcc -c $(opts) error.c
-	gcc -c $(opts) global.c
-	gcc -c $(opts) macro.c
-	gcc -c $(opts) output.c
-	gcc -c $(opts) parse.c
-	gcc -c $(opts) status.c
-	gcc -c $(opts) tagargs.c
-	gcc -c $(opts) tag_a.c
-	gcc -c $(opts) tag_macr.c
-	gcc -c $(opts) tag_misc.c
-	gcc -c $(opts) tag_hsc.c
-	gcc -c $(opts) tag_img.c
-	gcc -c $(opts) tag_list.c
-	gcc -o hsc $(opts) hsc.o args.o cleanup.o config.o error.o global.o macro.o output.o parse.o status.o tagargs.o tag_a.o tag_misc.o tag_hsc.o tag_img.o tag_list.o tag_macr.o vars.o ugly/ugly.o
-	if not warn
-	copy hsc c:hsc quiet clone
-	endif
+#test_file : test_file.c $(ugly_mod)
+#	$(comp) $(mode) test_file.c $(ugly_mod) LINK
 
+$(dest)hsc.o : hsc.c args.h config.h cleanup.h error.h global.h output.h parse.h status.h
+	$(comp) $(mode) hsc.c $(ign)
 
-hsc.o : hsc.c args.h config.h cleanup.h error.h global.h output.h parse.h status.h
-	gcc -c $(opts) hsc.c -DUMEM_TRACKING
+$(dest)args.o : args.c global.h error.h
+	$(comp) $(mode) args.c
 
-args.o : args.c global.h error.h
-	gcc -c $(opts) args.c -DUMEM_TRACKING
+$(dest)cleanup.o : cleanup.c entity.h global.h tag.h vars.h
+	$(comp) $(mode) cleanup.c
 
-find.o : find.c global.h
-	gcc -c $(opts) find.c -DUMEM_TRACKING
+$(dest)config.o : config.c entity.h error.h global.h msgid.h tag.h tag_macr.h tag_hsc.h vars.h
+	$(comp) $(mode) config.c
 
-global.o : global.c
-	gcc -c $(opts) global.c -DUMEM_TRACKING
+$(dest)entity.o : entity.c global.h error.h
+	$(comp) $(mode) entity.c
 
-macro.o : macro.c global.h error.h
-	gcc -c $(opts) macro.c -DUMEM_TRACKING
+$(dest)error.o : error.c global.h
+	$(comp) $(mode) error.c
 
-output.o : output.c global.h error.h
-	gcc -c $(opts) output.c -DUMEM_TRACKING
+$(dest)global.o : global.c
+	$(comp) $(mode) global.c
 
-parse.o : parse.c global.h error.h find.h output.h status.h
-	gcc -c $(opts) parse.c -DUMEM_TRACKING
+$(dest)output.o : output.c global.h error.h
+	$(comp) $(mode) output.c
 
-status.o : status.c global.h
-	gcc -c $(opts) status.c -DUMEM_TRACKING
+$(dest)parse.o : parse.c global.h entity.h error.h output.h status.h tag.h vars.h
+	$(comp) $(mode) parse.c
 
-tagargs.o : tagargs.c global.h error.h
-	gcc -c $(opts) tagargs.c -DUMEM_TRACKING
+$(dest)status.o : status.c global.h
+	$(comp) $(mode) status.c
 
-error.o : error.c global.h
-	gcc -c $(opts) error.c -DUMEM_TRACKING
+$(dest)tag.o : tag.c error.h global.h vars.h
+	$(comp) $(mode) tag.c
 
-config.o : config.c error.h global.h macro.h msgid.h tag_a.h tag_macr.h tag_misc.h tag_hsc.h tag_img.h tag_list.h vars.h
-	gcc -c $(opts) config.c -DUMEM_TRACKING
+$(dest)tagargs.o : tagargs.c global.h error.h
+	$(comp) $(mode) tagargs.c
 
-cleanup.o : cleanup.c global.h macro.h vars.h
-	gcc -c $(opts) cleanup.c -DUMEM_TRACKING
+$(dest)tag_a.o : tag_a.c global.h error.h tagargs.h
+	$(comp) $(mode) tag_a.c 
 
-tag_a.o : tag_a.c global.h error.h tagargs.h
-	gcc -c $(opts) tag_a.c  -DUMEM_TRACKING
+$(dest)tag_macr.o : tag_macr.c global.h error.h tag.h tagargs.h
+	$(comp) $(mode) tag_macr.c
 
-tag_macr.o : tag_macr.c find.h global.h error.h macro.h tagargs.h
-	gcc -c $(opts) tag_macr.c -DUMEM_TRACKING
+$(dest)tag_misc.o : tag_misc.c global.h error.h tagargs.h vars.h
+	$(comp) $(mode) tag_misc.c
 
-tag_misc.o : tag_misc.c global.h error.h macro.h tagargs.h vars.h
-	gcc -c $(opts) tag_misc.c -DUMEM_TRACKING
+$(dest)tag_hsc.o : tag_hsc.c global.h error.h tag.h tagargs.h parse.h vars.h
+	$(comp) $(mode) tag_hsc.c
 
-tag_hsc.o : tag_hsc.c global.h error.h macro.h tagargs.h parse.h vars.h
-	gcc -c $(opts) tag_hsc.c -DUMEM_TRACKING
+$(dest)vars.o : vars.c global.h error.h
+	$(comp) $(mode) vars.c
 
-tag_img.o : tag_img.c global.h error.h tagargs.h
-	gcc -c $(opts) tag_img.c -DUMEM_TRACKING
-
-tag_list.o : tag_list.c global.h error.h tagargs.h
-	gcc -c $(opts) tag_list.c -DUMEM_TRACKING
-
-vars.o : vars.c global.h error.h
-	gcc -c $(opts) vars.c -DUMEM_TRACKING
+$(dest)uri.o : uri.c global.h error.h
+	$(comp) $(mode) uri.c
 
 ## EOF
-

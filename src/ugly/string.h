@@ -19,6 +19,10 @@
 #define strclone( s ) ugly_strclone(s,__FILE__,__LINE__)
 #define reallocstr( o,n ) ugly_reallocstr(o,n,__FILE__,__LINE__)
 
+/* options for strenum */
+#define STEN_CASE   0 /* case sensitive search */
+#define STEN_NOCASE 1 /* case insensitive search */
+
 /*
 ** external prototypes
 */
@@ -33,6 +37,7 @@ extern STRPTR ugly_strclone( CONSTRPTR oldstr, STRPTR file, ULONG line );
 extern void ugly_reallocstr( STRPTR *oldstr,  CONSTRPTR newstr, STRPTR file, ULONG line );
 
 extern STRPTR ustrrpbrk( CONSTRPTR str, CONSTRPTR set );
+extern LONG   strenum( STRPTR str, STRPTR set, char sep, BYTE options );
 
 extern STRPTR ch2str( const char ch );
 extern BOOL   str2long( STRPTR s, LONG *num );

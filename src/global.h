@@ -16,25 +16,33 @@
 #include "ugly/dllist.h"
 #include "ugly/infile.h"
 
+#include "debug.h"                     /* debugging defines */
+                                       /* (used by all modules) */
 /*
 ** defines
 */
+#define HSCPREFS_ENVVAR "HSCPREFS"
+
 #ifdef AMIGA
 #define CONFIG_FILE "hsc.prefs"
 #define CONFIG_PATH "", ":", "s:"
 #endif
 
 #ifdef UNIX
-#define CONFIG_FILE ".hscrc"
+#define CONFIG_FILE "hsc.prefs"
 #define CONFIG_PATH "./", "~/", "/"
 #endif
 
 #ifdef MSDOS
-#define CONFIG_FILE "HSC.CFG"
+#define CONFIG_FILE "HSC.PRE"
 #define CONFIG_PATH ".\\", "\\"
 #endif
 
-#define HSC_DEFNAME "hscdef.cfg"       /* file that defines tags & entities */
+/* step sizes for expstr's */
+#define ES_STEP_VARARG    64 /* config.c */
+#define ES_STEP_RMTSTR    32 /* tag_macr.c */
+#define ES_STEP_MACRO   1024 /* tag_macr.c */
+#define ES_STEP_INFILE  4096 /* input file buffer */
 
 #define MAXLINELEN  1023               /* input line */
 #define MAX_ARGLEN   511               /* arguments */
@@ -42,9 +50,6 @@
 #define MAX_PATHLEN  255               /* directory path & filename */
 #define MAX_URILEN   255               /* URIs */
 
-/*
-** defines
-*/
 
 /*
 ** char constants
@@ -70,8 +75,10 @@ extern STRPTR inpfilename;
 extern STRPTR outfilename;
 extern STRPTR errfilename;
 extern STRPTR destdir;
+extern STRPTR projdir;
 
 extern ULONG max_error;
+extern DLLIST *ignore;
 
 extern BOOL absuri;
 extern BOOL chkuri;
@@ -79,6 +86,7 @@ extern BOOL debug;
 extern BOOL insanch;
 extern BOOL need_help;
 extern BOOL pipe_in;
+extern BOOL rplc_ent;
 extern BOOL stripuri;
 extern BOOL statusmsg;
 extern BOOL verbose;
@@ -89,6 +97,8 @@ extern time_t now;
 
 extern STRPTR destfname;
 extern STRPTR rel_destdir;
+
+extern EXPSTR *tmpstr;
 
 /*
 ** global funcs

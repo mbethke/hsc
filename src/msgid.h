@@ -3,7 +3,7 @@
 **
 ** defines for message-ids (warnings, errors,..)
 **
-** updated:  8-Sep-1995
+** updated:  3-Oct-1995
 ** created: 30-Jul-1995
 */
 
@@ -13,85 +13,111 @@
 
 #include "ugly/types.h"
 
-#define CONFIG 20
+/* masks for message classes */
+#define MASK_MESSAGE   0x0fff
+#define MASK_MSG_CLASS 0xf000
+
+/* message  classes */
+#define MSG   0x00000 /* message */
+#define STYLE 0x01000 /* bad style */
+#define WARN  0x02000 /* warning */
+#define ERROR 0x03000 /* error */
+#define FATAL 0xff000 /* fatal error */
 
 /*
-** messeges
+**=========================
+** next message number: 47
+**=========================
+**
+** obsolete numbers:
+** - none until now
 */
-#define MSG    0
-#define MSG_UNKN_MACRO      (MSG   +1) /* unknown macro */
-#define MSG_RPLC_MACRO      (MSG   +2) /* replacing existing macro */
-#define MSG_STRIPPED_URI    (MSG   +3) /* stripped external URI */
-
-/*
-** config messages
-*/
-#define CFG_NOTEXT          (CONFIG+1) /* no text allowed in config */
-#define CFG_UNKN_TAG        (CONFIG+2) /* unknown config tag */
-#define UNKN_TAG_OPTION     (CONFIG+3) /* unknown tag option */
-
-#define NO_OUTPUT ( FATAL + 1 ) /* can't open output file */
-
-/*
-** bad style messages
-*/
-#define STYLE                     100
-#define STYLE_WRONG_HEADING (STYLE+ 1) /* wrong heading */
-#define STYLE_CLICK_HERE    (STYLE+ 2) /* click-here-syndrome */
-#define STYLE_WHITE_SPACE   (STYLE+ 3) /* white space around tag */
-
-/*
-** warnings
-*/
-#define WARN                      200
-#define CWRN                      250  /* critical warning */
-#define WARN_UNKN_TAG        (WARN+ 1) /* unknown tag */
-#define WARN_UNKN_CTAG       (WARN+ 2) /* unknown closing tag */
-#define WARN_IMG_NOALT       (WARN+ 3) /* <IMG> without ALT */
-#define WARN_NEST_TAG        (WARN+ 4) /* illegal closing tag nesting */
-#define WARN_UNKN_ENTITY     (WARN+ 5) /* unknown entity */
-#define WARN_MISS_RTAG       (WARN+ 6) /* required tag missing */
-#define WARN_UNKN_OPTVAL     (WARN+ 7) /* unknown value for option */
-#define WARN_EXPT_SEMIK      (WARN+ 8) /* ";" expected */
-#define WARN_UNKN_OPTN       (WARN+ 9) /* unknown option */
-
-#define WARN_UNMA_CTAG       (CWRN+50) /* unmatched closing tag */
-#define WARN_MISS_CTAG       (CWRN+51) /* closing tag missing */
-
-/*
-** errors
-*/
-#define ERROR                     300
-#define ERROR_EOF           (ERROR+ 1) /* unexpected eof */
-#define ERROR_TOO_OFTEN     (ERROR+ 2) /* tag occured too often */
-#define ERROR_UNMA_GT       (ERROR+ 3) /* unmatched ">" */
-#define ERROR_FILE_OPEN     (ERROR+ 4) /* can't open file */
-#define ERROR_UNEXPT_CH     (ERROR+ 5) /* unexpected char */
-#define ERROR_UNEX_LI       (ERROR+ 6) /* unexpected <LI> */
-#define ERROR_IMG_NOSRC     (ERROR+ 7) /* <IMG> without SRC */
-#define ERROR_UNKN_HSCOPTN  (ERROR+ 8) /* unknown option in hsc-tag */
-#define ERROR_A_NOARG       (ERROR+ 9) /* no HREF and NAME for <A> */
-#define ERROR_EXPAND_MACRO  (ERROR+10) /* can not expand macro */
-#define ERROR_NO_URIPATH    (ERROR+11) /* path to URI not found */
 
 /*
 ** fatal errors
 */
-#define FATAL                     400
-#define FATAL_NO_MEM        (FATAL+ 1) /* out of mem */
-#define FATAL_WRITE_ERR     (FATAL+ 2) /* write error */
-#define FATAL_LONG_STR      (FATAL+ 3) /* string too long */
-#define FATAL_WRITE_MACRO   (FATAL+ 4) /* writing macro */
+#define MSG_NO_MEM             (FATAL+  1)   /* out of mem */
+#define MSG_WRITE_ERR          (FATAL+  2)   /* write error */
+#define MSG_UNEX_EOF           (FATAL+  3)   /* unexpected eof */
+#define MSG_NO_OUTPUT          (FATAL+  4)   /* can't open output file */
+#define MSG_NO_OUTFNAME        (FATAL+  5)   /* can't evaluate outp-filenm. */
+#define MSG_NO_INPUT           (FATAL+  6)   /* can't open input file */
+#define MSG_NO_CONFIG          (FATAL+ 40)   /* can't open config */
 
 /*
-** variable errors
+** information messages
 */
-#define VAR_ILLEGAL_TYPE    (FATAL+50) /* illegal var type */
-#define VAR_ILLEGAL_NUM     (FATAL+51) /* illegal numeric value */
-#define VAR_UNKN            (WARN +80) /* unknown var */
-#define VAR_2ND_DEFAULT     (ERROR+50) /* 2nd default value */
-#define VAR_BOOL_DEFAULT    (ERROR+51) /* default value for boolean */
-#define VAR_CIRCULAR        (ERROR+52) /* circular var reference */
+#define MSG_STRIPPED_TAG       (MSG  +  7)   /* stripped tag with ext. href */
+
+/*
+** bad style messages
+*/
+#define MSG_WSPC_AROUND_TAG    (STYLE+  8)  /* white space around tag */
+#define MSG_WRONG_HEADING      (STYLE+  9)  /* wrong heading */
+#define MSG_CLICK_HERE         (STYLE+ 10)  /* click-here-syndrome */
+
+
+/*
+** messages within tags
+*/
+#define MSG_UNKN_TAG           (WARN + 11)  /* unknown tag */
+#define MSG_TAG_TOO_OFTEN      (ERROR+ 12)  /* tag occured too often */
+#define MSG_UNMA_CTAG          (ERROR+ 13)  /* unmatched closing tag */
+#define MSG_CTAG_NESTING       (WARN + 14)  /* illegal closing tag nesting */
+#define MSG_MISS_REQTAG        (WARN + 15)  /* required tag missing */
+#define MSG_MISS_CTAG          (WARN + 16)  /* closing tag missing */
+#define MSG_UNKN_TAG_OPTION    (ERROR+ 17)  /* unknown tag option */
+#define MSG_TAG_OBSOLETE       (WARN + 37)  /* obsolete tag */
+#define MSG_TAG_JERK           (WARN + 38)  /* jerk tag */
+
+/*
+** messages within entities
+*/
+#define MSG_UNKN_ENTITY        (WARN + 18)  /* unknown entity */
+#define MSG_EXPT_SEMIK         (ERROR+ 19)  /* ";" expected */
+#define MSG_RPLC_ENT           (MSG  + 46)  /* replaced entity */
+
+/*
+** messages within attributes
+*/
+#define MSG_UNKN_SYMB          (ERROR+ 20)  /* unknown symbol */
+#define MSG_NO_URIPATH         (WARN + 21)  /* path to URI not found */
+#define MSG_ARG_NO_QUOTE       (WARN + 22)  /* argument without quote */
+#define MSG_EMPTY_SYMB_REF     (ERROR+ 23)  /* empty symbol reference */
+#define MSG_UNKN_SYMB_REF      (ERROR+ 24)  /* unknown symbol reference */
+#define MSG_ILLEGAL_SYMB_TYPE  (ERROR+ 25)  /* illegal symbol type */
+#define MSG_SYMB_2ND_DEFAULT   (ERROR+ 26)  /* default value already set */
+#define MSG_SYMB_BOOL_DEFAULT  (ERROR+ 27)  /* default vaule for bool */
+#define MSG_ENUM_UNKN          (ERROR+ 35)  /* unknown enum value */
+#define MSG_ENUM_SUSPICIOUS    (WARN + 36)  /* suspicios enum value */
+#define MSG_MISSING_ATTR       (ERROR+ 39)  /* required attr. missing */
+#define MSG_ARG_BOOL_ATTR      (ERROR+ 41)  /* argument for bool attr */
+#define MSG_NOARG_ATTR         (ERROR+ 42)  /* attr requires arg */
+#define MSG_UNKN_ATTR_OPTION   (ERROR+ 43)  /* unknown attr option */
+#define MSG_MISS_REQ_ATTR      (ERROR+ 44)  /* required attr missing */
+
+/*
+** messages from tag handles
+*/
+#define MSG_EXPT_H1            (STYLE+ 28)  /* Hx: first heading H1 */
+#define MSG_ANCH_NO_NMHR       (ERROR+ 29)  /* A : no NAME or HREF */
+#define MSG_CL_MACR_ARG        (ERROR+ 46)  /* args for closing macro */
+
+/*
+** misc. messages
+*/
+#define MSG_UNMA_GT            (ERROR+ 30)  /* unmatched ">" */
+#define MSG_UNEXPT_CH          (ERROR+ 31)  /* unexpected char */
+#define MSG_ILLEGAL_NUM        (ERROR+ 32)  /* illegal numeric value */
+#define MSG_STR_EOL            (ERROR+ 33)  /* string exeeds line */
+#define MSG_UNEX_EOL           (ERROR+ 34)  /* unexpected eol */
+
+
+/*
+** soon obsolete errors (hopefully)
+*/
+#define FATAL_LONG_STR      (FATAL+999) /* string too long */
+#define MSG_HSC_ERR         (ERROR+998) /* error within hsc-tag */
 
 
 #endif

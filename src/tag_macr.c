@@ -1,9 +1,9 @@
 /*
 ** tag_macr.c
 **
-** tag handles for "<HSC_MACRO>" and "<macro>"
+** tag handles for "<$MACRO>" and "<macro>"
 **
-** updated:  9-Sep-1995
+** updated:  2-Oct-1995
 ** created:  5-Aug-1995
 */
 
@@ -20,7 +20,6 @@
 
 #include "global.h"
 
-#include "macro.h"
 #include "tag.h"
 #include "vars.h"
 
@@ -32,10 +31,7 @@
 #include "tagargs.h"
 #include "parse.h"
 
-
-char macpar[ MAX_ARGLEN ];
-BYTE  rmt_str[ MAXLINELEN ];
-FILE *fmacout;
+EXPSTR *rmt_str = NULL;      /* temp. buffer to read macro text */
 
 /*
 **-------------------------------------
@@ -46,55 +42,79 @@ FILE *fmacout;
 /*
 ** handle_macro
 **
-** handle for macro
+** handle for macro: add local attributes to global attributes,
+** include macro text, remove local attributes
 **
 ** params: open_mac..TRUE, if called by an openning macro
 **         inpf......input file
 */
-BOOL handle_macro( BOOL open_mac, INFILE *inpf )
+BOOL handle_macro( BOOL open_mac, INFILE *inpf, HSCTAG *macro )
 {
     BOOL    ok = FALSE;
-    HSCMAC *macro = find_strmac( this_tag_data->name );
-    STRPTR  fname;
+    EXPSTR *text;       /* macro text */
+    EXPSTR *fname;      /* pseudo-filename */
     DLLIST *args;
-    ULONG   mci; /* macro call id returned by set_macro_args() */
+    ULONG   mci = 0;    /* tag-call-id returned by set_tag_args() */
 
     /* determine filename & args */
     if ( open_mac ) {
-        fname = macro->op_fname;
+        text  = macro->op_text ;
         args  = macro->op_args;
     } else {
-        fname = macro->cl_fname;
-        args  = macro->cl_args;
+        text  = macro->cl_text ;
+        args  = macro->cl_args; /* TODO: remove this */
+        args  = macro->op_args;
+    }
+    fname = init_estr( 0 );
+
+    if ( fname ) {
+
+        /* debugging message */
+        DMC( {
+            fprintf( stderr, "**-MACRO <" );
+            if ( !open_mac )
+                fprintf( stderr, "/" );
+            fprintf( stderr, "%s> from %p\n", macro->name, text );
+        } );
+
+        /* create pseudo-filename */
+        ok = set_estr( fname, "[macro " );
+        ok &= app_estr( fname, macro->name );
+        ok &= app_estr( fname, "]" );
+
     }
 
-    /* debugging message */
-    if ( debug ) {
-        fprintf( stderr, "**-MACRO <" );
-        if ( !open_mac )
-            fprintf( stderr, "/" );
-        fprintf( stderr, "%s> from \"%s\"\n", macro->name, fname );
+    if ( ok ) {
+
+        /* parse args */
+        mci = set_tag_args( macro, inpf, open_mac );
+        if ( mci == MCI_ERROR ) ok = FALSE;
+        DMC( prt_varlist( args, "macro args (after set_macro_args)" ) );
     }
 
-    /* parse args */
-    mci = set_macro_args( macro, inpf, open_mac );
-    if (debug)
-        prt_varlist( args, "macro args (after set_macro_args)" );
+    if ( ok ) {
 
-    /* copy local vars to global list */
-    ok = copy_local_varlist( args, mci );
-    if (debug)
-        prt_varlist( vars, "global vars (after copy_local_vars)" );
+        /* copy local vars to global list */
+        ok = copy_local_varlist( args, mci );
+        DMC( prt_varlist( vars, "global vars (after copy_local_vars)" ) );
 
-    /* include macro file */
-    ok = include_hsc( fname, outfile, 0 );
+    }
 
-    /* remove local vars */
-    remove_local_varlist( mci );
+    if ( ok ) {
+        /* include macro file */
+        ok = include_hsc_string( estr2str( fname ), estr2str( text ),
+                                 outfile, IH_PARSE_MACRO );
+    }
+
+    /* cleanup */
+    if ( mci != MCI_ERROR )
+        remove_local_varlist( mci );   /* remove local vars */
+    clr_varlist( args );               /* clear macro vars */
+    del_estr( fname );                 /* release pseudo-filename */
 
     /* debugging message */
-    if ( debug )
-        fprintf( stderr, "**-ENDMACRO <%s>\n", macro->name );
+    DMC( fprintf( stderr, "**-ENDMACRO <%s>\n", macro->name ) );
+
 
     return ( ok );
 }
@@ -104,9 +124,9 @@ BOOL handle_macro( BOOL open_mac, INFILE *inpf )
 **
 ** handle for opening macro
 */
-BOOL handle_op_macro( INFILE *inpf )
+BOOL handle_op_macro( INFILE *inpf, HSCTAG *tag )
 {
-    return( handle_macro(TRUE, inpf) );
+    return( handle_macro(TRUE, inpf, tag) );
 }
 
 /*
@@ -114,9 +134,9 @@ BOOL handle_op_macro( INFILE *inpf )
 **
 ** handle for closing macro
 */
-BOOL handle_cl_macro( INFILE *inpf )
+BOOL handle_cl_macro( INFILE *inpf, HSCTAG *tag )
 {
-    return( handle_macro(FALSE, inpf) );
+    return( handle_macro(FALSE, inpf, tag) );
 }
 
 /*
@@ -125,25 +145,12 @@ BOOL handle_cl_macro( INFILE *inpf )
 **-------------------------------------
 */
 
-/*
-** outmac
-**
-** write a string to macro file
-*/
-BOOL outmac( STRPTR s, INFILE *inpf )
-{
-    BOOL ok = ( fputs( s, fmacout ) != EOF );
-
-    if ( !ok ) {
-        message( FATAL_WRITE_MACRO, inpf );
-        errstr( "Error writing macro" );
-    }
-
-    return ( ok );
-}
 
 /*
 ** rmt_check_for
+**
+** read next word from input, compare it with cmpstr,
+** append word to rmt_str
 */
 BOOL rmt_check_for( INFILE *inpf, STRPTR cmpstr )
 {
@@ -153,8 +160,8 @@ BOOL rmt_check_for( INFILE *inpf, STRPTR cmpstr )
     if ( nw ) {
 
         eq = !upstrcmp( nw, cmpstr );
-        strcat( rmt_str, infgetcws( inpf ) );
-        strcat( rmt_str, infgetcw( inpf ) );
+        app_estr( rmt_str, infgetcws( inpf ) );
+        app_estr( rmt_str, infgetcw( inpf ) );
 
     } else
         err_eof( inpf );
@@ -166,29 +173,36 @@ BOOL rmt_check_for( INFILE *inpf, STRPTR cmpstr )
 ** read_macro_text
 **
 */
-BOOL read_macro_text( HSCMAC *macro, INFILE *inpf, BOOL open_mac )
+BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
 {
     BOOL    ok = FALSE;
-    STRPTR  fname;
+    EXPSTR *macstr = NULL;
 
-    /* open output file for macro text */
-    if ( open_mac )
-        fname = macro->op_fname;
-    else
-        fname = macro->cl_fname;
-    fmacout = fopen( fname, "w" );
+    /* init an EXPSTR for macro text */
+    if ( open_mac ) {
+        macro->op_text = init_estr( ES_STEP_MACRO );
+        macstr         = macro->op_text;
+    } else {
+        macro->cl_text = init_estr( ES_STEP_MACRO );
+        macstr         = macro->cl_text;
+    }
 
-    if ( fmacout ) {
+    if ( macstr ) {                    /* init sucessfull? */
 
         /* skip first LF if any */
         skip_lf( inpf );
 
-        strcpy( rmt_str, "" );
+        /* init rmt_str */
+        rmt_str = init_estr( ES_STEP_MACRO );
+        if ( !rmt_str )
+            err_mem( inpf );
+
         while ( !(ok || fatal_error) ) {
 
             if ( rmt_check_for( inpf, "<" )
                  &&  rmt_check_for( inpf, "/" )
-                 &&  rmt_check_for( inpf, STR_HSC_MACRO )
+                 &&  rmt_check_for( inpf, HSC_TAGID )
+                 &&  rmt_check_for( inpf, HSC_MACRO_STR )
                )
             {
 
@@ -197,21 +211,20 @@ BOOL read_macro_text( HSCMAC *macro, INFILE *inpf, BOOL open_mac )
 
             } else {
 
-                outmac( rmt_str, inpf );
-                strcpy( rmt_str, "" );
+                if ( !app_estr( macstr, estr2str(rmt_str) ) )
+                    err_mem( inpf );
+                set_estr( rmt_str, "" );
 
             }
         }
-    } else {
+    } else
+        err_mem( inpf );
 
-        message( FATAL_WRITE_MACRO, inpf );
-        errstr( "Error writing macro" );
-    }
-
-    fclose( fmacout );
+    /* release rmt_str */
+    del_estr( rmt_str );
+    rmt_str = NULL;
 
     return ( ok );
-
 }
 
 /*
@@ -226,39 +239,33 @@ BOOL read_macro_text( HSCMAC *macro, INFILE *inpf, BOOL open_mac )
 **
 ** define a new macro tag
 */
-BOOL handle_hsc_macro( INFILE *inpf )
+BOOL handle_hsc_macro( INFILE *inpf, HSCTAG *tag )
 {
     BOOL    ok = FALSE;
     BOOL    open_mac;
-    HSCMAC *macro;
 
     /* get name and argumets */
+    tag = def_tag_name( deftag, inpf, &open_mac );
+    if ( tag ) {
 
-    macro = def_macro_name( inpf, &open_mac );
+        /* enable macro-flag */
+        tag->option |= HT_MACRO;
+        DDT( fprintf( stderr, "** def macro %s\n", tag->name ) );
 
-    ok = ( macro && def_macro_args( macro, inpf, &open_mac ) );
+    }
+
+    ok = ( tag && def_tag_args( deftag, tag, inpf, &open_mac ) );
+
     if ( ok ) {
-
         /* copy macro text to temp. file */
-        if ( macro )
-            ok = read_macro_text( macro, inpf, open_mac );
-
-        /* create a new tag for macro */
+        ok = read_macro_text( tag, inpf, open_mac );
         if ( ok ) {
 
-#if 0
-            HSCTAG mtag = app_tag( macro->name );
-            if ( mtag ) {
+            /* set tag handles & flags */
+            tag->option |= HT_NOCOPY | HT_IGNOREARGS ;
+            tag->o_handle = handle_op_macro;
+            tag->c_handle = handle_cl_macro;
 
-                mtag->option = HT_NOCOPY | HT_MACRO;
-
-                ok = TRUE;
-            }
-
-
-            , 0,
-                                handle_op_macro, handle_cl_macro );
-#endif
         }
 
     }

@@ -5,8 +5,8 @@
 **
 ** ugly argument handling help functions
 **
-** updated:  1-Aug-1995
-** created: 03-Jul-1994
+** updated: 26-Aug-1995
+** created:  3-Jul-1994
 **
 */
 
@@ -52,6 +52,7 @@ int fprintf_ah_flag( FILE *stream, struct arginfo *ai,
 int fprintf_arghelp( FILE *stream, struct arglist *al )
 {
     int err = 0;
+    int maxidlen = 18; /* max. length if arg id */
 
     if ( al ) {
 
@@ -90,7 +91,8 @@ int fprintf_arghelp( FILE *stream, struct arglist *al )
                     fprintf_ah_flag( stream, ai, ARG_CASESENS, 'C' );
 #endif
                     if ( ai->ai_help )
-                        fprintf( stream, "%-18s  %s", ai->ai_id, ai->ai_help );
+                        fprintf( stream, " %-*s  %s",
+                                 maxidlen, ai->ai_id, ai->ai_help );
                     else
                         fprintf( stream, "%s", ai->ai_id );
 

@@ -23,16 +23,16 @@ EXPSTR *es, *res;
 /* print current estr */
 void pe( STRPTR comment )
 {
-    printf( "es:%s: (%2d/%2d) \"%s\"\n", comment,
-            es->es_len, es->es_size, estr2str( es ) ) ;
+    printf( "es:%s: (%2d/%2d/%2d) \"%s\"\n", comment,
+            es->es_len, es->es_size, es->es_step, estr2str( es ) ) ;
 }
 void pr( STRPTR comment )
 {
-    printf( "rs:%s: (%2d/%2d) \"%s\"\n", comment,
-            res->es_len, res->es_size, estr2str( res ) ) ;
+    printf( "rs:%s: (%2d/%2d/%2d) \"%s\"\n", comment,
+            res->es_len, res->es_size, res->es_step, estr2str( res ) ) ;
 }
 
-void main( void )
+int main( void )
 {
     LONG i;
 
@@ -44,8 +44,8 @@ void main( void )
                 i,EXPSTR_MEMSTEP,modadj(i,EXPSTR_MEMSTEP) );
 #endif
 
-    es  = init_estr(); pe( "init  ") ;
-    res = init_estr(); pr( "init  ") ;
+    es  = init_estr( 8 ); pe( "init  ") ;
+    res = init_estr( 8 ); pr( "init  ") ;
 
     printf( "** test set & append\n" );
     set_estr( es, "hugo ist doof." ); pe( "set   " );
@@ -53,6 +53,7 @@ void main( void )
     app_estrch( es, ' ' ); pe("appch ");
     app_estrch( es, 's' ); pe("appch ");
     app_estr( es, "epp auch." ); pe("appstr");
+    app_estr( es, " und resi." ); pe("appstr");
 
     /* test cutting functions */
     estrcpy( res, es );           pr( "copy  " );
@@ -72,5 +73,7 @@ void main( void )
     get_right_estr( es, res, 4 ); pe( "rig(4)   " );
 
     del_estr( es ); del_estr( res );
+
+    return( 0 ); 
 }
 

@@ -28,7 +28,7 @@
 
 #define SIZE_S 200
 
-void main()
+int main()
 {
 
     char       s[ SIZE_S ];
@@ -77,6 +77,7 @@ void main()
     strfumx( s, SIZE_S, "l1 = '%-10l'  l2 = '%10l'", macrodef );
     printf( "%s\n", s );
 
+    return( 0 );
 
 }
 

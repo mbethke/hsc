@@ -5,10 +5,10 @@
 **
 ** (W) by Tommy-Saftwörx in 1993,94,95
 **
-** updated:  1-Aug-1995
+** updated:  3-Oct-1995
 ** created: 31-Jul-1993
 **
-** $VER: string.c 1.1.0 (1.8.95)
+** $VER: string.c 1.2.0 (3.10.95)
 */
 
 
@@ -302,5 +302,53 @@ STRPTR long2str( LONG num )
     }
 
     return result_str;
+}
+
+/*
+** strenum
+**
+** find a substring in an enumerator string
+**
+** params: str...substring to search for
+**         set...set of legal substrings
+**         sep...substring separator (eg "|")
+** result:  0..not found
+**         >0..index of substring found
+**         <0..out of mem
+** errors: out of mem: returns -1
+**
+** example: enumstr( "sepp", "hugo|sepp|resi", '|', STEN_CASE ) -> 2
+**
+** NOTE: calls strtok()
+*/
+LONG strenum( STRPTR str, STRPTR set, char sep, BYTE options )
+{
+    STRPTR s     = strclone( set );
+    LONG   found = 0;
+
+    if ( s ) {
+
+        STRPTR nxtstr = strtok( s, ch2str( sep ) );
+        LONG   count  = 1;
+
+        while ( !found && nxtstr ) {
+
+            if ( options & STEN_NOCASE ) {
+                if ( !upstrcmp( str, nxtstr ) )
+                    found = count;
+            } else if ( !strcmp( str, nxtstr ) )
+                found = count;
+
+            count++;
+            nxtstr = strtok( NULL, ch2str( sep ) );
+
+        }
+
+        ufreestr( s );
+
+    } else
+        found = -1;
+
+    return( found );
 }
 

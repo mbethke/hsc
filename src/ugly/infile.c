@@ -3,12 +3,12 @@
 **
 ** ugly input file functions
 **
-** Version 1.3.2, (W) by Tommy-Saftwörx in 1995
+** Version 1.4.2, (W) by Tommy-Saftwörx in 1995
 **
-** updated:  9-Sep-1995
+** updated:  3-Oct-1995
 ** created:  8-Jul-1995
 **
-** $VER: infile.c 1.3.2 (9.9.1995)
+** $VER: infile.c 1.4.2 (3.10.1995)
 **
 */
 
@@ -17,6 +17,7 @@
 **
 ** - handle errors within expstr (no mem)
 ** - more elegant handling of inunget( '\n' );
+** - assign logstr to user-definable expstr
 */
 
 /*
@@ -33,8 +34,6 @@
 #define NOEXTERN_UGLY_FILE_H
 #include "infile.h"
 #include "memory.h"
-
-#define MAX_IFLINELEN 511
 
 /* buffer size for fgets() in infgetc() */
 #define INF_FGETS_BUFSIZE 32
@@ -64,25 +63,129 @@ BOOL infget_skws( INFILE *inpf );
 ** default methods for infgetw() to determine if
 ** a char is a whitespace or normal char.
 */
-BOOL default_whtspc( char ch )
+BOOL default_whtspc( int ch )
 {
     if ( strchr(" \t",ch) != NULL )
         return TRUE;
     else return FALSE;
 }
 
-BOOL default_normch( char ch )
+BOOL default_normch( int ch )
 {
     if ( isalnum(ch) || (ch=='_') )
         return TRUE;
     else return FALSE;
 }
 
+/*
+**-------------------------------------
+** constructor/destructor
+**-------------------------------------
+*/
 
 /*
+** reset_inpf
+**
+** reset a INFILE struct (set all items to NULL)
+** (only called by con/destructor)
+*/
+void reset_infile( INFILE *inpf )
+{
+    inpf->infile      = NULL;
+    inpf->filename    = NULL;
+    inpf->lnbuf       = NULL;
+    inpf->wordbuf     = NULL;        
+    inpf->wspcbuf     = NULL;
+    inpf->logstr      = NULL;
+    inpf->filepos     = 0;
+    inpf->lnctr       = 0;
+    inpf->flnctr      = 0;
+    inpf->eof_reached = FALSE;
+    inpf->out_of_mem  = FALSE;
+    inpf->skipped_ws  = FALSE;
+    inpf->log_enable  = FALSE;
+    inpf->is_nc       = NULL;
+    inpf->is_ws       = NULL;
+}
+
+
+/*
+** remove INFILE structure
+*/
+void del_infile( INFILE *inpf )
+{
+    if ( inpf ) {
+
+        /* close file */
+        if ( inpf->infile )
+            fclose( inpf->infile );
+
+        /* release mem */
+        ufreestr( inpf->filename );
+        del_estr( inpf->lnbuf );
+        del_estr( inpf->wordbuf );
+        del_estr( inpf->wspcbuf );
+        del_estr( inpf->logstr );
+
+        /* reset all items */
+        reset_infile( inpf );
+
+        /* release whole structure */
+        ufree( inpf );
+    }
+
+}
+
+/*
+** init INFILE structure
+*/
+INFILE *init_infile( CONSTRPTR name, size_t step_size )
+{
+    INFILE *inpf = (INFILE *) malloc( sizeof(INFILE) );
+
+    if ( inpf ) {
+
+        /* check for buffer-stepsize */
+        if ( !step_size )
+            step_size = IF_BUFFER_VALUE;
+
+        /* reset all items */
+        reset_infile( inpf );
+
+        /* clone filename (NULL=stdin) */
+        if ( name )
+            inpf->filename = strclone( name );
+
+        /* init wordbuffers */
+        inpf->lnbuf       = init_estr( step_size );
+        inpf->wordbuf     = init_estr( step_size );
+        inpf->wspcbuf     = init_estr( step_size );
+        inpf->logstr      = init_estr( step_size );
+
+        /* check if init ok */
+        if ( !( (inpf->filename || !(name))
+                && inpf->lnbuf
+                && inpf->wordbuf
+                && inpf->wspcbuf
+                && inpf->logstr ) )
+        {
+            /* remove infile, */
+            /* set return value to NULL */
+            del_infile( inpf );
+            inpf = NULL;
+        }
+    }
+
+    return( inpf );
+}
+
+
+/*
+**=====================================
 **
 ** exported functions
 **
+**=====================================
 */
 
 
@@ -99,7 +202,7 @@ BOOL default_normch( char ch )
 */
 ULONG infget_x( INFILE *inpf )
 {
-    return (inpf->lnctr);
+    return (inpf->lnctr +1);
 }
 
 
@@ -110,7 +213,7 @@ ULONG infget_x( INFILE *inpf )
 */
 ULONG infget_y( INFILE *inpf )
 {
-    return (inpf->flnctr);
+    return (inpf->flnctr +1);
 }
 
 
@@ -132,7 +235,10 @@ BOOL infget_skws( INFILE *inpf )
 */
 STRPTR infget_fname( INFILE *inpf )
 {
-    return (inpf->filename);
+    if ( inpf->filename )
+        return (inpf->filename);
+    else
+        return( FNAME_STDIN );
 }
 
 
@@ -190,7 +296,7 @@ STRPTR infgetcw( INFILE *inpf )
 ** this func is called by infgetw() to determine if
 ** the begining of a word is reached.
 */
-void set_whtspc( INFILE *inpf, BOOL (*iswsfn)( char ch ) )
+void set_whtspc( INFILE *inpf, BOOL (*iswsfn)( int ch ) )
 {
     if ( inpf ) inpf->is_ws = iswsfn;
 }
@@ -203,7 +309,7 @@ void set_whtspc( INFILE *inpf, BOOL (*iswsfn)( char ch ) )
 ** this function is called by infgetw() to determine if
 ** the end of a word is reached
 */
-void set_normch( INFILE *inpf, BOOL (*isncfn)( char ch ) )
+void set_normch( INFILE *inpf, BOOL (*isncfn)( int ch ) )
 {
     if ( inpf ) inpf->is_nc = isncfn;
 }
@@ -220,57 +326,22 @@ void set_normch( INFILE *inpf, BOOL (*isncfn)( char ch ) )
 **
 ** close INFILE entry, free all mem allocated by it
 **
-** result: normaly, the result of fclose(); if there
-**         was no file open, 0 is returned.
+** result: always 0
 **
-** NOTE: if inpf was assigned to stdin, no file is
-**       closed.
-**
-** NOTE: this function is usually called by the macro
-**       ufclose() defined in <ugly/file.h>
 */
 int infclose1( INFILE *inpf )
 {
-  int result = 0;
+    del_infile( inpf );
 
-    if ( inpf ) {
-
-        if ( inpf->infile )            /* close input file, free filename */
-            if ( inpf->infile != stdin ) {
-
-                result = fclose( inpf->infile );
-
-            } else {
-
-                inpf->infile = NULL;
-                inpf->filename = NULL;
-
-            }
-
-        if ( inpf->infile != stdin )   /* free filename */
-            ufreestr( inpf->filename );
-        del_estr( inpf->lnbuf );       /* free line buffer */
-        del_estr( inpf->wordbuf );     /* free word buffers */
-        del_estr( inpf->wspcbuf );
-        del_estr( inpf->logstr );
-        inpf->lnctr       = 0;         /* reset vars */
-        inpf->flnctr      = 0;
-        inpf->eof_reached = FALSE;
-        inpf->skipped_ws  = FALSE;
-        inpf->log_enable  = FALSE;
-        inpf->is_nc       = NULL;
-        inpf->is_ws       = NULL;
-        ufree( inpf );                 /* free whole struct */
-
-    }
-
-    return ( result );
+    return( 0 );
 }
 
 
 /*
 ** infopen
 **
+** params: name.......name of input file to open
+**         step_size..portion of memory buffers should be increased with
 ** result: ptr to INFILE entry or NULL if error;
 **
 ** NOTE: if result = NULL, but errno=0, too, then there
@@ -280,79 +351,75 @@ int infclose1( INFILE *inpf )
 **
 ** NOTE: don't forget to set errno=0 before calling infopen().
 */
-INFILE *infopen( CONSTRPTR fname, size_t bufsize )
+INFILE *infopen( CONSTRPTR name, size_t step_size )
 {
-    INFILE *uinpf = NULL;              /* return file */
-    FILE   *inpf;                      /* normal input file */
-    STRPTR  fnm;
+    INFILE *inpf = init_infile( name, step_size ); /* return file */
+
+    if ( inpf )
+        /* open input file or assign stdin to input file */
+        if ( name ) {
+
+            inpf->infile = fopen( name, "r" );
+            if ( !(inpf->infile) ) {
+
+                del_infile( inpf );
+                inpf = NULL;
+
+            }
+        } else
+            inpf->infile = stdin;
 
 
-    /*
-    ** init INFILE structure
-    */
-    uinpf = (INFILE *) malloc( sizeof(INFILE) );
-    if ( uinpf ) {
+    /* read whole file into file lnbuf */
+    if ( inpf ) {
 
-        uinpf->infile      = NULL;
-        uinpf->filename    = NULL;
-        uinpf->lnbuf       = init_estr();
-        uinpf->wordbuf     = init_estr();        /* reset wordbuffers */
-        uinpf->wspcbuf     = init_estr();
-        uinpf->logstr      = init_estr();
-        uinpf->lnctr       = 0;
-        uinpf->flnctr      = 0;
-        uinpf->eof_reached = FALSE;
-        uinpf->skipped_ws  = FALSE;
-        uinpf->log_enable  = FALSE;
-        uinpf->is_nc       = NULL;
-        uinpf->is_ws       = NULL;
+        STRARR buf[ INF_FGETS_BUFSIZE ];
+        STRPTR restr = buf; /* result of fgets() (dummy init)*/
+        BOOL   ok = TRUE;
 
+        while ( !feof(inpf->infile) && ok ) {
+
+            restr = fgets( buf, INF_FGETS_BUFSIZE, inpf->infile );
+            if ( restr )
+                ok &= app_estr( inpf->lnbuf, restr );
+
+        }
     }
 
+    return( inpf );                    /* return input file */
+}
 
-    /*
-    ** open input file or assign stdin to input file,
-    ** clone filename
-    */
-    if ( fname ) {
 
-        inpf = fopen( fname, "r" );
-        fnm  = strclone( fname );
+/*
+** infopen_str
+**
+** open a string as an input file
+**
+** params: fname......pseudo filename the string should have
+**         s..........string that should be handled as a file
+**         step_size..portion of memory buffers should be increased with
+** result: ptr to INFILE entry or NULL if error;
+**
+** NOTE: a copy of the passed string is created. so you can
+**       modify or release the string after calling inopen_str()
+*/
+INFILE *infopen_str( CONSTRPTR name, CONSTRPTR s, size_t step_size )
+{
+    INFILE *inpf = init_infile( name, step_size ); /* return file */
 
-    } else {
+    if ( inpf ) {
 
-        inpf = stdin;
-        fnm  = FNAME_STDIN;
+        /* copy string to line buffer */
+        BOOL ok = set_estr( inpf->lnbuf, s );
 
+        if ( !ok ) {
+
+            del_infile( inpf );
+            inpf = NULL;
+        }
     }
 
-
-    /*
-    ** build result or handle errors
-    */
-    if ( uinpf ) {
-        uinpf->infile   = inpf;                  /* Y-> build result */
-        uinpf->filename = fnm;
-    }
-
-    if ( (!inpf)                                 /* error? */
-         || (!fnm)
-         || (!uinpf)
-         || (!uinpf->lnbuf)
-         || (!uinpf->wordbuf )
-         || (!uinpf->wspcbuf )
-         || (!uinpf->logstr ) )
-    {                                            /* Y-> clean up */
-
-        if ( uinpf )
-            infclose ( uinpf );
-        else if ( inpf )
-            fclose( inpf );
-        uinpf = NULL;
-
-    }
-
-    return uinpf;                      /* return result */
+    return( inpf );                    /* return input file */
 }
 
 /*
@@ -382,40 +449,9 @@ int infgetc( INFILE *inpf )
         ** if at end of line buffer, scan next line
         ** before proceding
         */
-        if ( lnbuf_str[inpf->lnctr] == 0 ) {
+        if ( lnbuf_str[inpf->filepos] == 0 ) {
 
-            STRARR buf[ INF_FGETS_BUFSIZE ];
-            STRPTR restr = buf; /* result of fgets() (dummy init)*/
-            BOOL   eol = FALSE; /* flag: end of line reached */
-
-            /* read next input line into buffer (expstr) */
-            ok = clr_estr( inpf->lnbuf );
-            while (ok && restr && (!eol) ) {
-
-                restr = fgets( buf, INF_FGETS_BUFSIZE, inpf->infile );
-                if ( restr ) {
-
-                    ok &= app_estr( inpf->lnbuf, restr );
-                    eol = (restr[strlen(restr)] != '\n' );
-
-                } else ok = (!feof( inpf->infile ) );
-
-            }
-
-            /* reset line counter if LF found at end of line */
-            if ( eol ) {
-
-                inpf->lnctr = 0;
-                inpf->flnctr++;
-
-            }
-
-            /*
-            ** check for end of file or error,
-            ** set eof-flag if neccessary
-            */
-            if ( !ok )
-                inpf->eof_reached = TRUE;
+            inpf->eof_reached = TRUE;
 
         }
 
@@ -426,21 +462,28 @@ int infgetc( INFILE *inpf )
         if ( inpf->eof_reached == FALSE ) {
 
             lnbuf_str = estr2str( inpf->lnbuf );
-            result = lnbuf_str[inpf->lnctr];     /* set last char as result */
-            if ( result ) inpf->lnctr++;         /* goto next char in buf */
+            result = lnbuf_str[inpf->filepos];   /* set last char as result */
+            if ( result ) {                      /* goto next char in buf */
 
+                inpf->lnctr++;
+                inpf->filepos++;
+
+            }
         }
 
         /* update log-string if neccessary */
         if ( (result != EOF) && (inpf->log_enable) )
-            ok &= app_estrch( inpf->logstr, result );
+            ok = app_estrch( inpf->logstr, result );
 
+        /* update line number */
+        if ( result == '\n' )
+            inpf->flnctr++;
 
         if ( !ok )
             /* TODO: handle out of mem */;
     }
 
-    return result;
+    return( result );
 }
 
 /*
@@ -467,26 +510,27 @@ int inungetc( int ch, INFILE *inpf )
         STRPTR lnbuf_str = estr2str( inpf->lnbuf );
 
         /* update file position */
+        inpf->filepos--;
+
+        /* write back char */
+        lnbuf_str[inpf->filepos] = ch;
+        result = ch;
+
+        /* unget in logstr */
+        if ( (inpf->log_enable) && ( estrlen( inpf->logstr ) ) )
+            if ( !get_left_estr( inpf->logstr, inpf->logstr, estrlen(inpf->logstr)-1 ) )
+                /* TODO: handle out of mem */;
+
+        /* handle LF */
         if ( ch == '\n' ) {
 
             result = ch;
             inpf->flnctr--;
             inpf->lnctr = 0;
-            set_estr( inpf->lnbuf, "\n" );
 
-        } else {
+        } else
             inpf->lnctr--;
 
-            /* write back char */
-            lnbuf_str[inpf->lnctr] = ch;
-            result = ch;
-
-            /* unget in logstr */
-            if ( (inpf->log_enable) && ( estrlen( inpf->logstr ) ) )
-                if ( !get_left_estr( inpf->logstr, inpf->logstr, estrlen(inpf->logstr)-1 ) )
-                    /* TODO: handle out of mem */;
-
-        }
     }
 
     return( result );
@@ -571,7 +615,7 @@ size_t inungetcwws( INFILE *inpf )
 */
 BOOL inf_isws( char ch, INFILE *inpf )
 {
-    BOOL   (*isws)(char ch) = inpf->is_ws;
+    BOOL   (*isws)(int ch) = inpf->is_ws;
 
     if (isws==NULL)                    /* if no func for is_ws, */
         isws = default_whtspc;         /*   set default function */
@@ -645,7 +689,7 @@ STRPTR infgetw( INFILE *inpf )
     BOOL   ok = TRUE;
 
     /* set function for normal chars */
-    BOOL (*isnc)(char ch) = inpf->is_nc;
+    BOOL (*isnc)(int ch) = inpf->is_nc;
     if (isnc==NULL) isnc = default_normch;
 
     /* skip all white spaces */
@@ -747,6 +791,13 @@ BOOL inflog_clear( INFILE *inpf )
 {
     /* TODO: handle out of mem */
     return ( clr_estr( inpf->logstr ) );
+}
+
+/* append string to log-string */
+BOOL inflog_app( INFILE *inpf, STRPTR s )
+{
+    /* TODO: handle out of mem */
+    return ( app_estr( inpf->logstr, s ) );
 }
 
 /* get log-string */

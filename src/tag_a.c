@@ -3,7 +3,7 @@
 **
 ** tag handle for "<A..>" (anchor)
 **
-** updated: 10-Sep-1995
+** updated: 12-Sep-1995
 ** created:  3-Aug-1995
 */
 
@@ -33,7 +33,7 @@
 
 /*
 ** this flag is set by handle_anchor if the HREF goes to
-** an global URI. if this  flag and the stripuri
+** an global URI. if this  flag and the STRIPURI
 ** option is enabled, handle_clanchor will not write
 ** a </A> to the output
 */
@@ -43,8 +43,7 @@ BOOL was_ext_uri = FALSE;
 ** handle_anchor
 **
 ** handle tag <A>:
-** - check for HREF="xx",
-** - increase anchor_nesting
+** - check for HREF or NAME set
 ** - set new value of last_anchor
 **
 ** TODO: handle NAME="xx"
@@ -66,12 +65,10 @@ BOOL handle_anchor( INFILE *inpf, HSCTAG *tag )
     if ( vhref ) href = vhref->text;
     if ( vname ) name = vname->text;
 
-    /* read first option */
-
     /* check for both HREF and NAME missing */
     if ( (!href) && (!name) ) {
 
-        message( ERROR_A_NOARG, inpf );
+        message( MSG_ANCH_NO_NMHR, inpf );
         errtag( "A" );
         errstr( " without HREF or NAME\n" );
 
@@ -81,13 +78,13 @@ BOOL handle_anchor( INFILE *inpf, HSCTAG *tag )
     /* write whole tag */
     if ( !(was_ext_uri && stripuri) ) {
 
-        /* TODO: write log */
+        outstr( infget_log(inpf) );
 
     } else {
 
         if ( href ) {
 
-            message( MSG, inpf );
+            message( MSG_STRIPPED_TAG, inpf );
             errstr( "Stripped external HREF to " );
             errqstr( href );
             errlf();
@@ -99,25 +96,19 @@ BOOL handle_anchor( INFILE *inpf, HSCTAG *tag )
 }
 
 
+
 /*
 ** handle_cancher
 **
 ** closing handle for <A>
-** - decrease anchor_nesting
 */
-BOOL handle_canchor( INFILE *inpf )
+BOOL handle_canchor( INFILE *inpf, HSCTAG *tag)
 {
-    if ( anchor_nesting) anchor_nesting--;
-
     if ( !(was_ext_uri && stripuri) ) {
 
-        outstr( this_tag );
-        copy_until_gt( inpf );
+        outstr( infget_log(inpf) );
 
     } else {
-
-        /* skip rest of tag */
-        skip_until_gt( inpf );
 
         /* write URI of anchor */
         if ( last_anchor ) {
@@ -128,11 +119,13 @@ BOOL handle_canchor( INFILE *inpf )
             outstr( ") " );
 
             /* release mem used by URI */
-            ufreestr( last_anchor );
             last_anchor = NULL;
         }
 
     }
+
+    ufreestr( last_anchor );
+    last_anchor = NULL;
 
     return (TRUE);
 

@@ -9,10 +9,9 @@
 #include "types.h"
 #include "infile.h"
 
-#define MAXLINELEN 256
 #define GETSTRLEN 10
 
-void main( int argc, char *argv[] )
+int main( int argc, char *argv[] )
 {
     INFILE *inpf;
     char *fname;
@@ -27,11 +26,11 @@ void main( int argc, char *argv[] )
         fname = argv[1];
 
     errno = 0;
-    inpf = infopen( fname, MAXLINELEN );
+    inpf = infopen( fname, 0 );
 
     if ( inpf ) {
 
-#if 0
+#if 1
         /* info about first word */
         wdbuf = infgetw( inpf );
         printf( "word#0: \"%s\", \"%s\"\n",
@@ -82,6 +81,7 @@ void main( int argc, char *argv[] )
         wdbuf = infgetw( inpf );
         printf( "reword: [%d] \"%s\"\n", strlen(wdbuf), wdbuf );
 
+        inflog_app( inpf, "** inserted **" );
         /*
         ** read and print rest of file
         */
@@ -100,9 +100,26 @@ void main( int argc, char *argv[] )
         /* print log */
         printf( "log: \"%s\"\n", infget_log( inpf ) );
 
+        infclose( inpf );
+
     } else
         perror( "Can't open input file" );
 
-    infclose( inpf );
+    /* test a string file */
+    inpf = infopen_str( "test string", "this is\n a string\n converted\n to an\n input file.", 0 );
+    if ( inpf ) {
+
+        wdbuf = infgetw( inpf );
+        while ( wdbuf ) {
+
+            printf( "%s%s", infgetcws( inpf ), infgetcw( inpf ));
+            wdbuf = infgetw( inpf );
+        }
+
+        infclose( inpf );
+    } else
+        perror( "Can't opne input file from string" );
+
+    return( 0 );
 }
 

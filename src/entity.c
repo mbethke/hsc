@@ -3,7 +3,7 @@
 **
 ** entity structure, variables and functions ( "&xx;")
 **
-** updated:  8-Sep-1995
+** updated: 26-Sep-1995
 ** created:  8-Sep-1995
 **
 */
@@ -30,6 +30,8 @@
 #include "global.h"
 #include "error.h"
 #include "msgid.h"
+#include "tagargs.h"
+#include "output.h"
 
 #define NOEXTERN_HSC_ENTITY_H
 #include "entity.h"
@@ -56,7 +58,7 @@ HSCENT *new_hscent( STRPTR newid )
 
         /* init new entity item */
         newent->name    = strclone(newid);       /* set id */
-        newent->source  = NULL;
+        newent->replace = NULL;
     }
 
     return (newent);
@@ -71,7 +73,8 @@ void del_entity( APTR data )
     HSCENT *ent = (HSCENT *)data;
 
     ufreestr( ent->name );
-    ufreestr( ent->source );
+    ufreestr( ent->replace );
+    ent->numeric = 0;
     ufree( ent );
 
 }
@@ -95,6 +98,28 @@ int cmp_strent( APTR cmpstr, APTR entdata )
 
     if ( entdata )
         entstr = ((HSCENT*)entdata)->name;
+
+    if (entstr)
+        if ( !strcmp( cmpstr, entstr ) )
+            return (-1);
+        else
+            return (0);
+    else
+        return (0);
+}
+
+/*
+** cmp_rplcent
+**
+** compares a entity-string with the replace-item
+** of a HSCENT-entry
+*/
+int cmp_rplcent( APTR cmpstr, APTR entdata )
+{
+    STRPTR entstr = NULL;
+
+    if ( entdata )
+        entstr = ((HSCENT*)entdata)->replace;
 
     if (entstr)
         if ( !strcmp( cmpstr, entstr ) )
@@ -142,22 +167,28 @@ HSCENT *app_entnode( STRPTR entid )
 /*
 ** add_ent
 */
-BOOL add_ent( STRPTR entid, STRPTR entsource )
+BOOL add_ent( STRPTR entid, STRPTR entreplace, LONG num )
 {
     BOOL    ok = FALSE;
     HSCENT *newent = app_entnode( entid );
 
     if ( newent ) {
 
-        newent->source = entsource;
+        if ( entreplace ) {
+
+            newent->replace = strclone( entreplace );
+            if ( !entreplace )
+                err_mem( NULL );
+        }
+        newent->numeric = num;
         ok = TRUE;
 
     } else
         err_mem( NULL );
 
+    DDE( fprintf( stderr, "** defent: %s\n", entid ) );
 
     return (ok);
 
 }
-
 

@@ -3,8 +3,6 @@
 **
 ** status messages
 **
-** updated: 30-Jul-1995
-** created: 30-Jul-1995
 */
 
 #ifndef HSC_STATUS_H

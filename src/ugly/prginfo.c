@@ -3,12 +3,12 @@
 **
 ** ugly program info functions
 **
-** Version 1.0.0, (W) by Tommy-Saftwörx in 1994
+** Version 1.0.1, (W) by Tommy-Saftwörx in 1994
 **
-** updated: 04-Jul-94
-** created: 03-Jul-94
+** updated: 26-Sep-1995
+** created:  3-Jul-1994
 **
-** $VER: prginfo.c 1.0.0 (4.7.94)
+** $VER: prginfo.c 1.0.1 (26.9.1995)
 **
 **=========================================================
 ** TODO:
@@ -85,14 +85,18 @@ int fprintf_prginfo( FILE *stream )
 {
     int err = 0;
 
-    err  = fprintf( stream, "%s - %s, v%d.%d.%d (%s-%s-%s)\n",
-            pi_progname, pi_descript, 
-            pi_version, pi_release, pi_revision,
-            pi_dt_day, pi_dt_month, pi_dt_year );
-    err += fprintf( stream, "(W) by %s. %s\n",
-            pi_authname, pi_copystat );
+    err  = fprintf( stream, "%s - %s, v%d.%d",
+                    pi_progname, pi_descript,              /* name & description */
+                    pi_version, pi_release );              /* version */
+    if ( pi_revision )
+        err += fprintf( stream, ".%d",                     /* revision */
+                        pi_revision );
+    err += fprintf( stream, " (%s-%s-%s)\n",               /* date */
+                    pi_dt_day, pi_dt_month, pi_dt_year );
+    err += fprintf( stream, "(W) by %s. %s\n",             /* copyright */
+                    pi_authname, pi_copystat );
 
-    return err;
+    return( err );
 
 }
 

@@ -16,6 +16,7 @@
 ** TODO:
 **
 ** - handle errors within expstr (no mem)
+** - more elegant handling of inunget( '\n' );
 */
 
 /*
@@ -369,7 +370,7 @@ int infgetc( INFILE *inpf )
 {
     int result = EOF;
 
-#if 1
+#if 0
     fprintf( stderr, "** ingetch( \"%s\" at %p\n", inpf->filename, inpf );
 #endif
     if ( inpf && (!inpf->eof_reached) ) {
@@ -395,7 +396,7 @@ int infgetc( INFILE *inpf )
                 if ( restr ) {
 
                     ok &= app_estr( inpf->lnbuf, restr );
-                    eol = (restr[strlen(restr)] != '\n' );
+                    eol = (restr[strlen(restr)-1] == '\n' );
 
                 } else ok = (!feof( inpf->infile ) );
 
@@ -466,18 +467,26 @@ int inungetc( int ch, INFILE *inpf )
         STRPTR lnbuf_str = estr2str( inpf->lnbuf );
 
         /* update file position */
-        inpf->lnctr--;
-        if ( ch == '\n' )
+        if ( ch == '\n' ) {
+
+            result = ch;
             inpf->flnctr--;
+            inpf->lnctr = 0;
+            set_estr( inpf->lnbuf, "\n" );
 
-        /* write back char */
-        lnbuf_str[inpf->lnctr] = ch;
-        result = ch;
+        } else {
+            inpf->lnctr--;
 
-        /* unget in logstr */
-        if ( (inpf->log_enable) && ( estrlen( inpf->logstr ) ) )
-            if ( !get_left_estr( inpf->logstr, inpf->logstr, estrlen(inpf->logstr)-1 ) )
-                /* TODO: handle out of mem */;
+            /* write back char */
+            lnbuf_str[inpf->lnctr] = ch;
+            result = ch;
+
+            /* unget in logstr */
+            if ( (inpf->log_enable) && ( estrlen( inpf->logstr ) ) )
+                if ( !get_left_estr( inpf->logstr, inpf->logstr, estrlen(inpf->logstr)-1 ) )
+                    /* TODO: handle out of mem */;
+
+        }
     }
 
     return( result );

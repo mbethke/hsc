@@ -3,7 +3,7 @@
 **
 ** parse file: handle for entities & tags
 **
-** updated: 10-Sep-1995
+** updated:  3-Oct-1995
 ** created:  1-Jul-1995
 **
 */
@@ -33,6 +33,7 @@
 #include "error.h"
 #include "msgid.h"
 #include "status.h"
+#include "tagargs.h"
 
 #include "entity.h"
 #include "tag.h"
@@ -42,9 +43,27 @@
 #include "parse.h"
 
 /* TODO: remove this */
-#include "tag_a.h"
+/*#include "tag_a.h" */
 
 INFILE *parse_end_file; /* file for do_list-methods called in parse_end() */
+
+/*
+** hsc_normch
+**
+** decides if an char is an 'normal' char
+**
+** params: ch...char to test
+** result: TRUE, if ch is a 'normal' ch
+**
+** NOTE: this function is used as is_nc-methode
+**       for the infile class
+*/
+BOOL hsc_normch( int ch )
+{
+    if ( isalnum(ch) || (ch=='_') || (ch=='-') )
+        return TRUE;
+    else return FALSE;
+}
 
 
 /*
@@ -53,144 +72,6 @@ INFILE *parse_end_file; /* file for do_list-methods called in parse_end() */
 **---------------------------
 */
 
-#if 0
-/*
-** set_tag_arg
-**
-** parse & set one single tag argument
-**
-*/
-BOOL set_tag_arg( STRPTR varname, DLLIST *varlist, INFILE *inpf )
-{
-    HSCVAR *var = find_varname( varlist, varname );
-    STRPTR  arg = NULL;
-    BOOL    ok  = FALSE;
-    STRPTR  nw;
-
-    if ( var ) {
-
-        var = find_varname( varlist, varname );
-        if ( debug )
-            fprintf( stderr, "**    set var %s", varname );
-
-        /* get argument */
-        nw  = infgetw( inpf );
-        if ( !strcmp( nw, "=" ) ) {
-
-            arg = parse_vararg( var, inpf );
-            if ( arg ) {
-
-                if ( set_vartext( var, arg ) ) {
-
-                    if ( debug )
-                        fprintf( stderr, "=\"%s\"\n", arg );
-                    ok = TRUE;
-
-                }
-
-            }
-
-        } else {
-
-            arg = NULL;
-            inungets( nw, inpf );
-            ok = TRUE;
-
-        }
-
-        if ( arg ) {
-
-            /* todo: bool var doesn't require arg */
-
-        } else {
-
-            if ( var->vartype == VT_BOOL ) {
-
-                /* set boolean var */
-                if ( debug )
-                    fprintf( stderr, " (bool)\n", var->name );
-                set_vartext( var, var->name );
-                var->quote = VQ_NO_QUOTE;
-
-            } else {
-
-                /* todo:non-bool var requires arg */
-
-            }
-        }
-
-
-    } else {
-
-        /* reference to unknown var */
-        message( VAR_UNKN, inpf );
-        errstr( "Unknown" );
-        errsym( varname );
-        errlf();
-
-    }
-    return( ok );
-
-}
-
-
-/*
-** set_tag_args
-**
-** parse & set all arguments of a tag
-*/
-ULONG set_tag_args( HSCTAG *tag, INFILE *inpf, BOOL open_tag )
-{
-    BOOL    ok = FALSE;
-    STRPTR  nw = infgetw( inpf );
-
-    /* TODO: enable log */
-
-    tag_call_id++;
-
-    /* read args */
-    if ( strcmp( nw, ">" ) ) {
-
-        while ( nw ) {
-
-            if ( !nw )
-                err_eof( inpf );
-            if ( !strcmp( nw, ">" ) ) {
-
-                nw = NULL;
-                ok = TRUE;
-
-            } else  {
-
-                if ( strcmp( nw, "\n" ) ) {
-
-                    DLLIST *varlist;
-
-                    if ( open_tag )
-                        varlist = tag->op_args;
-                    else
-                        varlist = tag->cl_args;
-                    set_tag_arg( nw, varlist, inpf );
-
-                }
-
-                nw = infgetw( inpf );
-
-            }
-        }
-
-        /* todo: check for required args */
-
-    } else
-        ok = TRUE;
-
-    if ( !ok )
-        tag_call_id = MCI_ERROR;
-
-    return( tag_call_id );
-}
-#endif
-
 /*
 ** parse_tag
 **
@@ -198,28 +79,41 @@ ULONG set_tag_args( HSCTAG *tag, INFILE *inpf, BOOL open_tag )
 */
 BOOL parse_tag( INFILE *inpf)
 {
+
+    STRPTR  nxtwd;
+    DLNODE *nd    = NULL;
+    HSCTAG *tag   = NULL;
+    ULONG   tci   = 0;   /* tag_call_id returned by set_tag_args() */
+    BOOL   (*hnd)(INFILE *inpf, HSCTAG *tag) = NULL;
+    BOOL    open_tag;
+    DLLIST *taglist = deftag;
+
+    /* get tag id */
+    nxtwd = infgetw( inpf );                 /* get tag id */
+    if ( !nxtwd )
+        err_eof( inpf );
+
     if ( !fatal_error ) {
 
-        STRPTR  nxtwd;
-        DLNODE *nd;
-        ULONG   tci   = 0;   /* tag_call_id returned by set_tag_args() */
+        if ( debug )                             /* debug msg */
+            fprintf( stderr, "** tag <" );
 
-        /* write white space (if any) */
-        outstr( infgetcws( inpf ) );
+        /* check for hsctag */
+        if ( !upstrcmp( nxtwd, HSC_TAGID ) ) {
 
-        strcpy( this_tag, infgetcw( inpf ) );
+            if ( debug )                         /* debug msg */
+                fprintf( stderr, "%s", nxtwd );
+            nxtwd = infgetw( inpf );             /* get hsc-tag id */
+            taglist = hsctags;
 
-        /* get tag id */
-        nxtwd = infgetw( inpf );                 /* get tag id */
+        }
 
-        /* remember tag id (used by some handlers, which have */
-        /* HT_NOCOPY set, but need to write tagid (eg <A>) */
-        strcat( this_tag, infgetcws( inpf ) );
-        strcat( this_tag, infgetcw( inpf ) );
-        this_tag_data = NULL;
+        if ( !nxtwd )
+            err_eof( inpf );
 
-        if ( debug )                         /* debug msg */
-            fprintf( stderr, "** tag ", this_tag );
+    }
+
+    if ( !fatal_error ) {
 
         if ( strcmp( "/", nxtwd ) ) {            /* is it a closing tag? */
 
@@ -229,44 +123,57 @@ BOOL parse_tag( INFILE *inpf)
             **
             */
 
+            open_tag = TRUE;
             if ( debug )                         /* debug msg */
-                fprintf( stderr, "%s>\n", this_tag );
+                fprintf( stderr, "%s>\n", nxtwd );
 
             /* search for tag in list */
-            nd = find_dlnode( deftag->first, (APTR) nxtwd, cmp_strtag );
+            nd = find_dlnode( taglist->first, (APTR) nxtwd, cmp_strtag );
             if ( nd == NULL ) {
 
-                message( WARN_UNKN_TAG, inpf );      /* tag not found */
+                message( MSG_UNKN_TAG, inpf );      /* tag not found */
                 errstr( "Unknown tag " );
                 errtag( nxtwd );
                 errlf();
 
-                /* TODO: should also work using log */
-                outstr( this_tag );                  /* copy whole tag */
-                copy_until_gt( inpf );
+                skip_until_gt( inpf );
 
             } else {
 
-                HSCTAG *tag = (HSCTAG*)nd->data;
-                BOOL   (*hnd)(INFILE *inpf) = tag->o_handle;
+                tag = (HSCTAG*)nd->data;
 
-                /* set global pointer to tag */
-                this_tag_data = tag;
+                /* set handle */
+                hnd = tag->o_handle;
 
-                /*
-                ** set attributes
-                */
-                /* TODO: set attr with closing tag */
-                tci = set_tag_args( tag, inpf, TRUE );
 
                 /*
                 ** handle options
                 */
 
+                /* check for obsolete tag */
+                if ( tag->option & HT_OBSOLETE ) {
+
+                    message( MSG_TAG_OBSOLETE, inpf );
+                    errstr( "tag " );
+                    errtag( nxtwd );
+                    errstr( " is obsolete\n" );
+
+                }
+
+                /* check for jerk-tag */
+                if ( tag->option & HT_JERK ) {
+
+                    message( MSG_TAG_JERK, inpf );
+                    errstr( "tag " );
+                    errtag( nxtwd );
+                    errstr( " is only used by jerks\n" );
+
+                }
+
                 /* only-once-tag occured twice? */
                 if ( (tag->option & HT_ONLYONCE ) && (tag->occured) ) {
 
-                    message( ERROR_TOO_OFTEN, inpf );
+                    message( MSG_TAG_TOO_OFTEN, inpf );
                     errstr( "tag " );
                     errtag( nxtwd );
                     errstr( "occured too often\n" );
@@ -283,30 +190,6 @@ BOOL parse_tag( INFILE *inpf)
                     if ( !app_dlnode( cltags, (APTR) tag->name ) )
                         err_mem( inpf );
                 }
-
-                /* write out tag? */
-#if 0
-                if ( !(tag->option & HT_NOCOPY) )
-                    outstr( this_tag );                        /* write out tag */
-#endif
-
-                /*
-                ** call handle if available
-                */
-                if ( !upstrcmp( tag->name, "A" ) )
-                    handle_anchor( inpf, tag );
-#if 0
-                if ( hnd && !fatal_error && !(tag->option & HT_NOHANDLE) )
-                    (*hnd)( inpf );                            /* call handle */
-#endif
-
-                /*
-                ** copy rest of tag if HT_COPY-bit not set
-                */
-#if 0
-                if ( !(tag->option & HT_NOCOPY) )              /* write out '>' */
-                    copy_until_gt( inpf );
-#endif
             }
 
         } else {
@@ -317,40 +200,32 @@ BOOL parse_tag( INFILE *inpf)
             **
             */
 
-            /* TODO: handle </HR> */
-            /* TODO: check why ^ this TODO is here?! */
-
             /* get tag id */
             nxtwd = infgetw( inpf );           /* get tag id */
-
-            /* remember tag id */
-            strcat( this_tag, infgetcws( inpf ) );
-            strcat( this_tag, infgetcw( inpf ) );
+            open_tag = FALSE;
 
             if ( debug )                         /* debug msg */
-                fprintf( stderr, "%s>\n", this_tag );
+                fprintf( stderr, "/%s>\n", nxtwd );
 
-            /* search for tag in deftag list */
+            /* search for tag in taglist */
             /* (see if it exists at all) */
-            nd = find_dlnode( deftag->first, (APTR) nxtwd, cmp_strtag );
+            nd = find_dlnode( taglist->first, (APTR) nxtwd, cmp_strtag );
             if ( nd == NULL ) {
 
                 /* closing tag is absolutely unknown */
-                message( WARN_UNKN_TAG, inpf );      /* tag not found */
+                message( MSG_UNKN_TAG, inpf );      /* tag not found */
                 errstr( "Unknown closing tag " );
                 errctag( nxtwd );
                 errlf();
 
-                outstr( this_tag );                  /* copy whole tag */
-                copy_until_gt( inpf );
+                skip_until_gt( inpf );
 
             } else {
 
-                HSCTAG *tag = (HSCTAG*)nd->data; /* fitting tag in deftag-list */
-                BOOL   (*hnd)(INFILE *inpf) = tag->c_handle; /* closing handle */
+                tag = (HSCTAG*)nd->data; /* fitting tag in taglist */
 
-                /* set global pointer to tag */
-                this_tag_data = tag;
+                /* set closing handle */
+                hnd = tag->c_handle;
 
                 /* search for tag on stack of occured tags */
                 nd = find_dlnode( cltags->first, (APTR) nxtwd, cmp_strctg );
@@ -358,7 +233,7 @@ BOOL parse_tag( INFILE *inpf)
 
                     /* closing tag not found on stack */
                     /* ->unmatched closing tag without previous opening tag */
-                    message( WARN_UNMA_CTAG, inpf );
+                    message( MSG_UNMA_CTAG, inpf );
                     errstr( "Unmatched closing tag " );
                     errctag( nxtwd );
                     errlf();
@@ -376,7 +251,7 @@ BOOL parse_tag( INFILE *inpf)
                          && !(tag->option | HT_MACRO) )
                     {
 
-                        message( WARN_NEST_TAG, inpf );
+                        message( MSG_CTAG_NESTING, inpf );
                         errstr( "Illegal closing tag nesting (expected " );
                         errctag( lastnm );
                         errstr( ", found " );
@@ -386,23 +261,35 @@ BOOL parse_tag( INFILE *inpf)
 
                     }
 
-                    /* call closing handle if available */
-                    if ( hnd )
-                        (*hnd)( inpf );
-                }
-
-                /* write out whole closing tag */
-                if ( !(tag->option & HT_NOCOPY) ) {
-
-                    outstr( this_tag );
-                    copy_until_gt( inpf );
-
                 }
 
                 /* remove node for closing tag from cltags-list */
                 del_dlnode( cltags, nd );
+
             }
         }
+
+        /*
+        ** processed for opening AND closing tag
+        */
+
+        /* set attributes */
+        if ( tag && !(tag->option & HT_IGNOREARGS) )
+            tci = set_tag_args( tag, inpf, open_tag );
+        else if ( !hnd )
+            skip_until_gt( inpf );
+
+        /* call closing handle if available */
+        if ( hnd && !fatal_error )
+            (*hnd)( inpf, tag );
+
+        /* write whole tag out */
+        if ( !(tag) || !(tag->option & HT_NOCOPY) )
+            outstr( infget_log( inpf ) );
+
+        /* skip LF if requested */
+        if ( tag && (tag->option & HT_SKIPLF) )
+            skip_lf( inpf );
     }
 
     return (BOOL)( !fatal_error );
@@ -413,7 +300,6 @@ BOOL parse_tag( INFILE *inpf)
 ** other parse functions
 **---------------------------
 */
-
 
 /*
 ** parse_amp
@@ -427,9 +313,6 @@ BOOL parse_amp( INFILE *inpf )
         char nxtch;
         DLNODE *nd;
 
-        /* write blank if necessary */
-        outstr( infgetcws( inpf ) );
-
         /* get entity id */
         nxtwd = infgetw( inpf );
 
@@ -437,7 +320,7 @@ BOOL parse_amp( INFILE *inpf )
         nd = find_dlnode( defent->first, (APTR) nxtwd, cmp_strent );
         if ( nd == NULL ) {
 
-            message( WARN_UNKN_ENTITY, inpf );
+            message( MSG_UNKN_ENTITY, inpf );
             errstr( "Unknown entity " );
             errqstr( nxtwd );
             errlf();
@@ -448,7 +331,7 @@ BOOL parse_amp( INFILE *inpf )
         nxtch = infgetc( inpf );
         if ( nxtch != ';' ) {
 
-            message( WARN_EXPT_SEMIK, inpf );
+            message( MSG_EXPT_SEMIK, inpf );
             errqstr( ";" );
             errstr( " expected (found: " );
             errqstr( ch2str( nxtch ) );
@@ -457,14 +340,58 @@ BOOL parse_amp( INFILE *inpf )
         }
 
         /* output whole entity */
-        outch( '&' );
-        outstr( nxtwd );
-        outch( nxtch );
+        outstr( infget_log( inpf ) );
     }
 
     return (BOOL)( !fatal_error );
 }
 
+/*
+** parse_text
+*/
+BOOL parse_text( INFILE *inpf )
+{
+    STRPTR  nw = infgetcw( inpf );
+
+    /* output whtspc */
+    outstr( infgetcws( inpf ) );                 
+
+    if ( !strcmp(nw, ">") ) {          /* unmatched ">"? */
+
+        message( MSG_UNMA_GT, inpf );            /* Y->error message */
+        errstr( "unmatched \">\"\n" );
+
+    } else if ( rplc_ent ) {
+
+        DLNODE *nd = find_dlnode( defent->first, (APTR) nw, cmp_rplcent );
+
+        if ( nd ) {
+
+            STRARR  entbuf[ 30 ]; /* TODO: replace with expstr */
+
+            /* copy replaced entity to buffer */
+            strcpy( entbuf, "&" );
+            strncat( entbuf, ((HSCENT*)nd->data)->name, 30 );
+            strncat( entbuf, ";", 30 );
+
+            /* message */
+            message( MSG_RPLC_ENT, inpf );
+            errstr( "replaced " );
+            errqstr( nw );
+            errstr( " by " );
+            errqstr( entbuf );
+            errlf();
+
+            nw = entbuf;
+
+        }
+    }
+
+
+    outstr( nw );                /* output word */
+
+    return (BOOL)( !fatal_error );
+}
 
 /*
 ** parse_hsc
@@ -477,6 +404,12 @@ BOOL parse_amp( INFILE *inpf )
 */
 BOOL parse_hsc( INFILE *inpf )
 {
+    /* clear and enable log */
+    if ( !inflog_clear( inpf ) )
+        err_mem( inpf );
+    else
+        inflog_enable( inpf );
+
     if ( !fatal_error ) {
         char *nxtwd;
 
@@ -490,21 +423,11 @@ BOOL parse_hsc( INFILE *inpf )
                 parse_amp( inpf );
 
             else {                                         /* handle text */
-
-                if ( !strcmp(nxtwd, ">") ) {               /* unmatched ">"? */
-
-                    message( ERROR_UNMA_GT, inpf );        /* Y->error message */
-                    errstr( "unmatched \">\"\n" );
-
-                }
-
-                outstr( infgetcws( inpf ) );               /* output word */
-                if (!infeof(inpf))
-                    outstr( infgetcw( inpf ) );
-
-
+                parse_text( inpf );
             }
         }
+        inflog_disable( inpf );
+
     }
 
     return (BOOL)( !fatal_error );
@@ -529,7 +452,7 @@ void check_tag_missing( APTR data )
     if ( (tag->option & HT_REQUIRED
          && (tag->occured == FALSE) ) )
     {
-        message( WARN_MISS_RTAG, parse_end_file );
+        message( MSG_MISS_REQTAG, parse_end_file );
         errstr( "required tag missing: " );
         errtag( tag->name );
         errlf();
@@ -547,7 +470,7 @@ void check_not_closed( APTR data )
 {
     STRPTR name = (STRPTR)data;
 
-    message( WARN_MISS_CTAG, parse_end_file );
+    message( MSG_MISS_CTAG, parse_end_file );
     errstr( "closing tag missing: " );
     errctag( name );
     errlf();
@@ -583,6 +506,7 @@ BOOL parse_end( INFILE *inpf )
 **---------------------------
 */
 
+
 /*
 ** include_hsc
 **
@@ -595,20 +519,19 @@ BOOL parse_end( INFILE *inpf )
 **
 ** result: TRUE, if all worked well, else FALSE
 */
-BOOL include_hsc( STRPTR inpfnm, FILE *outf, ULONG optn )
+BOOL include_hsc( STRPTR filename, INFILE *inpf, FILE *outf, ULONG optn )
 {
 
-    INFILE *inpf  = NULL;  /* input file */
     BOOL    ok;            /* result */
-
-    inpf = infopen( inpfnm, MAXLINELEN );        /* open input file */
     ok   = (inpf!=NULL);
 
     if ( inpf ) {                                /* file opened? */
 
+        inpf->is_nc = hsc_normch;                /*    set is_nc-methode */
+
         while ( !infeof(inpf) && ok ) {          /*    parse file */
 
-            if ( !(optn & IH_PARSE_MACRO) )
+            if ( !(optn & (IH_PARSE_MACRO | IH_PARSE_HSC) ) )
                 status_infile( inpf, FALSE );    /*    status message */
             ok = parse_hsc( inpf );
         }
@@ -620,7 +543,7 @@ BOOL include_hsc( STRPTR inpfnm, FILE *outf, ULONG optn )
         }
 
         /* end of file status */
-        if ( !(optn & IH_PARSE_MACRO) ) {
+        if ( !(optn & (IH_PARSE_MACRO | IH_PARSE_HSC)) ) {
 
             status_infile( inpf, TRUE );         /*    status message */
             status_lf();                         /*    (display num of line) */
@@ -631,9 +554,9 @@ BOOL include_hsc( STRPTR inpfnm, FILE *outf, ULONG optn )
                                                  
     } else {                                     /* N-> error message */
 
-        message( ERROR_FILE_OPEN, NULL );
+        message( MSG_NO_INPUT, NULL );
         errstr( "can not open " );
-        errqstr( inpfnm );
+        errqstr( filename );
         errstr( " for input: " );
         errstr( strerror( errno ) );
         errlf();
@@ -643,4 +566,47 @@ BOOL include_hsc( STRPTR inpfnm, FILE *outf, ULONG optn )
     return ( ok );
 }
 
+/*
+** include_hsc_file
+**
+** open input file and include it
+*/
+BOOL include_hsc_file( STRPTR filename, FILE *outf, ULONG optn )
+{
+    INFILE *inpf;
+    BOOL    ok;
+    STRARR msg[ MAX_PATHLEN ];
+
+    /* status message: reading input */
+   if ( !(optn & (IH_PARSE_MACRO | IH_PARSE_HSC)) ) {
+
+        sprintf( msg, "Reading \"%s\"", filename );
+        status_msg( msg );
+
+    }
+
+    /* open & read input file */
+    inpf = infopen( filename, ES_STEP_INFILE );
+
+    /* include opened file */
+    ok = include_hsc( filename, inpf, outf, optn );
+
+    return( ok );
+}
+
+/*
+** include_hsc_str
+**
+** open input file and include it
+*/
+BOOL include_hsc_string( STRPTR filename, STRPTR s, FILE *outf, ULONG optn )
+{
+    INFILE *inpf;
+    BOOL    ok;
+
+    inpf = infopen_str( filename, s, 0 );        /* try to open input file */
+    ok = include_hsc( filename, inpf, outf, optn );
+
+    return( ok );
+}
 

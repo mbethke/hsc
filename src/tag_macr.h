@@ -1,10 +1,8 @@
 /*
 ** tag_macr.h
 **
-** tag handle for "<HSC_DEF>" (macro definition)
+** tag handle for "<$MACRO>" (macro definition)
 **
-** updated: 31-Aug-1995
-** created:  5-Jul-1995
 */
 
 #ifndef HSC_TAG_MACRO_H
@@ -16,7 +14,7 @@
 **
 */
 
-extern BOOL handle_hsc_macro( INFILE *inpf );
+extern BOOL handle_hsc_macro( INFILE *inpf, HSCTAG *tag );
 
 
 #endif /* HSC_TAG_MACRO_H */

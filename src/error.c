@@ -3,11 +3,15 @@
 **
 ** error vars & funs for hsc
 **
-** updated:  8-Sep-1995
+** updated: 17-Sep-1995
 ** created:  9-Jul-1995
 **
 ** TODO:
 ** - programable desription string to format error messages
+** - redirect error output to error-file
+**
+** NOTE: see "msgid.h" for message-id's and
+**       how a message-id is build.
 */
 
 #include <stdio.h>
@@ -25,13 +29,6 @@
 
 
 /*
-** TODO:
-** - redirect error output to error-file
-**
-*/
-
-
-/*
 ** global vars
 */
 FILE *errfile = NULL;
@@ -44,6 +41,17 @@ BOOL fatal_error = FALSE;
 /* flag set by message() and checked by errch() to determine if*/
 /* a message really should be printed out */
 BOOL display_message = FALSE;
+
+/* return code for shell */
+/* (modified by msg_prt() */
+int return_code = RC_OK;
+
+
+/*
+**-------------------------------------
+** basic output to error file
+**-------------------------------------
+*/
 
 /*
 ** errch
@@ -121,11 +129,11 @@ int errctag( CONSTRPTR str )
 }
 
 /*
-** errsym: print symbol name
+** errsym: print attribute name
 */
 int errsym( CONSTRPTR str )
 {
-    return ( errstr( " symbol " ) + errqstr( str ) + errstr( " " ) );
+    return ( errstr( " attribute " ) + errstr( str ) + errstr( " " ) );
 }
 
 
@@ -136,6 +144,12 @@ int errlong( ULONG num )
 {
     return ( errstr(long2str(num)) );
 }
+
+/*
+**-------------------------------------
+** open/close error file
+**-------------------------------------
+*/
 
 
 /*
@@ -163,15 +177,8 @@ BOOL open_error( void )
             errstr( strerror( errno ) );
             errch( '\n' );
 
-        } else {
-
-            if ( verbose ) {
-
-                errqstr( errfilename );
-                errstr( ": opened as error file\n" );
-            }
-
-        }
+        } else if ( verbose )
+            fprintf( stderr, "Opened \"%s\" as error file\n", errfilename );
 
     } else {                           /* N-> set stdout as output file */
 
@@ -197,11 +204,27 @@ void close_error ( void )
 
 
 /*
+**-------------------------------------
+** more complex output to error file
+**-------------------------------------
+*/
+
+/*
 ** msg_ptr
 */
-int msg_prt( STRPTR s, INFILE *f )
+int msg_prt( ULONG id, STRPTR s, INFILE *f )
 {
     int ctr=0;
+
+    /*
+    ** update return code
+    */
+    if ( (id>WARN) && (return_code<RC_WARN) )
+        return_code = RC_WARN;
+    else if ( (id>ERROR) && (return_code<RC_ERROR) )
+        return_code = RC_ERROR;
+    else if ( (id>FATAL) && (return_code<RC_FATAL) )
+        return_code = RC_FATAL;
 
     /*
     ** display file info
@@ -224,6 +247,8 @@ int msg_prt( STRPTR s, INFILE *f )
     */
     if (s) {
         ctr += errstr( s );
+        ctr += errstr( " " );
+        ctr += errlong( id & MASK_MESSAGE );
         ctr += errstr( ": " );
     }
 
@@ -239,27 +264,66 @@ int msg_prt( STRPTR s, INFILE *f )
 */
 
 /*
+** cmp_msg: find a message in a message list
+**          (find-methode for find_dlnode())
+**
+** (message lists exist for ignore/error/fatal massage
+** and can be set by the user. see "args.c")
+*/
+int cmp_msg( APTR data1, APTR data2 )
+{
+    if (data1 && data2)
+        if ( (ULONG) data1 == (ULONG) data2 )
+            return (1);
+        else
+            return (0);
+    else
+        return (0);
+}
+
+
+/*
 ** message
 */
 int message( ULONG id, INFILE *f )
 {
     int ctr = 0;
+    ULONG id_masked = id & MASK_MESSAGE; /* mask out message class */
 
-    /* TODO: check if message should be oppressed */
-
+    /* oppress message if an fatal error occured before */
     display_message = ( !(fatal_error) );
+
+    if ( display_message
+         && ( (id & MASK_MSG_CLASS) < ERROR ) )
+    {
+
+            /* check if message is in ignore list */
+            if ( ignore ) {
+            DLNODE *ign_nd =
+                find_dlnode( ignore->first, (APTR) id_masked, cmp_msg );
+
+            if ( ign_nd ) {
+
+                display_message = FALSE;
+                if ( debug )
+                    fprintf( stderr, "** oppressed message #%d (0x%x)\n",
+                                     id_masked, id );
+
+            }
+        }
+    }
 
     if ( display_message ) {
 
         if ( id>=FATAL )    {
 
-            ctr = msg_prt( "Fatal error", f );
+            ctr = msg_prt( id, "Fatal error", f );
             fatal_error = TRUE;
 
-        } else if ( id>=ERROR ) ctr = msg_prt( "Error", f );
-        else if ( id>=WARN )  ctr = msg_prt( "Warning", f );
-        else if ( id>=STYLE ) ctr = msg_prt( "Bad style", f );
-        else if ( id>=MSG )   ctr = msg_prt( "Note", f );
+        } else if ( id>=ERROR ) ctr = msg_prt( id, "Error", f );
+        else if ( id>=WARN )  ctr = msg_prt( id, "Warning", f );
+        else if ( id>=STYLE ) ctr = msg_prt( id, "Bad style", f );
+        else if ( id>=MSG )   ctr = msg_prt( id, "Note", f );
 
     } else if ( debug )
         /* in debug mode, display a dot ('.') for every oppressed message */
@@ -272,39 +336,46 @@ int message( ULONG id, INFILE *f )
 
 
 /*
-** err_eof
-**
-** error: unexpected end-of-file
-**
+**-------------------------------------
+** often occurable errors
+**-------------------------------------
 */
+
+
 int err_eof( INFILE *inpf )
 {
-    message( ERROR_EOF, inpf );
-    return ( errstr( "Unexpected end of file\n" ) );
+    message( MSG_UNEX_EOF, inpf );
+    return ( errstr( "unexpected end of file\n" ) );
+}
+
+int err_eol( INFILE *inpf )
+{
+    message( MSG_UNEX_EOL, inpf );
+    return ( errstr( "unexpected end of line\n" ) );
 }
 
 int err_streol( INFILE *inpf )
 {
-    message( ERROR_EOF, inpf );
-    return ( errstr( "String exeeds line\n" ) );
+    message( MSG_STR_EOL, inpf );
+    return ( errstr( "string exeeds line\n" ) );
 }
 
 int err_mem( INFILE *inpf )
 {
-    message( FATAL_NO_MEM, inpf );
-    return ( errstr( "Out of memory\n" ) );
+    message( MSG_NO_MEM, inpf );
+    return ( errstr( "out of memory\n" ) );
 }
 
 int err_write( FILE *outf )
 {
-    message( FATAL_WRITE_ERR, NULL );
-    return ( errstr( "Write error\n" ) );
+    message( MSG_WRITE_ERR, NULL );
+    return ( errstr( "write error\n" ) );
 }
 
 int err_longstr( INFILE *inpf )
 {
     message( FATAL_LONG_STR, inpf );
-    return ( errstr( "Maximum string length exceeded (Thank K&R)\n" ) );
+    return ( errstr( "maximum string length exceeded (Thank K&R)\n" ) );
 }
 
 
@@ -317,7 +388,7 @@ int err_longstr( INFILE *inpf )
 */
 int err_wst( INFILE *inpf )
 {
-    message( STYLE_WHITE_SPACE, inpf );
+    message( MSG_WSPC_AROUND_TAG, inpf );
     errstr( "White space around tag" );
     errlf();
 

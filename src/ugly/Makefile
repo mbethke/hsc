@@ -3,11 +3,67 @@
 ##
 ## (W) by Tommy-Saftwörx
 ##
-## $VER: makefile_ugly 1.1.3 (31.7.95)
+## $VER: makefile 1.1.4 (30.9.95)
 ##
 
-opts= -ansi -DUNIX -ggdb
-all: ugly_dbg.o test_fn test_args test_file test_mem
+#
+# description of symbols:
+#
+# - sys		defines operating system
+#		(supported: AMIGA,UNIX)
+# - dest	destination dir for object files
+#		(useful to compile to ram-disk)
+# - ign		ignore warning for unreferenced vars
+# - norm	compiler flags for developer version
+# - optim	compiler flags for official version
+# - comp	compiler call to create an object file (*.o)
+# - link	compiler call to link a file
+
+ 
+#**
+#** sas/c AMIGA
+#**
+sys  = DEFINE=AMIGA
+dest = t:
+ign  = IGNORE=93
+norm = $(sys) DEFINE=UMEM_TRACKING DEBUG=SF
+optim= $(sys) NODBG STRIPDEBUG SMALLCODE OPT OPTSIZE IGN=304
+link = sc LINK $(ign)
+comp = sc
+
+
+#**
+#** gcc AMIGA
+#**
+#dest = 
+#sys  = -DAMIGA -DGCC
+
+#**
+#** gcc UNIX
+#**
+#dest =
+#sys  = -DUNIX
+
+#**
+#** gcc (any system)
+#**
+#norm = $(sys) -DUMEM_TRACKING -ansi -ggdb
+#optim= $(sys) -ansi -O
+#comp = gcc -c
+#link = gcc -o $@
+#ign  =
+
+#**
+#** compiler mode 
+#**   norm...create developer version (mem tracking, debugging code)
+#**   optim..official release (optimised)
+#**
+mode = $(optim)
+
+#
+# test files
+#
+all: test_es test_fn test_args test_file test_mem test_str
 
 
 
@@ -15,14 +71,14 @@ all: ugly_dbg.o test_fn test_args test_file test_mem
 ## project
 ##
 
-ugly.o: args.o bntree.o dllist.o memory.o prginfo.o string.o umx.o fname.o infile.o ugly.c
-	gcc -c $(opts) ugly.c
+#ugly.o: args.o bntree.o dllist.o memory.o prginfo.o string.o umx.o fname.o infile.o ugly.c
+#        $(comp)  ugly.c
 
-ugly_dbg.o: args.o bntree.o dllist.o memory.o prginfo.o string.o umx.o fname.o infile.o ugly.c
-	gcc -c $(opts) ugly.c -DUMEM_TRACKING_DEF -o ugly_dbg.o
+#ugly_dbg.o: args.o bntree.o dllist.o memory.o prginfo.o string.o umx.o fname.o infile.o ugly.c
+#        $(comp)  ugly.c -DUMEM_TRACKING_DEF -o ugly_dbg.o
 
-header: #?.h
-	copy #?.hgnu:include/ugly
+#header: #?.h
+#        copy #?.h sc:include/ugly
 
 ##
 ## project files
@@ -31,49 +87,58 @@ header: #?.h
 ## not include: types.h
 
 args.o: args.h args.c args_hlp.c args_prp.c args_set.c string.h dllist.h
-	gcc -c $(opts) args.c -DUMEM_TRACKING
+	$(comp)  args.c $(mode)
 
-bntree.o  : types.h bntree.h bntree.c
-	gcc -c $(opts) bntree.c -DUMEM_TRACKING
+#bntree.o  : types.h bntree.h bntree.c
+#        $(comp) $(sys) bntree.c $(mode)
 
 dllist.o  : types.h dllist.h dllist.c
-	gcc -c $(opts) dllist.c -DUMEM_TRACKING
+	$(comp) dllist.c $(mode)
+
+expstr.o : types.h expstr.c
+	$(comp) expstr.c $(mode)
 
 fname.o   : types.h string.h fname.h fname.c
-	gcc -c $(opts) fname.c -DUMEM_TRACKING
+	$(comp) fname.c $(mode)
 
 memory.o   : types.h memory.c memory.h dllist.h
-	gcc -c $(opts) memory.c
+	$(comp) memory.c
 
 prginfo.o : types.h prginfo.c
-	gcc -c $(opts) prginfo.c
+	$(comp) prginfo.c $(mode)
 
 string.o  : types.h string.h string.c
-	gcc -c $(opts) string.c -DUMEM_TRACKING
+	$(comp) string.c $(mode)
 
-umx.o : types.h umx.h umx.c
-	gcc -c $(opts) umx.c -DUMEM_TRACKING
+#umx.o : types.h umx.h umx.c
+#	$(comp) umx.c $(mode)
 
 infile.o : types.h string.h memory.h infile.c
-	gcc -c $(opts) infile.c -DUMEM_TRACKING
+	$(comp) infile.c $(mode)
 
 ##
 ## test files
 ##
 
 test_fn : test_fn.c fname.o memory.o
-	gcc $(opts) test_fn.c fname.o string.o memory.o -DUMEM_TRACKING -o test_fn
+	$(link) test_fn.c fname.o string.o memory.o $(mode)
 
-test_args : test_args.c args.o prginfo.o memory.o
-	gcc $(opts) test_args.c args.o string.o dllist.o memory.o prginfo.o -DUMEM_TRACKING -o test_args
+test_args : test_args.c args.o dllist.o prginfo.o memory.o
+	$(link) test_args.c args.o string.o dllist.o memory.o prginfo.o $(mode)
 
-test_file : test_file.c infile.o dllist.o memory.o
-	gcc $(opts) test_file.c dllist.o infile.o string.o memory.o -DUMEM_TRACKING -o test_file
+test_es : test_es.c expstr.o memory.o string.o
+	$(link) test_es.c expstr.o string.o memory.o $(mode)
+
+test_file : test_file.c infile.o dllist.o expstr.o memory.o
+	$(link) test_file.c dllist.o expstr.o infile.o string.o memory.o $(mode)
 
 test_list : test_list.c dllist.o string.o memory.o
-	gcc $(opts) test_list.c dllist.o string.o memory.o -DUMEM_TRACKING -o test_list
+	$(link) test_list.c dllist.o string.o memory.o $(mode)
 
 test_mem : test_mem.c memory.o dllist.o string.o
-	gcc $(opts) test_mem.c dllist.o memory.o string.o -DUMEM_TRACKING -o test_mem
+	$(link) test_mem.c dllist.o memory.o string.o $(mode)
 
+test_str : test_str.c memory.o string.o
+	$(link) test_str.c memory.o string.o $(mode)
 
+# EOF

@@ -17,27 +17,32 @@
 #include "types.h"
 #include "expstr.h"
 
+/* reasonable value for buffer-step-size */
+#define IF_BUFFER_VALUE 128
+
 /*
 ** ugly input file structure (PRIVATE)
 */
 typedef struct infile {
-    FILE  *infile;           /* file opened if fopen() */
     STRPTR filename;         /* file name */
+    FILE   *infile;          /* file opened if fopen() */
     EXPSTR *lnbuf;           /* buffer for inputline */
     EXPSTR *wordbuf;         /* word buffer */
     EXPSTR *wspcbuf;         /* word buffer (white spaces) */
     EXPSTR *logstr;          /* log string */
     STRPTR eow;              /* string of chars used as end of word */
 
+    size_t filepos;          /* file position */
     ULONG  flnctr;           /* line number in file */
-    size_t lnctr;            /* pos. in readbuffer */
+    size_t lnctr;            /* pos. in current line */
 
-    BOOL  (*is_ws)( char ch );     /* ptr to func that checks if a char */
+    BOOL  (*is_ws)( int ch );     /* ptr to func that checks if a char */
                                    /* is a white-space */
-    BOOL  (*is_nc)( char ch );     /* deto, but for "normal char" */
+    BOOL  (*is_nc)( int ch );     /* deto, but for "normal char" */
 
     BOOL   log_enable;       /* flag: TRUE means to log all chars */
     BOOL   eof_reached;      /* flag: TRUE, if end of file */
+    BOOL   out_of_mem;       /* flag: TRUE, if ran out of memory */
     BOOL   skipped_ws;       /* flag: TRUE, if last infgetw */
                              /*       skipped a white-space */
 
@@ -61,7 +66,8 @@ extern STRPTR FNAME_STDIN;
 */
 #ifndef NOEXTERN_UGLY_INFILE_H
 
-extern INFILE *infopen( CONSTRPTR filename, size_t bufsize );
+extern INFILE *infopen( CONSTRPTR name, size_t step_size );
+extern INFILE *infopen_str( CONSTRPTR fname, CONSTRPTR s, size_t step_size );
 extern int     infclose1( INFILE *inpf );  /* PRIVATE; use infclose() */
 
 extern int    infgetc( INFILE *inpf );
@@ -88,6 +94,7 @@ extern int    infgotoeol( INFILE *inpf );
 extern void inflog_enable( INFILE *inpf );
 extern void inflog_disable( INFILE *inpf );
 extern BOOL inflog_clear( INFILE *inpf );
+extern BOOL inflog_app( INFILE *inpf, STRPTR s );
 extern STRPTR infget_log( INFILE *inpf );
 
 

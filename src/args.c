@@ -1,9 +1,9 @@
 /*
 ** args.c
 **
-** argument handling for hsc
+** user argument handling for hsc
 **
-** updated:  8-Sep-1995
+** updated:  3-Oct-1995
 ** created:  1-Jul-1995
 */
 
@@ -47,30 +47,44 @@
 BOOL args_ok( int argc, char *argv[] )
 {
     BOOL   ok; /* return value */
-    char outfnbuf[ MAX_PATH ];
-
+    char outfnbuf[ MAX_PATH ]; /* buffer to create output filename *//* TODO: use expstr */
+    STRPTR destdir_arg = NULL; /* temp vars for set_args() */
+    STRPTR projdir_arg = NULL;
     struct arglist *my_args;
 
     /* create arg-table */
     my_args = prepare_args( "HSC_ARGS",
               /* file args */
-              "From"          , &inpfilename, "input file",
-              "To"            , &outfilename, "output file (default: stdout)",
-              "ErrFile=ef/T/K", &errfilename, "error file (default: stderr)",
-              "DestDir/K"     , &destdir    , "destination directory",
+              "From"            , &inpfilename, "input file",
+              "To"              , &outfilename, "output file (default: stdout)",
+#if 0
+              "ErrFile=ef/T/K"  , &errfilename, "error file (default: stderr)",
+#endif
+              "DestDir/K"       , &destdir_arg, "destination directory",
+#if 0
+              "ProjDir/K"       , &projdir_arg, "project main directory (rel.path)",
+#endif
               /* numeric */
-              "MaxErr/N/K"    , &max_error  , "max. number of errors (default:20)",
+              "MaxErr/N/K"      , &max_error  , "max. number of errors (default:20)",
+              "Ignore=ign/N/K/M", &ignore     , "ignore message number",
               /* switches */
-              "AbsUri=au/S"   , &absuri     , "use absolute URIs",
-              "CheckUri=cu/S" , &chkuri     , "check existence of local URIs",
-              "InsAnch=ia/S"  , &insanch    , "insert stripped URIs as text",
-              "PipeIn=pi/S"   , &pipe_in    , "read input file from stdin",
-              "StripUri=su/S" , &stripuri   , "strip external URIs",
-              "Status=st/S"   , &statusmsg  , "enable status message",
-              "Verbose=v/S"   , &verbose    , "enable verbose output",
-              "-Debug/S"      , &debug      , "enable debugging output",
+              "AbsUri=au/S"     , &absuri     , "use absolute URIs",
+              "CheckUri=cu/S"   , &chkuri     , "check existence of local URIs",
+              "InsAnch=ia/S"    , &insanch    , "insert stripped URIs as text",
+#if 0
+              "PipeIn=pi/S"     , &pipe_in    , "read input file from stdin",
+#endif
+              "RplcEnt=re/S"    , &rplc_ent   , "replace entities",
+#if 0
+              "StripUri=su/S"   , &stripuri   , "strip external URIs",
+#endif
+              "Status=st/S"     , &statusmsg  , "enable status message",
+              "Verbose=v/S"     , &verbose    , "enable verbose output",
+#if DEBUG
+              "-Debug/S"        , &debug      , "enable debugging output",
+#endif
               /* help */
-              "HELP=?/S"      , &need_help  , "display this text",
+              "HELP=?/S"        , &need_help  , "display this text",
 #if 0
               "SourceMode=SM/E/K", "ASC|BIN|HEX", &sourcemd, NULL,
               "StartLine=SL/R/K" , 0, 2048, &startline, NULL,
@@ -97,6 +111,7 @@ BOOL args_ok( int argc, char *argv[] )
 
             /* TODO: check conflicting options */
             /*       - check URIs & pipein */
+            BOOL fnsux = FALSE; /* flag: TRUE = can't evaluate out-filename */
 
             /* autoset depending options */
             if ( debug )   verbose   = TRUE;
@@ -115,12 +130,41 @@ BOOL args_ok( int argc, char *argv[] )
             if ( inpfilename )
                 rel_destdir = strclone( get_fpath( inpfilename ) );
 
-            if ( destdir )
+            /* copy destination directory and */
+            /* add "/" if neccessary */
+            destdir = strclone( app_fname( destdir_arg, NULL ) );
+            projdir = strclone( app_fname( projdir_arg, NULL ) );
+
+            if ( destdir ) {
+
+                if ( outfilename ) {
+
+                    UBYTE lastch = outfilename[ strlen(outfilename)-1 ];
+
+                    D( fprintf( stderr, "** lastch(%s): \"%c\"\n",
+                       outfilename, lastch ) );
+
+                    if ( strchr( PATH_SEPARATOR, lastch ) ) {
+
+                        /* use outfilename as destdir */
+                        if ( destdir_arg )
+                            fnsux = TRUE;
+                        else {
+
+                            ufreestr( destdir );
+                            destdir = strclone( outfilename );
+                            outfilename = NULL;
+
+                        }
+                    }
+                }
+
                 if ( outfilename ) {
 
                     outfilename = strclone( app_fname( destdir, outfilename ) );
                     if ( !outfilename )
                         err_mem( NULL );
+
 
                 } else {
 
@@ -138,18 +182,26 @@ BOOL args_ok( int argc, char *argv[] )
                         if ( !outfilename )
                             err_mem( NULL );
 
-                    } else {
+                    } else
+                        fnsux = TRUE;
 
-                        /* TODO: better warning */
-                        message( ERROR, NULL );
-                        errstr( "Can't evaluate output filename\n" );
-                        outfilename = NULL;
-                        ok = FALSE;
+                }
 
-                    }
+            } else
+                err_mem( NULL );
 
-            } else if ( outfilename )
-                outfilename = strclone( outfilename );
+            if ( !projdir )
+                err_mem( NULL );
+
+            if ( fnsux ) {
+
+                /* no way to find out output filename */
+                message( MSG_NO_OUTFNAME, NULL );
+                errstr( "Can't evaluate output filename\n" );
+                outfilename = NULL;
+                ok = FALSE;
+
+            }
 
         }
 
