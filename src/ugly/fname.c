@@ -105,9 +105,7 @@ BOOL get_fpath(EXPSTR * dest, CONSTRPTR fn)
     STRPTR pa_name = ustrrpbrk(fn, PATH_SEPARATOR);
 
     if (pa_name)
-    {
         set_estrn(dest, fn, strlen(fn) - strlen(pa_name) + 1);
-    }
     else
         clr_estr(dest);
 
@@ -123,9 +121,7 @@ BOOL get_fsdir(EXPSTR * dest, CONSTRPTR fn)
     STRPTR fn_name = strpbrk(fn, PATH_SEPARATOR);
 
     if (fn_name)
-    {
         set_estrn(dest, fn, strlen(fn) - strlen(fn_name) + 1);
-    }
     else
         clr_estr(dest);
 
@@ -498,11 +494,6 @@ BOOL get_relfname(EXPSTR * dest, STRPTR absn, STRPTR curp)
    del_estr(abspa);
    del_estr(tmpp1);
    del_estr(tmpp2);
-
-   /* handle special case of paths that reference the directory they are
-    * relative to */
-   if('\0' == estr2str(dest)[0])
-      set_estr(dest,"./");
 
    return (ok_fnl_fpath(dest));
 }
