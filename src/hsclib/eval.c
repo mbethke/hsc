@@ -1312,7 +1312,7 @@ static STRPTR eval_string_expr(HSCPRC * hp, HSCATTR * dest)
  *
  * evaluate string expression WITHOUT enclosing quotes
  */
-STRPTR eval_string_expr_noquote(HSCPRC * hp, HSCATTR * dest)
+static STRPTR eval_string_expr_noquote(HSCPRC * hp, HSCATTR * dest)
 {
    INFILE *inpf = hp->inpf;
    STRPTR eval_result = NULL;
@@ -1369,7 +1369,7 @@ STRPTR eval_string_expr_noquote(HSCPRC * hp, HSCATTR * dest)
  * evaluate reference to attribute
  *
  */
-static STRPTR eval_attrref(HSCPRC * hp, HSCATTR * destattr)
+STRPTR eval_attrref(HSCPRC * hp, HSCATTR * destattr)
 {
    STRPTR eval_result = NULL;
    HSCATTR *eadest = new_hscattr(PREFIX_TMPATTR "eval_attrname");
