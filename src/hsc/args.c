@@ -620,7 +620,11 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "don't validate CSS in STYLE attributes",
 
                      "CHECKEXTERNAL=CKX/S", &arg_checkext,
-                     "check external HTTP links (not implemented yet)",
+                     "check external HTTP links"
+#ifdef AMIGA
+                        "(requires bsdsocket.library)"
+#endif
+                        ,
 
                      "-DEBUG/S", &arg_debug,
                      "enable debugging output if enabled at compile-time",
