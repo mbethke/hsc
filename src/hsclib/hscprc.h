@@ -53,7 +53,7 @@
 
 #elif (defined NEXTSTEP) || (defined UNIX) || (defined BEOS) || (defined WINNT)
 #define CONFIG_FILE "hsc.prefs"
-#define CONFIG_PATH "/usr/local/lib/", "/usr/lib/"
+#define CONFIG_PATH "/usr/local/lib/hsc/", "/usr/lib/hsc/"
 #define OPTION_FILE "hsc.options"
 
 /* [3] */
@@ -103,6 +103,7 @@
 #define ENV_HSCUSER    "HSCUSER_PATH"   /* to substitute "~/" */
 #define ENV_HSCUSERS   "HSCUSERS_PATH"  /* to substitute "~" */
 #define ENV_HSCROOT    "HSCROOT_PATH"   /* to substitute "/" */
+#define ENV_HSCINCLUDE "HSCINCLUDE"     /* path to search for include files */
 
 /* used as prefix in filename for
  * internal (pseudo-)files (macros,init) */
@@ -265,7 +266,7 @@ struct hsc_process
     LONG quotemode;             /* quotes to use as output quotes */
 
     STRPTR click_here_str;      /* keywords for click-here syndrome */
-    STRPTR color_names;         /* predifined names for colors */
+    STRPTR color_names;         /* predefined names for colors */
     STRPTR strip_tags;          /* tags that should be stripped */
     EXPSTR *whtspc;             /* white spaces buffered */
     HSCTAG *tag_next_whtspc;    /* set, if a tag did not allow succ.whtspc */
