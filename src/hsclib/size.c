@@ -162,16 +162,11 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
     STRPTR srcuri = NULL;
 
     if (tag->uri_size)
-    {
         srcuri = get_vartext(tag->uri_size);
-    }
     else
-    {
         panic("no uri_size");
-    }
 
-    if (hp->getsize && srcuri && (uri_kind(srcuri) != URI_ext))
-    {
+    if (hp->getsize && srcuri && (uri_kind(srcuri) != URI_ext)) {
         unsigned char *buf = hp->image_buffer;
         EXPSTR *srcpath = init_estr(64);
         EXPSTR *imgpath = init_estr(64);
@@ -182,8 +177,7 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
         STRPTR filetype = NULL;
         STRPTR filename = NULL; /* native filename for image-URI */
         FILE *fref = NULL;      /* file link references to */
-        unsigned char id_PNG[] =
-        {
+        unsigned char id_PNG[] = {
             137, 80, 78, 71, 13, 10, 26, 10
         };                      /* PNG image header */
 
@@ -196,8 +190,7 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
 
         fref = fopen(filename, "rb");
 
-        if (fref)
-        {
+        if (fref) {
             size_t bytes_read = 0;      /* number of bytes in image buffer */
 
             /* fill buffer with zero */
@@ -205,26 +198,20 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
 
             /* read buffer from file */
             errno = 0;
-            bytes_read = fread(buf, IMAGE_BUFFER_SIZE, 1, fref);
+            bytes_read = fread(buf, 1, IMAGE_BUFFER_SIZE, fref);
 
-            if (errno)
-            {
+            if (errno) {
                 /* read error */
                 hsc_msg_read_error(hp, filename);
-            }
-            else if (buf[0] == 0xff)
-            {
+            } else if (buf[0] == 0xff) {
                 /*
                  * JFIF/JPEG
                  */
                 BOOL found = FALSE;
                 size_t i = 0;
 
-                /*TODO: recognize and report progressive */
-                while (!found && (i < (bytes_read - 8)))
-                {
-                    if ((buf[i] == 0xff) && (buf[i + 1] != 0xff))
-                    {
+                while (!found && (i < (bytes_read - 8))) {
+                    if ((buf[i] == 0xff) && (buf[i + 1] != 0xff)) {
                         BOOL is_msof = FALSE;
                         int j = 0;
 
@@ -235,20 +222,14 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                                     buf[i + 4], buf[i + 5]));
 
                         /* check if marker is of required type */
-                        while (!is_msof && msof[j])
-                        {
+                        while (!is_msof && msof[j]) {
                             if (buf[i + 1] == msof[j])
-                            {
                                 is_msof = TRUE;
-                            }
                             else
-                            {
                                 j += 1;
-                            }
                         }
 
-                        if (is_msof)
-                        {
+                        if (is_msof) {
                             DSZ(
                                    {
                                    for (j = 0; j < 10; j++)
@@ -268,9 +249,7 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                             height = buf[i + 6] + (buf[i + 5] << 8);
                             found = TRUE;
 
-                        }
-                        else
-                        {
+                        } else {
                             DDA(printf("ignore\n"));
                         }
                     }
@@ -280,13 +259,9 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
 
                 /* check if buffer exeeds */
                 if (!found)
-                {
                     hsc_msg_img_corrupt(hp, "image buffer exeeds");
-                }
-            }
-            else if (!fuck_strncmp("GIF87a", (STRPTR) buf, 6)
-                     || !fuck_strncmp("GIF89a", (STRPTR) buf, 6))
-            {
+            } else if (!fuck_strncmp("GIF87a", (STRPTR) buf, 6)
+                     || !fuck_strncmp("GIF89a", (STRPTR) buf, 6)) {
                 /*
                  * GIF
                  */
@@ -299,46 +274,37 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                 DSZ(fprintf(stderr, DHL "  buf=%d: gcolmap=%ld, pxldep=%ld\n",
                             buf[10], use_global_colormap, pixeldepth));
 
-                while (!fucked_up && (buf[startimg] != ','))
-                {
+                while (!fucked_up && (buf[startimg] != ',')) {
                     DSZ(fprintf(stderr, DHL "  %04lx: id=%02x\n",
                                 startimg, buf[startimg]));
 
-                    if (buf[startimg] == '!')
-                    {
+                    if (buf[startimg] == '!') {
                         UBYTE blksize = 0;
 
-                        if (buf[startimg + 1] == 0xF9)
-                        {
+                        if (buf[startimg + 1] == 0xF9) {
                             /* graphic control extensions */
                             /* check if transparent */
                             transparent = (buf[startimg + 3] & 0x01);
-                            if (transparent)
-                            {
+                            if (transparent) {
                                 DDA(fprintf(stderr, DHL "  (transparent)\n"));
                             }
                         }
 
                         /* skip all blocks */
                         startimg += 2;
-                        do
-                        {
+                        do {
                             blksize = buf[startimg];
                             DDA(printf("  skip block sized %d\n", blksize));
                             startimg += 1L + blksize;
-                        }
-                        while (!fucked_up && (blksize));
+                        } while (!fucked_up && (blksize));
 
                         /* check if buffer exeeds */
-                        if (startimg > (bytes_read - 9))
-                        {
+                        if (startimg > (bytes_read - 9)) {
                             hsc_msg_img_corrupt(hp, "image buffer exeeds");
                             fucked_up = TRUE;
                         }
 
-                    }
-                    else
-                    {
+                    } else {
                         hsc_msg_img_corrupt(hp, "unknown gif-block");
                         DSZ(fprintf(stderr, "  id='%x', index=%ld/\n",
                                     buf[startimg], startimg));
@@ -346,14 +312,11 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                     }
                 }
 
-                if ((buf[startimg] != ',') && !fucked_up)
-                {
+                if ((buf[startimg] != ',') && !fucked_up) {
                     DSZ(fprintf(stderr, DHL "  %04lx: id=%02x\n",
                                 startimg, buf[startimg]));
                     hsc_msg_img_corrupt(hp, "image separator expected");
-                }
-                else
-                {
+                } else {
                     /* been sucessful */
                     DSZ(fprintf(stderr, DHL "  %04lx: id=%02x\n",
                                 startimg, buf[startimg]));
@@ -367,9 +330,7 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                                 DHL "  height: %lu\n",
                                 width, height));
                 }
-            }
-            else if (!fuck_strncmp(id_PNG, buf, 8))
-            {
+            } else if (!fuck_strncmp(id_PNG, buf, 8)) {
                 /*
                  * PNG
                  */
@@ -402,33 +363,27 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
 #endif
                 DDA(fprintf(stderr, DHL "  width : %lu\nheight: %lu\n",
                             width, height));
-            }
-            else
-            {
+            } else {
                 /* unknown file type */
                 hsc_message(hp, MSG_UNKN_FILETYPE,
                             "filetype of %q not recognised",
                             estr2str(srcpath));
             }
 
-            if (filetype)
-            {
+            if (filetype) {
                 DSZ(fprintf(stderr, DHL "  size: \"%s\" (%ldx%ld)\n",
                             filetype, width, height));
             };
 
             fclose(fref);
-        }
-        else
-        {
+        } else {
             DSZ(fprintf(stderr, DHL "  can't open image `%s'\n",
                         estr2str(srcpath)));
             hsc_msg_nouri(hp, estr2str(srcpath), srcuri, "image dimension");
         }
 
         /* set attribute values */
-        if (height && width)
-        {
+        if (height && width) {
             HSCVAR *awidth=NULL, *aheight=NULL;
 
             awidth = find_varname(tag->attr, "WIDTH");
