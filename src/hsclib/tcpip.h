@@ -28,6 +28,7 @@
 #include "ugly/utypes.h"
 #include "ugly/umemory.h"
 #include "ugly/expstr.h"
+#include "hsclib/hscprc.h"
 
-extern BOOL check_ext_uri(char *uri);
+extern BOOL check_ext_uri(HSCPRC *hp, char *uri);
 
