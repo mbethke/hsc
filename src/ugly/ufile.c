@@ -68,9 +68,8 @@ BOOL fexists(STRPTR filename)
  *
  * result: see fentrytype_t definition
  *
- * TODO: make sure this is halfway portable
  */
-fentrytype_t fgetentrytype(STRPTR name) {
+fentrytype_t fgetentrytype(const STRPTR name) {
    struct stat sbuf;
    fentrytype_t type = FE_NONE;
    
@@ -81,6 +80,44 @@ fentrytype_t fgetentrytype(STRPTR name) {
          type = FE_FILE;
    }
    return type; 
+}
+
+/*
+ * getcurrentdir
+ *
+ * Get the current working directory as a string 
+ *
+ * result: pointer to the the directory name, free this using ufree()
+ *
+ */
+STRPTR getcurrentdir(void) {
+   STRPTR s;
+   int ss=32;
+   errno = 0;
+   while(1) {
+      if(NULL == (s = umalloc(ss)))
+         panic("out of memory");
+      if(NULL == getcwd(s,ss)) {
+         if(ERANGE != errno)
+            panic(strerror(errno));
+         ufree(s);
+         ss *= 2;
+      } else break;
+   }
+   return s;
+}
+
+/*
+ * setcurrentdir
+ *
+ * Set the working directory
+ *
+ * result: nothing, side effect only
+ *
+ */
+void setcurrentdir(const STRPTR dir) {
+   /* this is just to avoid too much system specific stuff in other modules */
+   chdir(dir);
 }
 
 /*

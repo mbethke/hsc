@@ -45,6 +45,12 @@ enum fcopy_e
 
 typedef enum fcopy_e fcopy_t;
 
+typedef enum {
+   FE_NONE,
+   FE_FILE,
+   FE_DIR
+      /* FE_HARDLINK, FE_SOFTLINK, ... */
+} fentrytype_t ;
 /*
  * external function prototypes
  */
@@ -53,6 +59,9 @@ typedef enum fcopy_e fcopy_t;
 
 extern BOOL fexists(STRPTR filename);
 extern LONG getfsize(STRPTR filename);
+extern fentrytype_t fgetentrytype(const STRPTR name);
+extern STRPTR getcurrentdir(void);
+extern void setcurrentdir(const STRPTR dir);
 
 extern fcopy_t fcopy(CONSTRPTR oldname, CONSTRPTR newname);
 extern fcopy_t fmove(CONSTRPTR oldname, CONSTRPTR newname);
