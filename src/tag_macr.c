@@ -1,9 +1,9 @@
 /*
 ** tag_macr.c
 **
-** tag handles for "<$>" (macro)
+** tag handles for "<HSC_MACRO>" and "<macro>"
 **
-** updated:  6-Aug-1995
+** updated:  4-Sep-1995
 ** created:  5-Aug-1995
 */
 
@@ -13,229 +13,241 @@
 
 #include "ugly/types.h"
 #include "ugly/dllist.h"
+#include "ugly/fname.h"
 #include "ugly/infile.h"
 #include "ugly/memory.h"
 #include "ugly/string.h"
 
 #include "global.h"
+#include "macro.h"
+#include "vars.h"
+
+#include "config.h"
+#include "cleanup.h"
 #include "error.h"
+#include "find.h"
 #include "msgid.h"
 #include "output.h"
 #include "tagargs.h"
 #include "parse.h"
 
-char macarg[ MAX_ARGLEN ];
+char macpar[ MAX_ARGLEN ];
+BYTE  rmt_str[ MAXLINELEN ];
+FILE *fmacout;
 
 /*
-** parse_macstr
-**
-** parses string for macro-definition and argument
-** - read first word, check it to be a quote ('\"' or '\'')
-** - remember which type of quote the first quote was (var: quote)
-** - read (char-wise) rest of string, until first quote appears again
+**-------------------------------------
+** handlers for opening/closing macro
+**-------------------------------------
 */
-STRPTR parse_macstr( INFILE *inpf )
+
+/*
+** handle_macro
+**
+** handle for macro
+**
+** params: open_mac..TRUE, if called by an openning macro
+**         inpf......input file
+*/
+BOOL handle_macro( BOOL open_mac, INFILE *inpf )
 {
-    int    nxtch = EOF;                /* next char read */
-    int    quote = EOF;                /* quote char */
-    size_t idx   = 0;                  /* pos. in macarg */
+    BOOL    ok = FALSE;
+    HSCMAC *macro = find_strmac( this_tag_data->name );
+    STRPTR  fname;
+    DLLIST *args;
+    ULONG   mci; /* macro call id returned by set_macro_args() */
 
-
-    if ( parse_eq( inpf ) )
-        quote = parse_quote( inpf );
-
-
-    if ( quote != EOF ) {
-
-        nxtch = infgetc( inpf );
-        while ( (nxtch != EOF) && (nxtch != quote) ) {
-
-            macarg[idx] = nxtch;              /* store char */
-            idx++;
-            if ( idx != (MAX_ARGLEN-1) )
-                nxtch = infgetc( inpf );
-            else {
-
-                nxtch = EOF;
-                message( FATAL_LONG_STR, inpf );
-                errstr( "Argument string too long" );
-
-            }
-
-        }
-
+    /* determine filename & args */
+    if ( open_mac ) {
+        fname = macro->op_fname;
+        args  = macro->op_args;
+    } else {
+        fname = macro->cl_fname;
+        args  = macro->cl_args;
     }
 
-    macarg[idx] = '\0';
-    if ( nxtch != EOF )
-        return ( macarg );
-    else
-        return ( NULL );
+    /* debugging message */
+    if ( debug ) {
+        fprintf( stderr, "**-MACRO <" );
+        if ( !open_mac )
+            fprintf( stderr, "/" );
+        fprintf( stderr, "%s> from \"%s\"\n", macro->name, fname );
+    }
+
+    /* parse args */
+    mci = set_macro_args( macro, inpf, open_mac );
+    if (debug)
+        prt_varlist( args, "macro args (after set_macro_args)" );
+
+    /* copy local vars to global list */
+    ok = copy_local_varlist( args, mci );
+    if (debug)
+        prt_varlist( vars, "global vars (after copy_local_vars)" );
+
+    /* include macro file */
+    ok = include_hsc( fname, outfile, 0 );
+
+    /* remove local vars */
+    remove_local_varlist( mci );
+
+    /* debugging message */
+    if ( debug )
+        fprintf( stderr, "**-ENDMACRO <%s>\n", macro->name );
+
+    return ( ok );
 }
 
 /*
+** handle_op_macro
 **
-** exported funs
-**
+** handle for opening macro
 */
-
+BOOL handle_op_macro( INFILE *inpf )
+{
+    return( handle_macro(TRUE, inpf) );
+}
 
 /*
-** insert_macro
+** handle_cl_macro
 **
-** insert already defined macro:
-** - write macro text to a temp. output file
-** - perform an include_hsc() on this file
+** handle for closing macro
 */
-BOOL insert_macro( HSCMAC *macro, INFILE *inpf )
+BOOL handle_cl_macro( INFILE *inpf )
 {
-    BOOL    ok     = FALSE; /* result var */
-    STRPTR  nambuf = NULL;  /* name of temp. file */
-    STRPTR  nam    = NULL;  /* result of tmpnam() (probably not neccessary */
-    FILE   *tmp_outfile = NULL; /* temp. file macro text is written to */
+    return( handle_macro(FALSE, inpf) );
+}
 
-    /*
-    ** open tmpfile
-    */
-    nambuf = (STRPTR) malloc( L_tmpnam );
-    if ( nambuf )
-        nam = tmpnam( nambuf );
-    if ( nam )
-        tmp_outfile = fopen( nam, "w" );
+/*
+**-------------------------------------
+** macro creation functions
+**-------------------------------------
+*/
 
+/*
+** outmac
+**
+** write a string to macro file
+*/
+BOOL outmac( STRPTR s, INFILE *inpf )
+{
+    BOOL ok = ( fputs( s, fmacout ) != EOF );
 
-    if ( debug )
-        fprintf( stderr, "** expand macro %s into file \"%s\" as \"%s\"\n",
-                 macro->name, nam, macro->text );
-
-    /* write macro text to temp. outfile */
-    if ( tmp_outfile ) {
-
-        ok = ( fputs( macro->text, tmp_outfile ) != EOF );
-        fclose( tmp_outfile );
-
+    if ( !ok ) {
+        message( FATAL_WRITE_MACRO, inpf );
+        errstr( "Error writing macro" );
     }
 
-    /* include temp. outfile */
-    if ( ok ) {
+    return ( ok );
+}
 
-        ok = include_hsc( nam, outfile, IH_PARSE_MACRO );
+/*
+** rmt_check_for
+*/
+BOOL rmt_check_for( INFILE *inpf, STRPTR cmpstr )
+{
+    STRPTR  nw = infgetw( inpf );
+    BOOL    eq = FALSE;
 
+    if ( nw ) {
+
+        eq = !upstrcmp( nw, cmpstr );
+        strcat( rmt_str, infgetcws( inpf ) );
+        strcat( rmt_str, infgetcw( inpf ) );
+
+    } else
+        err_eof( inpf );
+
+    return( eq );
+}
+
+/*
+** read_macro_text
+**
+*/
+BOOL read_macro_text( HSCMAC *macro, INFILE *inpf, BOOL open_mac )
+{
+    BOOL    ok = FALSE;
+    STRPTR  fname;
+
+    /* open output file for macro text */
+    if ( open_mac )
+        fname = macro->op_fname;
+    else
+        fname = macro->cl_fname;
+    fmacout = fopen( fname, "w" );
+
+    if ( fmacout ) {
+
+        /* skip first LF if any */
+        skip_lf( inpf );
+
+        strcpy( rmt_str, "" );
+        while ( !(ok || fatal_error) ) {
+
+            if ( rmt_check_for( inpf, "<" )
+                 &&  rmt_check_for( inpf, "/" )
+                 &&  rmt_check_for( inpf, STR_HSC_MACRO )
+               )
+            {
+
+                ok = TRUE;
+                parse_gt( inpf );
+
+            } else {
+
+                outmac( rmt_str, inpf );
+                strcpy( rmt_str, "" );
+
+            }
+        }
     } else {
 
-        /* error expanding macro */
-        message( ERROR_EXPAND_MACRO, inpf );
-        errstr( "Can not expand macro \n" );
-        /* TODO: display macro name */
-
+        message( FATAL_WRITE_MACRO, inpf );
+        errstr( "Error writing macro" );
     }
 
-    /* cleanup */
-    if ( tmp_outfile )
-        remove( nam );
-    ufree( nambuf );
+    fclose( fmacout );
 
-    return (ok);
+    return ( ok );
+
 }
-
 
 /*
-** create_new_macro
-**
-** read a decription text for a new macro,
-** alloc & init the new macro
+**-------------------------------------
+** main handler function for creation
+**-------------------------------------
 */
-BOOL create_new_macro( STRPTR mname, DLNODE *nd, INFILE *inpf)
-{
-    HSCMAC *macro = NULL;
-    STRPTR  mtext = parse_macstr( inpf );        /* read macro text */
 
-    /* remove existing macro */
-    if ( mtext && nd ) {
-
-        del_dlnode( macros, nd );
-
-        message( MSG_RPLC_MACRO, inpf );
-        errstr( "Replacing existing macro " );
-        errqstr( mname );
-        errlf();
-
-    }
-
-    /* append new macro */
-    if ( mtext ) {
-
-        /* create new macro */
-        macro =  new_hscmac( mname, mtext );
-        if ( macro ) {
-
-            /* add new macro to macro list */
-            if ( !app_dlnode( macros, macro ) ) {
-                /* out of mem */
-                /* TODO: handle this case */
-            }
-
-        }
-    }
-
-    return ( (BOOL)(macro!=NULL) );
-}
 
 /*
 ** handle_hsc_macro
 **
-** define a new macro or extract it
+** define a new macro tag
 */
 BOOL handle_hsc_macro( INFILE *inpf )
 {
-    DLNODE *nd;
-    STRPTR mname   = NULL;
-    STRPTR nxtoptn = NULL;
+    BOOL    ok = FALSE;
+    BOOL    open_mac;
+    HSCMAC *macro;
 
-    nxtoptn = parse_tagoptn( inpf );
-    mname = strclone( nxtoptn );
+    /* get name and argumets */
 
-    if ( mname ) {
+    macro = def_macro_name( inpf, &open_mac );
 
-        nd = find_dlnode( macros->first, (APTR) mname, cmp_strmac );
+    ok = ( macro && def_macro_args( macro, inpf, &open_mac ) );
+    if ( ok ) {
 
-        nxtoptn = parse_tagoptn( inpf );
+        /* copy macro text to temp. file */
+        if ( macro )
+            ok = read_macro_text( macro, inpf, open_mac );
 
-        if ( nxtoptn ) {
-
-            if ( !upstrcmp("SRC",nxtoptn) )
-                /* create a new macro */
-                create_new_macro( mname, nd, inpf );
-            else {
-                /* TODO: handle other options */
-            }
-
-        } else {
-
-            if ( nd )
-                /* extract a macro and write it to output */
-                insert_macro( (HSCMAC*)nd->data, inpf );
-            else {
-
-                /* unknown macro: display message */
-                message( MSG_UNKN_MACRO, inpf );
-                errstr( "Unknown macro " );
-                errqstr( mname );
-                errlf();
-
-            }
-
+        /* create a new tag for macro */
+        if ( ok ) {
+            ok = (BOOL) add_tag( macro->name, HT_NOCOPY | HT_MACRO, 0,
+                                 handle_op_macro, handle_cl_macro );
         }
-        ufreestr( mname );
-
-    } else {
-
-        /* TODO: out of mem */
-
     }
 
-    skip_until_gt( inpf );
-
-    return TRUE;
+    return ( ok );
 }
 

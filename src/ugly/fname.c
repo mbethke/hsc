@@ -6,12 +6,12 @@
 **
 ** (W) by Tommy-Saftwörx in 1994,95
 **
-** version 0.8
+** version 0.8.1
 **
-** updated:  2-Aug-1995
+** updated: 31-Aug-1995
 ** created: 24-May-1994
 **
-** $VER: fname.c 0.8 (2.8.1995)
+** $VER: fname.c 0.8.1 (31.8.1995)
 **
 **-------------------------------------------------------------------
 ** TODO:
@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "types.h"
+#include "memory.h"
 #include "string.h"
 
 #define NOEXTERN_UGLY_FNAME_H
@@ -319,4 +320,28 @@ STRPTR app_fname( STRPTR dir, STRPTR fn )
         strcat( fn_buffer, fn );
 
     return fn_buffer;
+}
+
+/*
+** tmpnamstr: alloc & create a string with a temp. filename
+**
+** result: string containig filename
+** errors: return NULL; this can be because auf no more
+**         temp. files available or out of mem
+*/
+STRPTR tmpnamstr( void )
+{
+    STRPTR s = (STRPTR) ugly_malloc( L_tmpnam, __FILE__, __LINE__ );
+    STRPTR tnm;
+
+    if ( s ) {
+
+        tnm = tmpnam( s );
+        if ( !tnm ) {
+            ufreestr( s );
+            s = NULL;
+        }
+    }
+
+    return ( s );
 }

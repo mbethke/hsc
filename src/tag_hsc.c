@@ -3,7 +3,7 @@
 **
 ** tag handles for "<HSC_xx>"
 **
-** updated:  5-Aug-1995
+** updated:  4-Sep-1995
 ** created: 23-Jul-1995
 */
 
@@ -13,6 +13,7 @@
 
 #include "ugly/types.h"
 #include "ugly/dllist.h"
+#include "ugly/fname.h"
 #include "ugly/infile.h"
 #include "ugly/memory.h"
 #include "ugly/string.h"
@@ -23,6 +24,8 @@
 #include "output.h"
 #include "tagargs.h"
 #include "parse.h"
+
+#include "vars.h"
 
 #define TIMEBUF_SIZE 40
 
@@ -53,7 +56,6 @@ void unkn_hscoptn( STRPTR tag, STRPTR optn, INFILE *inpf )
 }
 
 
-
 /*
 ** handle_hsc_comment
 **
@@ -80,10 +82,49 @@ BOOL handle_hsc_comment( INFILE *inpf )
 
     if ( infeof(inpf) && nesting )
         err_eof(inpf);
+    else
+        skip_lf( inpf );
 
     return (TRUE);
 }
 
+/*
+** handle_hsc_include
+**
+** include a sub file
+*/
+BOOL handle_hsc_include( INFILE *inpf )
+{
+    STRPTR fname;
+    STRPTR nxtoptn;
+
+    nxtoptn = parse_tagoptn( inpf );
+
+    while ( nxtoptn ) {
+
+        if ( !upstrcmp( nxtoptn, "SRC" ) ) {
+
+            fname = parse_strarg( inpf );          /* get filename */
+
+        } else
+            /* error message: unknwon hsc-option */
+            unkn_hscoptn( "HSC_INCLUDE", nxtoptn, inpf );
+
+        nxtoptn = parse_tagoptn( inpf );
+
+    } /*while*/
+
+    if ( fname ) {
+
+        include_hsc( fname, outfile, 0 );
+
+    }
+
+    skip_until_gt( inpf );
+    skip_lf( inpf );
+
+    return (TRUE);
+}
 
 /*
 ** handle_hsc_skip
@@ -158,7 +199,7 @@ BOOL handle_hsc_time( INFILE *inpf )
 
         } else
             /* error message: unknwon hsc-option */
-            unkn_hscoptn( "HSC_TIME", nxtoptn, inpf );
+            unkn_hscoptn( STR_HSC_TIME, nxtoptn, inpf );
 
 
         nxtoptn = parse_tagoptn( inpf );
@@ -179,38 +220,138 @@ BOOL handle_hsc_time( INFILE *inpf )
 }
 
 /*
-** handle_hsc_include
-**
-** include a sub file
+**-------------------------------------
+** functions for <HSC_VAR>
+**-------------------------------------
 */
-BOOL handle_hsc_include( INFILE *inpf )
+
+/*
+** set_var_value
+*/
+BOOL set_var_value( STRPTR varname, INFILE *inpf )
 {
-    STRPTR fname;
-    STRPTR nxtoptn;
+    BOOL ok = FALSE;
 
-    nxtoptn = parse_tagoptn( inpf );
+    ok = (BOOL)( define_var( varname, vars, inpf, 0 ) );
 
-    while ( nxtoptn ) {
+    if ( !ok )
+        skip_until_gt( inpf );
+    else
+        ok = parse_ch( inpf, '>' );
 
-        if ( !upstrcmp( nxtoptn, "SRC" ) ) {
+    return (ok);
+}
 
-            fname = parse_strarg( inpf );          /* get filename */
-
-        } else
-            /* error message: unknwon hsc-option */
-            unkn_hscoptn( "HSC_INCLUDE", nxtoptn, inpf );
-
-        nxtoptn = parse_tagoptn( inpf );
-
-    } /*while*/
+/*
+** insert_var_value
+*/
+BOOL hsc_insert_text( STRPTR text )
+{
+    BOOL ok = FALSE;
+    STRPTR fname = tmpnamstr();
 
     if ( fname ) {
 
-        include_hsc( fname, outfile, 0 );
+        FILE *fout = fopen( fname, "w" );
 
-    }
+        /* write text to temp. file */
+        if ( fout ) {
 
-    skip_until_gt( inpf );
+            if ( fputs( text, fout ) == EOF )
+                /* todo: error */;
+            fclose( fout );
 
-    return (TRUE);
+            ok = include_hsc( fname, outfile, 0 );
+
+        } else
+            /* todo: better error msg */
+            err_write( NULL ) ;
+
+        ufreestr( fname );
+
+    } else
+        err_mem( NULL );
+
+    return (ok);
 }
+
+
+/*
+** handle_hsc_var
+**
+** set or insert a var
+*/
+BOOL handle_hsc_var( INFILE *inpf )
+{
+    BOOL   ok = FALSE;
+    STRPTR varname = NULL;
+    STRPTR nw = infgetw( inpf );
+
+    /* get varname */
+    if ( nw ) {
+
+        varname = strclone( nw );
+        if ( !varname )
+            err_mem( inpf );
+
+    } else
+        err_eof( inpf );
+
+    if ( varname ) {
+
+        nw = infgetw( inpf );
+        if ( nw ) {
+
+            if ( !strcmp( nw, "=" ) ) {
+
+                /* set new value */
+                ok = set_var_value( varname, inpf );
+
+            } else if ( !strcmp( nw, ">" ) ) {
+
+                /* insert value */
+                HSCVAR *var = find_varname( vars, varname );
+                if ( var ) {
+
+                    char text[MAX_ARGLEN+2];
+
+                    if ( var->text ) {
+
+                        strcpy( text, "" );
+                        if ( var->quote != VQ_NO_QUOTE )
+                            strcat( text, ch2str( (char) var->quote ) );
+                        strcat( text, var->text );
+                        if ( var->quote != VQ_NO_QUOTE )
+                            strcat( text, ch2str( (char) var->quote ) );
+
+                        ok = hsc_insert_text( text );
+                    }
+                } else {
+                    /* unknown var */
+                    message( VAR_UNKN, inpf );
+                    errstr( "Undefined " );
+                    errsym( varname );
+                    errlf();
+
+                }
+
+
+
+            } else {
+
+                /* syntax error */
+                unkn_hscoptn( STR_HSC_VAR, nw, inpf );
+                skip_until_gt( inpf );
+            }
+
+        }
+
+        ufreestr( varname );
+
+    } else
+        err_eof( inpf );
+
+    return (ok);
+}
+
+

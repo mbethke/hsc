@@ -3,7 +3,7 @@
 **
 ** functions for parsing of tag arguments
 **
-** updated:  6-Aug-1995
+** updated:  3-Sep-1995
 ** created: 29-Jul-1995
 */
 
@@ -24,8 +24,11 @@ extern STRPTR parse_mutex( STRPTR line, INFILE *inpf, BOOL *match, BOOL igcs );
 extern STRPTR get_relfname( STRPTR absnam, STRPTR curdir );
 
 extern BOOL parse_ch( INFILE *inpf, int exptch );
-extern BOOL parse_eq ( INFILE *inpf );
+extern BOOL parse_eq( INFILE *inpf );
+extern BOOL parse_gt( INFILE *inpf );
 extern char parse_quote( INFILE *inpf );
+
+extern BOOL skip_lf( INFILE *inpf );
 
 #endif /* HSC_TAGARGS_H */
 

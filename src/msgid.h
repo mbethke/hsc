@@ -3,7 +3,7 @@
 **
 ** defines for message-ids (warnings, errors,..)
 **
-** updated:  7-Aug-1995
+** updated:  5-Sep-1995
 ** created: 30-Jul-1995
 */
 
@@ -71,5 +71,16 @@
 #define FATAL_NO_MEM        (FATAL+ 1) /* out of mem */
 #define FATAL_WRITE_ERR     (FATAL+ 2) /* write error */
 #define FATAL_LONG_STR      (FATAL+ 3) /* string too long */
+#define FATAL_WRITE_MACRO   (FATAL+ 4) /* writing macro */
 
-#endif /* HSC_MSGID_H */
+/*
+** variable errors
+*/
+#define VAR_ILLEGAL_TYPE    (FATAL+50) /* illegal var type */
+#define VAR_ILLEGAL_NUM     (FATAL+51) /* illegal numeric value */
+#define VAR_UNKN            (WARN +80) /* unknown var */
+#define VAR_2ND_DEFAULT     (ERROR+50) /* 2nd default value */
+#define VAR_BOOL_DEFAULT    (ERROR+51) /* default value for boolean */
+#define VAR_CIRCULAR        (ERROR+52) /* circular var reference */
+
+#endif

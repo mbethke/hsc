@@ -3,7 +3,7 @@
 **
 ** cleanup function for hsc
 **
-** updated: 31-Jul-1995
+** updated:  3-Sep-1995
 ** created:  1-Jul-1995
 */
 
@@ -12,7 +12,6 @@
 
 extern void del_entity( APTR data );
 extern void del_tag( APTR data );
-extern void del_mac( APTR data );
 
 extern void cleanup( void );
 

@@ -3,7 +3,7 @@
 **
 ** global vars & funs for hsc
 **
-** updated:  7-Aug-1995
+** updated:  2-Sep-1995
 ** created:  8-Jul-1995
 */
 
@@ -11,6 +11,7 @@
 
 #include "ugly/types.h"
 #include "ugly/dllist.h"
+#include "ugly/fname.h"
 #include "ugly/string.h"
 #include "ugly/memory.h"
 
@@ -45,8 +46,6 @@ FILE *outfile = NULL;                  /* file var for output */
 DLLIST *deftag = NULL;                 /* list for defined tags */
 DLLIST *defent = NULL;                 /* list for defined entites */
 DLLIST *cltags = NULL;                 /* history for closing tags */
-DLLIST *macros = NULL;                 /* list for macros */
-
 time_t now;                            /* used to store current time */
                                        /*     (initialised in config.c) */
 
@@ -60,7 +59,8 @@ ULONG head_nesting   = 0;
 ULONG list_nesting   = 0;
 ULONG title_nesting  = 0;
 
-char this_tag[MAX_TAGLEN];             /* id of tag currently processed */
+char    this_tag[MAX_TAGLEN];          /* id of tag currently processed */
+HSCTAG *this_tag_data = NULL;          /* ptr to tag currently processed */
 
 STRPTR last_anchor = NULL;             /* stores prev URL of last anchor; */
                                        /* used within tag_a.c, but must be */
@@ -138,26 +138,4 @@ HSCENT *new_hscent( STRPTR newid )
     return (newent);
 
 }
-
-/*
-** new_hscmac
-**
-** alloc & init a new hsc-macro
-*/
-HSCMAC *new_hscmac( STRPTR newname, STRPTR newtext )
-{
-
-    HSCMAC *newmac = (HSCMAC*) malloc( sizeof(HSCMAC) );
-
-    if (newmac) {
-
-        /* init new macity item */
-        newmac->name = strclone(newname);
-        newmac->text = strclone(newtext);
-    }
-
-    return (newmac);
-
-}
-
 

@@ -228,8 +228,23 @@ void test_setfext( STRPTR fn, STRPTR ext )
 
 void main( void )
 {
+    LONG i;
+    STRPTR nam;
+
     printf( "Testing ugly fname functions:\n\n" );
 
+    printf( "temp names (%d):", L_tmpnam );
+    for ( i=0; i<10; i++ ) {
+
+        nam = tmpnamstr();
+        if ( nam ) {
+            printf( " \"%s\"", nam );
+            ufreestr( nam );
+        } else
+            printf( " <NULL>" );
+
+    }
+    printf( "\n" );
 
 #if 0
     /*

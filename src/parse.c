@@ -3,7 +3,7 @@
 **
 ** parse file: handle for entities & tags
 **
-** updated: 29-Aug-1995
+** updated:  4-Sep-1995
 ** created:  1-Jul-1995
 **
 */
@@ -31,6 +31,7 @@
 #include "global.h"
 #include "output.h"
 #include "error.h"
+#include "find.h"
 #include "msgid.h"
 #include "status.h"
 
@@ -38,98 +39,6 @@
 #include "parse.h"
 
 INFILE *parse_end_file; /* file for do_list-methods called in parse_end() */
-
-/*
-**---------------------------
-** compare functions
-**---------------------------
-*/
-
-/*
-** cmp_strent
-**
-** compares a entity-string with the name
-** of a HSCENT-entry
-*/
-int cmp_strent( APTR cmpstr, APTR entdata )
-{
-    STRPTR entstr = NULL;
-
-    if ( entdata )
-        entstr = ((HSCENT*)entdata)->name;
-
-    if (entstr)
-        if ( !strcmp( cmpstr, entstr ) )
-            return (-1);
-        else
-            return (0);
-    else
-        return (0);
-}
-
-
-/*
-** cmp_strtag
-**
-** compares a tag-string with the name
-** of a HSCTAG-entry
-*/
-int cmp_strtag( APTR cmpstr, APTR tagdata )
-{
-    STRPTR tagstr = NULL;
-
-    if ( tagdata )
-        tagstr = ((HSCTAG*)tagdata)->name;
-
-    if (tagstr)
-        if ( !upstrcmp( cmpstr, tagstr ) )
-            return (-1);
-        else
-            return (0);
-    else
-        return (0);
-}
-
-
-/*
-** cmp_strmac
-**
-** compares a macro-name with the name
-** of a HSCMAC-entry
-*/
-int cmp_strmac( APTR cmpstr, APTR macdata )
-{
-    STRPTR macstr = NULL;
-
-    if ( macdata )
-        macstr = ((HSCMAC*)macdata)->name;
-
-    if (macstr)
-        if ( !strcmp( cmpstr, macstr ) )
-            return (-1);
-        else
-            return (0);
-    else
-        return (0);
-}
-
-/*
-** cmp_strctg
-**
-** compares a tag-string with the name
-** of closing tag (which is a STRPTR, but
-** has been converted to APTR)
-*/
-int cmp_strctg( APTR cmpstr, APTR tagstr )
-{
-    if (tagstr)
-        if ( !upstrcmp( (STRPTR) cmpstr, (STRPTR) tagstr ) )
-            return (-1);
-        else
-            return (0);
-    else
-        return (0);
-}
 
 
 /*
@@ -162,6 +71,7 @@ BOOL parse_tag( INFILE *inpf)
         /* HT_NOCOPY set, but need to write tagid (eg <A>) */
         strcat( this_tag, infgetcws( inpf ) );
         strcat( this_tag, infgetcw( inpf ) );
+        this_tag_data = NULL;
 
         if ( debug )                         /* debug msg */
             fprintf( stderr, "** tag ", this_tag );
@@ -193,6 +103,9 @@ BOOL parse_tag( INFILE *inpf)
 
                 HSCTAG *tag = (HSCTAG*)nd->data;
                 BOOL   (*hnd)(INFILE *inpf) = tag->o_handle;
+
+                /* set global pointer to tag */
+                this_tag_data = tag;
 
                 /*
                 ** handle options
@@ -277,6 +190,9 @@ BOOL parse_tag( INFILE *inpf)
                 HSCTAG *tag = (HSCTAG*)nd->data; /* fitting tag in deftag-list */
                 BOOL   (*hnd)(INFILE *inpf) = tag->c_handle; /* closing handle */
 
+                /* set global pointer to tag */
+                this_tag_data = tag;
+
                 /* search for tag on stack of occured tags */
                 nd = find_dlnode( cltags->first, (APTR) nxtwd, cmp_strctg );
                 if ( nd == NULL ) {
@@ -297,7 +213,9 @@ BOOL parse_tag( INFILE *inpf)
                     /* check if name of closing tag is -not- equal
                     /* to the name of the last tag last on stack */
                     /* ->illegal tag nesting */
-                    if ( upstrcmp(lastnm, foundnm) ) {
+                    if ( upstrcmp(lastnm, foundnm)
+                         && !(tag->option | HT_MACRO) )
+                    {
 
                         message( WARN_NEST_TAG, inpf );
                         errstr( "Illegal closing tag nesting (expected " );
@@ -399,25 +317,28 @@ BOOL parse_hsc( INFILE *inpf )
 
         nxtwd = infgetw( inpf );
 
-        if ( !strcmp(nxtwd, "<") )                   /* parse tag */
-            parse_tag( inpf );
-        else if ( !strcmp(nxtwd, "&") )              /* parse entity */
-            parse_amp( inpf );
+        if ( nxtwd ) {
 
-        else {                                       /* handle text */
+            if ( !strcmp(nxtwd, "<") )                     /* parse tag */
+                parse_tag( inpf );
+            else if ( !strcmp(nxtwd, "&") )                /* parse entity */
+                parse_amp( inpf );
 
-            if ( !strcmp(nxtwd, ">") ) {             /* unmatched ">"? */
+            else {                                         /* handle text */
 
-                message( ERROR_UNMA_GT, inpf );      /* Y->error message */
-                errstr( "unmatched \">\"\n" );
+                if ( !strcmp(nxtwd, ">") ) {               /* unmatched ">"? */
+
+                    message( ERROR_UNMA_GT, inpf );        /* Y->error message */
+                    errstr( "unmatched \">\"\n" );
+
+                }
+
+                outstr( infgetcws( inpf ) );               /* output word */
+                if (!infeof(inpf))
+                    outstr( infgetcw( inpf ) );
+
 
             }
-
-            outstr( infgetcws( inpf ) );             /* output word */
-            if (!infeof(inpf))
-                outstr( infgetcw( inpf ) );
-
-
         }
     }
 
@@ -434,6 +355,7 @@ BOOL parse_hsc( INFILE *inpf )
 ** check_tag_missing
 **
 ** checks if a required tag has not occured
+** (methode for do_dllist())
 */
 void check_tag_missing( APTR data )
 {
@@ -454,6 +376,7 @@ void check_tag_missing( APTR data )
 ** check_not_closed
 **
 ** check if a closing tag is missing
+** (methode for do_dllist())
 */
 void check_not_closed( APTR data )
 {

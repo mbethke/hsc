@@ -24,6 +24,7 @@
 #include "umx.c"
 #endif
 
+#include "expstr.c"
 #include "fname.c"
 #include "prginfo.c"
 #include "args.c"

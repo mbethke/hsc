@@ -4,7 +4,7 @@
 **
 ** functions for parsing of tag arguments
 **
-** updated: 30-Aug-1995
+** updated:  4-Sep-1995
 ** created: 29-Jul-1995
 */
 
@@ -30,6 +30,8 @@
 #include "output.h"
 #include "error.h"
 #include "msgid.h"
+
+#include "vars.h"
 
 #define PARENT_URL "../" /* string for parent dir within URLs */
 
@@ -88,9 +90,40 @@ BOOL parse_ch( INFILE *inpf, int exptch )
 ** params: inpf...input file to read char from
 ** result: -1 if successful, 0 if wrong char found
 */
-BOOL parse_eq ( INFILE *inpf )
+BOOL parse_eq( INFILE *inpf )
 {
     return ( parse_ch(inpf,'=') );
+}
+
+/*
+** parse_gt
+**
+** check for '>'
+**
+** params: inpf...input file to read char from
+** result: -1 if successful, 0 if wrong char found
+*/
+BOOL parse_gt( INFILE *inpf )
+{
+    return ( parse_ch(inpf,'>') );
+}
+
+/*
+** skip_lf
+**
+** ignore '\n'
+**
+** params: inpf...input file to read char from
+** result: -1 if successful, 0 if wrong char found
+*/
+BOOL skip_lf( INFILE *inpf )
+{
+    int nc = infgetc( inpf );
+
+    if ( nc != '\n' )
+        inungetc( nc, inpf );
+
+    return ( (BOOL) (nc==EOF) );
 }
 
 
@@ -113,14 +146,13 @@ STRPTR parse_tagoptn( INFILE *inpf )
 
         if ( nxtwd ) {
 
-            if ( !strcmp( nxtwd, ">" ) ) {           /* end of tag reached? */
+            if ( !strcmp( nxtwd, ">" ) ) {       /* end of tag reached? */
 
-                /* TODO: unget wspc & word */
-                inungetw( nxtwd, ' ', inpf );        /* Y->unget word */
+                inungetcwws( inpf );             /* Y->unget word */
 
             } else {
 
-                optn = nxtwd;                        /* N->return word */
+                optn = nxtwd;                    /* N->return word */
 
             }
 
@@ -168,6 +200,7 @@ char parse_quote( INFILE *inpf )
 */
 STRPTR parse_strarg( INFILE *inpf )
 {
+#if 0
     STRPTR strarg = NULL;
 
     if ( parse_ch(inpf, '=')
@@ -202,7 +235,14 @@ STRPTR parse_strarg( INFILE *inpf )
         strarg = NULL;
 
     return ( strarg );
+#endif
+    HSCVAR var;
+    STRPTR strarg = NULL;
 
+    if ( parse_eq( inpf) )
+        strarg =  parse_vararg( &var, inpf );
+
+    return( strarg );
 }
 
 
@@ -536,8 +576,4 @@ STRPTR parse_url( INFILE *inpf )
 
     return ( url );
 }
-
-
-
-
 

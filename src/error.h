@@ -3,7 +3,7 @@
 **
 ** error funcs for hsc
 **
-** updated:  6-Aug-1995
+** updated:  3-Sep-1995
 ** created:  9-Jul-1995
 */
 
@@ -16,6 +16,8 @@
 #include "ugly/infile.h"
 
 #include "global.h"
+
+#define panic(text) call_panic(text,__FILE__,__LINE__)
 
 /*
 ** global funcs
@@ -34,6 +36,7 @@ extern int errstr( CONSTRPTR str );
 extern int errqstr( CONSTRPTR str );
 extern int errtag( CONSTRPTR str );
 extern int errctag( CONSTRPTR str );
+extern int errsym( CONSTRPTR str );
 extern int errlong( ULONG num );
 
 extern int message( ULONG id, INFILE *f );
@@ -43,7 +46,10 @@ extern int err_wst( INFILE *inpf, STRPTR );
 
 extern int err_mem( INFILE *inpf );
 extern int err_write( FILE *inpf );
+extern int err_streol( INFILE *inpf );
 extern int err_longstr( INFILE *inpf );
+
+extern void call_panic( STRPTR text, STRPTR file, ULONG line );
 
 #endif /* NOEXTERN_HSC_ERROR */
 #endif /* HSC_ERROR_H */

@@ -6,16 +6,15 @@
 ** ugly/types.h
 **
 ** ugly data typing.
-**      (boys from commodore might recognise some parts of exec/types.h)
 **
 ** NOTE: contains also UGLY_VER and UGLY_REV
 **
-** Version 1.0.2, (W) by Tommy-Saftwörx
+** Version 1.0.3, (W) by Tommy-Saftwörx 1994,95
 **
-** updated:  4-Jul-94
-** created: 25-Jan-94
+** updated:  7-Sep-1995
+** created: 25-Jan-1994
 **
-** $VER: types.h 1.0.2 (4.7.94)
+** $VER: types.h 1.0.3 (7.9.1995)
 **
 */
 
@@ -91,6 +90,7 @@ typedef unsigned char   TEXT;
 */
 
 typedef const unsigned char *CONSTRPTR;          /* string constants */
+typedef unsigned char        STRARR;             /* string array */
 
 /*
 ** UPTR as an generic pointer. C-math will not operate on UPTR.

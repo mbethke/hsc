@@ -3,7 +3,7 @@
 **
 ** error vars & funs for hsc
 **
-** updated:  7-Aug-1995
+** updated:  3-Sep-1995
 ** created:  9-Jul-1995
 **
 ** TODO:
@@ -116,6 +116,14 @@ int errctag( CONSTRPTR str )
     errch( '>' );
 
     return (ctr);
+}
+
+/*
+** errsym: print symbol name
+*/
+int errsym( CONSTRPTR str )
+{
+    return ( errstr( " symbol " ) + errqstr( str ) + errstr( " " ) );
 }
 
 
@@ -265,25 +273,31 @@ int message( ULONG id, INFILE *f )
 int err_eof( INFILE *inpf )
 {
     message( ERROR_EOF, inpf );
-    return ( errstr( "Unexpected end of file" ) );
+    return ( errstr( "Unexpected end of file\n" ) );
+}
+
+int err_streol( INFILE *inpf )
+{
+    message( ERROR_EOF, inpf );
+    return ( errstr( "String exeeds line\n" ) );
 }
 
 int err_mem( INFILE *inpf )
 {
     message( FATAL_NO_MEM, inpf );
-    return ( errstr( "Out of memory" ) );
+    return ( errstr( "Out of memory\n" ) );
 }
 
 int err_write( FILE *outf )
 {
     message( FATAL_WRITE_ERR, NULL );
-    return ( errstr( "Write error" ) );
+    return ( errstr( "Write error\n" ) );
 }
 
 int err_longstr( INFILE *inpf )
 {
     message( FATAL_LONG_STR, inpf );
-    return ( errstr( "Maximum string length exceeded (Thank K&R)" ) );
+    return ( errstr( "Maximum string length exceeded (Thank K&R)\n" ) );
 }
 
 
@@ -303,5 +317,16 @@ int err_wst( INFILE *inpf )
     /* always return 1; ishould change that to the */
     /*num of chars printed, but i'm too lazy.. */
     return ( 1 );
+}
+
+/*
+** call_panic
+**
+** panic message; use "panic()"-macro
+*/
+void call_panic( STRPTR text, STRPTR file, ULONG line )
+{
+    fprintf( stderr, "\n##\n## illegal state in \"%s\" (%d): %s\n##\n",
+             file, line, text );
 }
 

@@ -3,9 +3,6 @@
 **
 ** ugly input file handling functions, header file
 **
-** updated:  5-Aug-1995
-** created:  8-Jul-1995
-**
 */
 
 #ifndef UGLY_INFILE_H                  /* avoid include twice */
@@ -18,6 +15,7 @@
 #include <stdio.h>
 
 #include "types.h"
+#include "expstr.h"
 
 /*
 ** ugly input file structure (PRIVATE)
@@ -25,17 +23,23 @@
 typedef struct infile {
     FILE  *infile;           /* file opened if fopen() */
     STRPTR filename;         /* file name */
-    STRPTR lnbuf;            /* buffer for inputline */
-    size_t lnbufsz;          /* size of buffer */
-    size_t lnctr;            /* pos. in readbuffer */
-    ULONG  flnctr;           /* line number in file */
+    EXPSTR *lnbuf;           /* buffer for inputline */
+    EXPSTR *wordbuf;         /* word buffer */
+    EXPSTR *wspcbuf;         /* word buffer (white spaces) */
+    EXPSTR *logstr;          /* log string */
     STRPTR eow;              /* string of chars used as end of word */
-    BOOL   eof_reached;      /* flag: TRUE, if end of file */
-    BOOL   skipped_ws;       /* flag: TRUE, if last infgetw */
-                             /*       skipped a white-space */
+
+    ULONG  flnctr;           /* line number in file */
+    size_t lnctr;            /* pos. in readbuffer */
+
     BOOL  (*is_ws)( char ch );     /* ptr to func that checks if a char */
                                    /* is a white-space */
     BOOL  (*is_nc)( char ch );     /* deto, but for "normal char" */
+
+    BOOL   log_enable;       /* flag: TRUE means to log all chars */
+    BOOL   eof_reached;      /* flag: TRUE, if end of file */
+    BOOL   skipped_ws;       /* flag: TRUE, if last infgetw */
+                             /*       skipped a white-space */
 
 } INFILE;
 
@@ -67,7 +71,8 @@ extern STRPTR infgetcw( INFILE *inpf );
 
 extern int    inungetc( int ch, INFILE *inpf );
 extern size_t inungets( STRPTR s, INFILE *inpf );
-extern size_t inungetw( STRPTR s, char ws, INFILE *inpf );
+extern size_t inungetcwws( INFILE *inpf );
+extern size_t inungetcw( INFILE *inpf );
 
 extern ULONG  infget_x( INFILE *inpf );
 extern ULONG  infget_y( INFILE *inpf );
@@ -79,6 +84,11 @@ extern size_t infskip_ws( INFILE *inpf );
 
 extern int    infeof( INFILE *inpf );
 extern int    infgotoeol( INFILE *inpf );
+
+extern void inflog_enable( INFILE *inpf );
+extern void inflog_disable( INFILE *inpf );
+extern BOOL inflog_clear( INFILE *inpf );
+extern STRPTR infget_log( INFILE *inpf );
 
 
 #endif /* NOEXTERN_UGLY_INFILE_H */

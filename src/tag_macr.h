@@ -1,9 +1,9 @@
 /*
 ** tag_macr.h
 **
-** tag handle for "<$>" (macro definition)
+** tag handle for "<HSC_DEF>" (macro definition)
 **
-** updated:  5-Aug-1995
+** updated: 31-Aug-1995
 ** created:  5-Jul-1995
 */
 

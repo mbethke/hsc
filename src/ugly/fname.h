@@ -6,7 +6,7 @@
 **
 ** (W) by Tommy-Saftwörx in 1994
 **
-** updated:  2-Aug-1995
+** updated: 31-Aug-1995
 ** created: 24-May-1994
 **
 **-------------------------------------------------------------------
@@ -77,5 +77,6 @@ extern STRPTR set_fnameIdx( CONSTRPTR fn, int idx );
 
 extern STRPTR app_fname( STRPTR dir, STRPTR fn );
 
+extern STRPTR tmpnamstr( void );
 
 #endif

@@ -59,9 +59,15 @@ void main( int argc, char *argv[] )
         ** read the first 3 words
         */
         for ( i=0; i<3; i++ ) {
+            if ( i==1 )
+                inflog_disable( inpf );
+            else
+                inflog_enable( inpf );
             wdbuf = infgetw( inpf );
             printf( "word#%d: [%d] \"%s\"\n", i, strlen(wdbuf), wdbuf );
         }
+
+        inflog_disable( inpf );
 
         /* info about current word */
         printf( "current word: \"%s\", \"%s\"\n",
@@ -70,7 +76,7 @@ void main( int argc, char *argv[] )
         /*
         ** unget last word
         */
-        inungetw( wdbuf, ' ', inpf );
+        inungetcw( inpf );
         wdbuf = infgetw( inpf );
         printf( "reword: [%d] \"%s\"\n", strlen(wdbuf), wdbuf );
 
@@ -88,6 +94,10 @@ void main( int argc, char *argv[] )
             }
 
         }
+
+        /* print log */
+        printf( "log: \"%s\"\n", infget_log( inpf ) );
+
     } else
         perror( "Can't open input file" );
 

@@ -3,7 +3,7 @@
 **
 ** cleanup function for hsc
 **
-** updated:  5-Aug-1995
+** updated:  3-Sep-1995
 ** created:  1-Jul-1995
 */
 
@@ -19,6 +19,9 @@
 
 #include "global.h"
 #include "error.h"
+
+#include "vars.h"
+#include "macro.h"
 
 /*
 ** del_entity
@@ -46,19 +49,6 @@ void del_tag( APTR data )
 }
 
 /*
-** del_mac
-*/
-void del_mac( APTR data )
-{
-    HSCMAC *mac = (HSCMAC *)data;
-
-    ufreestr( mac->name );
-    ufreestr( mac->text );
-    ufree( mac );
-
-}
-
-/*
 ** cleanup:
 **
 ** free all memory, close all files, etc.
@@ -74,6 +64,11 @@ void cleanup( void )
     del_dllist( deftag );
     del_dllist( cltags );
     del_dllist( macros );
+    del_dllist( vars );
+#if 0
+    /* todo: remove this */
+    del_dllist( macarg );
+#endif
 
     /* misc. work */
     ufreestr( outfilename );

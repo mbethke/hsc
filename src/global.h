@@ -3,7 +3,7 @@
 **
 ** global variables and functions for hsc
 **
-** updated:  7-Aug-1995
+** updated:  2-Sep-1995
 ** created:  8-Jul-1995
 */
 
@@ -30,6 +30,17 @@
 #define MAX_PATHLEN  255               /* directory path & filename */
 #define MAX_URLLEN   255               /* URLs */
 
+/* tag kinds */
+#define TK_NONE  0                     /* no kind; only after init */
+#define TK_TAG   1                     /* normal tag */
+#define TK_MACRO 2                     /* macro (file) */
+#define TK_ARG   3                     /* arg text */
+
+#define STR_HSC_MACRO   "HSC_MACRO"
+#define STR_HSC_INCLUDE "HSC_INCLUDE"
+#define STR_HSC_TIME    "HSC_TIME"
+#define STR_HSC_VAR     "HSC_VAR"
+
 /*
 ** structures & typdefs for entities, tags and macros
 */
@@ -41,30 +52,26 @@ typedef struct hscent {
 typedef struct hsctag {
     STRPTR name;                       /* tag name, eg "TITLE" */
     ULONG  option;                     /* tag options, eg HT_CLOSE|HT_REQUIRED */
-    ULONG  vers;                       /* tag version, eg 10 for 1.0 */
+    LONG   vers;                       /* tag version, eg 10 for 1.0 */
     BOOL   (*o_handle)(INFILE *inpf);  /* function to handle tag */
     BOOL   (*c_handle)(INFILE *inpf);  /* function to handle closing tag */
     BOOL   occured;                    /* TRUE, if tag already occured */
 } HSCTAG;
 
-typedef struct hscmac {
-    STRPTR name;                       /* macro id */
-    STRPTR text;                       /* text to be extracted as */
-} HSCMAC;
-
 /*
 ** defines
 */
-#define HT_NOCOPY      (1<<0) /* avoid copying of tag text */
-#define HT_CLOSE       (1<<1) /* closing tag required */
-#define HT_REQUIRED    (1<<2) /* tag required at least once in file */
-#define HT_ONLYONCE    (1<<3) /* tag required at most once in file */
-#define HT_IGNORE_ARGS (1<<4) /* all tag args are ignored */
-#define HT_OBSOLETE    (1<<5) /* tag is already obsolete */
-#define HT_JERK        (1<<6) /* netscape externsion & co. */
-#define HT_NONEST      (1<<7) /* tag allows no nesting */
-#define HT_NOBP        (1<<8) /* warning if <P> before tag */
-#define HT_NOAP        (1<<9) /* -"- after tag */
+#define HT_NOCOPY      (1<<0)  /* avoid copying of tag text */
+#define HT_CLOSE       (1<<1)  /* closing tag required */
+#define HT_REQUIRED    (1<<2)  /* tag required at least once in file */
+#define HT_ONLYONCE    (1<<3)  /* tag required at most once in file */
+#define HT_IGNORE_ARGS (1<<4)  /* all tag args are ignored */
+#define HT_OBSOLETE    (1<<5)  /* tag is already obsolete */
+#define HT_JERK        (1<<6)  /* netscape externsion & co. */
+#define HT_NONEST      (1<<7)  /* tag allows no nesting */
+#define HT_NOBP        (1<<8)  /* warning if <P> before tag */
+#define HT_NOAP        (1<<9)  /* -"- after tag */
+#define HT_MACRO       (1<<10) /* macro tag */
 #define HT_WARNARGS    (1<<31) /* display warning when unknown args found */
 
 
@@ -121,7 +128,6 @@ extern STRPTR rel_destdir;
 extern DLLIST *deftag;
 extern DLLIST *defent;
 extern DLLIST *cltags;
-extern DLLIST *macros;
 
 extern ULONG anchor_nesting;
 extern ULONG body_nesting;
@@ -129,8 +135,9 @@ extern ULONG head_nesting;
 extern ULONG list_nesting;
 extern ULONG title_nesting;
 
-extern char this_tag[MAX_TAGLEN];
-extern STRPTR last_anchor;
+extern char    this_tag[MAX_TAGLEN];
+extern HSCTAG *this_tag_data;
+extern STRPTR  last_anchor;
 
 
 /*
@@ -139,8 +146,6 @@ extern STRPTR last_anchor;
 extern int fprintf_spc( FILE *file, size_t num );
 extern HSCTAG *new_hsctag( STRPTR newid );
 extern HSCENT *new_hscent( STRPTR newid );
-extern HSCMAC *new_hscmac( STRPTR newname, STRPTR newtext );
-
 
 
 #endif /* NOEXTERN_HSC_GLOBAL_H */
