@@ -64,8 +64,8 @@
 static const char AmigaOS_version[] = VERSTAG;
 #endif
 
-/* hsc-process structure that is used during
- * the wohle conversion */
+/* hsc process structure that is used during
+ * the whole conversion */
 static HSCPRC *hp = NULL;
 
 /*
@@ -126,8 +126,8 @@ static BOOL include_ok(HSCPRC * hp)
 static VOID cleanup(VOID)
 {
 #if DEBUG
-    /* just because I'm curious how long cleanup lasts */
-    /* NOTE: obviously, it last very long */
+    /* just because I'm curious how long cleanup takes */
+    /* NOTE: obviously, it takes very long */
     fputs("(cleanup)\r", stderr);
     fflush(stderr);
 #endif
@@ -229,6 +229,7 @@ static BOOL hsc_init_project(HSCPRC * hp, STRPTR project_fname)
     return (ok);
 }
 
+void fpf(FILE *s, APTR d) { fprintf(s,d); }
 /*
  * hsc_main()
  */
@@ -278,13 +279,14 @@ int hsc_main(HSCPRC ** hpVar, int argc, char *argv[])
              */
             if (ok && init_hp)
             {
-                ok = (init_callback(hp)         /* assign callbacks */
-                      && hsc_init_tagsNattr(hp)
-                      && user_defines_ok(hp)
-                      && hsc_init_hscprc(hp, prefsfilename)     /* init hsc-process */
-                      && hsc_init_project(hp, prjfilename));    /* read project */
+               ok = (init_callback(hp)         /* assign callbacks */
+                     && hsc_init_tagsNattr(hp)
+                     && user_defines_ok(hp)
+                     && hsc_init_hscprc(hp, prefsfilename)     /* init hsc-process */
+                     && hsc_init_project(hp, prjfilename));    /* read project */
+               if(ok)   /* parse $HSCINCLUDE */
+                  add_env_include_dirs(hp);
             }
-
             /*
              * process user defines and files, write output
              */
@@ -306,6 +308,7 @@ int hsc_main(HSCPRC ** hpVar, int argc, char *argv[])
 
     return (return_code);
 }
+
 
 /*
  *
