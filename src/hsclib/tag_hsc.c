@@ -605,6 +605,7 @@ static VOID msg_illg_defent(HSCPRC * hp, STRPTR msg)
    hsc_message(hp, MSG_ILLG_DEFENT,
          "illegal entity definition (%s)", msg);
 }
+
 BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag)
 {
    STRPTR name = get_vartext_byname(tag->attr, "NAME");
@@ -618,21 +619,18 @@ BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag)
             if ((num >= 160) && (num <= 65535)) {
                DLNODE *nd = NULL;
 
-               nd = find_dlnode(
-                     hp->defent->first, (APTR) name, cmp_strent);
-               if (nd)
-                  msg_illg_defent(hp, "duplicate entity");
-               else
-               {
-                  nd = find_dlnode(
-                        hp->defent->first, (APTR) num, cmp_nument);
-                  if (nd)
-                     msg_illg_defent(hp, "duplicate NUM");
+               if((num > 255) && (NULL != rplc) && strlen(rplc)) {
+                  msg_illg_defent(hp, "cannot have a RPLC string for NUM > 255");
+                  rplc = NULL;
                }
+               if(NULL != (nd = find_dlnode(hp->defent->first, (APTR) name, cmp_strent)))
+                  msg_illg_defent(hp, "duplicate entity");
+               else if(NULL != (nd = find_dlnode(hp->defent->first, (APTR) num, cmp_nument)))
+                  msg_illg_defent(hp, "duplicate NUM");
                if (!nd)
                   add_ent(hp->defent, name, rplc, num);
             } else
-               msg_illg_defent(hp, "illegal range for NUM");
+               msg_illg_defent(hp, "illegal range for NUM (must be 160<=NUM<=65535)");
          } else
             msg_illg_defent(hp, "RPLC not a single character");
       } else
@@ -641,6 +639,20 @@ BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag)
       msg_illg_defent(hp, "RPLC and/or NUM missing");
 
    return (FALSE);
+}
+
+/*
+ *-------------------------------------
+ * <$DEFSTYLE> define a new CSS style
+ *-------------------------------------
+ */
+BOOL handle_hsc_defstyle(HSCPRC *hp, HSCTAG *tag)
+{
+   app_dlnode(hp->defstyle,
+         new_styleattr(
+            get_vartext_byname(tag->attr, "NAME"),
+            get_vartext_byname(tag->attr, "VAL")));
+   return FALSE;
 }
 
 /*
