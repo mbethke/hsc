@@ -48,7 +48,7 @@
  * next message number
  *=========================
  */
-#define MAX_MSGID (93-1)
+#define MAX_MSGID (95-1)
 
 /*
  * obsolete numbers:
@@ -147,6 +147,9 @@
 #define MSG_ATTR_OBSOLETE      (MSG_WARN + 87)  /* attribute is obsolete */
 #define MSG_ATTR_AFTER_SLASH   (MSG_ERROR+ 89)  /* attribute after closing slash
                                                    in XHTML mode */
+#define MSG_NO_EXTURI          (MSG_WARN + 93)  /* external URI does not exist (server returned 4xx/5xx) */
+#define MSG_DUBIOUS_EXTURI     (MSG_WARN + 94)  /* external URI may not exist (server returned something
+                                                   other than [245]xx */
 
 /*
  * messages from tag handles
