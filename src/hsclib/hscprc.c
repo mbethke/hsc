@@ -221,7 +221,7 @@ HSCPRC *new_hscprc(void)
 
 /*
  *
- * GET-methodes for public item of HSCPRC
+ * GET-methods for public item of HSCPRC
  *
  */
 

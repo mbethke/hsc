@@ -35,7 +35,7 @@
 static VOID handle_too_many_messages(HSCPRC * hp);
 
 /*
- * NOTE: see "hsclib/msgid.h" for message-id's and
+ * NOTE: see "hsclib/msgid.h" for message-ids and
  *       how a message-id is build.
  */
 
@@ -120,7 +120,7 @@ static BOOL is_child_file(STRPTR filename)
                              strlen(PARENT_FILE_ID)));
 }
 
-/* decides, if a message should be ignored or display */
+/* decides if a message should be ignored or display */
 static BOOL really_display_message(HSCPRC * hp, HSCMSG_ID msg_id)
 {
     HSCMSG_CLASS msg_class = hsc_get_msg_class(hp, msg_id);
@@ -129,41 +129,28 @@ static BOOL really_display_message(HSCPRC * hp, HSCMSG_ID msg_id)
     HSCMSG_ID msg_id_unmasked = msg_id & MASK_MESSAGE;
 #endif
 
-    if (hp->fatal)
-    {
+    if (hp->fatal) {
 
-        /* oppress all messages after fatal errors */
+        /* suppress all messages after fatal errors */
         disp_msg = FALSE;
-    }
-    else if (
-                (hsc_get_msg_ignore(hp, msg_id) == ignore)
-                &&
-                (msg_class <= MSG_WARN)
-        )
-    {
-        /* oppress message if it is marked as ignored
+    } else if ((hsc_get_msg_ignore(hp, msg_id) == ignore) && (msg_class <= MSG_WARN)) {
+        /* suppress message if it is marked as ignored
          * and it is no ERROR/FATAL message */
         D(fprintf(stderr, DHL "ignore msg#%ld: ignore enabled\n",
                   msg_id_unmasked));
         disp_msg = FALSE;
-    }
-    else if (((msg_class == MSG_NOTE) && (hp->msg_ignore_notes))
+    } else if (((msg_class == MSG_NOTE) && (hp->msg_ignore_notes))
              || ((msg_class == MSG_STYLE) && (hp->msg_ignore_style))
-             || ((msg_class == MSG_PORT) && (hp->msg_ignore_port))
-        )
-    {
+             || ((msg_class == MSG_PORT) && (hp->msg_ignore_port))) {
         /* class should be ignored; however, if this message is set
          * to enable, still display it */
-        if (hsc_get_msg_ignore(hp, msg_id) != enable)
-        {
+        if (hsc_get_msg_ignore(hp, msg_id) != enable) {
             /* suppress message if its class is
              * marked as to be ignored */
             D(fprintf(stderr, DHL "ignore msg#%ld: ignore whole class (%06lx)\n",
                       msg_id_unmasked, msg_class));
             disp_msg = FALSE;
-        }
-        else
-        {
+        } else {
             D(fprintf(stderr, DHL "enable msg#%ld: only ignore whole class (%06lx)\n",
                       msg_id_unmasked, msg_class));
         }
@@ -421,18 +408,12 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...) {
 static VOID handle_too_many_messages(HSCPRC * hp)
 {
     if (hp->max_errors != MAXIMUM_MESSAGE_INFINITE)
-    {
         hp->max_errors -= 1;
-    }
     if (hp->max_messages != MAXIMUM_MESSAGE_INFINITE)
-    {
         hp->max_messages -= 1;
-    }
 
     if ((hp->max_messages == 0) || (hp->max_errors == 0))
-    {
         hsc_message(hp, MSG_TOO_MANY, "too many errors or messages");
-    }
 }
 
 /*
@@ -446,13 +427,9 @@ VOID hsc_msg_eof(HSCPRC * hp, STRPTR descr)
     STRPTR eoftxt = "unexpected end of context";
 
     if (descr)
-    {
         hsc_message(hp, MSG_UNEX_EOF, "%s (%s)", eoftxt, descr);
-    }
     else
-    {
         hsc_message(hp, MSG_UNEX_EOF, "%s", eoftxt);
-    }
 }
 
 VOID hsc_msg_illg_whtspc(HSCPRC * hp)
@@ -504,14 +481,11 @@ VOID hsc_msg_read_error(HSCPRC * hp, STRPTR filename)
 
 VOID hsc_msg_nouri(HSCPRC * hp, STRPTR filename, STRPTR uriname, STRPTR note)
 {
-    if (note)
-    {
+    if (note) {
         hsc_message(hp, MSG_NO_URIPATH,
                     "file %q for URI %q not found (%s)",
                     filename, uriname, note);
-    }
-    else
-    {
+    } else {
         hsc_message(hp, MSG_NO_URIPATH,
                     "file %q for URI %q not found",
                     filename, uriname);
