@@ -66,10 +66,11 @@ static BOOL arg_nonesterr = FALSE;
 static BOOL arg_lctags = FALSE;
 static BOOL arg_xhtml = FALSE;
 static BOOL arg_nvcss = FALSE;
+static BOOL arg_checkext = FALSE;
 static STRPTR arg_iconbase = NULL;
 static STRPTR arg_striptags = NULL;
 static LONG arg_entitymode = EMODE_INVALID;
-static LONG arg_quotemode = QMODE_KEEP;
+static LONG arg_quotemode = QMODE_DOUBLE;
 
 static HSCPRC *arg_hp = NULL;
 
@@ -618,6 +619,9 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "NOVALIDATECSS=NVCS/S", &arg_nvcss,
                      "don't validate CSS in STYLE attributes",
 
+                     "CHECKEXTERNAL=CKX/S", &arg_checkext,
+                     "check external HTTP links (not implemented yet)",
+
                      "-DEBUG/S", &arg_debug,
                      "enable debugging output if enabled at compile-time",
     /* help */
@@ -983,6 +987,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
             hsc_set_nested_errors(hp, !arg_nonesterr);
             hsc_set_strip_tags(hp, arg_striptags);
             hsc_set_lctags(hp, arg_lctags);
+            hsc_set_checkext(hp, arg_checkext);
             if(arg_xhtml && arg_nvcss)
                fprintf(stderr, "Warning: cannot disable CSS checking in XHTML mode!\n");
             else
