@@ -73,7 +73,6 @@ BOOL handle_hsc_include(HSCPRC * hp, HSCTAG * tag);
 BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag)
 {
    skip_hsc_comment(hp, NULL);
-
    return (FALSE);
 }
 
@@ -81,7 +80,7 @@ BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag)
  * handle_hsc_verbatim
  *
  * copy text until '|>' occures;
- * no syntax check or whatsoever is performed
+ * no syntax check or whatever is performed
  *
  */
 BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag)
@@ -165,8 +164,7 @@ static VOID do_include(HSCPRC * hp, STRPTR filename,
    conv_uri2path(fname, filename, hp->weenix);
 
    /* insert leading <PRE> */
-   if (pre)
-   {
+   if (pre) {
       hsc_include_string(hp, SPECIAL_FILE_ID "include <PRE>", "<PRE>",
             IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
    }
@@ -175,8 +173,7 @@ static VOID do_include(HSCPRC * hp, STRPTR filename,
       hsc_include_file(hp, estr2str(fname), optn);
 
    /* insert tailing </PRE> */
-   if (pre)
-   {
+   if (pre) {
       hsc_include_string(hp, SPECIAL_FILE_ID "include </PRE>", "</PRE>\n",
             IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
    }
@@ -300,37 +297,29 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
          read_file = TRUE;
 
       /* check, if output should be redirected to temp. file */
-      if (!filename && read_file)
-      {
+      if (!filename && read_file) {
          usetmpfile = TRUE;
          set_vartext(file_attr, tmpnamstr(TMP_PREFIX));
          set_varbool(temp_attr, TRUE);
          filename = get_vartext(file_attr);
          D(fprintf(stderr, DHL "  use temp-file `%s'\n", filename));
-      }
-      else
-      {
+      } else {
          D(fprintf(stderr, DHL "  use file `%s'\n", filename));
       }
 
       /* check, if output-file should be removed */
-      if (remove_str)
-      {
-         if (!upstrcmp(remove_str, "ON"))
-         {
+      if (remove_str) {
+         if (!upstrcmp(remove_str, "ON")) {
             remove_file = TRUE;
             temporary = TRUE;
             D(fprintf(stderr, DHL "  auto-temporary (remove=ON)\n"));
          } else {
             if (!upstrcmp(remove_str, "AUTO")) {
-               if (hp->msg_count == old_msg_count)
-               {
+               if (hp->msg_count == old_msg_count) {
                   remove_file = temporary;
                   D(if (!remove_file)
                         fprintf(stderr, DHL "  no auto-remove (temp)\n"));
-               }
-               else
-               {
+               } else {
                   D(fprintf(stderr, DHL "  no auto-remove (count)\n"));
                }
             }
@@ -344,15 +333,14 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
 
       /* create command string */
       set_estr(cmdstr, cmd);
-      if (usetmpfile)
-      {
+      if (usetmpfile) {
 #ifdef RISCOS
-         app_estr(cmdstr, " { > ");
-         app_estr(cmdstr, filename);
-         app_estr(cmdstr, " }");
-#else
+         app_estr(cmdstr, " {");
+#endif
          app_estr(cmdstr, " >");
          app_estr(cmdstr, filename);
+#ifdef RISCOS
+         app_estr(cmdstr, " }");
 #endif
       }
 
@@ -362,22 +350,18 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
       result = system(estr2str(cmdstr));
 
       /* check for non-zero-result */
-      if (result)
-      {
+      if (result) {
          hsc_message(hp, MSG_SYSTEM_RETURN,
                "shell-command returned %d", result);
       }
 
       /* read output to HSC.STDOUT */
-      if (read_file)
-      {
+      if (read_file) {
          errno = 0;
          outfile = infopen(filename, 512);
-         if (outfile)
-         {
+         if (outfile) {
             /* read to attribute */
-            if (attribute_name)
-            {
+            if (attribute_name) {
                HSCATTR *output_attr =
                   find_varname(hp->defattr, attribute_name);
 
@@ -385,79 +369,61 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
                         attribute_name));
 
                if (output_attr)
-               {
                   set_vartext(output_attr, infgetall(outfile));
-               }
                else
-               {
                   hsc_msg_unkn_attr_ref(hp, attribute_name);
-               }
             }
             infclose(outfile);
 
             /* include output */
-            if (include)
-            {
+            if (include) {
                /*handle_hsc_include(hp, tag); */
                BOOL nostatus = usetmpfile;
                D(fprintf(stderr, DHL "  INCLUDE exec-output\n"));
                do_include(hp, get_vartext(file_attr), nostatus,
                      temporary, source, pre, indent, tabsize);
             }
-         }
-         else
-         {
+         } else {
             /* couldn't open exec-output file for input */
             hsc_msg_noinput(hp, filename);
          }
 
          /* check, if output-file should be removed */
          remove_file = FALSE;
-         if (remove_str)
-         {
+         if (remove_str) {
             if (!upstrcmp(remove_str, "ON"))
                remove_file = TRUE;
             if (!upstrcmp(remove_str, "AUTO")) {
-               if (hp->msg_count == old_msg_count)
-               {
+               if (hp->msg_count == old_msg_count) {
                   remove_file = temporary;
                   D(if (!remove_file)
                         fprintf(stderr, DHL "  no auto-remove (temp)\n"));
-               }
-               else
-               {
+               } else {
                   D(fprintf(stderr, DHL "  no auto-remove (count)\n"));
                }
             }
          }
 
          /* remove output file */
-         if (remove_file)
-         {
+         if (remove_file) {
             D(fprintf(stderr, DHL "  remove `%s'\n", filename));
             errno = 0;
             remove(filename);
-            if (errno)
-            {
+            if (errno) {
                hsc_message(hp, MSG_REMOVE_FAILED,
                      "error removing file `%s': %s",
                      filename, strerror(errno));
                errno = 0;
             }
          }
-      }
-      else
-      {
+      } else {
          D(fprintf(stderr, DHL "  don't read exec-output\n"));
       }
 
       /* update result-attribute */
-      if (result_attr)
-      {
+      if (result_attr) {
          set_vartext(result_attr, long2str((LONG) result));
-      }
-      else
-      {
+      } else {
          D(panic("no result-attribute"));
       }
 
@@ -486,33 +452,36 @@ BOOL handle_hsc_export(HSCPRC * hp, HSCTAG * tag)
    STRPTR filename = get_vartext_byname(tag->attr, "FILE");
    STRPTR data = get_vartext_byname(tag->attr, "DATA");
    BOOL append = get_varbool_byname(tag->attr, "APPEND");
+   BOOL relsrc = get_varbool_byname(tag->attr, "RELSRC");
+   EXPSTR *real_filename = init_estr(1);
 
-   if (filename && data)
-   {
+   if (filename && data) {
       FILE *outfile = NULL;
       STRPTR writemode = "w";
 
       if (append)
          writemode = "a";
 
+      if(relsrc)
+         set_estr(real_filename,get_vartext(find_varname(hp->defattr,"HSC.SOURCE.PATH")));
+      else
+         clr_estr(real_filename);
+      app_estr(real_filename,filename);
       errno = 0;
-      outfile = fopen(filename, writemode);
-      if (outfile)
-      {
+      outfile = fopen(estr2str(real_filename), writemode);
+      if (outfile) {
          fwrite(data, sizeof(char), strlen(data), outfile);
          fclose(outfile);
       }
 
-      if (errno)
-      {
+      if (errno) {
          hsc_message(hp, MSG_IOERROR, "error opening/writing %q: %s",
-               filename, strerror(errno));
+               estr2str(real_filename), strerror(errno));
       }
-   }
-   else
-   {
+   } else {
       panic("attribute missing");
    }
+   del_estr(real_filename);
    return (FALSE);
 }
 
