@@ -72,6 +72,7 @@ static VOID message_rplc(HSCPRC * hp, STRPTR what, STRPTR by)
 static BOOL check_mbinaw(HSCPRC * hp, HSCTAG * tag)
 {
    BOOL ok = TRUE;
+   const BOOL xhtml_strictmbi = (hp->xhtml && (!((tag->option & HT_MACRO) || is_hsc_tag(tag))));
 
    /* check for tags that must be called before */
    if (tag->mbi)
@@ -79,14 +80,22 @@ static BOOL check_mbinaw(HSCPRC * hp, HSCTAG * tag)
       DLNODE *nd = hp->container_stack->last;
       LONG found = 0;
 
+      D(fprintf(stderr,DHL "Checking /MBI for %s (%s): ", tag->name, tag->mbi);)
       while (nd && !found)
       {
          HSCTAG *ctag = (HSCTAG *) nd->data;
 
-         found = strenum(ctag->name, tag->mbi, '|', STEN_NOCASE);
-         if(hp->xhtml) break;    /* stricter /MBI in XHTML mode! */
          nd = nd->prev;
+         found = strenum(ctag->name, tag->mbi, '|', STEN_NOCASE);
+         /* skip enclosing macros in XHTML mode to avoid false errors below */
+         if(xhtml_strictmbi && (ctag->option & (HT_SPECIAL | HT_MACRO))) {
+            D(fprintf(stderr,"[%s] ",ctag->name);)
+            continue;
+         }
+         D(fprintf(stderr, "%s ",ctag->name);)
+         if(xhtml_strictmbi && !is_hsc_tag(ctag)) break;
       }
+      D(fprintf(stderr,"\n");)
 
       if (!found)
       {
