@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +18,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
+
 /*
  * hsclib/tag.h
  *
@@ -36,6 +38,7 @@
 #define HSC_INSEXPR_STR  "("
 #define HSC_CONTENT_STR  HSC_TAGID "content"
 #define HSC_DEFENT_STR   HSC_TAGID "defent"
+#define HSC_DEFSTYLE_STR HSC_TAGID "defstyle"
 #define HSC_DEFICON_STR  HSC_TAGID "deficon"
 #define HSC_DEFINE_STR   HSC_TAGID "define"
 #define HSC_DEFTAG_STR   HSC_TAGID "deftag"
@@ -88,7 +91,7 @@ typedef struct hsctag
     HSCVAR *uri_stripext;       /* if this uri attribute's value is
                                  * an external uri, tag is stripped */
     HSCVAR *uri_size;           /* with this uri, values for WIDTH and
-                                 * HEIGHT and can be evaluated */
+                                 * HEIGHT can be evaluated */
     INFILEPOS *start_fpos;      /* for macros: location of def. */
     INFILEPOS *end_fpos;        /* for endtag: location of start tag */
     /* NOTE: end_fpos is also used to store the start-position
