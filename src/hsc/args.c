@@ -50,7 +50,6 @@ static STRPTR arg_inpfname = NULL;  /* temp vars for set_args() */
 static STRPTR arg_outfname = NULL;
 static STRPTR arg_extension = NULL;
 static STRPTR arg_server_dir = NULL;
-static LONG arg_quotemode = QMODE_KEEP;
 static BOOL arg_mode = FALSE;
 static BOOL arg_compact = FALSE;
 static BOOL arg_getsize = FALSE;
@@ -69,7 +68,8 @@ static BOOL arg_xhtml = FALSE;
 static BOOL arg_nvcss = FALSE;
 static STRPTR arg_iconbase = NULL;
 static STRPTR arg_striptags = NULL;
-static LONG arg_entitymode = EMODE_KEEP;
+static LONG arg_entitymode = EMODE_INVALID;
+static LONG arg_quotemode = QMODE_KEEP;
 
 static HSCPRC *arg_hp = NULL;
 
@@ -105,45 +105,31 @@ static STRPTR arg_ignore_CB(STRPTR arg)
     HSCPRC *hp = arg_hp;
     STRPTR nxt_arg = strtok(arg_clone, "|");    /* use "|" to tokenize */
 
-    while (nxt_arg)
-    {
+    while (nxt_arg) {
         D(fprintf(stderr, DHSC "  ignore `%s'\n", nxt_arg));
-        if (!upstrcmp(nxt_arg, IGNORE_ALL_STR))
-        {
+        if (!upstrcmp(nxt_arg, IGNORE_ALL_STR)) {
             /* ignore all non-error messages */
             HSCMSG_ID i;
 
             for (i = 0; i < MAX_MSGID; i++)
                 hsc_set_msg_ignore(hp, i, TRUE);
-        }
-        else if (!upstrcmp(nxt_arg, IGNORE_NOTES_STR))
-        {
+        } else if (!upstrcmp(nxt_arg, IGNORE_NOTES_STR)) {
             /* ignore note messages */
             hsc_set_msg_ignore_notes(hp, TRUE);
-        }
-        else if (!upstrcmp(nxt_arg, IGNORE_BADSTYLE_STR))
-        {
+        } else if (!upstrcmp(nxt_arg, IGNORE_BADSTYLE_STR)) {
             /* ignore bad style messages */
             hsc_set_msg_ignore_style(hp, TRUE);
-        }
-        else if (!upstrcmp(nxt_arg, IGNORE_PORTABILITY_STR))
-        {
+        } else if (!upstrcmp(nxt_arg, IGNORE_PORTABILITY_STR)) {
             /* ignore potability problems */
             hsc_set_msg_ignore_port(hp, TRUE);
-        }
-        else
-        {
+        } else {
             /* ignore message # */
             LONG ignnum;
 
             if (!str2long(nxt_arg, &ignnum))
-            {
                 errmsg = "unknown `ignore'";
-            }
             else
-            {
                 hsc_set_msg_ignore(hp, ignnum, ignore);
-            }
         }
 
         /* next arg */
@@ -294,8 +280,7 @@ static STRPTR arg_status_CB(STRPTR arg)
     D(fprintf(stderr, DHSC "args: status=%s\n", arg));
 
     arg = strtok(argstr, "|");
-    while (arg)
-    {
+    while (arg) {
         if (!upstrcmp(arg, STATUS_QUIET_STR))
             disp_status = STATUS_QUIET;
         else if (!upstrcmp(arg, STATUS_LINE_STR))
@@ -412,13 +397,11 @@ BOOL user_defines_ok(HSCPRC * hp)
     /* define destination attributes (HSC.DOCUMENT.URI etc.) */
     define_file_attribs(hp);
 
-    if (define_list && dll_first(define_list))
-    {
+    if (define_list && dll_first(define_list)) {
         DLNODE *nd = dll_first(define_list);
         EXPSTR *defbuf = init_estr(64);
 
-        while (nd)
-        {
+        while (nd) {
             STRPTR defarg = (STRPTR) dln_data(nd);
 
             D(fprintf(stderr, DHSC "define using `%s'\n", defarg));
@@ -426,30 +409,24 @@ BOOL user_defines_ok(HSCPRC * hp)
             set_estr(defbuf, "<$define ");
 
             /* append attribute name */
-            do
-            {
+            do {
                 app_estrch(defbuf, defarg[0]);
                 defarg++;
-            }
-            while (defarg[0] && (defarg[0] != '=')
-                   && (defarg[0] != '/') && (defarg[0] != ':'));
+            } while (defarg[0] && (defarg[0] != '=')
+                  && (defarg[0] != '/') && (defarg[0] != ':'));
 
             /* if no type set, use "string" as default */
             if (defarg[0] != ':')
-            {
                 app_estr(defbuf, ":string");
-            }
 
             /* append type (if set) and attribute-flags */
-            while (defarg[0] && (defarg[0] != '='))
-            {
+            while (defarg[0] && (defarg[0] != '=')) {
                 app_estrch(defbuf, defarg[0]);
                 defarg++;
             }
 
             /* append value (if any) and quotes */
-            if (defarg[0] == '=')
-            {
+            if (defarg[0] == '=') {
                 char quote_needed = 0;  /* flag: user did not use quotes */
 
                 /* append "=" */
@@ -457,15 +434,13 @@ BOOL user_defines_ok(HSCPRC * hp)
                 defarg++;
 
                 /* check which kind of quote should be appended */
-                if ((defarg[0] != '\"') && (defarg[0] != '\''))
-                {
+                if ((defarg[0] != '\"') && (defarg[0] != '\'')) {
                     BOOL single_quote = FALSE;
                     BOOL double_quote = FALSE;
                     STRPTR scanarg = defarg;
 
                     /* scan value for quotes */
-                    while (scanarg[0])
-                    {
+                    while (scanarg[0]) {
                         if (scanarg[0] == '\"')
                             double_quote = TRUE;
                         else if (scanarg[0] == '\'')
@@ -487,8 +462,7 @@ BOOL user_defines_ok(HSCPRC * hp)
                     app_estrch(defbuf, quote_needed);
 
                 /* append value */
-                while (defarg[0])
-                {
+                while (defarg[0]) {
                     app_estrch(defbuf, defarg[0]);
                     defarg++;
                 }
@@ -513,12 +487,9 @@ BOOL user_defines_ok(HSCPRC * hp)
 #if 0
         hsc_set_msg_ignore(hp, MSG_ARG_NO_QUOTE, old_ignore_quotemsg);
 #endif
-    }
-    else
-    {
+    } else {
         D(fprintf(stderr, DHSC "(no defines)\n"));
     }
-
     return ((BOOL) (return_code < RC_ERROR));
 }
 
@@ -530,7 +501,8 @@ BOOL user_defines_ok(HSCPRC * hp)
  *
  * result: TRUE, if all args ok
  */
-BOOL args_ok(HSCPRC * hp, int argc, char *argv[]) {
+BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
+{
     BOOL ok;                    /* return value */
     DLLIST *ignore_list = NULL; /* dummy */
     EXPSTR *destdir = init_estr(32);    /* destination dir */
@@ -1009,13 +981,18 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[]) {
             hsc_set_strip_cmt(hp, arg_strip_cmt);
             hsc_set_strip_ext(hp, arg_strip_ext);
             hsc_set_nested_errors(hp, !arg_nonesterr);
-            hsc_set_lctags(hp, arg_lctags);
             hsc_set_strip_tags(hp, arg_striptags);
-            /* TODO: make overriding XHTML defaults possible */
-            hsc_set_quote_mode(hp, arg_quotemode);
-            hsc_set_entity_mode(hp, arg_entitymode);
-            hsc_set_vcss(hp, !arg_nvcss);
+            hsc_set_lctags(hp, arg_lctags);
+            if(arg_xhtml && arg_nvcss)
+               fprintf(stderr, "Warning: cannot disable CSS checking in XHTML mode!\n");
+            else
+               hsc_set_vcss(hp, !arg_nvcss);
+            if(arg_xhtml && (QMODE_DOUBLE != arg_quotemode))
+               fprintf(stderr, "Warning: XHTML only allows double quotes, ignoring QUOTESTYLE option!\n");
+            else
+               hsc_set_quote_mode(hp, arg_quotemode);
             hsc_set_xhtml(hp, arg_xhtml);
+            hsc_set_entity_mode(hp, arg_entitymode);
 
             /* set message limits; 0 means use the value set by
              * init_hscprc(), which means infinite */
