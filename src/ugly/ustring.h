@@ -59,7 +59,7 @@ extern STRPTR ugly_strclone(CONSTRPTR oldstr, STRPTR file, ULONG line);
 extern void ugly_reallocstr(STRPTR * oldstr, CONSTRPTR newstr, STRPTR file, ULONG line);
 
 extern STRPTR ustrrpbrk(CONSTRPTR str, CONSTRPTR set);
-extern LONG strenum(STRPTR str, STRPTR set, char sep, BYTE options);
+extern LONG strenum(CONSTRPTR str, CONSTRPTR set, char sep, BYTE options);
 
 extern int last_ch(STRPTR s);
 extern STRPTR ch2str(const char ch);

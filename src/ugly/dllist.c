@@ -78,33 +78,28 @@ DLNODE *new_dlnode(void)
 {
     DLNODE *newnode;
 
-    newnode = (DLNODE *)        /* alloc mem for new node */
-        umalloc(sizeof(DLNODE));
+    newnode = (DLNODE*)umalloc(sizeof(DLNODE));  /* alloc mem for new node */
 
-    if (newnode)
-    {                           /* alloc successful? */
+    if (newnode) {              /* alloc successful? */
         newnode->prev = NULL;   /* Y-> init node */
         newnode->next = NULL;
         newnode->data = NULL;
     }
-
-    return newnode;             /* return newnode */
+    return newnode;
 }
 
 /* 
  * detach_dlnode()
  *
  * remove entry from double linked list,
- * but do not delete the entries data
+ * but do not delete the entriy's data
  *
  */
-APTR detach_dlnode(DLLIST * list, DLNODE * node)
-{
+APTR detach_dlnode(DLLIST * list, DLNODE * node) {
     APTR nd_data = NULL;
 
-    if (list && node)
-    {                           /* list & node node defined? */
-        nd_data = node->data;   /*     remeber data */
+    if (list && node) {         /* list & node node defined? */
+        nd_data = node->data;   /*     remember data */
         if (node->prev)         /*     remove node from list */
             node->prev->next = node->next;
         else
@@ -128,28 +123,14 @@ APTR detach_dlnode(DLLIST * list, DLNODE * node)
  * remove entry from double linked list
  *
  */
-void del_dlnode(DLLIST * list, DLNODE * node)
-{
-
-    if (list && node)
-    {                           /* list & node node defined? */
+void del_dlnode(DLLIST * list, DLNODE * node) {
+    if (list && node) {         /* list & node defined? */
         void (*dd) (APTR) = list->del_data;
 
-        if (node->data)         /* Y-> call destructor */
-            if (dd)
-                (*dd) (node->data);
+        if (node->data && dd)         /* Y-> call destructor */
+           (*dd)(node->data);
 
-        if (node->prev)         /*     remove node from list */
-            node->prev->next = node->next;
-        else
-            list->first = node->next;
-        list->entry_num--;
-
-        if (node->next)
-            node->next->prev = node->prev;
-        else
-            list->last = node->prev;
-
+        dll_detach_node(list,node);
         node->prev = NULL;      /*     clear node */
         node->next = NULL;
         node->data = NULL;
@@ -159,12 +140,22 @@ void del_dlnode(DLLIST * list, DLNODE * node)
 }
 
 /*
+ * move_dlnode()
+ * Move <node> from list <src> to the end of <dest> without
+ * copying/reallocating anything.
+ */
+void move_dlnode(DLLIST *dest, DLLIST *src, DLNODE *node) {
+   /* detach node w/o deleting it */
+   dll_detach_node(src,node);
+   dll_append_node(dest,node);
+}
+
+/*
  * del_all_dlnodes()
  *
  * remove all nodes from a list
  */
-VOID del_all_dlnodes(DLLIST * list)
-{
+VOID del_all_dlnodes(DLLIST * list) {
     while (list->first)
         del_dlnode(list, list->first);
 }
@@ -175,54 +166,40 @@ VOID del_all_dlnodes(DLLIST * list)
  * insert a data entry into double linked list BEFORE node
  *
  */
-DLNODE *ins_dlnode(DLLIST * list, DLNODE * node, APTR data)
-{
+static DLNODE *ins_dlnode(DLLIST * list, DLNODE * node, APTR data) {
     DLNODE *newnode = NULL;
 
-    if (list)
-    {
+    if (list) {
         newnode = new_dlnode();
 
-        if (newnode)
-        {
+        if (newnode) {
             newnode->data = data;
             list->entry_num++;
 
-            if (node)
-            {
-                if (list->first == node)
-                {
-                    /*
-                     * insert as first entry
-                     */
+            if (node) {
+                if (dll_first(list) == node) {
+                    /* insert as first entry */
                     list->first = newnode;
+                } else {
+                    /* insert somewhere in the list */
+                    dln_next(dln_prev(node)) = newnode;
+                    dln_prev(newnode) = node->prev;
                 }
-                else
-                {
-                    /*
-                     * insert somewhere in the list
-                     */
-                    node->prev->next = newnode;
-                    newnode->prev = node->prev;
-                }
-                node->prev = newnode;
-                newnode->next = node;
-            }
-            else
-            {                   /* append as last entry */
-                if (list->last)
+                dln_prev(node) = newnode;
+                dln_next(newnode) = node;
+            } else {                   /* append as last entry */
+                if (dll_last(list))
                     list->last->next = newnode;
-                newnode->prev = list->last;
-                list->last = newnode;
+                dln_prev(newnode) = dll_last(list);
+                dll_last(list) = newnode;
             }
 
-            if (list->first == NULL)
-                list->first = newnode;
-            if (list->last == NULL)
-                list->last = newnode;
+            if (dll_first(list) == NULL)
+                dll_first(list) = newnode;
+            if (dll_last(list) == NULL)
+                dll_last(list) = newnode;
         }
     }
-
     return newnode;
 }
 
@@ -237,14 +214,7 @@ DLNODE *ins_dlnode(DLLIST * list, DLNODE * node, APTR data)
  */
 DLNODE *app_dlnode(DLLIST * list, APTR data)
 {
-    DLNODE *newnode = NULL;
-
-    if (list)
-    {
-        newnode = ins_dlnode(list, NULL, data);
-    }
-
-    return newnode;
+   return ins_dlnode(list, NULL, data);
 }
 
 /*
@@ -258,14 +228,7 @@ DLNODE *app_dlnode(DLLIST * list, APTR data)
  */
 DLNODE *add_dlnode(DLLIST * list, APTR data)
 {
-    DLNODE *newnode = NULL;
-
-    if (list)
-    {
-        newnode = ins_dlnode(list, list->first, data);
-    }
-
-    return newnode;
+   return ins_dlnode(list, list->first, data);
 }
 
 /*

@@ -452,10 +452,8 @@ EXPSTR *ugly_init_estr(size_t step_size)
         es->es_step = step_size;
         if (!clr_estr(es))
         {
-
             ufree(es);
             es = NULL;
-
         }
     }
     return (es);

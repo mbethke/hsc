@@ -48,12 +48,12 @@ struct dlnode
 struct dllist
 {
     /* PRIVATE (read-only) */
-    struct dlnode *first;       /*   first entry */
-    struct dlnode *last;        /*   last entry */
-    LONG entry_num;             /*   num of entris in list */
-    void (*del_data) (APTR data);       /*   func that removes data */
+    struct dlnode *first;       /* first entry */
+    struct dlnode *last;        /* last entry */
+    LONG entry_num;             /* num of entries in list */
+    void (*del_data) (APTR data);  /* func that removes data */
     /* PUBLIC */
-    APTR user_data;             /*   user data */
+    APTR user_data;             /* user data */
 };
 
 typedef struct dllist DLLIST;
@@ -67,6 +67,19 @@ typedef struct dlnode DLNODE;
 #define dln_prev( node )  ((node)->prev)
 #define dln_next( node )  ((node)->next)
 #define dln_data( node )  ((node)->data)
+#define dll_detach_node(list,node) { \
+if(NULL != dln_prev(node)) dln_next(dln_prev(node)) = dln_next(node); \
+   else dll_first(list) = dln_next(node); \
+if(NULL != dln_next(node)) dln_prev(dln_next(node)) = dln_prev(node); \
+   else dll_last(list) = dln_prev(node); \
+   --(list)->entry_num; \
+}
+#define dll_append_node(list,node) { \
+   dln_next(node) = NULL; \
+   if(NULL != (dln_prev(node) = dll_last(list))) dln_next(dln_prev(node)) = (node); \
+   dll_last(list) = (node); \
+   if(NULL == dll_first(list)) dll_first(list) = (node); \
+}
 
 /*
  *
@@ -77,12 +90,12 @@ typedef struct dlnode DLNODE;
 
 extern DLLIST *init_dllist(void (*del_data) (APTR data));
 extern DLNODE *new_dlnode(void);
-extern DLNODE *ins_dlnode(DLLIST * list, DLNODE * node, APTR data);
 extern DLNODE *app_dlnode(DLLIST * list, APTR data);
 extern DLNODE *add_dlnode(DLLIST * list, APTR data);
 
 extern APTR detach_dlnode(DLLIST * list, DLNODE * node);
 extern void del_dlnode(DLLIST * list, DLNODE * node);
+void move_dlnode(DLLIST *dest, DLLIST *src, DLNODE *node);
 extern VOID del_all_dlnodes(DLLIST * list);
 extern void del_dllist(DLLIST * list);
 

@@ -67,6 +67,7 @@ static BOOL arg_debug = FALSE;
 static BOOL arg_nonesterr = FALSE;
 static BOOL arg_lctags = FALSE;
 static BOOL arg_xhtml = FALSE;
+static BOOL arg_nvcss = FALSE;
 static STRPTR arg_iconbase = NULL;
 static STRPTR arg_striptags = NULL;
 #if 0
@@ -165,54 +166,37 @@ static STRPTR arg_ignore_CB(STRPTR arg)
  * to "enable=.." several messages are set to be enabled
  * with the old messages left active
  */
-static STRPTR arg_enable_CB(STRPTR arg)
-{
+static STRPTR arg_enable_CB(STRPTR arg) {
     STRPTR errmsg = NULL;
     STRPTR arg_clone = strclone(arg);   /* copy of arg; written by strtok() */
     HSCPRC *hp = arg_hp;
     STRPTR nxt_arg = strtok(arg_clone, "|");    /* use "|" to tokenize */
 
-    while (nxt_arg)
-    {
+    while (nxt_arg) {
         D(fprintf(stderr, DHSC "  enable `%s'\n", nxt_arg));
-        if (!upstrcmp(nxt_arg, IGNORE_ALL_STR))
-        {
+        if (!upstrcmp(nxt_arg, IGNORE_ALL_STR)) {
             /* enable all non-error messages */
             HSCMSG_ID i;
 
             for (i = 0; i < MAX_MSGID; i++)
-            {
                 hsc_set_msg_ignore(hp, i, enable);
-            }
-        }
-        else if (!upstrcmp(nxt_arg, IGNORE_NOTES_STR))
-        {
+        } else if (!upstrcmp(nxt_arg, IGNORE_NOTES_STR)) {
             /* enable note messages */
             hsc_set_msg_ignore_notes(hp, FALSE);
-        }
-        else if (!upstrcmp(nxt_arg, IGNORE_BADSTYLE_STR))
-        {
+        } else if (!upstrcmp(nxt_arg, IGNORE_BADSTYLE_STR)) {
             /* enable bad style messages */
             hsc_set_msg_ignore_style(hp, FALSE);
-        }
-        else if (!upstrcmp(nxt_arg, IGNORE_PORTABILITY_STR))
-        {
+        } else if (!upstrcmp(nxt_arg, IGNORE_PORTABILITY_STR)) {
             /* enable potability problems */
             hsc_set_msg_ignore_port(hp, FALSE);
-        }
-        else
-        {
+        } else {
             /* ignore message # */
             LONG ignnum;
 
             if (!str2long(nxt_arg, &ignnum))
-            {
                 errmsg = "unknown `enable'";
-            }
             else
-            {
                 hsc_set_msg_ignore(hp, ignnum, enable);
-            }
         }
 
         /* next arg */
@@ -253,36 +237,27 @@ static STRPTR arg_mode_CB(STRPTR arg)
     D(fprintf(stderr, DHSC "args: mode=%s\n", arg));
 
     if (!mode)
-    {
         errmsg = "unknown mode";
-    }
-    else if (mode == MODE_PEDANTIC)
-    {
+    else if (mode == MODE_PEDANTIC) {
         /* pedantic */
         /* enable all messages */
         HSCMSG_ID i;
 
         for (i = 0; i < MAX_MSGID; i++)
-        {
             hsc_set_msg_ignore(hp, i, make_my_day);
-        }
 
         /* enable all classes */
         hsc_set_msg_ignore_notes(hp, FALSE);
         hsc_set_msg_ignore_style(hp, FALSE);
         hsc_set_msg_ignore_port(hp, FALSE);
-    }
-    else if (mode == MODE_NORMAL)
-    {
+    } else if (mode == MODE_NORMAL) {
         /* normal */
         /* ignore note messages */
         arg_mode_CB(MODE_PEDANTIC_STR);
         arg_ignore_CB(IGNORE_NOTES_STR);
         hsc_set_msg_ignore(hp, MSG_WRONG_HEADING, TRUE);
         hsc_set_msg_ignore(hp, MSG_LF_IN_COMMENT, TRUE);
-    }
-    else if (mode == MODE_RELAXED)
-    {
+    } else if (mode == MODE_RELAXED) {
         /* relaxed */
         arg_mode_CB(MODE_NORMAL_STR);
         arg_ignore_CB(IGNORE_BADSTYLE_STR);
@@ -292,21 +267,14 @@ static STRPTR arg_mode_CB(STRPTR arg)
         hsc_set_msg_ignore(hp, MSG_TAG_OBSOLETE, TRUE);
         hsc_set_msg_ignore(hp, MSG_TAG_TOO_OFTEN, TRUE);
         hsc_set_msg_ignore(hp, MSG_CTAG_NESTING, TRUE);
-        hsc_set_msg_ignore(hp, MSG_EXPT_SEMIC, TRUE);
-    }
-    else
-    {
+    } else {
         /* ignore message # */
         LONG ignnum;
 
         if (!str2long(arg, &ignnum))
-        {
             errmsg = "illegal argument";
-        }
         else
-        {
             hsc_set_msg_ignore(hp, ignnum, TRUE);
-        }
     }
 
     return (errmsg);
@@ -624,16 +592,12 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
                      "RPLCQUOTE=RQ/S", &arg_rplc_quote,
                      "replace quotes in text by `&quot;'",
-#if 0
-                     "SMARTENT=SA/S", &arg_smart_ent,
-                     "replace special entities (`&<>')",
-#endif
 
                      "JENS/S", &arg_jens,
                      "don't try this at home",
 
                      "STRIPBADWS/S", &arg_strip_badws,
-                     "strip bad white spaces",
+                     "strip bad whitespace",
 
                      "STRIPCOMMENT=SC/S", &arg_strip_cmt,
                      "strip SGML comments",
@@ -658,15 +622,16 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "don't show \"previous call\" tracebacks on error",
 
                      "LOWERCASETAGS=LCT/S", &arg_lctags,
-                     "force all tags to lowercase",
+                     "force all tags and attributes to lowercase",
                      
                      "XHTML/S", &arg_xhtml,
-                     "try to be XHTML compatible (implies LOWERCASETAGS)",
-#if 0
-                     "WEENIX/S", &arg_weenix,
-                     "weenix compatibility mode",
-#endif
-                     "-DEBUG/S", &arg_debug, "enable debugging output",
+                     "Use XHTML mode (implies: LCT QS=double)",
+
+                     "NOVALIDATECSS=NVCS/S", &arg_nvcss,
+                     "Don't validate CSS in STYLE attributes",
+
+                     "-DEBUG/S", &arg_debug,
+                     "enable debugging output if enabled at compile-time",
     /* help */
                      "HELP=?=-h=--help/S", &arg_help, "display this text",
                      "LICENSE/S", &arg_license, "display license",
@@ -1082,17 +1047,14 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
             hsc_set_quote_mode(hp, arg_quotemode);
             hsc_set_strip_tags(hp, arg_striptags);
             hsc_set_xhtml(hp, arg_xhtml);
+            hsc_set_vcss(hp, !arg_nvcss);
 
             /* set message limits; 0 means use the value set by
              * init_hscprc(), which means infinite */
             if (maximum_number_of_messages)
-            {
                 hsc_set_maximum_messages(hp, maximum_number_of_messages);
-            }
             if (maximum_number_of_errors)
-            {
                 hsc_set_maximum_errors(hp, maximum_number_of_errors);
-            }
 
             /* set directories */
             hsc_set_destdir(hp, estr2str(destdir));
@@ -1103,9 +1065,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                 STRPTR compilation_unit = estr2str(inpfilename);
 
                 if (compilation_unit == NULL)
-                {
                     compilation_unit = "<stdin>";
-                }
 
                 init_msg_browser(hp, compilation_unit);
             }

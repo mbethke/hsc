@@ -60,6 +60,7 @@ typedef enum {
 extern BOOL fexists(STRPTR filename);
 extern LONG getfsize(STRPTR filename);
 extern fentrytype_t fgetentrytype(const STRPTR name);
+extern const struct tm *fgetmtime(const STRPTR name);
 extern STRPTR getcurrentdir(void);
 extern void setcurrentdir(const STRPTR dir);
 

@@ -397,7 +397,7 @@ STRPTR long2str(LONG num)
  *
  * NOTE: calls strtok()
  */
-LONG strenum(STRPTR str, STRPTR set, char sep, BYTE options)
+LONG strenum(CONSTRPTR str, CONSTRPTR set, char sep, BYTE options)
 {
     STRPTR s = strclone(set);
     LONG found = 0;

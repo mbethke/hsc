@@ -589,29 +589,20 @@ void atexit_uglymemory_dummy(void)
 /*
  * ugly_malloc_notracking
  */
-void *ugly_malloc_notracking(size_t size)
-{
+void *ugly_malloc_notracking(size_t size) {
     void *mem;
     BOOL retry;
 
     do
     {
-	mem = malloc(size);
-	if (!mem && ugly_nomem_handler)
-	{
+       mem = malloc(size);
+       if (!mem && ugly_nomem_handler) {
 	    /* call nomem-handler */
 	    retry = (*ugly_nomem_handler) (size);
 	    if (!retry)
-	    {
-		exit(EXIT_FAILURE);	/* abort programm */
-	    }
-	}
-	else
-	{
-	    retry = FALSE;
-	}
-    }
-    while (retry);
+          exit(EXIT_FAILURE);	/* abort programm */
+       } else retry = FALSE;
+    } while (retry);
 
     return (mem);
 }
