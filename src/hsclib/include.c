@@ -172,6 +172,7 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
 {
     BOOL ok = FALSE;
     INFILE *inpf = NULL;
+    EXPSTR *fpath = init_estr(32);
 
     /* status message: reading input */
     if (!(optn & (IH_PARSE_MACRO | IH_PARSE_HSC)))
@@ -181,8 +182,19 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
 
     /* check for stdin to use as input-file */
     if (!(strcmp(filename, FILENAME_STDIN1) &&
-          strcmp(filename, FILENAME_STDIN2)))
+          strcmp(filename, FILENAME_STDIN2))) {
         filename = NULL;
+    } else {
+       /* this is a real file -- try to get path */
+       
+       get_fpath(fpath,filename);
+       /* if there is a path, add it to the list of include directories */
+       if(0 != estrlen(fpath)) {
+          STRPTR newpath = umalloc(estrlen(fpath) + 1);
+          strcpy(newpath,estr2str(fpath));
+          add_dlnode(hp->include_dirs,newpath);
+       }
+    }
 
     /* open & read input file */
     errno = 0;
@@ -221,7 +233,11 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
     {
         hsc_msg_noinput(hp, filename);  /* couldn't open file */
     }
-
+    /* if we got a path part earlier, remove the corresponding incdir node */
+    if(0 != estrlen(fpath)) {
+       del_dlnode(hp->include_dirs,dll_first(hp->include_dirs));
+    }
+    del_estr(fpath);
     return (ok);
 }
 
