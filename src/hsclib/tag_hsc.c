@@ -38,6 +38,7 @@
 #include "hsclib/include.h"
 #include "hsclib/parse.h"
 #include "hsclib/uri.h"
+#include "hsclib/css.h"
 
 #include "hsclib/tag_macro.h"
 #include "hsclib/tag_if.h"
@@ -600,44 +601,59 @@ BOOL handle_hsc_deftag(HSCPRC * hp, HSCTAG * tag)
  * <$DEFENT> define a new entity
  *-------------------------------------
  */
-static VOID msg_illg_defent(HSCPRC * hp, STRPTR msg)
-{
+static VOID msg_illegal_defent(HSCPRC * hp, STRPTR msg) {
    hsc_message(hp, MSG_ILLG_DEFENT,
          "illegal entity definition (%s)", msg);
 }
 
-BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag)
-{
+static VOID msg_dubious_defent(HSCPRC * hp, STRPTR msg) {
+   hsc_message(hp, MSG_DEFENT_WARN,
+         "dubious entity definition (%s)", msg);
+}
+
+BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag) {
    STRPTR name = get_vartext_byname(tag->attr, "NAME");
    STRPTR rplc = get_vartext_byname(tag->attr, "RPLC");
    STRPTR nums = get_vartext_byname(tag->attr, "NUM");
+   BOOL prefnum= get_varbool_byname(tag->attr, "PREFNUM");
    LONG num = 0;
 
    if (nums) {
       if (str2long(nums, &num)) {
          if ((NULL == rplc) || (strlen(rplc) <= 1)) {
-            if ((num >= 160) && (num <= 65535)) {
+            if ((num >= 128) && (num <= 65535)) {
                DLNODE *nd = NULL;
+               STRPTR lcname = strclone(name);
 
+               lowstr(lcname);
                if((num > 255) && (NULL != rplc) && strlen(rplc)) {
-                  msg_illg_defent(hp, "cannot have a RPLC string for NUM > 255");
-                  rplc = NULL;
+                  msg_dubious_defent(hp, "RPLC specified for NUM > 255");
                }
-               if(NULL != (nd = find_dlnode(hp->defent->first, (APTR) name, cmp_strent)))
-                  msg_illg_defent(hp, "duplicate entity");
-               else if(NULL != (nd = find_dlnode(hp->defent->first,
-                           (APTR)num, cmp_nument)))
-                  msg_illg_defent(hp, "duplicate NUM");
-               if (!nd)
-                  add_ent(hp->defent, name, rplc[0], num);
+               if(NULL != (nd = find_dlnode(hp->defent->first, (APTR)lcname, cmp_strent))) {
+                  if(num == ((HSCENT*)(dln_data(nd)))->numeric) {
+                     msg_dubious_defent(hp, "duplicate entity - updating flags");
+                     ((HSCENT*)(dln_data(nd)))->prefnum = prefnum;
+                     ((HSCENT*)(dln_data(nd)))->replace[0] = *rplc;
+                  } else
+                     msg_illegal_defent(hp, "illegal entity redefinition");
+               } else if(NULL != (nd = find_dlnode(hp->defent->first, (APTR)num, cmp_nument))) {
+                  if(0 == strcmp(lcname,((HSCENT*)(dln_data(nd)))->name)) {
+                     msg_dubious_defent(hp, "duplicate NUM - updating flags");
+                     ((HSCENT*)(dln_data(nd)))->prefnum = prefnum;
+                     ((HSCENT*)(dln_data(nd)))->replace[0] = *rplc;
+                  } else
+                     msg_illegal_defent(hp, "illegal entity redefinition");
+               } else
+                  add_ent(hp->defent, lcname, rplc[0], num, prefnum);
+               freestr(lcname);
             } else
-               msg_illg_defent(hp, "illegal range for NUM (must be 160<=NUM<=65535)");
+               msg_illegal_defent(hp, "illegal range for NUM (must be 128<=NUM<=65535)");
          } else
-            msg_illg_defent(hp, "RPLC not a single character");
+            msg_illegal_defent(hp, "RPLC not a single character");
       } else
-         msg_illg_defent(hp, "illegal value for NUM");
+         msg_illegal_defent(hp, "illegal value for NUM");
    } else
-      msg_illg_defent(hp, "RPLC and/or NUM missing");
+      msg_illegal_defent(hp, "NUM missing");
 
    return (FALSE);
 }
@@ -668,9 +684,9 @@ BOOL handle_hsc_deficon(HSCPRC * hp, HSCTAG * tag)
 
    nd = find_dlnode(hp->defent->first, (APTR) name, cmp_strent);
    if (nd)
-      msg_illg_defent(hp, "duplicate entity");
+      msg_illegal_defent(hp, "duplicate entity");
    else
-      add_ent(hp->defent, name, '\0', ICON_ENTITY);
+      add_ent(hp->defent, name, '\0', ICON_ENTITY, FALSE);
 
    return (FALSE);
 }
