@@ -1,10 +1,6 @@
 /*
- * hsclib/inc_base.h
- *
- * include basic structures and prototypes that are
- * required by most other modules
- *
- * Copyright (C) 1996  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 30-Jul-1996
- * created: 19-Feb-1996
+ */
+/*
+ * hsclib/inc_base.h
+ *
+ * include basic structures and prototypes that are
+ * required by most other modules
+ *
  */
 
 #ifndef HSCLIB_INC_BASE_H

@@ -12,10 +12,14 @@
 *>
 <$MACRO explan TITLE:string/r NAME:string ONLYDEFTAG:bool>
 <** create named reference **>
+<DT>
+<$stripws>
 <$IF COND=(SET NAME)>
-<A NAME=(Name)><$ELSE>
-<A NAME=(Title)></$IF>
-<DT><** create heading **>
+    <A NAME=(Name)>
+<$ELSE>
+    <A NAME=(Title)>
+</$IF>
+<$stripws>
 <KBD><(title)></KBD></A>
 <$IF COND=(ONLYDEFTAG)>
 (for use within <ln_deftag> only)
@@ -23,29 +27,22 @@
 <DD>
 </$MACRO>
 
-<*
-** macro to format example for IGNORE
-*>
-<$MACRO exmp_ign VALUE:string/r>
-<DT><KBD><(value)></KBD>
-<DD>
-</$MACRO>
 
 This section covers which
 <A HREF="#options">options</A> and
 <A HREF="#switches">switches</A> you can pass to <hsc>, 
 and which <A HREF="#exitcodes">exit codes</A> are returned to CLI.
 
-<A NAME="general.rules"><H2>General rules for options</H2></A>
+<H2><A NAME="general.rules">General rules for options</A></H2>
 
 <P>As <hsc> is an tool developed under AmigaOS and I never liked
-the cryptic "<KBD>cmd -cvf -osepp.x</KBD>"-way of invoking commands comming
+the cryptic "<KBD>cmd -cvf -osepp.x</KBD>"-way of invoking commands coming
 from Unix, <hsc> uses a syntax like most commands of AmigaOS;
 even for ports on other operating-systems. (<TechNote> AmigaOS provides
 an OS-function called <CODE>ReadArgs()</CODE> for 
 argument-parsing.)</P>
 
-<P>All options and swiches are case-insensitive. If you start <hsc>
+<P>All options and switches are case-insensitive. If you start <hsc>
 without any options, a short help message will be displayed.</P>
 
 <P>Options can be followed by modifiers, which specify things such as
@@ -84,7 +81,7 @@ can be specified by using multiple '/'s.  Valid modifiers are:</P>
     added to this option.  
 </DL>
 
-<A NAME="options"><H2>Options</H2></A>
+<H2><A NAME="options">Options</A></H2>
 
 <DL>
 <EXPLAN TITLE="FROM/M" NAME="from">
@@ -98,10 +95,10 @@ can be specified by using multiple '/'s.  Valid modifiers are:</P>
     Specifies the output filename or the destination directory.
     If the argument ends with a "<KBD>/</KBD>" (or also "<KBD>:</KBD>"),
     it is interpreted as a directory. In this case, the name of the
-    outputfile is created from the name of the input file, with an
+    output file is created from the name of the input file, with an
     extension specified (see below). If no output file is set, <stdout> 
     is used instead.<BR>
-    For details, read the seaction about
+    For details, read the section about
     <A HREF="fileargs.html">File Options</A>
     
 <EXPLAN TITLE="EXTENSION/K" NAME="extension">
@@ -109,14 +106,14 @@ can be specified by using multiple '/'s.  Valid modifiers are:</P>
     will depend on the input-filename and the extension specified
     with this options. If you do not set an extension, "<CODE>html</CODE>"
     will be used. A <period> will be added automatically.
-    Setting <KBD>EXTENSION=.</KBD> will ommit this and result into exactly 
+    Setting <KBD>EXTENSION=.</KBD> will omit this and result into exactly
     the same filename as the input.
     If you specify a complete filename for output, this option has no
     effect.
 <EXPLAN TITLE="MSGFILE/K" NAME="msgfile">
     Redirects messages to a file. By default, <stderr> ist used.
 <EXPLAN TITLE="MSGFORMAT/K" NAME="msgformat">
-    Describes how messages should be displayed. Legal placeholders are:
+    Describes how messages should be displayed. Conversion specifications:
     <PRE>
         %f      filename
         %x, %y  location in file (column, line)
@@ -134,7 +131,7 @@ can be specified by using multiple '/'s.  Valid modifiers are:</P>
 <EXPLAN TITLE="PRJFILE/K" NAME="prjfile">
     Stores some information about the document currently processing
     in a seperate file to extend functionality. Read the section
-    about <A HREF="project/index.html">Project managment</A> for more
+    about <A HREF="project/index.html">Project management</A> for more
     details. Note that all documents within a project should use the
     same project-file.
 
@@ -144,22 +141,28 @@ can be specified by using multiple '/'s.  Valid modifiers are:</P>
     Example: <CODE>DEFINE "hugo:string=hugo was here"</CODE>
 
 <EXPLAN TITLE="IGNORE=IGN/K/M" NAME="ignore">
+
+    <*
+     * TODO: describe "ignore PORT, STYLE, JERK"
+     *>
     Ignore warning message number. Usually, <KBD>IGNORE</KBD> needs a numeric
-    argument and can occure multiple. Example:
-<PRE>
-        IGNORE=21 IGN=18 IGN 3         (ignore warnings #21, #18, #3)
-</PRE>
-    Additionally, you can give <KBD>IGNORE</KBD> some special values:
-    <DL>
-    <EXMP_IGN VALUE="ALL">
+    argument and can occur multiple. Example:<BR>
+    <BLOCKQUOTE>
+        <KBD>IGNORE=21 IGN=18 IGN 3</KBD>         (ignore warnings #21, #18, #3)
+    </BLOCKQUOTE>
+    Additionally, you can specify some special values, which will ignore
+    whole groupss of messages:
+    <UL>
+    <LI><KBD>ALL</KBD>
         Ignore all non-error messages
-    <EXMP_IGN VALUE="NOTES">
+    <LI><KBD>NOTES</KBD>
         Ignore all notes
-    <EXMP_IGN VALUE="BADSTYLE">
+    <LI><KBD>BADSTYLE</KBD>
         Ignore all bad style warnings
-    </DL>
-    All these special values add new messages to the list of messages
+    </UL>
+    These values add new messages to the list of messages
     to be ignored, but do not reset any <KBD>IGNORE</KBD>s passed before.
+
 <EXPLAN TITLE="MODE/K" NAME="mode">
     Set base mode for syntax check. Legal values are <KBD>PEDANTIC,
     NORMAL</KBD> and <KBD>RELAXED</KBD>. Default is <KBD>NORMAL</KBD>.
@@ -198,12 +201,12 @@ can be specified by using multiple '/'s.  Valid modifiers are:</P>
     <LI><KBD>FULL</KBD>: enable all status messages
     </UL>
     The above flags can be combined by separating them with a <vbar>,
-    eg <KBD>STATUS=line|version</KBD>, exept for <KBD>QUIET</KBD>
+    eg <KBD>STATUS=line|version</KBD>, except for <KBD>QUIET</KBD>
     and <KBD>FULL</KBD>
 <EXPLAN TITLE="STRIPTAGS/K" NAME="striptags">
     Strip some specific tags from document. You can specify a list of tags
     which is a string,
-    that contains all tags that should be stripped, sepparated by a
+    that contains all tags that should be stripped, separated by a
     <vbar>.<BR>
     See also <op_stripcomment> and <op_stripexternal>.
 <EXPLAN TITLE="ICONBASE/K" NAME="iconbase">
@@ -215,9 +218,17 @@ can be specified by using multiple '/'s.  Valid modifiers are:</P>
     is replaced by <TG>IMG SRC=":icons/back.gif" ALT="back"</TG>. Note
     that this argument does not denote a directory, but an URI. It's
     recommended to use an <fe_absuri>. 
+<EXPLAN TITLE="SERVERDIR/K" NAME="serverdir">
+    With this you can tell <hsc> where it should look for files
+    referenced with a server relative URI. The directory has to be
+    specified as a <STRONG>native</STRONG> filename of your OS.
+    Example:
+    <CODE>SERVERDIR=aws:home</CODE> might work fine under AmigaOS,
+    <CODE>SERVERDIR=/user/sepp/public_html</CODE> could be used
+    on an Unixoid system.
 </DL>
 
-<A NAME="switches"><H2>Switches</H2></A>
+<H2><A NAME="switches">Switches</A></H2>
 <DL>
 <EXPLAN TITLE="HELP/S" NAME="help">
     Display a short help message and exit.
@@ -238,7 +249,7 @@ can be specified by using multiple '/'s.  Valid modifiers are:</P>
 <EXPLAN TITLE="MSGANSI/S" NAME="msgansi">
     Uses ANSI-sequences to make messages more readable. This option is
     recommended to be used by people who are not smart enough to integrate
-    <hsc> in some of the existing project-managment environments.
+    <hsc> in some of the existing project-management environments.
 <EXPLAN TITLE="RPLCENT/S" NAME="rplcent">
     <A HREF="features/rplcent.html">Replace special characters</A> with
     their entities (eg <qq><CODE>&uuml;</CODE></qq> becomes 
@@ -254,17 +265,17 @@ can be specified by using multiple '/'s.  Valid modifiers are:</P>
     (<CODE>&amp;amp;, &amp;lt;</CODE> and <CODE>&amp;gt;</CODE>) if they are
     surrounded by white-spaces. 
 <EXPLAN TITLE="STRIPBASWS/S" NAME="stripbadws">
-    Strip bad white spaces that would have caused message #78 or #79;
-    this will not strip those wich cause message #3. The main advantage
-    of this switch is that it allows you to write well structured
-    macros.
+    Strip bad white spaces that would have caused <ln_msg id="78">
+    or <ln_msg id="79">; this will not strip those which cause
+    <ln_msg id="47">. The main advantage of this switch is that
+    it allows you to write well structured macros.
 <EXPLAN TITLE="STRIPCOMMENT/S" NAME="stripcomment">
     Strip all SGML-comments from input.
 <EXPLAN TITLE="STRIPEXTERNAL/S" NAME="stripexternal">
     Strip tags which refer to an external URI.
 </DL>
 
-<A NAME="exitcodes"><H2>Exit Code</H2></A>
+<H2><A NAME="exitcodes">Exit Code</A></H2>
 
 <P>The exit-code <hsc> returns to the CLI depends on the messages and errors
 that have been displayed during runtime.</P>
@@ -272,9 +283,9 @@ that have been displayed during runtime.</P>
 <P>The version for AmigaOS returns 
 <UL>
 <LI><CODE>0</CODE> on success,
-<LI><CODE>5</CODE> if warnings occured,
-<LI><CODE>10</CODE> if errors showed up (also for errors in args) and 
-<LI><CODE>20</CODE> if fatal errors happned (also for out-of-resources).
+<LI><CODE>5</CODE> if warnings occurred,
+<LI><CODE>10</CODE> if errors showed up (also for errors in arguments) and
+<LI><CODE>20</CODE> if fatal errors happened (also for out-of-resources).
 </UL>
 
 For other systems, values like <CODE>0/0/1/2</CODE> are used instead.

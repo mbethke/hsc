@@ -1,10 +1,16 @@
 
-hsc source archive
-==================
+hsc source directory
+====================
 
-This archive contains the sources for hsc. They are distributed under
-GNU General Public License (for details, see file "COPYING" in this
-directory).
+This directory contains the sources for hsc. They are distributed
+under GNU General Public License (for details, see file "COPYING" in
+the parent directory).
+
+For some binary distributions (AmigaOS, RiscOS), you might only find
+this README. Please refer to "hsc/README" (see parent directory) where
+you can obtain the sources from.
+
+---------------------------------------------------------------------
 
 IMPORTANT: If you've compiled older versions of hsc before, remove 
 all files of the old sources before you continue.
@@ -25,6 +31,9 @@ Use
     make -f Makefile.dodl
 
 to start the compilation-sequence.
+
+If you dare, you can try to coment out/in some lines to select a more
+specific compiler setup.
 
 ================
 USING "MAKEFILE"
@@ -67,6 +76,40 @@ If the optimised version causes serious problems, try to compile
 with compilation mode set to "norm". There are loads of buggy
 optimisers out there..
 
+--------
+TEST RUN
+--------
+To test if hsc works as expected, some test data are included in
+source/test/. Simple type
+
+    make test
+
+from the same directory you started the compilation before.
+
+This will invoke hsc several times: some .hsc-files will be used
+to create some .html files. These are compared with .expected-files,
+which have been compiled before and contain the expected output.
+
+For this comparison, `diff --brief' will used. Make sure that such
+a command is available before starting the test process.
+
+Additionally, hsc will redirect messages to .msg files. These will
+be compared with .mex ("messages expected") files the same way as
+described above.
+
+If all works fine, `diff' should not produce any output.
+
+-------
+CLEANUP
+-------
+To remove the object files, use
+
+    make clean
+
+To also remove binaries and temporary files, use
+
+    make sterile
+
 ========
 PROBLEMS
 ========
@@ -86,12 +129,16 @@ care about this.
 THE BINARIES
 ============
 
-If nothing went wrong, you now should have created two files:
+If nothing went wrong, you now should have created three files:
 
     hsc/hsc
-    hscdepp/hscdepp
+    hsctools/hscdepp
+    hsctools/hscpitt
 
 These are the executables. Now follow the installation-instructions 
 of the documentation that came with the main-archive.
+
+(In short: put the binaries somewhere in your search-path, and setup
+hsc.prefs in the appropriate place.)
 
 Thomas Aglassinger <agi@giga.or.at>

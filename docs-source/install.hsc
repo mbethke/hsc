@@ -7,11 +7,11 @@ archive should end up.
 <H2>Simple installation</H2>
 
 <P>It's recommended to leave the whole <hsc> directory at one piece.
-Therefor extract the archive somewhere to your harddisk,
+Therefor extract the archive somewhere to your hard disk,
 for example to <FILE>work:hsc</FILE>.</P>
 
 You now have to add this directory to your workbench search path.
-This can be performed addind a line like the one you can find
+This can be performed adding a line like the one you can find
 below to your <FILE>user-startup</FILE>
 
 <PRE>    Path work:hsc ADD</PRE>
@@ -23,7 +23,7 @@ and <hsc> should come up with a short information message.
 
 <P>For a minimum installation, only <FILE>hsc</FILE> and <FILE>hsc.prefs</FILE>
 are required. If you want to utilize the project management capabilities of 
-<hsc>, also <FILE>hscdepp</FILE> and <FILE>hscpitt</FILE> are required.</P>
+<hsc>, also <hscdepp> and <hscpitt> are required.</P>
 
 <P>Copy the binaries to somewhere in your workbench search path (for 
 exmple, to <FILE>c:</FILE>) and <hsc.prefs> anywhere else and set
@@ -31,7 +31,7 @@ exmple, to <FILE>c:</FILE>) and <hsc.prefs> anywhere else and set
 
 <H2>Making hsc resident</H2>
 
-<P>All binaries should allready have the the pure bit set. If not, you
+<P>All binaries should already have the the pure bit set. If not, you
 can do this by entering</P>
 <PRE>    protect hsc/hsc add p
     protect hsc/hscdepp add p

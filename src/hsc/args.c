@@ -1,9 +1,6 @@
 /*
- * hsc/args.c
- *
- * user argument handling for hsc
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 17-Nov-1996
+ */
+/*
+ * hsc/args.c
+ *
+ * user argument handling for hsc
+ *
+ * updated: 16-May-1997
  * created:  1-Jul-1995
  */
 
@@ -41,6 +44,7 @@
 static STRPTR arg_inpfname = NULL;      /* temp vars for set_args() */
 static STRPTR arg_outfname = NULL;
 static STRPTR arg_extension = NULL;
+static STRPTR arg_server_dir = NULL;
 static LONG arg_quotemode = QMODE_KEEP;
 static BOOL arg_mode = FALSE;
 static BOOL arg_compact = FALSE;
@@ -52,6 +56,7 @@ static BOOL arg_jens = FALSE;
 static BOOL arg_strip_cmt = FALSE;
 static BOOL arg_strip_badws = FALSE;
 static BOOL arg_strip_ext = FALSE;
+static BOOL arg_weenix = FALSE;
 static BOOL arg_license = FALSE;
 static BOOL arg_help = FALSE;
 static BOOL arg_debug = FALSE;
@@ -166,17 +171,28 @@ static STRPTR arg_mode_CB(STRPTR arg)
     D(fprintf(stderr, DHSC "args: mode=%s\n", arg));
 
     if (!mode)
+    {
         errmsg = "unknown mode";
+    }
     else if (mode == MODE_PEDANTIC)
-    {                           /* pedantic */
+    {
+        /* pedantic */
         /* enable all messages */
         HSCMSG_ID i;
 
         for (i = 0; i < MAX_MSGID; i++)
+        {
             hsc_set_msg_ignore(hp, i, FALSE);
+        }
+
+        /* enable all classes */
+        hsc_set_msg_ignore_notes(hp, FALSE);
+        hsc_set_msg_ignore_style(hp, FALSE);
+        hsc_set_msg_ignore_port(hp, FALSE);
     }
     else if (mode == MODE_NORMAL)
-    {                           /* normal */
+    {
+        /* normal */
         /* ignore note messages */
         arg_mode_CB(MODE_PEDANTIC_STR);
         arg_ignore_CB(IGNORE_NOTES_STR);
@@ -185,7 +201,8 @@ static STRPTR arg_mode_CB(STRPTR arg)
         hsc_set_msg_ignore(hp, MSG_LF_IN_COMMENT, TRUE);
     }
     else if (mode == MODE_RELAXED)
-    {                           /* relaxed */
+    {
+        /* relaxed */
         arg_mode_CB(MODE_NORMAL_STR);
         arg_ignore_CB(IGNORE_BADSTYLE_STR);
         arg_ignore_CB(IGNORE_PORTABILITY_STR);
@@ -201,10 +218,15 @@ static STRPTR arg_mode_CB(STRPTR arg)
         LONG ignnum;
 
         if (!str2long(arg, &ignnum))
+        {
             errmsg = "illegal argument";
+        }
         else
+        {
             hsc_set_msg_ignore(hp, ignnum, TRUE);
+        }
     }
+
     return (errmsg);
 }
 
@@ -312,7 +334,7 @@ BOOL user_defines_ok(HSCPRC * hp)
     {
         DLNODE *nd = dll_first(define_list);
         EXPSTR *defbuf = init_estr(64);
-#if 0
+#if 0 /* TODO: remove this */
         BOOL old_ignore_quotemsg =
         hsc_get_msg_ignore(hp, MSG_ARG_NO_QUOTE);
 #endif
@@ -439,8 +461,8 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     EXPSTR *kack_name = init_estr(0);   /* temp. str for outfilename */
     struct arglist *hsc_args;   /* argument structure */
 
-#if (defined MSDOS && !defined HSC_GUN)
-#define SWAPSIZE     (16*4)     /* 16 MB */
+#if (defined MSDOS)             /* HSC_GUN */
+#define SWAPSIZE     (32*4)     /* 32 MB */
 #define SWAPSIZE_BUF (256*1024)
 #define SWAPNAME     "hsc.swap"
     /* create swap-file if neccessary */
@@ -480,6 +502,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     if (!swapfile)
     {
         fprintf(stderr, "** failed creating swapfile");
+        exit(RC_FAIL);
     }
     else
     {
@@ -572,15 +595,21 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "tags to be stripped",
 
                      "ICONBASE/T/K", &arg_iconbase,
-                     "base uri for icon entities",
+                     "base URI for icon entities",
+
+                     "SERVERDIR/T/K", &arg_server_dir,
+                     "base directory for server relative URIs",
 
                      "STATUS/E/K/$", arg_status_CB,
                      STATUS_ENUM_STR, &disp_status,
                      "status message (" STATUS_ENUM_STR ")",
-
+#if 0
+                     "WEENIX/S", &arg_weenix,
+                     "weenix compatibility mode",
+#endif
                      "-DEBUG/S", &arg_debug, "enable debugging output",
     /* help */
-                     "HELP=?=-h/S", &arg_help, "display this text",
+                     "HELP=?=-h=--help/S", &arg_help, "display this text",
                      "LICENSE/S", &arg_license, "display license",
 
                      NULL);
@@ -706,7 +735,9 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      * if it's a directory
                      */
                     if (strlen(arg_outfname))
+                    {
                         lastch = arg_outfname[strlen(arg_outfname) - 1];
+                    }
 
 #ifdef AMIGA
                     /* for Amiga, execpt empty string for current dir */
@@ -862,11 +893,25 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
         if (ok)
         {
+            /* set server dir */
+            if (arg_server_dir)
+            {
+                hsc_set_server_dir(hp, arg_server_dir);
+            }
+
+            /* set icon base */
             if (arg_iconbase)
+            {
                 hsc_set_iconbase(hp, arg_iconbase);
+            }
+
+            /* check, if stdout should be used as output */
             if (!use_stdout)
+            {
                 hsc_set_filename_document(hp, estr2str(outfilename));
+            }
         }
+
         /* display argument error message */
         if (!ok)
         {
@@ -969,4 +1014,3 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     return (FALSE);             /* for arg-debugging */
 #endif
 }
-

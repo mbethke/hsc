@@ -1,7 +1,11 @@
-scr_docs/README
-===============
+docs source directory
+=====================
 
 This directory contains the hsc-sources for the documentation.
 
-I've included them to also provide a quite complex example, that
-uses nearly every feature of hsc.
+They have been included to provide a rather complex example. Feel free
+to examine the sources and the Makefile.
+
+For some binary distributions (AmigaOS, RiscOS), you might only find
+this README. Please refer to "hsc/README" (see parent directory) where
+you can obtain the sources from.

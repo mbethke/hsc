@@ -1,7 +1,7 @@
 #
 # Makefile for hsc ("html sucks completely")
 #
-# Copyright (C) 1995,96  Thomas Aglassinger
+# Copyright (C) 1995,96,97  Thomas Aglassinger
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,8 +59,11 @@ COMPILER_MODE	= opt	# create optimised version
 #		("/bin" and "/lib" will be added)
 #
 
-INSTALL	= install
-INSTDIR = /usr
+INSTALL		= install
+#INSTALL_DATA	= $(INSTALL)	# to be supported...
+#INSTALL_PROGRAM	= $(INSTALL)
+
+INSTDIR		= /usr
 #INSTDIR	= $(HOME)
 
 #--------------------------------------------------------------------
@@ -69,104 +72,20 @@ INSTDIR = /usr
 #
 #====================================================================
 
-ifdef AMIGA_GCC
+#--------------------------------------------------------------------
 #
-# gcc AMIGA
+# linker objects and library declarations
 #
-#CPU	= -m68000
-CPU	= -m68020-40
-SYS	= -DAMIGA -Damigados -fbaserel -resident -noixemul $(CPU)
-DEBUG	= -DDEBUG -DDEBUG_UGLY -ggdb
-NORM	= -ggdb
-OPTIM	= -O2 -fstrength-reduce -s
-MISC	= -Wall -W -ansi -Wno-unused -I.
-COMP	= gcc -o $@ $(SYS) $(MISC) -c
-LINK	= gcc -o $@ $(SYS) $(MISC)
-COPY	= copy quiet clone
-DEL	= delete quiet
-
-else
-ifdef POSIX_GCC
-#
-# gcc UNIX
-#
-SYS	= -DUNIX
-DEBUG	= -DDEBUG -DDEBUG_UGLY -ggdb
-NORM	= -ggdb
-OPTIM	= -O2 -fstrength-reduce -s
-MISC	= -Wall -W -ansi -Wno-unused -I.
-COMP	= gcc -o $@ $(SYS) $(MISC) -c
-LINK	= gcc -o $@ $(SYS) $(MISC)
-COPY	= cp
-DEL	= rm -f
-
-else
-ifdef AMIGA_SASC
-#
-# sas/c AMIGA
-#
-SYS	=
-DEBUG	= DEBUG=SF DEF=DEBUG DEF=DEBUG_UGLY
-NORM	= DEBUG=LINE
-OPTIM	= STRIPDEBUG IGN=304 IGN=93 OPTIMIZE NOSTKCHK
-LINK	= sc $(SYS) LINK
-COMP	= sc $(SYS)
-COPY	= copy quiet clone
-DEL	= delete quiet
-
-else
-ifdef AMIGA_VBCC
-#
-# vbcc AMIGA
-#
-SYS 	= -DAMIGA -dontwarn=205
-DEBUG	= -DDEBUG -DDEBUG_UGLY
-NORM	=
-OPTIM	=
-COMP	= vc $(SYS) -I. -Iugly -o $@ -c
-LINK	= vc $(SYS) -I. -Iugly -o $@
-COPY	= copy quiet clone
-DEL	= delete quiet
-
-else
-#
-# cc (should work on most Unixoid systems)
-#
-SYS	= -DUNIX
-DEBUG	= -DDEBUG -DDEBUG_UGLY
-NORM	=
-OPTIM	= -s -O
-COMP	= cc -o $@ $(SYS) -I. -c
-LINK	= cc -o $@ $(SYS) -I. 
-COPY	= cp
-DEL	= rm -f
-
-endif	# AMIGA_VBCC
-endif	# AMIGA_SASC
-endif	# POSIX_GCC
-endif	# AMIGA_GCC
+#--------------------------------------------------------------------
 
 #
-# compiler mode 
-#
-ifeq ($(strip $(COMPILER_MODE)),opt)
-CMODE	= $(OPTIM)
-else
-ifeq ($(strip $(COMPILER_MODE)),dbg)
-CMODE	= $(DEBUG)
-else
-CMODE	= $(NORM)
-endif
-endif
-
-#
-# objects
+# object lists
 #
 OBJ_TAGS =\
 	hsclib/tag_a.o \
 	hsclib/tag_hsc.o \
 	hsclib/tag_if.o \
-	hsclib/tag_macr.o \
+	hsclib/tag_macro.o \
 	hsclib/tag_misc.o
 
 OBJ_HSCLIB =\
@@ -224,24 +143,190 @@ OBJ_UGLY =\
 	ugly/ustrlist.o	\
 	ugly/utime.o
 
+OBJ_GST	= hsclib/gst.o
+
 #
-# ugly modules to be linked
+# library names
 #
-# sas/c-amiga: the modules are stored in SCOPTIONS, otherwise the command
-#	calling the linker would be too long for #$%& Amiga-Shell..
+LIB_UGLY	= ugly/ugly.lib
+LIB_HSCPRJ	= hscprj/hscprj.lib
+LIB_HSCLIB	= hsclib/hsclib.lib
+LIB_HSC		= hsc/hsc.lib
+LIB_ALL		= $(LIB_UGLY) $(LIB_HSCPRJ) $(LIB_HSCLIB) $(LIB_HSC)
+
+# shell (currently unused)
+SHELL	= /bin/sh
+
+
+#--------------------------------------------------------------------
 #
-ifndef AMIGA_SASC
-LINK_UGLY	= $(OBJ_UGLY)
-LINK_HSCPRJ	= $(OBJ_HSCPRJ)
+# setup for compiler and operating system
+#
+#--------------------------------------------------------------------
+
+ifdef AMIGA_GCC
+#
+# gcc AMIGA
+#
+# compiler/linker options
+#CPU	= -m68000
+CPU	= -m68020-40
+SYS	= -DAMIGA -Damigados -fbaserel -resident -noixemul $(CPU)
+DEBUG	= -DDEBUG -DDEBUG_UGLY -ggdb
+NORM	=
+OPTIM	= -O2 -fstrength-reduce -s
+MISC	= -Wall -W -ansi -Wno-unused -I.
+# compiler commands
+COMP	= gcc -o $@ $(SYS) $(MISC) -c
+LINK	= gcc -o $@ $(SYS) $(MISC)
+# other commands
+AR	= ar
+ARFLAGS = rs
+COPY	= copy quiet clone
+DEL	= delete quiet
+# libraries
+LNK_UGLY	= $(LIB_UGLY)
+LNK_HSCPRJ	= $(LIB_HSCPRJ)
+LNK_HSCLIB	= $(LIB_HSCLIB)
+LNK_HSC		= $(LIB_HSC)
+GSTFILE		=
+
 else
-# empty strings
-LINK_UGLY	= 
-LINK_HSCPRJ	= 
+ifdef POSIX_GCC
+#
+# gcc UNIX
+#
+SYS	= -DUNIX
+DEBUG	= -DDEBUG -DDEBUG_UGLY -ggdb
+NORM	=
+OPTIM	= -O2 -fstrength-reduce -s
+MISC	= -Wall -W -ansi -Wno-unused -I.
+COMP	= gcc -o $@ $(SYS) $(MISC) -c
+LINK	= gcc -o $@ $(SYS) $(MISC)
+# other commands and options
+AR	= ar
+ARFLAGS = rs
+COPY	= cp
+DEL	= rm -f
+# libraries
+LNK_UGLY	= $(LIB_UGLY)
+LNK_HSCPRJ	= $(LIB_HSCPRJ)
+LNK_HSCLIB	= $(LIB_HSCLIB)
+LNK_HSC		= $(LIB_HSC)
+GSTFILE		=
+
+else
+ifdef AMIGA_SASC
+#
+# sas/c AMIGA
+#
+
+# compiler/linker options
+SYS	=
+DEBUG	= DEBUG=SF DEF=DEBUG DEF=DEBUG_UGLY
+NORM	= DEBUG=LINE
+OPTIM	= STRIPDEBUG IGN=93,304,315,316 OPTIMIZE NOSTKCHK
+# compiler/linker commands
+LINK	= sc $(SYS) LINK TO $@
+COMP	= sc $(SYS)
+# other commands
+COPY	= copy quiet clone
+DEL	= delete quiet
+# libraries
+LNK_UGLY	= $(LIB_UGLY)
+LNK_HSCPRJ	= $(LIB_HSCPRJ)
+LNK_HSCLIB	= $(LIB_HSCLIB)
+LNK_HSC		= $(LIB_HSC)
+GSTFILE		= hsclib.gst
+
+else
+ifdef AMIGA_VBCC
+
+#
+# vbcc AMIGA
+#
+
+# compiler options
+SYS 	= -DAMIGA -dontwarn=205
+DEBUG	= -DDEBUG -DDEBUG_UGLY
+NORM	=
+OPTIM	=
+# compiler commands
+COMP	= vc $(SYS) -I. -Iugly -o $@ -c
+LINK	= vc $(SYS) -I. -Iugly -o $@
+# other commands
+COPY	= copy quiet clone
+DEL	= delete quiet
+# libraries
+LNK_UGLY	= $(OBJ_UGLY)
+LNK_HSCPRJ	= $(OBJ_HSCPRJ)
+LNK_HSCLIB	= $(OBJ_HSCLIB)
+LNK_HSC		= $(OBJ_HSC)
+GSTFILE		=
+
+else
+
+#
+# cc (should work on most unixoid systems)
+#
+
+# compiler options
+SYS	= -DUNIX
+DEBUG	= -DDEBUG -DDEBUG_UGLY
+NORM	=
+OPTIM	= -s -O
+# compiler commands
+COMP	= cc -o $@ $(SYS) -I. -c
+LINK	= cc -o $@ $(SYS) -I.
+# other commands
+COPY	= cp
+DEL	= rm -f
+# libraries
+LNK_UGLY	= $(OBJ_UGLY)
+LNK_HSCPRJ	= $(OBJ_HSCPRJ)
+LNK_HSCLIB	= $(OBJ_HSCLIB)
+LNK_HSC		= $(OBJ_HSC)
+GSTFILE		=
+
+endif	# AMIGA_VBCC
+endif	# AMIGA_SASC
+endif	# POSIX_GCC
+endif	# AMIGA_GCC
+
+#
+# compiler mode 
+#
+ifeq ($(strip $(COMPILER_MODE)),opt)
+CMODE	= $(OPTIM)
+else
+ifeq ($(strip $(COMPILER_MODE)),dbg)
+CMODE	= $(DEBUG)
+else
+CMODE	= $(NORM)
+endif
 endif
 
+#--------------------------------------------------------------------
+#
+# targets and rules needed to compile/install/test package
+#
+#--------------------------------------------------------------------
+
+GSTSOURCE	= hscgst.c
 
 #
-# implicit rule for object-file
+# special targets
+#
+.SUFFIXES :
+.SUFFIXES : .c .o .lib
+
+.PHONY : all all_all clean clean_all clean_test sterile install	\
+	ugly hsclib hscprj					\
+	hsc hscdepp hscpitt test test_expected autodocs
+
+
+#
+# implicit rule for object files
 #
 %.o : %.c
 	$(COMP) $*.c $(CMODE)
@@ -249,41 +334,66 @@ endif
 #
 # compile all tools
 #
-.PHONY : all all_all clean all_clean sterile install ugly hsclib hscprj \
-	hsc hscdepp hscpitt
-
-all : ugly hsclib hscprj hsc hscdepp hscpitt
+all : $(GSTFILE) hsc hscdepp hscpitt
 
 all_all: ugly/all_ugly.o hsclib/all_hscl.o hscprj/all_hscp.o hsc/all_hsc \
 	hsctools/all_depp hsctools/all_pitt
 
-hsc/hsc: $(OBJ_UGLY) $(OBJ_HSCLIB) $(OBJ_HSC) $(OBJ_HSCPRJ)
-	$(LINK) $(OBJ_HSC) $(OBJ_HSCLIB) $(LINK_HSCPRJ) $(LINK_UGLY)
+#
+# libraries
+#
+$(LIB_UGLY) : $(OBJ_UGLY)
+ifndef AMIGA_SASC
+	$(AR) $(ARFLAGS) $(LIB_UGLY) $(OBJ_UGLY)
+else
+	oml -s $(LIB_UGLY) r $(OBJ_UGLY)
+endif
 
-hsctools/hscdepp : $(OBJ_UGLY) $(OBJ_HSCPRJ) $(OBJ_HSCDEPP)
-	$(LINK) $(OBJ_HSCDEPP) $(LINK_HSCPRJ) $(LINK_UGLY)
+$(LIB_HSCPRJ) : $(OBJ_HSCPRJ)
+ifndef AMIGA_SASC
+	$(AR) $(ARFLAGS) $(LIB_HSCPRJ) $(OBJ_HSCPRJ)
+else
+	oml -s $(LIB_HSCPRJ) r $(OBJ_HSCPRJ)
+endif
 
-hsctools/hscpitt : $(OBJ_UGLY) $(OBJ_HSCPRJ) $(OBJ_HSCPITT)
-	$(LINK) $(OBJ_HSCPITT) $(LINK_HSCPRJ) $(LINK_UGLY)
+$(LIB_HSCLIB) : $(OBJ_HSCLIB)
+ifndef AMIGA_SASC
+	$(AR) $(ARFLAGS) $(LIB_HSCLIB) $(OBJ_HSCLIB)
+else
+	oml -s $(LIB_HSCLIB) r $(OBJ_HSCLIB)
+endif
 
-hsclib/all_hscl.o : hsclib/all_hscl.c
-	$(COMP) hsclib/all_hscl.c $(CMODE)
+$(LIB_HSC) : $(OBJ_HSC)
+ifndef AMIGA_SASC
+	$(AR) $(ARFLAGS) $(LIB_HSC) $(OBJ_HSC)
+else
+	oml -s $(LIB_HSC) r $(OBJ_HSC)
+endif
 
-hsc/all_hsc.o : hsc/all_hsc.c
-	$(COMP) hsc/all_hsc.c $(CMODE)
+#
+# binaries
+#
+hsc/hsc: $(LNK_UGLY) $(LNK_HSCPRJ) $(LNK_HSCLIB) $(OBJ_HSC)
+	$(LINK) $(CMODE) $(OBJ_HSC) $(LNK_HSCLIB) $(LNK_HSCPRJ) $(LNK_UGLY)
+
+hsctools/hscdepp : $(LNK_UGLY) $(LNK_HSCPRJ) $(OBJ_HSCDEPP)
+	$(LINK) $(CMODE) $(OBJ_HSCDEPP) $(LNK_HSCPRJ) $(LNK_UGLY)
+
+hsctools/hscpitt : $(LNK_UGLY) $(LNK_HSCPRJ) $(OBJ_HSCPITT)
+	$(LINK) $(CMODE) $(OBJ_HSCPITT) $(LNK_HSCPRJ) $(LNK_UGLY)
 
 hsc/all_hsc : hsclib/all_hscl.o hsc/all_hsc.o hscprj/all_hscp.o \
 		ugly/all_ugly.o
-	$(LINK) hsc/all_hsc.o hsclib/all_hscl.o hscprj/all_hscp.o \
+	$(LINK) $(CMODE) hsc/all_hsc.o hsclib/all_hscl.o hscprj/all_hscp.o \
 		ugly/all_ugly.o $(CMODE)
 	$(COPY) hsc/all_hsc hsc/hsc
 
 hsctools/all_depp : hsctools/all_depp.o hscprj/all_hscp.o ugly/all_ugly.o
-	$(LINK) hsctools/all_depp.o hscprj/all_hscp.o ugly/all_ugly.o $(CMODE)
+	$(LINK) $(CMODE) hsctools/all_depp.o hscprj/all_hscp.o ugly/all_ugly.o $(CMODE)
 	$(COPY) hsctools/all_depp hsctools/hscdepp
 
 hsctools/all_pitt : hsctools/all_pitt.o hscprj/all_hscp.o ugly/all_ugly.o
-	$(LINK) hsctools/all_pitt.o hscprj/all_hscp.o ugly/all_ugly.o $(CMODE)
+	$(LINK) $(CMODE) hsctools/all_pitt.o hscprj/all_hscp.o ugly/all_ugly.o $(CMODE)
 	$(COPY) hsctools/all_pitt hsctools/hscpitt
 
 #
@@ -293,20 +403,64 @@ install : all_all
 	$(INSTALL) -m 755 hsc/hsc $(INSTDIR)/bin/hsc
 	$(INSTALL) -m 755 hsctools/hscdepp $(INSTDIR)/bin/hscdepp
 	$(INSTALL) -m 755 hsctools/hscpitt $(INSTDIR)/bin/hscpitt
-	$(INSTALL) -m 644 hsc.prefs $(INSTDIR)/lib/hsc.prefs
+	$(INSTALL) -m 644 ../hsc.prefs $(INSTDIR)/lib/hsc.prefs
+
+#
+# test suite
+#
+
+TESTDIR		= test/
+TESTHSC		= hsc/hsc
+TESTFLAGS	= mode=pedantic status=quiet "to=" prjfile=hsc-test.project
+
+TESTHTML	= \
+	$(TESTDIR)simple.html		\
+	$(TESTDIR)macro.html		\
+	$(TESTDIR)macro2.html		\
+	$(TESTDIR)msg_macro.html	\
+	$(TESTDIR)redefine.html		\
+	$(TESTDIR)sgmlspec.html		\
+	$(TESTDIR)stripws.html
+
+TESTEXPECTED	= \
+	$(TESTDIR)simple.expected	\
+	$(TESTDIR)macro.expected	\
+	$(TESTDIR)macro2.expected	\
+	$(TESTDIR)msg_macro.expected	\
+	$(TESTDIR)redefine.expected	\
+	$(TESTDIR)sgmlspec.expected	\
+	$(TESTDIR)stripws.expected
+
+# implicit rule for testing
+%.html : %.hsc
+	@echo testing $<..
+	-@$(TESTHSC) $(TESTFLAGS) $< MSGFILE=$*.msg
+	-@diff --brief $@ $*.expected
+	-@diff --brief $*.msg $*.mex
+
+# test targets
+#$(TESTDIR)macro.html : $(TESTDIR)macro.hsc
+
+test : $(TESTHTML)
 
 #
 # cleanup - remove all objects and executables
 #
 clean :
-	-$(DEL) hsc/*.o hsc/*.p hsc/*.s hsc/*.lnk
-	-$(DEL) hsctools/*.o hsctools/*.p hsctools/*.s hsctools/*.lnk
-	-$(DEL) hsclib/*.o hsclib/*.p hsclib/*.s hsclib/*.lnk
-	-$(DEL) hscprj/*.o hscprj/*.p hscprj/*.s hscprj/*.lnk
-	-$(DEL) ugly/*.o ugly/*.p ugly/*.s ugly/*.lnk
+	-$(DEL) $(OBJ_UGLY)
+	-$(DEL) $(OBJ_HSCPRJ)
+	-$(DEL) $(OBJ_HSCLIB)
+	-$(DEL) $(OBJ_HSC)
+	-$(DEL) $(OBJ_HSCDEPP) $(OBJ_HSCPITT)
+	-$(DEL) $(LIB_ALL) $(GSTFILE) $(GSTSOURCE) $(OBJ_GST)
+	-$(DEL) hsc/*.p hsc/*.s hsc/*.lnk
+	-$(DEL) hsctools/*.p hsctools/*.s hsctools/*.lnk
+	-$(DEL) hsclib/*.p hsclib/*.s hsclib/*.lnk
+	-$(DEL) hscprj/*.p hscprj/*.s hscprj/*.lnk
+	-$(DEL) ugly/*.p ugly/*.s ugly/*.lnk
 	-$(DEL) *core hsc/*core hsctools/*core
 
-all_clean :
+clean_all :
 	-$(DEL) ugly/all_ugly.o
 	-$(DEL) hsclib/all_hscl.o
 	-$(DEL) hscprj/all_hscp.o
@@ -317,9 +471,13 @@ all_clean :
 	-$(DEL) hsctools/all_pitt.o
 	-$(DEL) hsctools/all_pitt
 
-sterile : clean all_clean
+clean_test :
+	-$(DEL) $(TESTHTML)
+
+sterile : clean clean_all clean_test
 	-$(DEL) hsc/hsc
 	-$(DEL) hsctools/hscdepp
+	-$(DEL) hsctools/hscpitt
 
 #
 # some shortcuts
@@ -336,15 +494,24 @@ hscdepp : hsctools/hscdepp
 
 hscpitt : hsctools/hscpitt
 
+#--------------------------------------------------------------------
+#
+# internal targets and rules - do not invoke them
+#
+#--------------------------------------------------------------------
 
-#--------------------------------------
-# You better do not try to use any of the rules below; they 
-# probably won't work on your system and are not needed to compile 
-# any of this stuff
-#--------------------------------------
+#
+# update the expected test data
+#
+%.expected : %.html
+	$(COPY) $< $@
+	$(COPY) $*.msg $*.mex
+
+test_expected : $(TESTEXPECTED)
+	
 
 # copy executables to distribution dir
-DISTDIR = prog:hsc/distrib/hsc/
+DISTDIR = hsc:hsc/
 
 dist :
 	@protect hsc/hsc add p
@@ -354,8 +521,9 @@ dist :
 	$(COPY) hsctools/hscdepp $(DISTDIR)
 	$(COPY) hsctools/hscpitt $(DISTDIR)
 	$(COPY) rexx/hScMsg.rexx $(DISTDIR)grafflwerk
-	$(COPY) rexx/SendAWeb.rexx $(DISTDIR)grafflwerk
+	$(COPY) rexx/SendBrowser.rexx $(DISTDIR)grafflwerk
 	$(COPY) rexx/SendScMsg.rexx $(DISTDIR)grafflwerk
+	$(COPY) rexx/hscpaltrow.rexx $(DISTDIR)grafflwerk
 
 dbg :
 	$(COPY) dbg.prefs hsc.prefs
@@ -377,13 +545,46 @@ wc :
 
 depend :
 	MkDepend ugly/#?.c hsclib/#?.c hsc/#?.c hsctools/#?.c hscprj/#?.c \
-	-iugly -ihsclib -ihsc -ihscprj -x ugly/test#? -v
+	-iugly -ihsclib -ihsc -ihscprj -iriscos -x ugly/test#? -v
 
 dodldep :
 	MkDepend MAKE=Makefile.dodl \
 	ugly/all_ugly.c hsclib/all_hscl.c hsc/all_hsc.c hscprj/all_hscp.c \
-		hsctools/all_depp.c \
-		-iugly -ihsclib -ihsc -ihscprj -ihsctools -v
+	hsctools/all_depp.c hsctools/all_pitt.c \
+	-iugly -ihsclib -ihsc -ihscprj -ihsctools -iriscos -v
+
+#
+# create GST for hsclib
+#
+
+$(OBJ_GST) :
+	@echo "dirty" >$(OBJ_GST)
+
+$(GSTSOURCE) : $(OBJ_GST)
+#	list >t:gst.c lformat="#include *"%p%n*"" 				\
+#	sc:include/(std#?.h|string.h|errno.h|assert.h|ctype.h|time.h|limits.h)	\
+#	ugly/#?.h hscprj/document.h hscprj/#?.h 				\
+#	hsclib/attrib.h hsclib/tag.h hsclib/hscprc.h hsclib/#?.h
+	@echo $(GSTSOURCE)
+	@echo >$(GSTSOURCE)  "/** Used to create GST **/"
+	@list >>$(GSTSOURCE) lformat="#include <%n>"				\
+	sc:include/(std#?.h|string.h|errno.h|assert.h|ctype.h|time.h|limits.h)
+	@list >>$(GSTSOURCE) lformat="#include *"%p%n*"" 			\
+	ugly/#?.h 
+
+hsclib.gst : $(GSTSOURCE)
+	$(COMP) $(GSTSOURCE) $(CMODE) NOOBJNAME MGST $(GSTFILE)
+
+#
+# 
+# create autodocs
+#
+AUTODOC = util:dev/robodoc
+ADFLAGS = SORT
+autodocs :
+	$(AUTODOC) ugly/expstr.c doc/expstr.doc   $(ADFLAGS)
+	$(AUTODOC) ugly/expstr.c doc/expstr.html  $(ADFLAGS) HTML
+	$(AUTODOC) ugly/expstr.c doc/expstr.guide $(ADFLAGS) GUIDE
 
 #
 # bump version (perverted 'cause I'm too stupid to 
@@ -393,7 +594,7 @@ version: hscvers deppvers pittvers
 
 hscvers :
 	@echo "0" >hsc_rev.beta
-	RevUp 0 hsc REV 911 C EXTRA 
+	RevUp 0 hsc REV 913 C EXTRA 
 	@move hsc_rev.* hsc/ quiet
 	@type hsc/hsc_rev.h
 
@@ -405,7 +606,7 @@ deppvers :
 
 pittvers :
 	@echo "0" >hscpitt_rev.beta
-	RevUp 1 hscpitt REV 0 C EXTRA
+	RevUp 1 hscpitt REV 1 C EXTRA
 	@move hscpitt_rev.h hsctools/pitt_rev.h quiet clone
 	@type hsctools/pitt_rev.h
 
@@ -415,44 +616,45 @@ pittvers :
 #
 
 # --- DO NOT MODIFY THIS LINE -- AUTO-DEPENDS FOLLOW ---
-hsc/all_hsc.o : hsc/hsc.c hsc/callback.c hsc/output.c hsc/args.c \
-    hsc/status.c hsc/global.c hsc/status.h hsc/output.h hsc/callback.h \
-    hsc/args.h ugly/returncd.h ugly/uargs.h hscprj/project.h ugly/prginfo.h \
-    hsc/global.h hsc/hsc_rev.h hscprj/license.h ugly/fname.h ugly/infile.h \
+hsc/all_hsc.o : hsc/all_hsc.c hsc/hsc.c hsc/callback.c hsc/output.c \
+    hsc/args.c hsc/status.c hsc/global.c hsc/status.h hsc/output.h \
+    hsc/callback.h hsc/args.h ugly/returncd.h ugly/uargs.h hscprj/project.h \
+    ugly/prginfo.h hsc/global.h hsc/hsc_rev.h riscos/unixname.h \
+    hscprj/license.h ugly/fname.h hsclib/hsclib.h ugly/infile.h \
     ugly/utypes.h ugly/umemory.h ugly/utypes.h hsc/hdebug.h ugly/ustring.h \
-    ugly/umemory.h ugly/expstr.h ugly/dllist.h hsclib/hsclib.h \
-    ugly/expstr.h ugly/dllist.h ugly/udebug.h hsclib/linit.h \
-    hsclib/include.h hsclib/inc_base.h hsclib/lstatus.h hsclib/lmessage.h \
-    hsclib/hscprc.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
-    hscprj/document.h hsclib/msgid.h hsclib/ldebug.h
+    ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/expstr.h hsclib/linit.h \
+    hsclib/include.h hsclib/inc_base.h ugly/dllist.h ugly/udebug.h \
+    hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
+    hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
+    hsclib/ldebug.h
 
-hsc/args.o : hscprj/license.h ugly/returncd.h ugly/prginfo.h ugly/fname.h \
-    ugly/uargs.h hsc/status.h hsc/global.h ugly/expstr.h ugly/utypes.h \
-    ugly/umemory.h ugly/infile.h ugly/utypes.h hsc/hdebug.h ugly/ustring.h \
-    ugly/umemory.h ugly/expstr.h ugly/dllist.h hsclib/hsclib.h \
-    ugly/udebug.h ugly/dllist.h hscprj/project.h hsclib/linit.h \
-    hsclib/include.h hsclib/inc_base.h hsclib/lstatus.h hsclib/lmessage.h \
-    hsclib/hscprc.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
-    hscprj/document.h hsclib/msgid.h hsclib/ldebug.h
+hsc/args.o : hsc/args.c hscprj/license.h ugly/returncd.h ugly/prginfo.h \
+    ugly/fname.h ugly/uargs.h hsc/status.h hsc/global.h ugly/expstr.h \
+    ugly/utypes.h ugly/umemory.h ugly/infile.h ugly/utypes.h hsc/hdebug.h \
+    ugly/ustring.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
+    hsclib/hsclib.h ugly/udebug.h ugly/dllist.h hscprj/project.h \
+    hsclib/linit.h hsclib/include.h hsclib/inc_base.h hsclib/lstatus.h \
+    hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h hsclib/entity.h \
+    hsclib/attrib.h hscprj/document.h hsclib/msgid.h hsclib/ldebug.h
 
-hsc/callback.o : hsc/callback.h ugly/returncd.h hsc/status.h hsc/output.h \
-    hsc/global.h ugly/infile.h ugly/utypes.h hsc/hdebug.h ugly/ustring.h \
-    ugly/umemory.h ugly/expstr.h ugly/dllist.h hsclib/hsclib.h \
-    ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h \
+hsc/callback.o : hsc/callback.c hsc/callback.h ugly/returncd.h hsc/status.h \
+    hsc/output.h hsc/global.h ugly/infile.h ugly/utypes.h hsc/hdebug.h \
+    ugly/ustring.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
+    hsclib/hsclib.h ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h \
     hscprj/project.h hsclib/linit.h hsclib/include.h hsclib/inc_base.h \
     hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
     hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
     hsclib/ldebug.h
 
-hsc/global.o : hsc/global.h ugly/returncd.h hsc/hdebug.h ugly/ustring.h \
-    ugly/umemory.h ugly/expstr.h ugly/infile.h ugly/dllist.h ugly/utypes.h \
-    hsclib/hsclib.h ugly/utypes.h ugly/dllist.h ugly/expstr.h ugly/udebug.h \
-    hscprj/project.h hsclib/linit.h hsclib/include.h hsclib/inc_base.h \
-    hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
-    hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
-    hsclib/ldebug.h
+hsc/global.o : hsc/global.c hsc/global.h ugly/returncd.h hsclib/hsclib.h \
+    hsc/hdebug.h ugly/ustring.h ugly/umemory.h ugly/expstr.h ugly/infile.h \
+    ugly/dllist.h ugly/utypes.h hscprj/project.h hsclib/linit.h \
+    hsclib/include.h hsclib/inc_base.h ugly/utypes.h ugly/dllist.h \
+    ugly/expstr.h ugly/udebug.h hsclib/lstatus.h hsclib/lmessage.h \
+    hsclib/hscprc.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
+    hscprj/document.h hsclib/msgid.h hsclib/ldebug.h
 
-hsc/hsc.o : hsc/status.h hsc/output.h hsc/callback.h hsc/args.h \
+hsc/hsc.o : hsc/hsc.c hsc/status.h hsc/output.h hsc/callback.h hsc/args.h \
     ugly/returncd.h ugly/uargs.h hscprj/project.h ugly/prginfo.h \
     hsc/global.h hsc/hsc_rev.h ugly/infile.h ugly/utypes.h ugly/umemory.h \
     ugly/utypes.h hsc/hdebug.h ugly/ustring.h ugly/umemory.h ugly/expstr.h \
@@ -461,71 +663,165 @@ hsc/hsc.o : hsc/status.h hsc/output.h hsc/callback.h hsc/args.h \
     hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h hsclib/entity.h \
     hsclib/attrib.h hscprj/document.h hsclib/msgid.h hsclib/ldebug.h
 
-hsc/output.o : ugly/returncd.h hsc/status.h hsc/global.h ugly/infile.h \
-    ugly/utypes.h hsc/hdebug.h ugly/ustring.h ugly/umemory.h ugly/expstr.h \
-    ugly/dllist.h hsclib/hsclib.h ugly/dllist.h ugly/expstr.h ugly/utypes.h \
-    ugly/udebug.h hscprj/project.h hsclib/linit.h hsclib/include.h \
-    hsclib/inc_base.h hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h \
-    hsclib/tag.h hsclib/entity.h hsclib/attrib.h hscprj/document.h \
-    hsclib/msgid.h hsclib/ldebug.h
-
-hsc/status.o : ugly/returncd.h hsc/status.h hsc/global.h ugly/infile.h \
-    ugly/utypes.h hsc/hdebug.h ugly/ustring.h ugly/umemory.h ugly/expstr.h \
-    ugly/dllist.h hsclib/hsclib.h ugly/dllist.h ugly/expstr.h ugly/utypes.h \
-    ugly/udebug.h hscprj/project.h hsclib/linit.h hsclib/include.h \
-    hsclib/inc_base.h hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h \
-    hsclib/tag.h hsclib/entity.h hsclib/attrib.h hscprj/document.h \
-    hsclib/msgid.h hsclib/ldebug.h
-
-hsclib/all_hscl.o : hsclib/tag_macr.c hsclib/tag_if.c hsclib/tag_hsc.c \
-    hsclib/tag_a.c hsclib/tag_misc.c hsclib/size.c hsclib/linit.c \
-    hsclib/include.c hsclib/parse.c hsclib/deftag.c hsclib/defattr.c \
-    hsclib/posteval.c hsclib/eval.c hsclib/uri.c hsclib/skip.c \
-    hsclib/input.c hsclib/lstatus.c hsclib/hscprc.c hsclib/idref.c \
-    hsclib/attrib.c hsclib/tag.c hsclib/entity.c hsclib/lmessage.c \
-    ugly/ustring.h ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
-    ugly/utypes.h hsclib/msgid.h hsclib/ldebug.h hsclib/parse.h \
-    hsclib/include.h hsclib/deftag.h hsclib/defattr.h hsclib/inc_tagcb.h \
-    hsclib/skip.h hsclib/eval.h hsclib/tag_if.h hsclib/tag_macr.h \
-    hsclib/uri.h ugly/fname.h hscprj/document.h hsclib/inc_base.h \
-    hsclib/tag_misc.h hsclib/tag_hsc.h hsclib/tag_a.h hsclib/input.h \
-    ugly/ufile.h hsclib/size.h hscprj/project.h hsclib/posteval.h \
-    hsclib/idref.h ugly/returncd.h ugly/ustrlist.h hsclib/tag.h \
-    hsclib/entity.h ugly/utypes.h ugly/dllist.h ugly/expstr.h ugly/udebug.h \
-    hsclib/hscprc.h hsclib/lstatus.h hsclib/lmessage.h hsclib/attrib.h \
-    ugly/ustring.h
-
-hsclib/attrib.o : hsclib/uri.h hsclib/eval.h hsclib/inc_base.h \
+hsc/output.o : hsc/output.c riscos/unixname.h ugly/returncd.h hsc/status.h \
+    hsc/global.h ugly/infile.h ugly/utypes.h hsc/hdebug.h ugly/ustring.h \
+    ugly/umemory.h ugly/expstr.h ugly/dllist.h hsclib/hsclib.h \
+    ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h \
+    hscprj/project.h hsclib/linit.h hsclib/include.h hsclib/inc_base.h \
     hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
     hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
-    ugly/ustring.h ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
-    ugly/utypes.h hsclib/ldebug.h hscprj/project.h ugly/utypes.h \
-    ugly/dllist.h ugly/expstr.h ugly/udebug.h
+    hsclib/ldebug.h
 
-hsclib/defattr.o : hsclib/input.h hsclib/eval.h hsclib/defattr.h \
-    hsclib/inc_base.h ugly/infile.h ugly/utypes.h hsclib/lstatus.h \
-    hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h hsclib/entity.h \
-    hsclib/attrib.h hscprj/document.h hsclib/msgid.h ugly/ustring.h \
-    ugly/umemory.h ugly/expstr.h ugly/dllist.h hsclib/ldebug.h \
-    ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h \
+hsc/status.o : hsc/status.c ugly/returncd.h hsc/status.h hsc/global.h \
+    ugly/infile.h ugly/utypes.h hsc/hdebug.h ugly/ustring.h ugly/umemory.h \
+    ugly/expstr.h ugly/dllist.h hsclib/hsclib.h ugly/dllist.h ugly/expstr.h \
+    ugly/utypes.h ugly/udebug.h hscprj/project.h hsclib/linit.h \
+    hsclib/include.h hsclib/inc_base.h hsclib/lstatus.h hsclib/lmessage.h \
+    hsclib/hscprc.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
+    hscprj/document.h hsclib/msgid.h hsclib/ldebug.h
+
+hsclib/all_hscl.o : hsclib/all_hscl.c hsclib/tag_macro.c hsclib/tag_if.c \
+    hsclib/tag_hsc.c hsclib/tag_a.c hsclib/tag_misc.c hsclib/size.c \
+    hsclib/linit.c hsclib/include.c hsclib/parse.c hsclib/deftag.c \
+    hsclib/defattr.c hsclib/posteval.c hsclib/eval.c hsclib/uri.c \
+    hsclib/skip.c hsclib/input.c hsclib/lstatus.c hsclib/hscprc.c \
+    hsclib/idref.c hsclib/attrib.c hsclib/tag.c hsclib/entity.c \
+    hsclib/lmessage.c ugly/ustring.h ugly/infile.h ugly/umemory.h \
+    ugly/expstr.h ugly/dllist.h ugly/utypes.h hsclib/msgid.h \
+    hsclib/ldebug.h ugly/ustrlist.h hsclib/parse.h hsclib/include.h \
+    hsclib/deftag.h hsclib/defattr.h hsclib/inc_tagcb.h hsclib/skip.h \
+    hsclib/eval.h hsclib/tag_if.h hsclib/tag_macro.h hsclib/uri.h \
+    ugly/fname.h hscprj/document.h hsclib/inc_base.h hsclib/tag_misc.h \
+    hsclib/tag_hsc.h hsclib/tag_a.h hsclib/input.h ugly/ufile.h \
+    hsclib/size.h hscprj/project.h hsclib/posteval.h hsclib/idref.h \
+    ugly/returncd.h hsclib/tag.h hsclib/entity.h ugly/utypes.h \
+    ugly/dllist.h ugly/expstr.h ugly/udebug.h ugly/ustring.h \
+    hsclib/hscprc.h hsclib/lstatus.h hsclib/lmessage.h hsclib/attrib.h
+
+hsclib/attrib.o : hsclib/attrib.c hsclib/uri.h hsclib/eval.h \
+    hsclib/inc_base.h hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h \
+    hsclib/tag.h hsclib/entity.h hsclib/attrib.h hscprj/document.h \
+    hsclib/msgid.h ugly/ustring.h ugly/infile.h ugly/umemory.h \
+    ugly/expstr.h ugly/dllist.h ugly/utypes.h hsclib/ldebug.h \
+    hscprj/project.h ugly/utypes.h ugly/dllist.h ugly/expstr.h \
+    ugly/udebug.h
+
+hsclib/defattr.o : hsclib/defattr.c hsclib/input.h hsclib/eval.h \
+    hsclib/defattr.h hsclib/inc_base.h ugly/infile.h ugly/utypes.h \
+    hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
+    hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
+    ugly/ustring.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
+    hsclib/ldebug.h ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h \
     hscprj/project.h
 
-hsclib/deftag.o : hsclib/skip.h hsclib/input.h hsclib/eval.h \
-    hsclib/defattr.h hsclib/inc_base.h hsclib/hscprc.h ugly/infile.h \
+hsclib/deftag.o : hsclib/deftag.c hsclib/skip.h hsclib/input.h \
+    hsclib/eval.h hsclib/defattr.h hsclib/inc_base.h hsclib/hscprc.h \
+    ugly/infile.h ugly/utypes.h hsclib/lstatus.h hsclib/lmessage.h \
+    hsclib/tag.h hsclib/entity.h hsclib/attrib.h hscprj/document.h \
+    hsclib/msgid.h ugly/ustring.h ugly/umemory.h ugly/expstr.h \
+    ugly/dllist.h hsclib/ldebug.h hscprj/project.h ugly/dllist.h \
+    ugly/expstr.h ugly/utypes.h ugly/udebug.h
+
+hsclib/entity.o : hsclib/entity.c hsclib/entity.h hsclib/inc_base.h \
+    hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
+    hsclib/attrib.h hscprj/document.h hsclib/msgid.h ugly/ustring.h \
+    ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
+    hsclib/ldebug.h hscprj/project.h ugly/utypes.h ugly/dllist.h \
+    ugly/expstr.h ugly/udebug.h
+
+hsclib/eval.o : hsclib/eval.c hsclib/uri.h hsclib/skip.h hsclib/input.h \
+    hsclib/eval.h hsclib/inc_base.h hsclib/hscprc.h ugly/infile.h \
     ugly/utypes.h hsclib/lstatus.h hsclib/lmessage.h hsclib/tag.h \
     hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
     ugly/ustring.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
     hsclib/ldebug.h hscprj/project.h ugly/dllist.h ugly/expstr.h \
     ugly/utypes.h ugly/udebug.h
 
-hsclib/entity.o : hsclib/entity.h hsclib/inc_base.h hsclib/lstatus.h \
-    hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h hsclib/attrib.h \
-    hscprj/document.h hsclib/msgid.h ugly/ustring.h ugly/infile.h \
+hsclib/gst.o : hsclib/gst.c ugly/ufile.h ugly/prginfo.h ugly/utime.h \
+    ugly/ustring.h ugly/umemory.h ugly/expstr.h ugly/udebug.h ugly/utypes.h \
+    ugly/fname.h ugly/returncd.h ugly/uargs.h ugly/ustrlist.h ugly/infile.h \
+    ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h ugly/umemory.h \
+    ugly/dllist.h ugly/ustring.h
+
+hsclib/hscprc.o : hsclib/hscprc.c hsclib/tag_if.h hsclib/idref.h \
+    hscprj/project.h ugly/returncd.h ugly/ustrlist.h ugly/fname.h \
+    hsclib/inc_base.h ugly/dllist.h ugly/ustring.h ugly/utypes.h \
+    ugly/expstr.h hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h \
+    hsclib/tag.h hsclib/entity.h hsclib/attrib.h hscprj/document.h \
+    hsclib/msgid.h ugly/ustring.h ugly/infile.h ugly/umemory.h \
+    ugly/expstr.h ugly/dllist.h ugly/utypes.h hsclib/ldebug.h ugly/udebug.h
+
+hsclib/idref.o : hsclib/idref.c hsclib/idref.h hscprj/document.h \
+    ugly/ustrlist.h hsclib/inc_base.h ugly/infile.h ugly/ustring.h \
     ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
+    hsclib/ldebug.h ugly/dllist.h ugly/ustring.h ugly/utypes.h \
+    hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
+    hsclib/entity.h hsclib/attrib.h hsclib/msgid.h ugly/expstr.h \
+    ugly/udebug.h hscprj/project.h
+
+hsclib/include.o : hsclib/include.c hsclib/include.h hsclib/parse.h \
+    hsclib/input.h ugly/fname.h ugly/ufile.h hsclib/inc_base.h \
+    ugly/infile.h ugly/utypes.h ugly/expstr.h ugly/utypes.h \
+    hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
+    hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
+    ugly/ustring.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
+    hsclib/ldebug.h ugly/dllist.h ugly/udebug.h hscprj/project.h
+
+hsclib/input.o : hsclib/input.c hsclib/inc_base.h hsclib/lstatus.h \
+    hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h hsclib/entity.h \
+    hsclib/attrib.h hscprj/document.h hsclib/msgid.h ugly/ustring.h \
+    ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
     hsclib/ldebug.h hscprj/project.h ugly/utypes.h ugly/dllist.h \
     ugly/expstr.h ugly/udebug.h
 
-hsclib/eval.o : hsclib/uri.h hsclib/skip.h hsclib/input.h hsclib/eval.h \
+hsclib/linit.o : hsclib/linit.c ugly/fname.h hsclib/tag_misc.h \
+    hsclib/tag_macro.h hsclib/tag_if.h hsclib/tag_hsc.h hsclib/tag_a.h \
+    hsclib/parse.h hsclib/include.h hsclib/deftag.h hsclib/defattr.h \
+    hsclib/inc_base.h ugly/expstr.h ugly/utypes.h hsclib/lstatus.h \
+    hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h hsclib/entity.h \
+    hsclib/attrib.h hscprj/document.h hsclib/msgid.h ugly/ustring.h \
+    ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
+    hsclib/ldebug.h ugly/udebug.h hscprj/project.h ugly/dllist.h
+
+hsclib/lmessage.o : hsclib/lmessage.c ugly/returncd.h hsclib/inc_base.h \
+    hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
+    hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
+    ugly/ustring.h ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
+    ugly/utypes.h hsclib/ldebug.h hscprj/project.h ugly/utypes.h \
+    ugly/dllist.h ugly/expstr.h ugly/udebug.h
+
+hsclib/lstatus.o : hsclib/lstatus.c hsclib/inc_base.h hsclib/lstatus.h \
+    hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h hsclib/entity.h \
+    hsclib/attrib.h hscprj/document.h hsclib/msgid.h ugly/ustring.h \
+    ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
+    hsclib/ldebug.h hscprj/project.h ugly/utypes.h ugly/dllist.h \
+    ugly/expstr.h ugly/udebug.h
+
+hsclib/parse.o : hsclib/parse.c hsclib/uri.h hsclib/size.h hsclib/skip.h \
+    hscprj/project.h hsclib/posteval.h hsclib/parse.h hsclib/input.h \
+    hsclib/include.h hsclib/idref.h hsclib/deftag.h hsclib/defattr.h \
+    hsclib/inc_base.h hsclib/hscprc.h ugly/infile.h ugly/utypes.h \
+    hsclib/lstatus.h hsclib/lmessage.h hsclib/tag.h hsclib/entity.h \
+    hsclib/attrib.h hscprj/document.h hsclib/msgid.h ugly/ustring.h \
+    ugly/umemory.h ugly/expstr.h ugly/dllist.h hsclib/ldebug.h \
+    ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h
+
+hsclib/posteval.o : hsclib/posteval.c hsclib/uri.h hsclib/idref.h \
+    hscprj/document.h hsclib/inc_base.h ugly/infile.h ugly/ustring.h \
+    ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
+    hsclib/ldebug.h hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h \
+    hsclib/tag.h hsclib/entity.h hsclib/attrib.h hsclib/msgid.h \
+    ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h \
+    hscprj/project.h
+
+hsclib/size.o : hsclib/size.c hsclib/uri.h hsclib/inc_base.h \
+    hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
+    hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
+    ugly/ustring.h ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
+    ugly/utypes.h hsclib/ldebug.h hscprj/project.h ugly/utypes.h \
+    ugly/dllist.h ugly/expstr.h ugly/udebug.h
+
+hsclib/skip.o : hsclib/skip.c hsclib/skip.h hsclib/input.h \
     hsclib/inc_base.h hsclib/hscprc.h ugly/infile.h ugly/utypes.h \
     hsclib/lstatus.h hsclib/lmessage.h hsclib/tag.h hsclib/entity.h \
     hsclib/attrib.h hscprj/document.h hsclib/msgid.h ugly/ustring.h \
@@ -533,123 +829,49 @@ hsclib/eval.o : hsclib/uri.h hsclib/skip.h hsclib/input.h hsclib/eval.h \
     hscprj/project.h ugly/dllist.h ugly/expstr.h ugly/utypes.h \
     ugly/udebug.h
 
-hsclib/hscprc.o : hsclib/tag_if.h hsclib/idref.h hscprj/project.h \
-    ugly/returncd.h ugly/ustrlist.h ugly/fname.h hsclib/inc_base.h \
-    ugly/dllist.h ugly/ustring.h ugly/utypes.h ugly/expstr.h \
-    hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
-    hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
-    ugly/ustring.h ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
-    ugly/utypes.h hsclib/ldebug.h ugly/udebug.h
-
-hsclib/idref.o : hsclib/idref.h hscprj/document.h ugly/ustrlist.h \
-    hsclib/inc_base.h ugly/infile.h ugly/ustring.h ugly/umemory.h \
-    ugly/expstr.h ugly/dllist.h ugly/utypes.h hsclib/ldebug.h ugly/dllist.h \
-    ugly/ustring.h ugly/utypes.h hsclib/lstatus.h hsclib/lmessage.h \
-    hsclib/hscprc.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
-    hsclib/msgid.h ugly/expstr.h ugly/udebug.h hscprj/project.h
-
-hsclib/include.o : hsclib/include.h hsclib/parse.h hsclib/input.h \
-    ugly/fname.h ugly/ufile.h hsclib/inc_base.h ugly/infile.h ugly/utypes.h \
-    ugly/expstr.h ugly/utypes.h hsclib/lstatus.h hsclib/lmessage.h \
-    hsclib/hscprc.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
-    hscprj/document.h hsclib/msgid.h ugly/ustring.h ugly/umemory.h \
-    ugly/expstr.h ugly/dllist.h hsclib/ldebug.h ugly/dllist.h ugly/udebug.h \
-    hscprj/project.h
-
-hsclib/input.o : hsclib/inc_base.h hsclib/lstatus.h hsclib/lmessage.h \
-    hsclib/hscprc.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
-    hscprj/document.h hsclib/msgid.h ugly/ustring.h ugly/infile.h \
-    ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
-    hsclib/ldebug.h hscprj/project.h ugly/utypes.h ugly/dllist.h \
-    ugly/expstr.h ugly/udebug.h
-
-hsclib/linit.o : ugly/fname.h hsclib/tag_misc.h hsclib/tag_macr.h \
-    hsclib/tag_if.h hsclib/tag_hsc.h hsclib/tag_a.h hsclib/parse.h \
-    hsclib/include.h hsclib/deftag.h hsclib/inc_base.h ugly/expstr.h \
-    ugly/utypes.h hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h \
-    hsclib/tag.h hsclib/entity.h hsclib/attrib.h hscprj/document.h \
-    hsclib/msgid.h ugly/ustring.h ugly/infile.h ugly/umemory.h \
-    ugly/expstr.h ugly/dllist.h ugly/utypes.h hsclib/ldebug.h ugly/udebug.h \
-    hscprj/project.h ugly/dllist.h
-
-hsclib/lmessage.o : ugly/returncd.h hsclib/inc_base.h hsclib/lstatus.h \
-    hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h hsclib/entity.h \
-    hsclib/attrib.h hscprj/document.h hsclib/msgid.h ugly/ustring.h \
-    ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
-    hsclib/ldebug.h hscprj/project.h ugly/utypes.h ugly/dllist.h \
-    ugly/expstr.h ugly/udebug.h
-
-hsclib/lstatus.o : hsclib/inc_base.h hsclib/lstatus.h hsclib/lmessage.h \
-    hsclib/hscprc.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
-    hscprj/document.h hsclib/msgid.h ugly/ustring.h ugly/infile.h \
-    ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
-    hsclib/ldebug.h hscprj/project.h ugly/utypes.h ugly/dllist.h \
-    ugly/expstr.h ugly/udebug.h
-
-hsclib/parse.o : hsclib/uri.h hsclib/size.h hsclib/skip.h hscprj/project.h \
-    hsclib/posteval.h hsclib/parse.h hsclib/input.h hsclib/include.h \
-    hsclib/idref.h hsclib/deftag.h hsclib/defattr.h hsclib/inc_base.h \
-    hsclib/hscprc.h ugly/infile.h ugly/utypes.h hsclib/lstatus.h \
-    hsclib/lmessage.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
-    hscprj/document.h hsclib/msgid.h ugly/ustring.h ugly/umemory.h \
-    ugly/expstr.h ugly/dllist.h hsclib/ldebug.h ugly/dllist.h ugly/expstr.h \
-    ugly/utypes.h ugly/udebug.h
-
-hsclib/posteval.o : hsclib/uri.h hsclib/idref.h hscprj/document.h \
-    hsclib/inc_base.h ugly/infile.h ugly/ustring.h ugly/umemory.h \
-    ugly/expstr.h ugly/dllist.h ugly/utypes.h hsclib/ldebug.h \
-    hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h \
-    hsclib/entity.h hsclib/attrib.h hsclib/msgid.h ugly/dllist.h \
-    ugly/expstr.h ugly/utypes.h ugly/udebug.h hscprj/project.h
-
-hsclib/size.o : hsclib/uri.h hsclib/inc_base.h hsclib/lstatus.h \
-    hsclib/lmessage.h hsclib/hscprc.h hsclib/tag.h hsclib/entity.h \
-    hsclib/attrib.h hscprj/document.h hsclib/msgid.h ugly/ustring.h \
-    ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
-    hsclib/ldebug.h hscprj/project.h ugly/utypes.h ugly/dllist.h \
-    ugly/expstr.h ugly/udebug.h
-
-hsclib/skip.o : hsclib/skip.h hsclib/input.h hsclib/inc_base.h \
-    hsclib/hscprc.h ugly/infile.h ugly/utypes.h hsclib/lstatus.h \
-    hsclib/lmessage.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
-    hscprj/document.h hsclib/msgid.h ugly/ustring.h ugly/umemory.h \
-    ugly/expstr.h ugly/dllist.h hsclib/ldebug.h hscprj/project.h \
-    ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h
-
-hsclib/tag.o : hsclib/tag.h hsclib/defattr.h hsclib/inc_base.h \
+hsclib/tag.o : hsclib/tag.c hsclib/tag.h hsclib/defattr.h hsclib/inc_base.h \
     hsclib/lstatus.h hsclib/lmessage.h hsclib/hscprc.h hsclib/entity.h \
     hsclib/attrib.h hscprj/document.h hsclib/msgid.h ugly/ustring.h \
     ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
     hsclib/ldebug.h hscprj/project.h ugly/utypes.h ugly/dllist.h \
     ugly/expstr.h ugly/udebug.h
 
-hsclib/tag_a.o : hscprj/document.h hsclib/inc_tagcb.h ugly/infile.h \
-    ugly/ustring.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
-    hsclib/ldebug.h hsclib/skip.h hsclib/input.h hsclib/inc_base.h \
-    ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h hsclib/hscprc.h \
-    hsclib/lstatus.h hsclib/lmessage.h hsclib/tag.h hsclib/entity.h \
-    hsclib/attrib.h hsclib/msgid.h hscprj/project.h
+hsclib/tag_a.o : hsclib/tag_a.c hscprj/document.h hsclib/inc_tagcb.h \
+    ugly/infile.h ugly/ustring.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
+    ugly/utypes.h hsclib/ldebug.h hsclib/skip.h hsclib/input.h \
+    hsclib/inc_base.h ugly/dllist.h ugly/expstr.h ugly/utypes.h \
+    ugly/udebug.h hsclib/hscprc.h hsclib/lstatus.h hsclib/lmessage.h \
+    hsclib/tag.h hsclib/entity.h hsclib/attrib.h hsclib/msgid.h \
+    hscprj/project.h
 
-hsclib/tag_hsc.o : hsclib/tag_if.h hsclib/tag_macr.h hsclib/uri.h \
-    hsclib/parse.h hsclib/include.h hsclib/eval.h hsclib/deftag.h \
-    hsclib/defattr.h ugly/fname.h hsclib/inc_tagcb.h ugly/expstr.h \
-    ugly/utypes.h hsclib/skip.h hsclib/input.h hsclib/inc_base.h \
-    ugly/udebug.h hsclib/hscprc.h ugly/infile.h ugly/utypes.h \
-    hsclib/lstatus.h hsclib/lmessage.h hsclib/tag.h hsclib/entity.h \
+hsclib/tag_hsc.o : hsclib/tag_hsc.c hsclib/tag_if.h hsclib/tag_macro.h \
+    hsclib/uri.h hsclib/parse.h hsclib/include.h hsclib/eval.h \
+    hsclib/deftag.h hsclib/defattr.h ugly/fname.h hsclib/inc_tagcb.h \
+    ugly/expstr.h ugly/utypes.h hsclib/skip.h hsclib/input.h \
+    hsclib/inc_base.h ugly/udebug.h hsclib/hscprc.h ugly/infile.h \
+    ugly/utypes.h hsclib/lstatus.h hsclib/lmessage.h hsclib/tag.h \
+    hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
+    ugly/ustring.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
+    hsclib/ldebug.h hscprj/project.h ugly/dllist.h
+
+hsclib/tag_if.o : hsclib/tag_if.c hsclib/skip.h hsclib/parse.h \
+    hsclib/eval.h hsclib/inc_tagcb.h hsclib/hscprc.h ugly/infile.h \
+    ugly/utypes.h hsclib/input.h hsclib/inc_base.h hscprj/project.h \
+    hsclib/tag.h hsclib/ldebug.h ugly/dllist.h ugly/expstr.h ugly/utypes.h \
+    ugly/udebug.h hsclib/lstatus.h hsclib/lmessage.h hsclib/entity.h \
     hsclib/attrib.h hscprj/document.h hsclib/msgid.h ugly/ustring.h \
-    ugly/umemory.h ugly/expstr.h ugly/dllist.h hsclib/ldebug.h \
-    hscprj/project.h ugly/dllist.h
+    ugly/umemory.h ugly/expstr.h ugly/dllist.h
 
-hsclib/tag_if.o : hsclib/skip.h hsclib/parse.h hsclib/eval.h \
-    hsclib/inc_tagcb.h hsclib/hscprc.h ugly/infile.h ugly/utypes.h \
-    hsclib/input.h hsclib/inc_base.h hscprj/project.h hsclib/tag.h \
-    hsclib/ldebug.h ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h \
-    hsclib/lstatus.h hsclib/lmessage.h hsclib/entity.h hsclib/attrib.h \
-    hscprj/document.h hsclib/msgid.h ugly/ustring.h ugly/umemory.h \
-    ugly/expstr.h ugly/dllist.h
+hsclib/tag_macro.o : hsclib/tag_macro.c ugly/ustrlist.h hsclib/parse.h \
+    hsclib/include.h hsclib/deftag.h hsclib/defattr.h hsclib/inc_tagcb.h \
+    ugly/dllist.h ugly/ustring.h ugly/utypes.h hsclib/skip.h hsclib/input.h \
+    hsclib/inc_base.h ugly/udebug.h hsclib/hscprc.h ugly/infile.h \
+    ugly/utypes.h hsclib/lstatus.h hsclib/lmessage.h hsclib/tag.h \
+    hsclib/entity.h hsclib/attrib.h hscprj/document.h hsclib/msgid.h \
+    ugly/ustring.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
+    hsclib/ldebug.h hscprj/project.h ugly/expstr.h
 
-hsclib/tag_macr.o : hsclib/parse.h hsclib/include.h hsclib/deftag.h \
-    hsclib/defattr.h hsclib/inc_tagcb.h hsclib/skip.h hsclib/input.h \
+hsclib/tag_misc.o : hsclib/tag_misc.c hsclib/skip.h hsclib/parse.h \
     hsclib/inc_base.h hsclib/hscprc.h ugly/infile.h ugly/utypes.h \
     hsclib/lstatus.h hsclib/lmessage.h hsclib/tag.h hsclib/entity.h \
     hsclib/attrib.h hscprj/document.h hsclib/msgid.h ugly/ustring.h \
@@ -657,122 +879,119 @@ hsclib/tag_macr.o : hsclib/parse.h hsclib/include.h hsclib/deftag.h \
     hscprj/project.h ugly/dllist.h ugly/expstr.h ugly/utypes.h \
     ugly/udebug.h
 
-hsclib/tag_misc.o : hsclib/skip.h hsclib/parse.h hsclib/inc_base.h \
-    hsclib/hscprc.h ugly/infile.h ugly/utypes.h hsclib/lstatus.h \
-    hsclib/lmessage.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
-    hscprj/document.h hsclib/msgid.h ugly/ustring.h ugly/umemory.h \
-    ugly/expstr.h ugly/dllist.h hsclib/ldebug.h hscprj/project.h \
-    ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h
-
-hsclib/uri.o : hsclib/uri.h hscprj/project.h hsclib/idref.h \
+hsclib/uri.o : hsclib/uri.c hsclib/uri.h hscprj/project.h hsclib/idref.h \
     hsclib/inc_base.h ugly/fname.h hsclib/lstatus.h hsclib/lmessage.h \
     hsclib/hscprc.h hsclib/tag.h hsclib/entity.h hsclib/attrib.h \
     hscprj/document.h hsclib/msgid.h ugly/ustring.h ugly/infile.h \
     ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
     hsclib/ldebug.h ugly/expstr.h ugly/utypes.h ugly/dllist.h ugly/udebug.h
 
-hscprj/all_hscp.o : hscprj/writeprj.c hscprj/readprj.c hscprj/project.c \
-    hscprj/license.c hscprj/document.c hscprj/project.h hscprj/document.h \
+hscprj/all_hscp.o : hscprj/all_hscp.c hscprj/writeprj.c hscprj/readprj.c \
+    hscprj/project.c hscprj/license.c hscprj/document.c hscprj/project.h \
+    hscprj/document.h ugly/ustring.h ugly/infile.h ugly/umemory.h \
+    ugly/expstr.h ugly/dllist.h ugly/utypes.h hscprj/pdefs.h \
+    hscprj/pdebug.h hsclib/ldebug.h ugly/utypes.h ugly/dllist.h \
+    ugly/expstr.h ugly/udebug.h
+
+hscprj/document.o : hscprj/document.c hscprj/document.h ugly/infile.h \
+    ugly/ustring.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
+    hsclib/ldebug.h ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h
+
+hscprj/license.o : hscprj/license.c ugly/utypes.h ugly/udebug.h
+
+hscprj/project.o : hscprj/project.c hscprj/project.h hscprj/document.h \
+    ugly/ustring.h ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
+    ugly/utypes.h hscprj/pdebug.h hsclib/ldebug.h ugly/utypes.h \
+    ugly/dllist.h ugly/expstr.h ugly/udebug.h
+
+hscprj/readprj.o : hscprj/readprj.c hscprj/project.h hscprj/document.h \
     ugly/ustring.h ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
     ugly/utypes.h hscprj/pdefs.h hscprj/pdebug.h hsclib/ldebug.h \
     ugly/utypes.h ugly/dllist.h ugly/expstr.h ugly/udebug.h
 
-hscprj/document.o : hscprj/document.h ugly/infile.h ugly/ustring.h \
-    ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
-    hsclib/ldebug.h ugly/dllist.h ugly/expstr.h ugly/utypes.h ugly/udebug.h
+hscprj/writeprj.o : hscprj/writeprj.c hscprj/project.h hscprj/document.h \
+    ugly/ustring.h ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h \
+    ugly/utypes.h hscprj/pdefs.h hscprj/pdebug.h hsclib/ldebug.h \
+    ugly/utypes.h ugly/dllist.h ugly/expstr.h ugly/udebug.h
 
-hscprj/license.o : ugly/utypes.h ugly/udebug.h
-
-hscprj/project.o : hscprj/project.h hscprj/document.h ugly/ustring.h \
-    ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
-    hscprj/pdebug.h hsclib/ldebug.h ugly/utypes.h ugly/dllist.h \
+hsctools/all_depp.o : hsctools/all_depp.c hsctools/hscdepp.c \
+    hscprj/license.h hscprj/project.h hscprj/document.h ugly/returncd.h \
+    ugly/prginfo.h ugly/uargs.h ugly/infile.h ugly/expstr.h ugly/dllist.h \
+    ugly/ustring.h hsctools/depp_rev.h ugly/umemory.h ugly/utypes.h \
+    hsclib/ldebug.h ugly/umemory.h ugly/utypes.h ugly/dllist.h \
     ugly/expstr.h ugly/udebug.h
 
-hscprj/readprj.o : hscprj/project.h hscprj/document.h ugly/ustring.h \
-    ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
-    hscprj/pdefs.h hscprj/pdebug.h hsclib/ldebug.h ugly/utypes.h \
-    ugly/dllist.h ugly/expstr.h ugly/udebug.h
+hsctools/all_pitt.o : hsctools/all_pitt.c hsctools/hscpitt.c \
+    hscprj/license.h hscprj/project.h hscprj/document.h ugly/returncd.h \
+    ugly/prginfo.h ugly/ustrlist.h ugly/uargs.h ugly/infile.h ugly/expstr.h \
+    ugly/dllist.h ugly/ustring.h hsctools/pitt_rev.h ugly/umemory.h \
+    ugly/utypes.h hsclib/ldebug.h ugly/dllist.h ugly/ustring.h \
+    ugly/utypes.h ugly/umemory.h ugly/expstr.h ugly/udebug.h
 
-hscprj/writeprj.o : hscprj/project.h hscprj/document.h ugly/ustring.h \
-    ugly/infile.h ugly/umemory.h ugly/expstr.h ugly/dllist.h ugly/utypes.h \
-    hscprj/pdefs.h hscprj/pdebug.h hsclib/ldebug.h ugly/utypes.h \
-    ugly/dllist.h ugly/expstr.h ugly/udebug.h
-
-hsctools/all_depp.o : hsctools/hscdepp.c hscprj/license.h hscprj/project.h \
+hsctools/hscdepp.o : hsctools/hscdepp.c hscprj/license.h hscprj/project.h \
     hscprj/document.h ugly/returncd.h ugly/prginfo.h ugly/uargs.h \
     ugly/infile.h ugly/expstr.h ugly/dllist.h ugly/ustring.h \
     hsctools/depp_rev.h ugly/umemory.h ugly/utypes.h hsclib/ldebug.h \
     ugly/umemory.h ugly/utypes.h ugly/dllist.h ugly/expstr.h ugly/udebug.h
 
-hsctools/all_pitt.o : hsctools/hscpitt.c hscprj/license.h hscprj/project.h \
+hsctools/hscpitt.o : hsctools/hscpitt.c hscprj/license.h hscprj/project.h \
     hscprj/document.h ugly/returncd.h ugly/prginfo.h ugly/ustrlist.h \
     ugly/uargs.h ugly/infile.h ugly/expstr.h ugly/dllist.h ugly/ustring.h \
     hsctools/pitt_rev.h ugly/umemory.h ugly/utypes.h hsclib/ldebug.h \
     ugly/dllist.h ugly/ustring.h ugly/utypes.h ugly/umemory.h ugly/expstr.h \
     ugly/udebug.h
 
-hsctools/hscdepp.o : hscprj/license.h hscprj/project.h hscprj/document.h \
-    ugly/returncd.h ugly/prginfo.h ugly/uargs.h ugly/infile.h ugly/expstr.h \
-    ugly/dllist.h ugly/ustring.h hsctools/depp_rev.h ugly/umemory.h \
-    ugly/utypes.h hsclib/ldebug.h ugly/umemory.h ugly/utypes.h \
-    ugly/dllist.h ugly/expstr.h ugly/udebug.h
+ugly/all_ugly.o : ugly/all_ugly.c ugly/prginfo.c ugly/infile.c \
+    ugly/ustrlist.c ugly/uargs.c ugly/ufile.c ugly/dllist.c ugly/fname.c \
+    ugly/expstr.c ugly/ustring.c ugly/umemory.c ugly/udebug.h ugly/utypes.h \
+    ugly/umemory.h ugly/infile.h ugly/fname.h ugly/ustring.h ugly/expstr.h \
+    ugly/ustrlist.h ugly/args_hlp.c ugly/args_prp.c ugly/args_set.c \
+    ugly/args_fre.c ugly/uargs.h ugly/dllist.h ugly/ufile.h ugly/udebug.h
 
-hsctools/hscpitt.o : hscprj/license.h hscprj/project.h hscprj/document.h \
-    ugly/returncd.h ugly/prginfo.h ugly/ustrlist.h ugly/uargs.h \
-    ugly/infile.h ugly/expstr.h ugly/dllist.h ugly/ustring.h \
-    hsctools/pitt_rev.h ugly/umemory.h ugly/utypes.h hsclib/ldebug.h \
-    ugly/dllist.h ugly/ustring.h ugly/utypes.h ugly/umemory.h ugly/expstr.h \
+ugly/args_fre.o : ugly/args_fre.c ugly/uargs.h ugly/dllist.h ugly/ustring.h \
+    ugly/umemory.h ugly/utypes.h ugly/udebug.h
+
+ugly/args_hlp.o : ugly/args_hlp.c ugly/uargs.h ugly/dllist.h ugly/ustring.h \
+    ugly/umemory.h ugly/utypes.h ugly/udebug.h
+
+ugly/args_prp.o : ugly/args_prp.c ugly/uargs.h ugly/dllist.h ugly/ustring.h \
+    ugly/umemory.h ugly/utypes.h ugly/udebug.h
+
+ugly/args_set.o : ugly/args_set.c ugly/uargs.h ugly/dllist.h ugly/ustring.h \
+    ugly/umemory.h ugly/ufile.h ugly/utypes.h ugly/expstr.h ugly/udebug.h
+
+ugly/dllist.o : ugly/dllist.c ugly/dllist.h ugly/umemory.h ugly/utypes.h \
     ugly/udebug.h
 
-ugly/all_ugly.o : ugly/prginfo.c ugly/infile.c ugly/ustrlist.c ugly/uargs.c \
-    ugly/ufile.c ugly/dllist.c ugly/fname.c ugly/expstr.c ugly/ustring.c \
-    ugly/umemory.c ugly/udebug.h ugly/utypes.h ugly/umemory.h ugly/infile.h \
-    ugly/fname.h ugly/ustring.h ugly/expstr.h ugly/ustrlist.h \
-    ugly/args_hlp.c ugly/args_prp.c ugly/args_set.c ugly/args_fre.c \
-    ugly/uargs.h ugly/dllist.h ugly/ufile.h ugly/udebug.h
-
-ugly/args_fre.o : ugly/uargs.h ugly/dllist.h ugly/ustring.h ugly/umemory.h \
+ugly/expstr.o : ugly/expstr.c ugly/expstr.h ugly/umemory.h ugly/ustring.h \
     ugly/utypes.h ugly/udebug.h
 
-ugly/args_hlp.o : ugly/uargs.h ugly/dllist.h ugly/ustring.h ugly/umemory.h \
-    ugly/utypes.h ugly/udebug.h
+ugly/fname.o : ugly/fname.c ugly/fname.h ugly/expstr.h ugly/ustring.h \
+    ugly/umemory.h ugly/utypes.h ugly/udebug.h
 
-ugly/args_prp.o : ugly/uargs.h ugly/dllist.h ugly/ustring.h ugly/umemory.h \
-    ugly/utypes.h ugly/udebug.h
+ugly/hello.o : ugly/hello.c
 
-ugly/args_set.o : ugly/uargs.h ugly/dllist.h ugly/ustring.h ugly/umemory.h \
-    ugly/ufile.h ugly/utypes.h ugly/expstr.h ugly/udebug.h
+ugly/infile.o : ugly/infile.c ugly/umemory.h ugly/infile.h ugly/fname.h \
+    ugly/ustring.h ugly/expstr.h ugly/utypes.h ugly/dllist.h ugly/udebug.h
 
-ugly/dllist.o : ugly/dllist.h ugly/umemory.h ugly/utypes.h ugly/udebug.h
+ugly/prginfo.o : ugly/prginfo.c ugly/utypes.h ugly/udebug.h
 
-ugly/expstr.o : ugly/expstr.h ugly/umemory.h ugly/ustring.h ugly/utypes.h \
-    ugly/udebug.h
-
-ugly/fname.o : ugly/fname.h ugly/expstr.h ugly/ustring.h ugly/umemory.h \
-    ugly/utypes.h ugly/udebug.h
-
-ugly/hello.o :
-
-ugly/infile.o : ugly/umemory.h ugly/infile.h ugly/fname.h ugly/ustring.h \
-    ugly/expstr.h ugly/utypes.h ugly/dllist.h ugly/udebug.h
-
-ugly/prginfo.o : ugly/utypes.h ugly/udebug.h
-
-ugly/uargs.o : ugly/args_hlp.c ugly/args_prp.c ugly/args_set.c \
+ugly/uargs.o : ugly/uargs.c ugly/args_hlp.c ugly/args_prp.c ugly/args_set.c \
     ugly/args_fre.c ugly/uargs.h ugly/dllist.h ugly/ustring.h \
     ugly/umemory.h ugly/utypes.h ugly/ufile.h ugly/udebug.h ugly/expstr.h
 
-ugly/ufile.o : ugly/ufile.h ugly/expstr.h ugly/ustring.h ugly/umemory.h \
-    ugly/utypes.h ugly/udebug.h
+ugly/ufile.o : ugly/ufile.c ugly/ufile.h ugly/expstr.h ugly/ustring.h \
+    ugly/umemory.h ugly/utypes.h ugly/udebug.h
 
-ugly/umemory.o : ugly/umemory.h ugly/utypes.h ugly/udebug.h
+ugly/umemory.o : ugly/umemory.c ugly/umemory.h ugly/utypes.h ugly/udebug.h
 
-ugly/ustring.o : ugly/ustring.h ugly/umemory.h ugly/utypes.h ugly/udebug.h
+ugly/ustring.o : ugly/ustring.c ugly/ustring.h ugly/umemory.h ugly/utypes.h \
+    ugly/udebug.h
 
-ugly/ustrlist.o : ugly/ustrlist.h ugly/dllist.h ugly/ustring.h \
-    ugly/utypes.h ugly/udebug.h
+ugly/ustrlist.o : ugly/ustrlist.c ugly/ustrlist.h ugly/dllist.h \
+    ugly/ustring.h ugly/utypes.h ugly/udebug.h
 
-ugly/utime.o : ugly/utime.h ugly/expstr.h ugly/ustring.h ugly/umemory.h \
-    ugly/utypes.h ugly/udebug.h
+ugly/utime.o : ugly/utime.c ugly/utime.h ugly/expstr.h ugly/ustring.h \
+    ugly/umemory.h ugly/utypes.h ugly/udebug.h
 
 # --- DO NOT MODIFY THIS LINE -- AUTO-DEPENDS PRECEDE ---

@@ -14,7 +14,7 @@
 <$macro OPTN_IGNORE><CODE><A HREF=":options.html#ignore">IGNORE</A></CODE></$macro>
 
 <$macro msg id:string/r name:string class:enum("note|style|port|warning|error|fatal") undoc:bool>
-<P><DT><$if COND=(undoc)><STRONG>message <(id)>:</STRONG><DD>Ununsed or undocumented.
+<DT><$if COND=(undoc)><STRONG>message <(id)>:</STRONG><DD>Unused or undocumented.
 <$else><A NAME=("message."+id)><STRONG><$if COND=(class="style")>bad style
 <$elseif COND=(class="port")>portability problem
 <$elseif COND=(class="fatal")>fatal error
@@ -39,7 +39,7 @@ There are also possibilities to change the rendering of messages and
 redirect them to a file, making it easy to integrate <hsc> into
 existing developer environments.
 
-<A NAME="elements"><H2>Message elements</H2></A>
+<H2><A NAME="elements">Message elements</A></H2>
 By default, messages show up as seen below:
 
 <BLOCKQUOTE>
@@ -49,12 +49,13 @@ By default, messages show up as seen below:
 with being<UL>
 
 <LI><CODE>file</CODE> the name of the input file that caused message
-<LI><CODE>line#</CODE> and <CODE>colum#</CODE> the position in input file that caused error
+<LI><CODE>line#</CODE> and <CODE>colum#</CODE> the position
+    in input file
 <LI><CODE>class</CODE> the message class, 
     one of <MSG_NOTE>, <MSG_STYLE>, <MSG_PORT>, <MSG_WARN>, <MSG_ERR> or <MSG_FERR>.
     See below for details about message classes.
-<LI><CODE>message</CODE> the message text, which consists of a description what 
-    has caused the message
+<LI><CODE>message</CODE> the message text, which describes what
+    happened
 </UL>
 
 For example, a typical message would be:
@@ -62,17 +63,17 @@ For example, a typical message would be:
     hugo.hsc (17,23): Warning 11: unknown tag <SEPP>
 </$source>
 
-<A NAME="classes"><H2>Message classes</H2></A>
+<H2><A NAME="classes">Message classes</A></H2>
 
 <STRONG><A NAME="msg_note">Note</A></STRONG> is a message only for the
 users information. It can be suppressed using <OPTN_IGNORE>.
 <P>
 <STRONG><A NAME="msg_style">Bad-style</A></STRONG> informs the user that
-his altough legal html-code includes constructs that indicate a bad style.
+his although legal html-code includes constructs that indicate a bad style.
 It can be suppressed using <OPTN_IGNORE>.
 <P>
 <STRONG><A NAME="msg_port">Portability-problem</A></STRONG> informs the
-user that his altough legal html-code includes constructs can lead to problems
+user that his although legal html-code includes constructs can lead to problems
 on old or buggy browsers.
 It can be suppressed using <OPTN_IGNORE>.
 <P>
@@ -89,7 +90,11 @@ terrible has happened and there is no way to continue the conversion.
 No output is written.
 <P>
 
-<A NAME="options"><H2>Message options</H2></A>
+There is also another class called <qq>panic messages</qq>, which
+are used by <hsc> to report internal errors. To find out more
+about them, look at the chapter about <ln_bugs>.
+
+<H2><A NAME="options">Message options</A></H2>
 
 There are several CLI options to modify the behavior of <hsc>'s messages:
 <UL>
@@ -107,13 +112,26 @@ you only let them show up on the screen (and don't use any IDE)
 
 <HR>
 
-<A NAME="list"><H2>List of messages</H2></A>
+<H2><A NAME="list">List of messages</A></H2>
 
-Below you can find a list of messages that might show up when processiong
-hsc-sources. Most of them also include a short explanation what could
+Below you can find a list of messages that might show up when processing
+hsc sources. Most of them also include a short explanation what could
 have caused the problem and how to fix it.
-However, this is not a html-tutorial. To fully
-understand these messages requires some experience from the user.
+However, this is not a html-tutorial. Fully
+understanding these messages requires some experience from the user.
+
+<P>[ <A HREF="#message.1">1-10</A>
+   | <A HREF="#message.11">11-20</A>
+   | <A HREF="#message.21">21-30</A>
+   | <A HREF="#message.31">31-40</A>
+   | <A HREF="#message.41">41-50</A>
+   | <A HREF="#message.51">51-60</A>
+   | <A HREF="#message.61">61-70</A>
+   | <A HREF="#message.71">71-80</A>
+   | <A HREF="#message.71">81-..</A>
+   ]
+</P>
+
 <DL>
 <MSG ID="1" CLASS="warning" NAME="unable to open project-file">
 
@@ -154,7 +172,7 @@ showing up in a document should be <TG>H1</TG>.
 <MSG ID="10" CLASS="style" NAME='"click here" syndrome detected'>
 A keyword defined with the special attribute <CODE>HSC.CLICK-HERE</CODE>
 has been found within the text inside an anchor specification.<P>
-Ok, now again in english: you used some term like "Click here" inside
+Ok, now again in English: you used some term like "Click here" inside
 the text describing a link. This is very clumsy and should be avoided;
 see <A HREF="http://www.cs.cmu.edu/~tilt/cgh/index.html#linktext">Composing
 Good HTML</A> for details.
@@ -166,12 +184,12 @@ You refered to an unknown tag or macro.
 A tag that is expected to occure only once appeared at least twice.
 Remove all unneccessary occurences of the tag.
 
-<MSG ID="13" CLASS="warning" NAME="unmatched end-<instag>">
+<MSG ID="13" CLASS="error" NAME="unmatched end-<instag>">
 You called a end-tag without using the corresponding start-tag
 before.
 
 <MSG ID="14" CLASS="warning" NAME="illegal end-tag nesting">
-A end-tag appeard where a different end-tag was expected to
+A end-tag appeared where a different end-tag was expected to
 appear before. Example: instead of
 <$SOURCE PRE>
         <B><I>bold and italic</B></I>
@@ -200,7 +218,7 @@ made a typo, or the entity has not been defined within
 
 <MSG ID="19" CLASS="warning" NAME='";" expected'>
 
-A <semicolon> has been expected, but didn't occure. For instance,
+A <semicolon> has been expected, but didn't occur. For instance,
 you could have an entity <qq><CODE>&amp;uuml</CODE></qq> instead of
 <qq><CODE>&amp;uuml;</CODE></qq>.
 
@@ -215,7 +233,7 @@ You passed a value to an attribute, but did not embed it into single
 or double quotes. This can lead to problems with older browsers.
 
 <MSG ID="23" CLASS="error" NAME="empty reference to <insattr>">
-An attribute referes to an attribute that has been defined, but no
+An attribute refers to an attribute that has been defined, but no
 value has been set for. Usually, you try to refer to an attribute
 inside a macro, that no value has been passed to within the call
 of the macro.
@@ -244,7 +262,9 @@ You tried to assign a new value to an attribute declared as constant.
 That is, the <A HREF="macro/attrib.html#modifier">attribute option</A>
 <CODE>/CONST</CODE> has been specified when defining it earlier.
 
-<MSG ID="28" CLASS="error" NAME="" UNDOC>
+<MSG ID="28" CLASS="fatal" NAME="no content within current context">
+You tried to call <ln_content> outside any container macro.
+
 <MSG ID="29" CLASS="error" NAME="tag &lt;A&gt; without HREF or NAME">
 An anchor tag has been specified without one of the required attributes
 <CODE>HREF</CODE> or <CODE>NAME</CODE>.
@@ -255,7 +275,7 @@ A "greater than" sign appeared inside the text. You should write
 an error calling a tag, and <hsc>'s parser couln't recover.
 
 <MSG ID="31" CLASS="error" NAME='expected "<I>element_expected</I>", found "<I>element_found</I>"'>
-A syntax element did not occure where it has been expected.
+A syntax element did not occur where it has been expected.
 
 <MSG ID="32" CLASS="error" NAME="" UNDOC>
 <MSG ID="33" CLASS="warning" NAME="linefeed found inside string">
@@ -264,14 +284,28 @@ A syntax element did not occure where it has been expected.
 <MSG ID="35" CLASS="error" NAME="unknown <insval> for enumerator <insattr>">
 You tried to set an enumerator to a value it doesn't support.
 
-<MSG ID="36" CLASS="error" NAME="unexpected end of line">
+<MSG ID="36" CLASS="warning" NAME="server relative URI to <I>uri</I>">
+<P>An URI-attribute started with a <slash> (like for example
+<qqc>/image/next.png</qqc>), denoting a so called server relative URI.
+This is a really braindead concept, which might help to save a few
+bytes in your html-object, but will make your documents unreadable
+if stored on your local disk, as they depend on a specific server
+structure.</P>
+
+<P>Normally, <hsc> is unable to validate links or obtain image sizes
+of data referenced using server relative URIs because of reasons that
+should be obvious to everyone.</P>
+
+<P>If you because of some obscure reasons (or simply stupidity) insist
+on using URIs of such kind, you can set the CLI option <op_serverdir>
+to specifiy the root directory for server relative URIs.</P>
 
 <MSG ID="37" CLASS="warning" NAME="<instag> is obsolete">
 The tag was defined within some old html-version, but should
 not be used any more (eg. <TG>LISTING</TG>).
 
 <MSG ID="38" CLASS="warning" NAME="<instag> is only used by jerks">
-This tag is no legal html-tag and is only supportet by special
+This tag is no legal html-tag and is only supported by special
 browsers.
 
 <MSG ID="39" CLASS="error" NAME="<I>custom user message</I>">
@@ -309,12 +343,12 @@ Informs you that a special character (non-7-bit-ASCII) has been replaced
 by it's corresponding entity.
 
 <MSG ID="47" CLASS="error" NAME="illegal white space">
-A white space occured at a place where it was not supposed to.
+A white space occurred at a place where it was not supposed to.
 
 <MSG ID="48" CLASS="port" NAME="line feed inside sgml-comment">
 <MSG ID="49" CLASS="port" NAME='"&gt;" inside sgml-comment'>
 <MSG ID="50" CLASS="port" NAME="sgml-comment ends inside quotes">
-The messages#47 to #50 touch problems that are known bugs of 
+The messages#48 to #50 point out problems that are known bugs of
 several browsers. A general comment on sgml-comments: Try to avoid
 them, use the <A HREF="features/spctags.html#comments"><TG>* <I>comment</I> *</TG></A>
 tag instead.
@@ -334,10 +368,13 @@ If it still is there, then you are refering to documents that are part of
 none or another project using another project-file; if so, there is no 
 work-around for this case.
 
-<MSG ID="52" CLASS="error" NAME="" UNDOC><* replace spec. char *>
-<MSG ID="53" CLASS="error" NAME="unmatched <TG>$else</TG>">
+<MSG ID="52" CLASS="error" NAME="redefined <insendtag>">
+
+You tried to redefine an end macro.
+
+<MSG ID="53" CLASS="error" NAME="unmatched conditional <TG>$else|$elseif</TG>">
 An <TG>$else</TG> tag has been at an unexptected position. Usually,
-a single preceding <TG>$if</TG> has two or more corresponging <TG>$else</TG> 
+a single preceding <TG>$if</TG> has two or more corresponding <TG>$else</TG>
 tags assigned.
 
 <MSG ID="54" CLASS="warning" NAME="calling external command returned <I>value</I>">
@@ -346,21 +383,29 @@ value unequal to zero, which usually denotes an error while processing
 the command. For error analysis, look at the output that the command
 (hopefully) has made.
 
-<MSG ID="55" CLASS="port" NAME="empty sgml-comment">
-An element of the form <TG>!</TG> has been detected.
+<MSG ID="55" CLASS="warning" NAME="text outside sgml-comment context">
+This message often shows up, if you are not using an even number of
+hypens (<qqc>-</qqc>) as delimters inside your source. For example,
+<$source PRE><!--------></$source>
+(8 hyphens) works fine, whereas
+<$source PRE><!---------></$source>
+(9 hyphens) will cause problems.
 
+<MSG ID="56" CLASS="error" NAME="" UNDOC>
+<*
 <MSG ID="56" CLASS="port" NAME="sgml-comment consists of a single word">
 A sgml-comment consisting of a single word, for instance 
 <qq><TG>!--sepp--</TG></qq>,
-has been detected. Note that there are no blanks preceding/succeding 
+has been detected. Note that there are no blanks preceding/succeeding
 <qq>sepp</qq>)
+*>
 
 <MSG ID="57" CLASS="error" NAME="no start tag for <insendtag>">
 An end tag has been detected without it's corresponding start tag
 occuring before.
 
 <MSG ID="58" CLASS="port" NAME="icon-<insent> found">
-Icon-entities are not (yet) widly supported.
+Icon-entities are not (yet) widely supported.
 
 <MSG ID="59" CLASS="warning" NAME="redefined <instag>">
 You have just redefined a tag or macro that has already been
@@ -372,7 +417,7 @@ occure before. Example: <TG>INPUT</TG> may only occure
 inside <TG>FORM</TG>.
 
 <MSG ID="61" CLASS="error" NAME="<instag> not allowed within <instag>">
-A tag occures inside another tag that doesn't allowe this. For example,
+A tag occurs inside another tag that does not allow this. For example,
 you can't recursively use <TG>A</TG> inside <TG>A</TG>.
 
 <MSG ID="62" CLASS="error" NAME="no attributes allowed for end-tags">
@@ -381,7 +426,7 @@ for a end-macro only, you still have to define and pass it within the
 start-macro; the end-macro will have access to all these attributes
 and its values.
 
-<MSG ID="63" CLASS="warning" NAME="redefinance of <insattr>">
+<MSG ID="63" CLASS="warning" NAME="redefinition of <insattr>">
 You redefined an alredy existing attribute. If this occures during
 the definition of a new macro, you just tried to give two arguments the
 same name.
@@ -401,7 +446,9 @@ one of those mentioned in the
 <MSG ID="66" CLASS="error" NAME="illegal end-tag">
 You tried to use a simple tag as a container, for example <TG>/IMG</TG>
 
-<MSG ID="67" CLASS="error" NAME="" UNDOC>
+<MSG ID="67" CLASS="style" NAME="recommended <instag> missing">
+A tag that ought to appear is missing.
+
 <MSG ID="68" CLASS="note" NAME="unknown filetype">
 
 <hsc> could not <A HREF="features/getsize.html">determine the size</A>
@@ -436,7 +483,7 @@ or just made a typo.
 
 <MSG ID="75" CLASS="warning" NAME="local id <insid> already declared">
 
-You tried to redfine an ID that has already been declared before within
+You tried to redefine an ID that has already been declared before within
 the current document.
 
 <MSG ID="76" CLASS="style" NAME="frames are disgusting">
@@ -451,11 +498,11 @@ A icon-entity has been found is was replaced by an <TG>IMG</TG>.
 This message will only show up if you have passed the CLI option
 <op_iconbase>.
 
-<MSG ID="78" CLASS="style" NAME="succeeding white-space for <instag>">
+<MSG ID="78" CLASS="style" NAME="succeeding white space for <instag>">
 
 See below.
 
-<MSG ID="79" CLASS="style" NAME="preceding white-space for <insendtag>">
+<MSG ID="79" CLASS="style" NAME="preceding white space for <insendtag>">
 
 These two messages point out that instead of (read the <underscore>)
 as a blank)

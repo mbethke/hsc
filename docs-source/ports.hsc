@@ -9,16 +9,26 @@ it is quite easy to port it to other systems, as long as they support
 some sort of command line interface.</P>
 
 <P>This chapter describes existing or planed ports and what are the 
-differences to the version for AmigaOS. Currently mentioned are
-<A HREF="#unix">Un*x</A>,
-<A HREF="#beos">BeOS</A> and
-<A HREF="#msdos">MS-DOS based systems</A>.
+differences to the version for AmigaOS. Currently ports exist for
+<A HREF="#riscos">RiscOS</A>
+and <A HREF="#unix">Un*x</A>,
+
+and comments on
+<A HREF="#beos">BeOS</A>
+and <A HREF="#msdos">MS-DOS based systems</A> are available.
 </P>
 
-<A NAME="unix"><H2>Un*x</H2></A>
-The version for Unixoid systems is currenly the second best supported.
+<H2><A NAME="riscos">RiscOS</A></H2>
+
+The port to RiscOS has been done by Sergio Monesi and Nick Craig-Wood.
+For details, please refer to
+<A HREF="http://www.axis.demon.co.uk/hsc/"><(HSC.Anchor)></A>.
+
+<H2><A NAME="unix">Un*x</A></H2>
+The version for unixoid systems should also be quite well supported.
 Usually, I do a bit of testing on a Macintosh running MkLinux before
-releasing an official update.
+releasing an official update, and force several Unixers to watch
+shitty alpha versions of <hsc> crash on their machines.
 
 <H3>Installation</H3>
 As usual, you will have to compile the sources yourself. If you are
@@ -29,7 +39,7 @@ using <FILE>source/Makefile</FILE> and not
     make install
 </$source>
 
-<P>after having created the binaries. This will atempt to copy the binaries
+<P>after having created the binaries. This will attempt to copy the binaries
 to <FILE>/usr/bin/</FILE> and <FILE>/usr/lib/</FILE>. This will only
 work if you have write access to these directories.</P>
 
@@ -59,18 +69,18 @@ When searching for the <ln_syntax>, <hsc> will look at
 On notes/warnings/errors/fatal errors showing up, <hsc> will
 return an exit code of 0/0/1/2.
 
-<A NAME="beos"><H2>BeOS</H2></A>
+<H2><A NAME="beos">BeOS</A></H2>
 Basically, the source code is prepared to compile under BeOS and
 should utilize it's POSIX-layer. Laking a machine with BeOS running,
 I couldn't test if it works. If you are interested to try this and
 have some experience with compilers, contact me.
 
-<A NAME="msdos"><H2>MS-DOS based systems</H2></A>
+<H2><A NAME="msdos">MS-DOS based systems</A></H2>
 
 <P>As <hsc> is more portable than I want it to be, it is even
 possible to make it somehow work with most MS-DOS based systems
-like Windows NT/95 or OS/2. But as the whole philosophie and spirit
-of these systems is a totally fashist one, there is no reason to
+like Windows NT/95 or OS/2. But as the whole philosophy and spirit
+of these systems is a totally fascist one, there is no reason to
 support them. There is no support within these documents or the
 the <Makefile>s coming with the sources for any of these 
 systems.</P>

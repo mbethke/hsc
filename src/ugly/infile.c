@@ -1,9 +1,6 @@
 /*
- * ugly/infile.c
- *
- * ugly input file functions
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1993-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 25-Nov-1996
+ */
+/*
+ * ugly/infile.c
+ *
+ * ugly input file functions
+ *
+ * updated: 10-May-1997
  * created:  8-Jul-1995
  */
 
@@ -90,20 +93,41 @@ static VOID del_infilepos_nddata(APTR data);
  * default methods for infgetw() to determine if
  * a char is a whitespace or normal char.
  */
-BOOL default_whtspc(int ch)
+static BOOL default_whtspc(int ch)
 {
     if (strchr(" \t", ch) != NULL)
+    {
         return TRUE;
+    }
     else
+    {
         return FALSE;
+    }
 }
 
-BOOL default_normch(int ch)
+static BOOL default_normch(int ch)
 {
     if (isalnum(ch) || (ch == '_'))
+    {
         return TRUE;
+    }
     else
+    {
         return FALSE;
+    }
+}
+
+/*
+ * update_wpos
+ *
+ * update word position with the values of the
+ * "normal" position in input file
+ *
+ */
+static VOID update_wpos(INFILE *inpf)
+{
+    inpf->wpos_x = inpf->pos_x;
+    inpf->wpos_y = inpf->pos_y;
 }
 
 /*
@@ -125,11 +149,12 @@ static VOID reset_infile(INFILE * inpf)
     inpf->lnbuf = NULL;
     inpf->wordbuf = NULL;
     inpf->wspcbuf = NULL;
+
     inpf->filepos = 0;
     inpf->pos_x = 0;
     inpf->pos_y = 0;
-    inpf->wpos_x = 0;
-    inpf->wpos_y = 0;
+    update_wpos(inpf);
+
     inpf->base_x = 0;
     inpf->base_y = 0;
     inpf->pos_list = NULL;
@@ -603,15 +628,16 @@ int infgetc(INFILE * inpf)
     /* read char */
     int ch = ugly_infgetc(inpf);
 
-    /* store word position */
-    inpf->wpos_x = inpf->pos_x;
-    inpf->wpos_y = inpf->pos_y;
+    /* update word position */
+    update_wpos(inpf);
 
+#if 0 /* TODO: remove this */
     /* TODO: this is shit */
     if (ch=='\n')
     {
         inpf->wpos_y--;
     }
+#endif
 
     return (ch);
 }
@@ -623,7 +649,7 @@ int infgetc(INFILE * inpf)
  */
 
 /*
- * inungetc
+ * ugly_inungetc
  *
  * write char back to stream; comparable to ansi's ungetc()
  *
@@ -631,7 +657,7 @@ int infgetc(INFILE * inpf)
  *         ch.....char to write back
  * result: ch, if sucessful, else EOF
  */
-int inungetc(int ch, INFILE * inpf)
+static int ugly_inungetc(int ch, INFILE * inpf)
 {
     int result = EOF;
 
@@ -661,6 +687,29 @@ int inungetc(int ch, INFILE * inpf)
 }
 
 /*
+ * inungetc
+ *
+ * write char back to stream; comparable to ansi's ungetc()
+ * different to ugly_inungetc, this will also update the
+ * word-position of the input file
+ *
+ * params: inpf...input file
+ *         ch.....char to write back
+ * result: ch, if sucessful, else EOF
+ */
+int inungetc(int ch, INFILE * inpf)
+{
+    int result = ugly_inungetc(ch, inpf);
+
+    if (inpf && (inpf->filepos))
+    {
+        update_wpos(inpf);
+    }
+
+    return (result);
+}
+
+/*
  * inungets
  * write string back to stream
  *
@@ -678,13 +727,13 @@ size_t inungets(STRPTR s, INFILE * inpf)
     if (slen > 0)
     {
         ctr = 1;                /* unget first char */
-        ch = inungetc(p[0], inpf);
+        ch = ugly_inungetc(p[0], inpf);
 
         while ((p != s) && (ch != EOF))
         {
             ctr++;              /* inc counter */
             p--;                /* goto next char */
-            ch = inungetc(p[0], inpf);  /* unget current char */
+            ch = ugly_inungetc(p[0], inpf);  /* unget current char */
         }
     }
 
@@ -784,11 +833,14 @@ size_t infskip_ws(INFILE * inpf)
 
 #if 0
     if (!ok)
+    {
         /* TODO: error */ ;
+    }
 #endif
 
     /*
      * write back last char read
+     * (and update word-pos)
      */
     inungetc(nxtch, inpf);
 
@@ -836,6 +888,7 @@ STRPTR infgetw(INFILE * inpf)
         ch = infgetc(inpf);
 
         if (((*isnc) (ch)))
+        {
             do
             {
                 ok &= app_estrch(inpf->wordbuf, ch);
@@ -844,18 +897,25 @@ STRPTR infgetw(INFILE * inpf)
                 /* todo: set out-of-mem-flag */
             }
             while ((ch != EOF) && ok && ((*isnc) (ch)));
+        }
         else
+        {
             ok &= app_estrch(inpf->wordbuf, ch);
+        }
 
         if ((ch != EOF) && (wordread))
+        {
             inungetc(ch, inpf);
+        }
 
         thisword = estr2str(inpf->wordbuf);
     }
     else
+    {
         thisword = NULL;
+    }
 
-    return (thisword);
+    return thisword;
 }
 
 /*
@@ -891,7 +951,7 @@ int infgotoeol(INFILE * inpf)
     }
 
     /* return last char read */
-    return (ch);
+    return ch;
 }
 
 /*
@@ -922,14 +982,18 @@ static VOID del_infilepos_nddata(APTR data)
 }
 
 /*
- * find_posnd
+ * cmp_posdata
  */
 static int cmp_posdata(APTR data1, APTR data2)
 {
     if (data1 == data2)
-        return (-1);
+    {
+        return -1;
+    }
     else
-        return (0);
+    {
+        return 0;
+    }
 }
 
 /*
@@ -1007,7 +1071,7 @@ static INFILEPOS *new_infilepos_node(INFILE * inpfile, ULONG x, ULONG y)
         if (pos)
         {
             fprintf(stderr, DINF "new pos-req: \"%s\" (%d,%d); #%d\n",
-                    inpf->filename ? inpf->filename : "STDIN",
+                    (char*)inpfile->filename ? (char*)inpfile->filename : (char*) "STDIN",
                     inpfile->pos_x, inpfile->pos_y, inpfile->pos_count);
         }
         else
@@ -1020,6 +1084,21 @@ static INFILEPOS *new_infilepos_node(INFILE * inpfile, ULONG x, ULONG y)
     return pos;
 }
 
+#if 1
+INFILEPOS *new_infilepos(INFILE * inpfile)
+{
+    INFILEPOS *pos =
+    new_infilepos_node(inpfile, infget_x(inpfile), infget_y(inpfile));
+    return pos;
+}
+
+INFILEPOS *new_winfilepos(INFILE * inpfile)
+{
+    INFILEPOS *pos =
+    new_infilepos_node(inpfile, infget_wx(inpfile), infget_wy(inpfile));
+    return pos;
+}
+#else
 INFILEPOS *new_infilepos(INFILE * inpfile)
 {
     INFILEPOS *pos =
@@ -1031,6 +1110,13 @@ INFILEPOS *new_winfilepos(INFILE * inpfile)
 {
     INFILEPOS *pos =
     new_infilepos_node(inpfile, inpfile->wpos_x, inpfile->wpos_y);
+    return pos;
+}
+#endif
+
+INFILEPOS *clone_infilepos(INFILEPOS *ipos)
+{
+    INFILEPOS *pos = new_infilepos_node(ipos->inpf, ipos->x, ipos->y);
     return pos;
 }
 
@@ -1060,8 +1146,8 @@ BOOL set_infile_base(INFILE * inpf, INFILEPOS * pos)
               pos->x, pos->y));
     reallocstr(&(inpf->filename), pos->fname);
     inpf->base_x = pos->x;
-    inpf->base_y = pos->y + 1;
-    return (TRUE);              /* TODO: handle out of mem */
+    inpf->base_y = pos->y;
+    return TRUE;                /* TODO: handle out of mem */
 }
 
 BOOL set_infilepos(INFILE * inpf, INFILEPOS * pos)
@@ -1071,10 +1157,11 @@ BOOL set_infilepos(INFILE * inpf, INFILEPOS * pos)
               pos->inpf->filename ? pos->inpf->filename : (STRPTR) "STDIN",
               pos->x, pos->y));
     reallocstr(&(inpf->filename), pos->fname);
+
     inpf->pos_x = pos->x;
     inpf->pos_y = pos->y;
-    inpf->wpos_x = pos->x;
-    inpf->wpos_y = pos->y;
-    return (TRUE);              /* TODO: handle out of mem */
+    update_wpos(inpf);
+
+    return TRUE;                /* TODO: handle out of mem */
 }
 

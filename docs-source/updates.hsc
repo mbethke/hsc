@@ -10,13 +10,14 @@
 <AMINET FILE="text/hyper/hsc-source.lha">. To quickly check which version
 is the current one, read <AMINET FILE="text/hyper/hsc.readme">. Note that
 it might take a few days until this version is available from your local 
-Aminet mirror-site.
-</P>
+Aminet mirror-site.</P>
 
 <P>Additionally, you can download the current version from
-<hsc-support> (<(HSC.ANCHOR)>).</P>
+<hsc-support> (<(HSC.ANCHOR)>). There is also a german mirror
+at
+<A HREF="http://wwwcip.rus.uni-stuttgart.de/~inf11108/support/hsc/"><(HSC.ANCHOR)></A></P>
 
 <P>There you also can find a  browsable version of this documentation and maybe
-a pre-relaese or bugfixes for <hsc>.</P>
+a pre-release or bugfixes for <hsc>.</P>
 
 </WEBPAGE>

@@ -19,7 +19,7 @@
 <DD>
 </$macro>
 
-<P>Attributes are compareable to function arguments in programming languages
+<P>Attributes are comparable to function arguments in programming languages
 like Pascal, Oberon or E. So attributes are arguments passed to a tag or
 macro.</P>
 
@@ -28,14 +28,13 @@ and <ln_let> therefor using them like variables.</P>
 
 <H2>General syntax</H2>
 
-<P>Within <ln_macro>, <ln_define> and <ln_deftag>,
+Within <ln_macro>, <ln_define> and <ln_deftag>,
 an  attribute is declared using
 <BLOCKQUOTE>
 <I>name</I> ":" <I>type</I>  [ "/" <I>modifiers</I> ]  [ "=" <I>default value</I> ]
 </BLOCKQUOTE>
-</P>
 
-<A NAME="type"><H2>Attribute types</H2></A>
+<H2><A NAME="type">Attribute types</A></H2>
 <DL>
 <LITYPE type="STRING"> any text
 <LITYPE type="URI"> references to an URI. Is affected by CLI
@@ -52,7 +51,7 @@ an  attribute is declared using
 <A HREF=":features/spcattr.html#colornames"><CODE>HSC.COLOR-NAMES</CODE></A>.
 </DL>
 
-<A NAME="modifier"><H2>Attribute modifiers</H2></A>
+<H2><A NAME="modifier">Attribute modifiers</A></H2>
 <DL>
 <LIATTR LONG="CONST" SHORT="C">
     Attribute is read-only; you can't set a new value using <ln_let>.

@@ -4,7 +4,7 @@
     +"and supports include files, macros, expressions, conditionals, "
     +" replaces special characters, performs a structure check, tests "
     +" existence of local links and several other things.")>
-  <TITLE>hsc - html sucks completely</TITLE>
+  <TITLE>hsc - html sucks completely - Documentation</TITLE>
   <LINK REV="owns" TITLE="Thomas Aglassinger" HREF="mailto:agi@giga.or.at">
   <LINK REL="Home" HREF=":index.html">
   <LINK REL="Copyright" HREF=":copy.html">
@@ -32,7 +32,7 @@ Ignore the bold type<BR></I>
 
 <H1>hsc</H1>
 
-<P><STRONG>(Version 0.911 <*(PRE-RELEASE#8)*>, 4-Dec-1996)</STRONG></P>
+<P><STRONG>(Version 0.913<* (pre-release#9) *>, 26-May-1997)</STRONG></P>
 
 <P><(DESCRIPTION)></P>
 
@@ -40,7 +40,7 @@ Ignore the bold type<BR></I>
 
 <P>
 A current version of this document should always be available from
-<A HREF="http://www.giga.or.at/~agi/hsc/docs/index.html"><(HSC.ANCHOR)></A>.</P>
+<A HREF="http://www.giga.or.at/~agi/hsc/docs/"><(HSC.ANCHOR)></A>.</P>
 
 <H2>About the program</H2>
 <UL>
@@ -64,7 +64,7 @@ A current version of this document should always be available from
 <LI><A HREF="options.html">Invoking <hsc></A>
     <UL>
     <LI><A HREF="options.html#options">Options</A> and 
-        <A HREF="options.html#switches">switches</A> - there are lot of them
+        <A HREF="options.html#switches">switches</A> - there are loads of them
     <LI><A HREF="options.html#exitcodes">Exit-code</A> - return to sender
     <LI><A HREF="examples.html">Example usage</A> - how it is supposed to work
     </UL>
@@ -126,7 +126,7 @@ A current version of this document should always be available from
     <LI><A HREF=":features/if.html#macros">Conditionals and macros</A>
     </UL>
 <LI><A HREF="features/prefs.html">Syntax definition</A>
-    - what to do if html-version-17.3 is out
+    - what to do if html version 17.3 is out
 <LI><A HREF="features/exec.html">Execute shell-commands</A>
     - poor man's pseudo-CGI 
 <LI><A HREF="project/index.html">Project management</A>
@@ -136,10 +136,12 @@ A current version of this document should always be available from
     <LI><A HREF="project/prjfile.html">project files</A> - where <hsc> stores the
         required information.
     <LI><A HREF="project/makefile.html">Makefiles</A> - how to adopt them for <hsc>
-    <LI><A HREF="project/hscdepp.html">hscdepp</A> - 
-        <hsc>'s dependency procreator
-    <LI><A HREF="project/hscpitt.html">hscpitt</A> - 
-        <hsc>'s project interfering and trashing tool
+    <LI><hscdepp LINK> -
+        <hsc> dependency procreator
+    <LI><hscpitt LINK> -
+        <hsc> project interfering and trashing tool
+    <LI><A HREF="project/hscpaltrow.html"><hscpaltrow></A> -
+        a Rexx-script demonstrating how to utilize the output of <hscpitt>
     </UL>
 </UL>
 
@@ -156,7 +158,7 @@ A current version of this document should always be available from
 <HR>
 <$let hsc.format.time="%d-%b-%Y">
 <ADDRESS>
-  Thomas Aglassinger (<A HREF="mailto:agi@giga.or.at">agi@giga.or.at</A>),
+  <A HREF=":author.html">Thomas Aglassinger</A> (agi@giga.or.at),
   <(gettime())>
 </ADDRESS>
 </BODY></HTML>

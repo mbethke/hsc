@@ -1,9 +1,6 @@
 /*
- * hsclib/document.c
- *
- * document routines for hsc
- *
- * Copyright (C) 1996  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 14-Oct-1996
+ */
+/*
+ * hsclib/document.c
+ *
+ * document routines for hsc
+ *
+ * updated: 20-Feb-1997
  * created:  7-Jul-1996
  */
 
@@ -32,8 +35,12 @@
 #ifdef D
 #undef D
 #endif
+#if defined DEBUG
 #if DEBUG
 #define D(x) x
+#else
+#define D(x)                    /* nufin */
+#endif
 #else
 #define D(x)                    /* nufin */
 #endif
@@ -45,7 +52,8 @@
 /* del_document: remove document */
 VOID del_document(APTR data)
 {
-    if (data) {
+    if (data)
+    {
         HSCDOC *document = (HSCDOC *) data;
 
         ufreestr(document->docname);
@@ -87,25 +95,34 @@ int cmp_document(APTR cmp_data, APTR list_data)
 
 #if DEBUG
     if (!document)
+    {
         panic("documant = NULL");
+    }
     else if (!document->docname)
+    {
         panic("fname1 = NULL");
+    }
     if (!fname2)
+    {
         panic("fname2 = NULL");
+    }
 #endif
     fname1 = document->docname;
 
     if (!strcmp(fname1, fname2))
+    {
         return (-1);
+    }
     else
+    {
         return (0);
+    }
 }
 
-
 /* find_document_node: scans document list for a specific document */
-DLNODE *find_document_node(DLLIST *list, STRPTR name)
+DLNODE *find_document_node(DLLIST * list, STRPTR name)
 {
-    return( find_dlnode(dll_first(list), (APTR) name, cmp_document));
+    return (find_dlnode(dll_first(list), (APTR) name, cmp_document));
 }
 
 /* find_document: scans document list for a specific document */
@@ -136,7 +153,8 @@ CALLER *new_caller(STRPTR name, ULONG posx, ULONG posy)
 
 VOID del_caller(APTR data)
 {
-    if (data) {
+    if (data)
+    {
         CALLER *caller = (CALLER *) data;
         ufreestr(caller->name);
         ufree(caller);
@@ -147,10 +165,12 @@ CALLER *fpos2caller(INFILEPOS * fpos)
 {
     CALLER *cal = NULL;
 
-    if (fpos) {
+    if (fpos)
+    {
         cal = new_caller(ifp_get_fname(fpos),
                          ifp_get_x(fpos), ifp_get_y(fpos));
-    } else
+    }
+    else
         cal = new_caller("", 0, 0);
 
     return (cal);
@@ -177,7 +197,8 @@ HSCREF *new_reference(STRPTR newname)
 {
     HSCREF *ref = (HSCREF *) umalloc(sizeof(HSCREF));
 
-    if (ref) {
+    if (ref)
+    {
         ref->name = strclone(newname);
         ref->caller = NULL;
     }
@@ -195,18 +216,28 @@ int cmp_reference(APTR cmp_data, APTR list_data)
 
 #if DEBUG
     if (!reference)
+    {
         panic("reference = NULL");
+    }
     else if (!reference->name)
+    {
         panic("fname1 = NULL");
+    }
     if (!fname2)
+    {
         panic("fname2 = NULL");
+    }
 #endif
     fname1 = reference->name;
 
     if (!strcmp(fname1, fname2))
+    {
         return (-1);
+    }
     else
+    {
         return (0);
+    }
 }
 
 /*
@@ -246,7 +277,8 @@ HSCINC *new_include(STRPTR newname)
 {
     HSCINC *inc = (HSCINC *) umalloc(sizeof(HSCINC));
 
-    if (inc) {
+    if (inc)
+    {
         inc->name = strclone(newname);
         inc->caller = NULL;
     }
@@ -264,11 +296,17 @@ int cmp_include(APTR cmp_data, APTR list_data)
 
 #if DEBUG
     if (!include)
+    {
         panic("include = NULL");
+    }
     else if (!include->name)
+    {
         panic("fname1 = NULL");
+    }
     if (!fname2)
+    {
         panic("fname2 = NULL");
+    }
 #endif
     fname1 = include->name;
 
@@ -313,7 +351,8 @@ HSCIDD *new_iddef(STRPTR newname)
 {
     HSCIDD *iddef = (HSCIDD *) umalloc(sizeof(HSCIDD));
 
-    if (iddef) {
+    if (iddef)
+    {
         iddef->name = strclone(newname);
         iddef->caller = NULL;
         iddef->fpos = NULL;
@@ -344,18 +383,28 @@ int cmp_iddef(APTR cmp_data, APTR list_data)
 
 #if DEBUG
     if (!iddef)
+    {
         panic("id-definition = NULL");
+    }
     else if (!iddef->name)
+    {
         panic("fname1 = NULL");
+    }
     if (!fname2)
+    {
         panic("fname2 = NULL");
+    }
 #endif
     fname1 = iddef->name;
 
     if (!strcmp(fname1, fname2))
+    {
         return (-1);
+    }
     else
+    {
         return (0);
+    }
 }
 
 /* find_iddef: scans document list for a specific id */
@@ -366,7 +415,9 @@ HSCIDD *find_iddef(HSCDOC * document, STRPTR name)
     HSCIDD *iddef = NULL;
 
     if (nd)
+    {
         iddef = (HSCIDD *) dln_data(nd);
+    }
 
     return (iddef);
 }
@@ -387,4 +438,3 @@ HSCIDD *app_iddef(HSCDOC * document, STRPTR iddef_name)
 
     return (iddef);
 }
-

@@ -1,9 +1,6 @@
 /*
- * hscprj/readprj.c
- *
- * project managment input-routines for hsc
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+/*
+ * hscprj/readprj.c
+ *
+ * project managment input-routines for hsc
  *
  * updated: 10-Sep-1996
  * created: 10-Sep-1996
@@ -285,7 +288,7 @@ static BOOL read_header(HSCPRJ * hp)
 }
 
 /*
- * hsc_project_read_file
+ * hsc_project_read_data
  *
  * read project file
  *
@@ -294,7 +297,7 @@ static BOOL read_header(HSCPRJ * hp)
  *               this has to be opened and closed by
  *               you outside this function.
  */
-BOOL hsc_project_read_file(HSCPRJ * hp, INFILE * inpf)
+BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf)
 {
     BOOL ok = FALSE;
 

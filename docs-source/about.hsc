@@ -6,7 +6,7 @@
 <H2>Motivation</H2>
 
 <P>If you read this, it's quite likely that you tried to design a
-html-page. And you probably found out that html is a very
+html page. And you probably found out that html is a very
 clumsy thing: No macros, no include files and several other
 features lacking.</P>
 
@@ -18,7 +18,7 @@ And link-testing is a very stupid task...</P>
 
 <P>Of course, there are several tools around: You can use a
 C-preprocessor to define macros and include files, use
-some of the various html-validators, replace your special
+some of the various html validators, replace your special
 characters with <KBD>recode</KBD> and run a link-test-tool
 on your page.</P>
 
@@ -35,7 +35,7 @@ by the silly date format of <CODE>__DATE__</CODE>: who writes
 <P><hsc> tries to summarize the functionality of all
 these tools in one program: it performs a (small) syntax
 check, tests your (local) links, replaces special characters
-by their entities and provides a very html-like way to
+by their entities and provides a quite html-like way to
 define macros.</P>
 
 <P>It also supports several features you probably won't
@@ -50,12 +50,12 @@ up-to-date.</P>
 
 <P><hsc> simply acts as a preprocessor: You give it an
 "extended" html-source (later in this document refered as
-"hsc-source") containig special commands, and <hsc>
+"hsc source") containing special commands, and <hsc>
 interprets it and produces a pure html-output as object
 file. This output-file can be viewed with your
 w3-browser.</P>
 
-<P>Normally I write my hsc-sources using a simple text-editor,
+<P>Normally I write my hsc sources using a simple text-editor,
 maintain them in a <FILE>Makefile</FILE> and process them
 with <hsc>. From my point of view, this is the recommend
 way of using this tool.</P>
@@ -66,10 +66,10 @@ Obviously, there is no fancy gui, no (pseudo-)WYSIWYG, no drag &amp;
 drop - there are other programs which provide these
 functionalities. But a common lack of these programs usually
 is that they give less support for large projects and are limited
-in configurability.</P>
+in configurability.
 
 <P>If you just want to create your own personal homepage,
-write a short html-document with information about your
+write a short html document with information about your
 three selfwritten freeware-proggies, include a picture of your cat,
 send greets to Sepp and Hugo or something like that,
 there are probably other tools which are easier to handle and

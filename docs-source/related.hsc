@@ -18,7 +18,7 @@ Some stuff that should be useful for project-management:
     is required.
 <LI><AMINET FILE="dev/gcc/" TEXT="aminet:dev/gcc/gccXXXdoc.lha">, which contains
     (among other documents) the manual to <EXEC>GNUmake</EXEC> in 
-    AmigaGuide-format (the full filename depends on the version of 
+    AmigaGuide format (the full filename depends on the version of
     <EXEC>gcc</EXEC>).
 </UL>
 
@@ -26,9 +26,10 @@ As <hsc>'s syntax check is quite small and clumsy, maybe you should also
 have a look at one of the following sources:
 
 <UL>
-<LI><AminetReadMe FILE="dev/lang/sgmls.readme" TEXT="SGMLS">
-    - Amiga port, source included; available from
-    <Aminet FILE="dev/lang/sgmls.lha">; for those who insist on using a DTD.
+<LI><AminetReadMe FILE="comm/www/CheckHTML.readme" TEXT="CheckHTML">
+    - based on <EXEC>SGMLS</EXEC>, but easier to use. Available from
+    <Aminet FILE="comm/www/CheckHTML.lha">;
+    for those who insist on using a DTD.
 <LI><WebLint>, a Perl-script that is even more cryptic to configure
     than <hsc>. And it's Perl.. würg, kotz, reiha.. (<(HSC.ANCHOR)>)
 <LI><A HREF="http://www.webtechs.com/html-val-svc/">HalSoft's
@@ -40,17 +41,18 @@ To use Un*x-alike filenames within AmigaOS, there are numerous tools
 available. For example, you can use
 <UL>
 <LI><Aminet FILE="dev/gcc/ixpath.lha"> - CLI only, source code included
-<LI><Aminet FILE="util/boot/" TEXT="util/boot/DosWedgeXX"> - implemeted as
-    a commodity
+<LI><Aminet FILE="util/boot/" TEXT="util/boot/DosWedgeXX"> -
+    implemented as a commodity
 </UL>
 
-And some resources that have been quite useful during the development of <hsc>:
+And some resources that have been quite useful during the development
+of <hsc>:
 
 <UL>
 <LI>The only human readable
     <A HREF="http://www.sandia.gov/sci_compute/html_ref.html">html-reference</A>
     I've found so far. (<(HSC.ANCHOR)>)
-<LI>A <A HREF="http://nswt.tuwien.ac.at:8000/htdocs/boutell/">W3-FAQ</A>
+<LI>A <A HREF="http://nswt.tuwien.ac.at:8000/htdocs/boutell/">w3-FAQ</A>
     that covers even the Amiga. (<(HSC.ANCHOR)>)
 <LI><A HREF="http://www.cs.cmu.edu/~tilt/cgh/">Composing Good HTML</A>,
     a general introduction to the whole html-problem. It's also useful to

@@ -1,10 +1,6 @@
 /*
- * hsclib/tag_hsc.c
- *
- * tag callbacks for "<$xx>" and related
- * (for macro callbacks, see "tag_macr.c")
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +16,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 25-Nov-1996
+ */
+/*
+ * hsclib/tag_hsc.c
+ *
+ * tag callbacks for "<$xx>" and related
+ * (for macro callbacks, see "tag_macro.c")
+ *
+ * updated: 15-Apr-1997
  * created: 23-Jul-1995
  */
 
@@ -35,7 +38,7 @@
 #include "hsclib/parse.h"
 #include "hsclib/uri.h"
 
-#include "hsclib/tag_macr.h"
+#include "hsclib/tag_macro.h"
 #include "hsclib/tag_if.h"
 
 #define TIMEBUF_INC    20
@@ -68,6 +71,9 @@ BOOL handle_hsc_include(HSCPRC * hp, HSCTAG * tag);
  */
 BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag)
 {
+#if 1
+    skip_hsc_comment(hp, NULL);
+#else /* TODO: remove */
     BYTE cstate = CMST_TEXT;    /* vars for eoc_reached() */
     LONG cnest = 0;             /* nesting: already read one "<*" */
     BOOL end = FALSE;           /* end of comment reached? */
@@ -76,20 +82,39 @@ BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag)
     {
         end = eoc_reached(hp, &cstate, &cnest);
     }
+#endif
 
     return (FALSE);
 }
 
 /*
- * handle_hsc_onlycopy
+ * handle_hsc_verbatim
  *
  * copy text until '|>' occures;
  * no syntax check or whatsoever is performed
  *
  * TODO: find more reasonable way to send output to client.
  */
-BOOL handle_hsc_onlycopy(HSCPRC * hp, HSCTAG * tag)
+BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag)
 {
+#if 1
+    EXPSTR *content = init_estr(0);
+    if (skip_hsc_verbatim(hp, content))
+    {
+        /* remove "|>" from content */
+        STRPTR strend = estr2str(content) + estrlen(content);
+        while (strend[0] != '|')
+        {
+            strend--;
+        }
+        strend[0] = 0;
+
+        /* output content */
+        hsc_output_text(hp, "", estr2str(content));
+    }
+    del_estr(content);
+
+#else /* TODO: remove */
     INFILE *inpf = hp->inpf;
     int ch = EOF;               /* current char */
     int prev_ch = EOF;          /* prev char read */
@@ -125,7 +150,7 @@ BOOL handle_hsc_onlycopy(HSCPRC * hp, HSCTAG * tag)
 
     if (prev_ch == EOF)
         hsc_msg_eof(hp, "skipping source");
-
+#endif
     return (FALSE);
 }
 
@@ -181,7 +206,6 @@ static VOID do_include(HSCPRC * hp, STRPTR filename,
         optn |= IH_PARSE_SOURCE;
 
     /* compute filename (convert from URI if neccessary) */
-#define weenix jens /* TODO:remove this */
     conv_uri2path(fname, filename, hp->weenix);
 
     /* insert leading <PRE> */
@@ -700,7 +724,17 @@ BOOL handle_hsc_deficon(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag)
 {
-    HSCVAR *attr = define_var(hp, hp->defattr, 0); /* TODO: define local macro attributes */
+#if 1
+    HSCVAR *attr = define_attr_by_hp(hp, NULL, 0);
+    if (attr)
+    {
+        DDA(prt_varlist(hp->defattr, "attributes after $DEFINE"));
+
+        /* check for closing ">" */
+        parse_gt(hp);
+    }
+#else /* TODO: remove */
+    HSCVAR *attr = define_var(hp, hp->defattr, 0);
     if (attr)
     {
         /* set mci for local attribute */
@@ -725,6 +759,49 @@ BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag)
         parse_gt(hp);
 
     }
+#endif
+
+    return (FALSE);
+}
+
+/*
+ *-------------------------------------
+ * $DEPEND handle
+ *-------------------------------------
+ */
+
+/*
+ * handle_hsc_depend
+ *
+ * add dependency to current document
+ */
+BOOL handle_hsc_depend(HSCPRC * hp, HSCTAG * tag)
+{
+    STRPTR filename = get_vartext_byname(tag->attr, "ON");
+    BOOL file = get_varbool_byname(tag->attr, "FILE");
+
+    if (filename)
+    {
+        EXPSTR *dest_fname = init_estr(64);
+
+        /* convert URI to local filename */
+        if (file)
+        {
+            conv_hscuri2file(hp, dest_fname, filename);
+            filename = estr2str(dest_fname);
+        }
+
+        /* add dependency */
+        D(fprintf(stderr, DHL "  add dependency `%s'\n", filename));
+        app_include(hp->project->document, filename);
+
+        del_estr(dest_fname);
+    }
+    else
+    {
+        panic("attribute missing");
+    }
+
     return (FALSE);
 }
 
@@ -799,6 +876,52 @@ BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
  *-------------------------------------
  */
 BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
+#if 1
+{
+    BOOL pre = get_varbool_byname(tag->attr, "PRE");
+    BOOL ok = TRUE;
+    EXPSTR *source_content = init_estr(ES_STEP_SOURCE);
+    INFILEPOS *base = new_infilepos(hp->inpf);
+
+    /* avoid nesting of <PRE> */
+    if (hp->inside_pre)
+    {
+        pre = FALSE;            /* TODO: lauch warning */
+    }
+
+    /* insert leading <PRE> */
+    if (pre)
+    {
+        hsc_include_string(hp, SPECIAL_FILE_ID "insert <PRE>", "<PRE>",
+                           IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
+    }
+
+    /* read source text (until </$source> found) */
+    ok = skip_until_tag(hp, source_content, NULL, NULL, HSC_SOURCE_STR,
+                        SKUT_NO_CONTENT_TAGFOUND | SKUT_NO_ANALYSE_TAGS);
+
+    /* include source */
+    if (ok)
+    {
+        /* include pseudo-file */
+        hsc_base_include_string(hp, SPECIAL_FILE_ID "source",
+                                estr2str(source_content),
+                                IH_PARSE_SOURCE | IH_NO_STATUS, base);
+
+        /* insert tailing </PRE> */
+        if (pre)
+        {
+            hsc_include_string(hp, SPECIAL_FILE_ID "insert </PRE>",
+                               "</PRE>\n",
+                               IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
+        }
+    }
+    del_infilepos(base);
+    del_estr(source_content);
+
+    return (FALSE);
+}
+#else
 {
     INFILE *inpf = hp->inpf;
     BOOL pre = get_varbool_byname(tag->attr, "PRE");
@@ -937,4 +1060,49 @@ BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
 
     return (FALSE);
 }
+#endif
 
+/*
+ *-------------------------------------
+ * <$StripWS> strip white spaces
+ *-------------------------------------
+ */
+BOOL handle_hsc_stripws(HSCPRC * hp, HSCTAG * tag)
+{
+    STRPTR strip_type = get_vartext_byname(tag->attr, "TYPE");
+    BOOL strip_prev = FALSE;
+    BOOL strip_succ = FALSE;
+
+    /* determine what to strip */
+    if (!upstrcmp(strip_type, STRIPWS_BOTH))
+    {
+        strip_prev = TRUE;
+        strip_succ = TRUE;
+    }
+    else if (!upstrcmp(strip_type, STRIPWS_PREV))
+    {
+        strip_prev = TRUE;
+    }
+    else if (!upstrcmp(strip_type, STRIPWS_SUCC))
+    {
+        strip_succ = TRUE;
+    }
+    else if (!upstrcmp(strip_type, STRIPWS_NONE))
+    {
+        /* nufin, use defaults */
+    }
+
+    /* now strip it */
+    if (strip_prev)
+    {
+        clr_estr(hp->whtspc);
+    }
+
+    if (strip_succ)
+    {
+        hsc_output_text(hp,NULL,NULL); /* flush current white spaces */
+        hp->strip_next_whtspc = TRUE;
+    }
+
+    return (FALSE);
+}

@@ -1,9 +1,6 @@
 /*
- * hsc/callback.c
- *
- * callbacks of hsc for hsclib
- *
- * Copyright (C) 1995,96  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+/*
+ * hsc/callback.c
+ *
+ * callbacks of hsc for hsclib
  *
  * updated:  9-Sep-1996
  * created: 17-Mar-1996

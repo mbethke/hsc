@@ -1,9 +1,6 @@
 /*
- * hsclib/message.c
- *
- * message functions for hsc
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +16,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 31-Oct-1996
+ */
+/*
+ * hsclib/message.c
+ *
+ * message functions for hsc
+ *
+ * updated: 20-Mar-1997
  * created: 10-Mar-1996
  *
- * NOTE: see "hsclib/msgid.h" for message-id's and
- *       how a message-id is build.
  */
 
 #define NOEXTERN_HSCLIB_MESSAGE_H
@@ -31,6 +32,11 @@
 #include "hsclib/inc_base.h"
 
 #include "ugly/returncd.h"
+
+/*
+ * NOTE: see "hsclib/msgid.h" for message-id's and
+ *       how a message-id is build.
+ */
 
 static VOID msg_tag(EXPSTR * msgstr, CONSTRPTR tagname)
 {
@@ -75,6 +81,8 @@ static VOID msg_idname(EXPSTR * msgstr, CONSTRPTR idname)
  * legal placeholders inside format:
  *  %A ptr to HSCATTR
  *  %a string for attribute-name
+ *  %C ptr to HSCTAG, displayed as end-tag
+ *  %c string to end-tag
  *  %d dezimal number (LONG)
  *  %E ptr to HSCENT
  *  %e string to entity-name
@@ -94,13 +102,17 @@ static VOID msg_idname(EXPSTR * msgstr, CONSTRPTR idname)
  *               mytag, expected_tag );
  * ---
  */
+
+/* checks if filename starts with PARENT_FILE_ID */
+static BOOL is_child_file(STRPTR filename)
+{
+    return ((BOOL) ! strncmp(filename, PARENT_FILE_ID,
+                             strlen(PARENT_FILE_ID)));
+}
+
 VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
 {
-#if 1
     HSCMSG_CLASS msg_class = hsc_get_msg_class(hp, msg_id);
-#else /* TODO: remove this */
-    HSCMSG_CLASS msg_class = msg_id & MASK_MSG_CLASS;
-#endif
     INFILE *msg_inpf = NULL;
     STRPTR msg_fname = "unknown";
     ULONG msg_x = 0;
@@ -293,25 +305,47 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
             if (format[0])
                 format++;
         }
-        va_end(format);
+        va_end(ap);
 
         /* evaluate message position */
         if (hp->inpf)
         {
             msg_inpf = hp->inpf;
+
             msg_fname = infget_fname(msg_inpf);
 
-            /* is parent file for position? */
-            if (!strncmp(msg_fname, PARENT_FILE_ID,
-                         strlen(PARENT_FILE_ID)))
+            /* use parent file for position? */
+            if (is_child_file(msg_fname))
             {
-                /* use position of first file on stack */
-                msg_inpf = (INFILE *) dln_data(dll_first(hp->inpf_stack));
-                msg_fname = infget_fname(msg_inpf);
-                D(fprintf(stderr, DHL "msg from spec.file\n"));
+                DLNODE *nd = dll_first(hp->inpf_stack);
+
+                msg_inpf = NULL;
+                msg_fname = NULL;
+
+                if (nd)
+                    do
+                    {
+                        D(fprintf(stderr, DHL "skip parent file `%s'\n", msg_fname));
+
+                        /* use position of file on stack */
+                        msg_inpf = (INFILE *) dln_data(nd);
+                        msg_fname = infget_fname(msg_inpf);
+                        nd = dln_next(nd);
+                    }
+                    while (nd && is_child_file(msg_fname));
             }
-            msg_x = infget_wx(msg_inpf) + 1;
-            msg_y = infget_wy(msg_inpf) + 1;
+
+            if (msg_inpf)
+            {
+                msg_x = infget_wx(msg_inpf) + 1;
+                msg_y = infget_wy(msg_inpf) + 1;
+            }
+            else
+            {
+                msg_fname = "hsc-internal.hsc";
+                msg_x = 0;
+                msg_y = 0;
+            }
         }
         else
         {
@@ -369,12 +403,16 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
 
 VOID hsc_msg_eof(HSCPRC * hp, STRPTR descr)
 {
-    STRPTR eoftxt = "unexpected end of file";
+    STRPTR eoftxt = "unexpected end of context";
 
     if (descr)
+    {
         hsc_message(hp, MSG_UNEX_EOF, "%s (%s)", eoftxt, descr);
+    }
     else
+    {
         hsc_message(hp, MSG_UNEX_EOF, "%s", eoftxt);
+    }
 }
 
 VOID hsc_msg_illg_whtspc(HSCPRC * hp)
@@ -385,11 +423,15 @@ VOID hsc_msg_illg_whtspc(HSCPRC * hp)
 VOID hsc_msg_stripped_tag(HSCPRC * hp, HSCTAG * tag, STRPTR why)
 {
     if (why)
+    {
         hsc_message(hp, MSG_TAG_STRIPPED,
                     "stripped tag %T (%s)", tag, why);
+    }
     else
+    {
         hsc_message(hp, MSG_TAG_STRIPPED,
                     "stripped tag %T", tag);
+    }
 }
 
 VOID hsc_msg_unkn_attr(HSCPRC * hp, STRPTR attr)
@@ -455,7 +497,9 @@ VOID enforcerHit(VOID)
           "Addr: AAAA0000 AAAA1111 AAAA2222 AAAA3333 AAAA4444 0325B802 00200810 --------\n"
           "Stck: 0325B878 00000000 00FA06D6 00010000 0334A40C 03F46630 00AC4C20 00000000\n",
           stderr);
-    strcpy((STRPTR) hsc_message, "die for oil, sucker");        /* crash machine */
+    /* crash machine by making fun of writing bullshit into function code
+     * (it must have been a complete idiot who designed a language which
+     * allows code like the one you can read below) */
+    strcpy((STRPTR) hsc_message, "die for oil, sucker");
     exit(RC_FAIL);              /* just for the case we are still there.. */
 }
-

@@ -49,9 +49,9 @@ The same as above can be performed using
 </PRE>
 <P>Note the trailing slash that tells <hsc> that it should now output
 to a directory and determine the filename by itself. Usually, it
-will use <CODE>(input filenname, without ".hsc", but a ".html"
-appened)</CODE>, resulting into <FILE>www:sepp/hugo.html</FILE>
-as before. You can change this using the CLI option 
+will use (<CODE>input filenname</CODE>, without <qqc>.hsc</qqc>,
+but a <qqc>.html</qqc> appended), resulting into <FILE>www:sepp/hugo.html</FILE>
+as before. You can change the default extension using the CLI option
 <op_extension>.</P>
 
 <H2>Using sub directories</H2>
@@ -65,7 +65,7 @@ Invoking hsc like
 <PRE>
     hsc FROM people/hugo.hsc TO www:sepp/
 </PRE>
-<P>will now ouput to <FILE>www:sepp/people/hugo.html</FILE>. Note that you
+<P>will now output to <FILE>www:sepp/people/hugo.html</FILE>. Note that you
 have to take care that the directory <FILE>www:sepp/people/</FILE>
 exists, <hsc> will not create any new directories by itself.</P>
 
@@ -74,7 +74,7 @@ exists, <hsc> will not create any new directories by itself.</P>
 <$source pre>
     <IMG SRC="../image/back.gif" ALT="back">
 </$source>
-Alternatively, you can use and <fe_absuri>:
+Alternatively, you can use an <fe_absuri>:
 <$source pre>
     <IMG SRC=":image/back.gif" ALT="hugo">
 </$source>

@@ -1,4 +1,23 @@
 /*
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1993-1997  Thomas Aglassinger
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+/*
  * ugly/dllist.c
  *
  * double linked list processing functions
@@ -19,7 +38,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 11-Sep-1996
+ * updated:  9-Mar-1997
  * created:  1-Mar-1994
  *
  *---------------------------------------------------------
@@ -238,7 +257,9 @@ DLNODE *app_dlnode(DLLIST * list, APTR data)
     DLNODE *newnode = NULL;
 
     if (list)
+    {
         newnode = ins_dlnode(list, NULL, data);
+    }
 
     return newnode;
 }
@@ -257,7 +278,9 @@ DLNODE *add_dlnode(DLLIST * list, APTR data)
     DLNODE *newnode = NULL;
 
     if (list)
+    {
         newnode = ins_dlnode(list, list->first, data);
+    }
 
     return newnode;
 }
@@ -362,6 +385,35 @@ DLNODE *find_dlnode(DLNODE * start, APTR data,
         found = (*compare) (data, search->data);
         if (!found)
             search = search->next;
+    }
+
+    return search;
+}
+
+/*
+ * find_dlnode_bw
+ *
+ * search for specific data in a list, starting at a specific node,
+ * search directions set to backwards
+ *
+ * params: start....startnode to begin search with
+ *         data.....data to be found
+ *         compare..funtions that compares two data-items;
+ *                  returns -1 if items are equal, else 0
+ * result: ptr to node that contains requested data
+ *         or NULL if not found
+ */
+DLNODE *find_dlnode_bw(DLNODE * start, APTR data,
+                    int (*compare) (APTR cmp_data, APTR list_data))
+{
+    DLNODE *search = start;
+    int found = 0;
+
+    while (search && !(found))
+    {
+        found = (*compare) (data, search->data);
+        if (!found)
+            search = search->prev;
     }
 
     return search;

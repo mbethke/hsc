@@ -1,10 +1,29 @@
 /*
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1993-1997  Thomas Aglassinger
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+/*
  *
  * fname.h
  *
  * header file for filename manipulaton functions
  *
- * (W) by Tommy-Saftwörx in 1994,95,96
+ * (W) by Tommy-Saftwörx in 1994-97
  *
  */
 
@@ -30,7 +49,7 @@
  * CRLF_SHIT         0=OS uses single "\n" for EOL
  */
 
-#ifdef AMIGA
+#ifdef AMIGA                           /* AmigaOS */
 #define MAX_FPATH 256
 #define MAX_FNAME  31
 #define MAX_FEXT   30
@@ -40,7 +59,7 @@
 #define FNAME_IGNORE_CASE 1
 #define SUGGEST_CRLF_SHIT 0
 
-#elif defined BEBOX
+#elif defined BEOS                     /* BeOS */
 #define MAX_FPATH 254
 #define MAX_FNAME  64
 #define MAX_FEXT   63
@@ -50,7 +69,7 @@
 #define FNAME_IGNORE_CASE 1
 #define SUGGEST_CRLF_SHIT 0
 
-#elif defined UNIX
+#elif defined UNIX                     /* Weenix */
 #define MAX_FPATH 254
 #define MAX_FNAME 254
 #define MAX_FEXT  253
@@ -60,7 +79,17 @@
 #define FNAME_IGNORE_CASE 0
 #define SUGGEST_CRLF_SHIT 0
 
-#elif defined WINNT
+#elif defined RISCOS                   /* RiscOS */
+#define MAX_FPATH 255
+#define MAX_FNAME  32
+#define MAX_FEXT   32
+#define PATH_SEPARATOR    "/"
+#define DIR_SEPARATOR     '/'
+#define PARENT_DIR        "../"
+#define FNAME_IGNORE_CASE 1
+#define SUGGEST_CRLF_SHIT 0
+
+#elif defined WINNT                    /* bullshit 1 */
 #define MAX_FPATH 254
 #define MAX_FNAME 254
 #define MAX_FEXT  253
@@ -72,7 +101,7 @@
 
 #define MSDOS 1 /* isn't this nasty? */
 
-#elif defined MSDOS
+#elif defined MSDOS                    /* bullshit 2 */
 #define MAX_FPATH 128
 #define MAX_FNAME   8
 #define MAX_FEXT    3

@@ -1,9 +1,6 @@
 /*
- * hsclib/eval.c
- *
- * attribute value evaluation functions
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  4-Dec-1995
+ */
+/*
+ * hsclib/eval.c
+ *
+ * attribute value evaluation functions
+ *
+ * updated: 12-May-1997
  * created: 11-Oct-1995
  */
 
@@ -388,7 +391,11 @@ static VOID choose_quote(HSCPRC * hp, HSCATTR * attr)
 
     D(fprintf(stderr, DHL "  choosing quote\n"));
 
-    if (value[0])
+    if (attr->vartype == VT_BOOL)
+    {
+        D(fprintf(stderr, DHL "    forget it, it's just a boolean attrib\n"));
+    }
+    else if (value[0])
     {
         /* scan attribute value for quotes */
         while (value[0])
@@ -405,7 +412,8 @@ static VOID choose_quote(HSCPRC * hp, HSCATTR * attr)
                 double_quote = TRUE;
                 nasty_char = TRUE;
             }
-            else if (!hsc_normch(value[0]) && !nasty_char)
+            else if ((!hsc_normch(value[0]) || (value[0] == '_'))
+                     && !nasty_char)
             {
                 D(fprintf(stderr, DHL "    nasty-char #%d detected\n", value[0]));
                 nasty_char = TRUE;
@@ -590,7 +598,7 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
         }
         else if (!upstrcmp(nw, "EXISTS"))
         {
-            /* check existence of file */
+            /* check existence of file (relative to destination dir) */
             eval_result = eval_expression(hp, tmpdest, NULL);
             if (eval_result)
             {
@@ -600,6 +608,30 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
                 D(fprintf(stderr, DHL "  EXISTS(`%s')\n", eval_result));
 
                 conv_hscuri2file(hp, dest_fname, eval_result);
+                file = fopen(estr2str(dest_fname), "r");
+                if (file)
+                {
+                    fclose(file);
+                    set_varbool(dest, TRUE);
+                }
+                else
+                    set_varbool(dest, FALSE);
+
+                del_estr(dest_fname);
+                eval_result = get_vartext(dest);
+            }
+        }
+        else if (!upstrcmp(nw, "FEXISTS"))
+        {
+            /* check existence of file */
+            eval_result = eval_expression(hp, tmpdest, NULL);
+            if (eval_result)
+            {
+                FILE *file = NULL;
+                EXPSTR *dest_fname = init_estr(64);
+
+                D(fprintf(stderr, DHL "  EXISTS(`%s')\n", eval_result));
+
                 file = fopen(eval_result, "r");
                 if (file)
                 {

@@ -3,8 +3,8 @@
     PREV="make.html"
     NEXT="prjfile.html">
 
-Inside the <FILE>grafflwerk</FILE>-drawer, you can find an rather empty
-<A HREF=":../grafflwerk/Makefile"><makefile></A>
+Inside the <FILE>starter-project</FILE>-drawer, you can find an rather empty
+<A HREF=":../starter-project/source/Makefile"><makefile></A>
 to be used for new projects. This will be a short explanation
 of the symbols and rules defined in this <makefile>.
 
@@ -52,7 +52,7 @@ all parameters for <hsc>, exept the main hsc-source.</P>
                 $(HSC) $(HSCFLAGS) $< 
 </$source>
 
-<P>This is an implict rule that will create a html-object in
+<P>This is an implicit rule that will create a html-object in
 <CODE>DESTDIR</CODE> using the corresponding hsc-source and
 the options you specified above. The automatic variable 
 "<CODE>$&lt;</CODE>" contains the name of the first dependency,
@@ -84,9 +84,9 @@ make sure to invoke <KBD>make depend</KBD> afterwards.</P>
 
 <P>to add <FILE>newfile.hsc</FILE> to the project.</P>
 
-<H2>Postprocessing</H2>
+<H2>Post-processing</H2>
 
-<P>A fine thing about the  implicit rule used above to create your
+<P>A fine thing about the implicit rule used above to create your
 html-object is that it can be extended to do several things
 after <hsc> has performed it's task.</P>
 
@@ -104,10 +104,10 @@ Unixoid systems.</P>
 <$source PRE>
         $(DESTDIR)%.html : %.hsc
                 $(HSC) $(HSCFLAGS) $<
-                rx SendAWeb.rexx $@
+                rx SendBrowser.rexx $@
 </$source>
-<P>to immediatly display updated documents in your browser. The
-Rexx-Script <A HREF=":../grafflwerk/SendAWeb.rexx">SendAWeb.rexx</A> can
-be found in the <FILE>grafflwerk</FILE>-drawer of the hsc-archive.</P>
+<P>to immediately display updated documents in your browser. The
+Rexx-Script <A HREF=":../grafflwerk/SendBrowser.rexx">SendBrowser.rexx</A>
+can be found in the <FILE>grafflwerk</FILE>-drawer of the hsc-archive.</P>
 
 </WEBPAGE>

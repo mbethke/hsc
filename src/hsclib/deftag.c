@@ -1,9 +1,6 @@
 /*
- * hsclib/deftag.c
- *
- * define new tag from input file
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 25-Nov-1996
+ */
+/*
+ * hsclib/deftag.c
+ *
+ * define new tag from input file
+ *
+ * updated: 25-Feb-1997
  * created: 13-Oct-1995
  */
 
@@ -31,39 +34,6 @@
 #include "hsclib/skip.h"
 
 /*
- * get_mci
- *
- */
-LONG get_mci(HSCPRC * hp)
-{
-    hp->tag_call_id++;
-
-    return (hp->tag_call_id);
-}
-
-/*
- * unget_mci
- *
- */
-VOID unget_mci(HSCPRC * hp)
-{
-    hp->tag_call_id--;
-    if (hp->tag_call_id < 0)
-    {
-        panic("MCI underflow");
-    }
-}
-
-/*
- * get_current_mci
- *
- */
-LONG get_current_mci(HSCPRC * hp)
-{
-    return (hp->tag_call_id);
-}
-
-/*
  *-------------------------------------
  * define a new tag from input file
  *-------------------------------------
@@ -73,7 +43,7 @@ LONG get_current_mci(HSCPRC * hp)
  * def_tag_name
  *
  */
-HSCTAG *def_tag_name(HSCPRC * hp, BOOL * open_tag)
+HSCTAG *def_tag_name(HSCPRC * hp, BOOL * start_tag)
 {
     STRPTR nw = NULL;
     HSCTAG *tag = NULL;
@@ -85,8 +55,8 @@ HSCTAG *def_tag_name(HSCPRC * hp, BOOL * open_tag)
     /* create new tag */
     if (nw)
     {
-        *open_tag = (BOOL) (strcmp(nw, "/"));
-        if (!(*open_tag))
+        *start_tag = (BOOL) (strcmp(nw, "/"));
+        if (!(*start_tag))
         {
             /* add closing tag */
             nw = infget_tagid(hp);
@@ -94,10 +64,26 @@ HSCTAG *def_tag_name(HSCPRC * hp, BOOL * open_tag)
             {
                 tag = find_strtag(taglist, nw);
                 if (tag)
-                    /* set closing flag */
-                    tag->option |= HT_CLOSE;
+                {
+                    if ((tag->option & HT_CLOSE)
+                        ||
+                        (tag->option & HT_CONTENT))
+                    {
+                        /* tried to redefine end tag */
+                        tag = NULL;
+                        hsc_message(hp, MSG_REDEFINE_ENDTAG,
+                                    "redefined %c", nw);
+                    }
+                    else
+                    {
+                        /* mark macro as a container */
+                        tag->option |= HT_CLOSE;
+                    }
+                }
                 else
                 {
+                    /* tried to define end tag without previous start tag */
+                    tag = NULL;
                     hsc_message(hp, MSG_DEFTAG_NO_OPEN,
                                 "no start tag for %c", nw);
                 }
@@ -128,9 +114,11 @@ HSCTAG *def_tag_name(HSCPRC * hp, BOOL * open_tag)
         }
     }                           /* err_eof already called in infget_tagid() */
 
+#if 0                           /* TODO: remove this */
     /* convert tag name to upper  case */
     if (tag)
         upstr(tag->name);
+#endif
 
     return (tag);
 }
@@ -237,6 +225,15 @@ static BOOL parse_lazy_option(HSCPRC * hp, HSCTAG * tag, STRPTR lazy)
 
 /*
  * parse_tag_option
+ *
+ * check a tag-modifier, read additional values (if necessary), update
+ * tag structure
+ *
+ * params: hp......hsc process
+ *         option..string that contains modifier (eg. "REQUIRED")
+ *         tag.....tag to modify
+ * result: TRUE, if modifier could be handled
+ * errors: return FALSE, output message
  */
 static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
 {
@@ -292,12 +289,15 @@ static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
     else
     {
         ok |= check_tag_option(hp, option, tag, TO_CLOSE_STR, TO_CLOSE_SHT, HT_CLOSE);
+
+        /* now check for all the other stuff */
         ok |= check_tag_option(hp, option, tag, TO_SPECIAL_STR, TO_SPECIAL_SHT, HT_SPECIAL);
         ok |= check_tag_option(hp, option, tag, TO_JERK_STR, TO_JERK_SHT, HT_JERK);
         ok |= check_tag_option(hp, option, tag, TO_AUTOCLOSE_STR, TO_AUTOCLOSE_SHT, HT_AUTOCLOSE);
         ok |= check_tag_option(hp, option, tag, TO_OBSOLETE_STR, TO_OBSOLETE_SHT, HT_OBSOLETE);
         ok |= check_tag_option(hp, option, tag, TO_ONLYONCE_STR, TO_ONLYONCE_SHT, HT_ONLYONCE);
         ok |= check_tag_option(hp, option, tag, TO_REQUIRED_STR, TO_REQUIRED_SHT, HT_REQUIRED);
+        ok |= check_tag_option(hp, option, tag, TO_RECOMMENDED_STR, TO_RECOMMENDED_SHT, HT_RECOMMENDED);
         ok |= check_tag_option(hp, option, tag, TO_SKIPLF_STR, TO_SKIPLF_SHT, HT_SKIPLF);
         ok |= check_tag_option(hp, option, tag, TO_WHTSPC_STR, TO_WHTSPC_SHT, HT_WHTSPC);
 
@@ -358,6 +358,9 @@ static BOOL parse_tag_var(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
 {
+    /* TODO: remove the bullshit with "\n"-checking;
+     * meanwhile "\n" is treated as white space */
+
     BOOL ok = FALSE;
     STRPTR nw;
     INFILE *inpf = hp->inpf;
@@ -671,4 +674,3 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
 
     return (result_tci);
 }
-

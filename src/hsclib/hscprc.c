@@ -1,9 +1,6 @@
 /*
- * hscprc.c
- *
- * hsc process functions
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 31-Oct-1996
+ */
+/*
+ * hscprc.c
+ *
+ * hsc process functions
+ *
+ * updated: 10-May-1997
  * created: 11-Feb-1996
  */
 
@@ -60,6 +63,7 @@ VOID del_hscprc(HSCPRC * hp)
         del_dllist(hp->deftag);
         del_dllist(hp->defattr);
         del_dllist(hp->container_stack);
+        del_dllist(hp->content_stack);
         del_dllist(hp->inpf_stack);
         del_dllist(hp->idrefs);
         del_dllist(hp->select_stack);
@@ -69,12 +73,12 @@ VOID del_hscprc(HSCPRC * hp)
         del_estr(hp->destdir);
         del_estr(hp->reldir);
         del_estr(hp->iconbase);
+        del_estr(hp->server_dir);
         del_estr(hp->if_stack);
         del_estr(hp->tag_name_str);
         del_estr(hp->tag_attr_str);
         del_estr(hp->tag_close_str);
         del_estr(hp->tmpstr);
-        del_estr(hp->rmt_str);
         del_estr(hp->curr_msg);
         del_estr(hp->curr_ref);
         del_estr(hp->whtspc);
@@ -124,6 +128,7 @@ VOID reset_hscprc(HSCPRC * hp)
     hp->inside_anchor = FALSE;
     hp->inside_title = FALSE;
 
+    hp->tag_next_whtspc = NULL;
     hp->strip_badws = FALSE;
     hp->strip_next_whtspc = FALSE;
     hp->strip_next2_whtspc = FALSE;
@@ -163,6 +168,7 @@ HSCPRC *new_hscprc(void)
         hp->deftag = init_dllist(del_hsctag);
         hp->defattr = init_dllist(del_hscattr);
         hp->container_stack = init_dllist(del_hsctag);
+        hp->content_stack = init_dllist(del_string_node);
         hp->inpf_stack = init_dllist(del_inpf_stack_node);
         hp->project = NULL;
         hp->idrefs = init_dllist(del_idref);
@@ -173,12 +179,12 @@ HSCPRC *new_hscprc(void)
         hp->destdir = init_estr(0);
         hp->reldir = init_estr(0);
         hp->iconbase = init_estr(0);
+        hp->server_dir = init_estr(0);
         hp->if_stack = init_estr(0);
         hp->tag_name_str = init_estr(128);
         hp->tag_attr_str = init_estr(128);
         hp->tag_close_str = init_estr(0);
         hp->tmpstr = init_estr(0);
-        hp->rmt_str = init_estr(128);
         hp->curr_msg = init_estr(64);
         hp->curr_ref = init_estr(64);
         hp->whtspc = init_estr(0);
@@ -319,6 +325,12 @@ STRPTR hsc_get_iconbase(HSCPRC * hp)
     return (estr2str(hp->iconbase));
 }
 
+STRPTR hsc_get_server_dir(HSCPRC * hp)
+{
+    return (estr2str(hp->server_dir));
+}
+
+
 /*
  * get internal values
  */
@@ -395,6 +407,22 @@ BOOL hsc_set_iconbase(HSCPRC * hp, STRPTR uri)
     set_estr(hp->iconbase, uri);
 
     D(fprintf(stderr, DHL "iconbase=`%s'\n", estr2str(hp->iconbase)));
+
+    return (TRUE);
+}
+
+BOOL hsc_set_server_dir(HSCPRC * hp, STRPTR dir)
+{
+    set_estr(hp->server_dir, dir);
+
+    /* if dir does not already end with a directory separator,
+     * append if now */
+    if (!strchr(PATH_SEPARATOR, last_ch(dir)))
+    {
+        app_estrch(hp->server_dir, PATH_SEPARATOR[0]);
+    }
+
+    D(fprintf(stderr, DHL "serverdir=`%s'\n", estr2str(hp->server_dir)));
 
     return (TRUE);
 }
@@ -739,7 +767,10 @@ BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text)
         /* add current white spaces to white space
          * buffer; if hp->compact is enabled, reduce
          * white spaces */
-        app_estr(hp->whtspc, wspc);
+        if (wspc)
+        {
+            app_estr(hp->whtspc, wspc);
+        }
         if (hp->compact && (!hp->inside_pre))
         {
             /* reduce white spaces */
@@ -756,11 +787,22 @@ BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text)
             D(fprintf(stderr, DHL "bad white spaces stripped\n"));
             hp->strip_next_whtspc = FALSE;
             wspc = "";
-        } else if (hp->strip_next2_whtspc)
+        }
+        else if (hp->strip_next2_whtspc)
         {
             hp->strip_next2_whtspc = FALSE;
             hp->strip_next_whtspc = TRUE;
         }
+        else if ((hp->tag_next_whtspc)
+                 && strlen(wspc))
+        {
+            hsc_message(hp, MSG_SUCC_WHTSPC,
+                        "succeeding white-space for %T",
+                        hp->tag_next_whtspc);
+        }
+
+        hp->tag_next_whtspc = NULL;
+
 
 #if DEBUG_HSCLIB_OUTPUT
         if (hp->debug)
@@ -772,6 +814,17 @@ BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text)
 #endif
         if ((wspc && wspc[0]) || (text && text[0]))
         {
+            /* convert NULL values to empty strings */
+            if (!wspc)
+            {
+                wspc = "";
+            }
+            if (!text)
+            {
+                text = "";
+            }
+
+            /* output text */
             (*((hp)->CB_text)) ((hp), wspc, text);
             written = TRUE;
         }

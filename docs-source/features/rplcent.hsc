@@ -8,7 +8,7 @@
     QAUTHOR='Natalie Merchant, "San Andreas Fault"'>
 
 <P>Once upon a time, some guys invented ASCII. As these
-guys have been americans, they dind't care (or probably not
+guys have been Americans, they did not care (or probably not
 even know) about the rest of the world and said: "128
 different characters are enough." So, nowadays you still
 can't write and read a simple german umlaut within different
@@ -20,7 +20,7 @@ provide a solution to this tricky problem: Instead of typing
 "Ü", simply write <CODE>&amp;Uuml;</CODE>. Congratulations,
 what a great idea! 7 bit rulez!</P>
 
-So as consequence of this prehistoric {beep}, <hsc> can replace
+<p>So as consequence of this prehistoric {beep}, <hsc> can replace
 special characters in the hsc-source with its entities in
 the html-object. You just need to enable the <A
 HREF=":options.html">RPLCENT</A> switch. </P>

@@ -1,4 +1,23 @@
 /*
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+/*
  * hsclib/attribute.h
  *
  * attribute structure and funcs for hsc
@@ -32,6 +51,7 @@
 #define VF_JERK         (1<<3)  /* attribute only used by jerks */
 #define VF_STRIPEXT     (1<<4)  /* URI: strip tag, if external */
 #define VF_GETSIZE      (1<<5)  /* URI: get WIDTH & HEIGHT from here */
+#define VF_RECOMMENDED  (1<<6)  /* attribute is recommended to appear */
 
 #define VF_KEEP_QUOTES  (1<<28) /* keep quotes untouched */
 #define VF_GLOBAL       (1<<29) /* attribute is global: <$DEFINE> */
@@ -53,20 +73,22 @@
  * attribute list. (see "copy_local_varlist()" in "attrib.c")
  */
 
-#define VF_CONST_STR    "CONST" /* attr is read only <$DEFINE> */
-#define VF_CONST_SHT    "C"
-#define VF_GLOBAL_STR   "GLOBAL"        /* global attribute <$DEFINE> */
-#define VF_GLOBAL_SHT   "G"
-#define VF_JERK_STR     "JERK"  /* attr only used by jerks */
-#define VF_JERK_SHT     "J"
-#define VF_ONLYONCE_STR "ONLYONCE"      /* attr may appear only once in tag */
-#define VF_ONLYONCE_SHT "1"
-#define VF_REQUIRED_STR "REQUIRED"      /* attr is required */
-#define VF_REQUIRED_SHT "R"
-#define VF_STRIPEXT_STR "STRIPEXT"      /* strip tag, if URI is external */
-#define VF_STRIPEXT_SHT "X"
-#define VF_GETSIZE_STR  "GETSIZE"       /* follow URI to get WIDTH & HEIGHT */
-#define VF_GETSIZE_SHT  "Z"
+#define VF_CONST_STR       "CONST" /* attr is read only <$DEFINE> */
+#define VF_CONST_SHT       "C"
+#define VF_GLOBAL_STR      "GLOBAL"        /* global attribute <$DEFINE> */
+#define VF_GLOBAL_SHT      "G"
+#define VF_JERK_STR        "JERK"  /* attr only used by jerks */
+#define VF_JERK_SHT        "J"
+#define VF_ONLYONCE_STR    "ONLYONCE"      /* attr may appear only once in tag */
+#define VF_ONLYONCE_SHT    "1"
+#define VF_REQUIRED_STR    "REQUIRED"      /* attr is required */
+#define VF_REQUIRED_SHT    "R"
+#define VF_STRIPEXT_STR    "STRIPEXT"      /* strip tag, if URI is external */
+#define VF_STRIPEXT_SHT    "X"
+#define VF_GETSIZE_STR     "GETSIZE"       /* follow URI to get WIDTH & HEIGHT */
+#define VF_GETSIZE_SHT     "Z"
+#define VF_RECOMMENDED_STR "RECOMMENDED"       /* follow URI to get WIDTH & HEIGHT */
+#define VF_RECOMMENDED_SHT "RCMD"
 
 /* prefix for temporary attributes */
 #define PREFIX_HSCATTR "HSC."

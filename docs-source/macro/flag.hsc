@@ -11,12 +11,16 @@
 you can use several modifiers to tell <hsc> how to handle this macro/tag.</P>
 
 
-Legal modifiers for <ln_macro> are:
+Legal modifiers for both <ln_macro> and <ln_deftag> are:
 <DL>
+<LIFLAG long="CLOSE" short="C">
+    macro/tag is a container and requires a corresponding end tag.
 <LIFLAG long="ONLYONCE" short="1">
     macro/tag is required at the most once within a document
 <LIFLAG long="REQUIRED" short="R">
-    macro/tag is required at least once within a document
+    macro/tag is required to appear at least once within a document
+<LIFLAG long="RECOMMENDED" short="RCMD">
+    macro/tag ought to appear least once within a document
 <LIFLAG long="MUST_BE_INSIDE" short="MBI">
     Needs a string as argument, that contains a list of container tags,
     that must be started before tag is allowed to be used.<BR>
@@ -33,15 +37,14 @@ Legal modifiers for <ln_macro> are:
 
 Additionally, the following modifiers can be used with <ln_deftag>
 <DL>
-<LIFLAG long="CLOSE" short="C">
-    tag is a container and requires a corresponding closing tag.
 <LIFLAG long="AUTOCLOSE" short="AC">
     Used for <TG>P</TG> and <TG>LI</TG>, which can be used as container
-    or single tag depending on the HTML version.
+    or single tag depending on the HTML version. Tags marked with this
+    modifier can not be nested.
 <LIFLAG long="JERK" short="J" ONLYDEFTAG>
     tag is only used by jerks
 <LIFLAG long="LAZY" short="L" ONLYDEFTAG>
-    This modifier has just been for my lazyness and defines some
+    This modifier has just been for my laziness and defines some
     often needed attributes with a single letter;
     <qq><CODE>c</CODE></qq> for <qq><CODE>CLASS:string</CODE></qq>,
     <qq><CODE>h</CODE></qq> for <qq><CODE>HREF:uri</CODE></qq>,
@@ -56,21 +59,21 @@ Additionally, the following modifiers can be used with <ln_deftag>
     tag is obsolete and should not be used any more. This eg.
     concerns <TG>LISTING</TG>.
 <LIFLAG long="SKIPLF" short="S">
-    skip a linefeed ("\n") that comes immediatly after the tag. This
+    skip a linefeed ("\n") that comes immediately after the tag. This
     is only useful for some of <hsc>'s special tags and only avoids
-    some uneccessary empty lines.
+    some unnecessary empty lines.
 <LIFLAG long="SPECIAL" short="SPC">
     This one marks tags which are no "normal" tags with some attributes,
     but have their own syntax. The only HTML-tag which has this modifier
     set is <TG>!</TG> (for SGML comments).
 <LIFLAG long="WHTSPC" short="W">
-    If this modifier is set, any occurence of the container is checked
+    If this modifier is set, any occurrence of the container is checked
     for succeeding/preceding white spaces. By default, this concerns
     the tags <TG>A</TG>, <TG>TITLE</TG>, headings and physical/logical
     styles.
 </DL>
 
-<P>To define ab end macro, don't use <CODE>/CLOSE</CODE>, but define
+<P>To define an end macro, don't use <CODE>/CLOSE</CODE>, but define
 the macro a second time, with a "<KBD>/</KBD>" as the first character
 of its name. For examples, see the section about <ln_macro>.</P>
 

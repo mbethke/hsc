@@ -1,9 +1,6 @@
 /*
- * hsclib/tag_misc
- *
- * misc. tag-callbacks
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 13-Oct-1996
+ */
+/*
+ * hsclib/tag_misc
+ *
+ * misc. tag-callbacks
+ *
+ * updated: 30-Apr-1997
  * created: 30-Jul-1995
  */
 
@@ -91,13 +94,19 @@ BOOL handle_heading(HSCPRC * hp, HSCTAG * tag)
 
     D(fprintf(stderr, DHL "  heading %d\n", num));
 
+    /* check for <Hx> inside <A> */
+    if (find_strtag(hp->container_stack, "A"))
+    {
+        hsc_message(hp, MSG_ANCHOR_HEADING, "heading inside anchor");
+    }
+
     if ((hp->prev_heading_num - num) < (-1))
     {
         char hstr[4];
 
         sprintf(hstr, "H%ld", hp->prev_heading_num + 1);
         hsc_message(hp, MSG_WRONG_HEADING,
-                    "expected heading %t", hstr);
+                     "expected heading %t", hstr);
     }
 
     hp->prev_heading_num = num;
@@ -149,10 +158,29 @@ BOOL handle_end_pre(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
 {
-    INFILE *inpf = hp->inpf;
     BOOL not_stripped = TRUE;
+#if 1
+    EXPSTR *content = hp->tag_attr_str;
 
+    /* do not maintain content, if comment should be stripped
+     * lateron anyway */
+    if (hp->strip_cmt)
+    {
+        content = NULL;
+    }
+
+    /* skip data */
+    skip_sgml_special(hp,content);
+
+    /* check if comment should be stripped */
+    if (hp->strip_cmt)
+    {
+        hsc_msg_stripped_tag(hp, tag, "sgml-comment");
+        not_stripped = FALSE;
+    }
+#else
     STRPTR nw = infgetw(inpf);
+    INFILE *inpf = hp->inpf;
 
     if (nw)
     {
@@ -268,7 +296,7 @@ BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
     }
     else
         hsc_msg_eof(hp, "reading sgml-comment");
+#endif
 
     return (not_stripped);
 }
-

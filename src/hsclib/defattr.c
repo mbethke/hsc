@@ -1,10 +1,6 @@
 /*
- * hsclib/defattr.c
- *
- * functions to define new attribute
- * and manipulate attribute lists
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +16,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 13-Oct-1996
+ */
+/*
+ * hsclib/defattr.c
+ *
+ * functions to define new attribute
+ * and manipulate attribute lists
+ *
+ * updated: 25-Feb-1997
  * created:  6-Jan-1995
  */
 
@@ -91,6 +94,45 @@ BOOL check_varlist(HSCPRC * hp, DLLIST * varlist)
     }
 
     return (ok);
+}
+
+/*
+ *-------------------------------------
+ * scope functions
+ *-------------------------------------
+ */
+
+/*
+ * get_mci
+ *
+ */
+LONG get_mci(HSCPRC * hp)
+{
+    hp->tag_call_id++;
+
+    return (hp->tag_call_id);
+}
+
+/*
+ * unget_mci
+ *
+ */
+VOID unget_mci(HSCPRC * hp)
+{
+    hp->tag_call_id--;
+    if (hp->tag_call_id < 0)
+    {
+        panic("MCI underflow");
+    }
+}
+
+/*
+ * get_current_mci
+ *
+ */
+LONG get_current_mci(HSCPRC * hp)
+{
+    return (hp->tag_call_id);
 }
 
 /*
@@ -356,7 +398,7 @@ HSCATTR *define_var(HSCPRC * hp, DLLIST * varlist, ULONG unmasked_flags)
     /* cleanup */
     if (!ok && var)
     {
-        DLNODE *nd = find_attrnode(varlist,varname);
+        DLNODE *nd = find_attrnode(varlist, varname);
         if (nd)
             del_dlnode(varlist, (APTR) nd);
         else
@@ -366,6 +408,112 @@ HSCATTR *define_var(HSCPRC * hp, DLLIST * varlist, ULONG unmasked_flags)
     ufreestr(varname);
 
     return (var);
+}
+
+/*
+ * define_attr_by_hp
+ *
+ * define a new attribute with obtaining data from hsc-process
+ *
+ * SEE ALSO:
+ *   define_attr_by_text
+ */
+HSCATTR *define_attr_by_hp(HSCPRC * hp, STRPTR default_value, ULONG unmasked_flags)
+{
+    HSCATTR *attr = define_var(hp, hp->defattr, 0);
+    if (attr)
+    {
+        /* set scope for local attribute */
+        if (attr->varflag & VF_GLOBAL)
+            attr->macro_id = MCI_GLOBAL;
+        else
+            attr->macro_id = get_current_mci(hp);
+
+        /* see "attrib.h" why this */
+        attr->varflag |= VF_MACRO;
+
+        /* set new value (copy from default) if passed */
+        if (get_vardeftext(attr))
+        {
+            if (default_value)
+            {
+                panic("default value already set");
+            }
+            else
+            {
+                clr_vartext(attr);
+            }
+        }
+
+        /* set default value passed in function args */
+        if (default_value)
+        {
+            set_vartext(attr, default_value);
+        }
+
+        /* remove default value */
+        clr_attrdef(attr);
+    }
+
+    return (attr);
+}
+
+/*
+ * define_attr_by_text
+ *
+ * define a new attribute with attribute definition passed as
+ * string. The new attribute is assigned to the global attr-list
+ * (by default, with a local scope)
+ *
+ * params: varname..name of new var
+ *         flag.....flags: VF_ONLYONCE to avoid re-definition of a var
+ * result: ptr to new var
+ *
+ * NOTE:
+ *   The new attribute will be declared as if a corresponding
+ *   <$define> showed up in the source. It will be assigned to
+ *   the local scope; you will need to add a "/GLOBAL" to the
+ *   description text if you want to avoid this
+ *
+ *   It's recommended not to setup a default value, if you are
+ *   not sure that it can't contain data that will cause error
+ *   messages to show up (like value=xy"zw'bl)
+ *
+ * definition syntax in input file:
+ *   <varname>":"<vartype>[/flag]["="<deftext value>]
+ *
+ * EXAMPLE:
+ *   define_attr_by_text(hp,"sepp:string/global='sepp'", 0)
+ *
+ * SEE ALSO:
+ *   define_var()
+ */
+HSCATTR *define_attr_by_text(HSCPRC * hp, STRPTR attr_text, STRPTR default_value, ULONG unmasked_flags)
+{
+    /* NOTE: this functions works a bit strange */
+    EXPSTR *define_text = init_estr(0);
+    INFILE *old_inpf = hp->inpf;
+    HSCATTR *attr = NULL;
+
+    /* create attribute definition */
+    set_estr(define_text, attr_text);
+    app_estr(define_text, ">");
+
+    hp->inpf = infopen_str(PARENT_FILE_ID "define_attr_by_text",
+                           estr2str(define_text), 0);
+
+    /* process attribute definition */
+    if (hp->inpf)
+    {
+        attr = define_attr_by_hp(hp, default_value, unmasked_flags);
+        infclose(hp->inpf);
+    }
+
+    /* cleanup */
+    hp->inpf = old_inpf;
+    del_estr(define_text);
+
+    return (attr);
 }
 
 /*
@@ -407,7 +555,9 @@ BOOL copy_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci)
     BOOL ok = TRUE;
 
     if (mci == MCI_ERROR)
+    {
         panic("mci=MCI_ERROR");
+    }
     else
     {
         DLNODE *nd = varlist->first;
@@ -442,7 +592,9 @@ static HSCATTR *set_local_var(DLLIST * destlist, HSCATTR * locvar, ULONG mci)
         set_vartext(var, locvar->text);
     }
     else
+    {
         panic("set_local_var to UNKNOWN ATTR");
+    }
 
     return (var);
 }
@@ -459,7 +611,9 @@ BOOL set_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci)
     BOOL ok = TRUE;
 
     if (mci == MCI_ERROR)
+    {
         panic("mci=MCI_ERROR");
+    }
     else
     {
         DLNODE *nd = varlist->first;
@@ -494,4 +648,3 @@ VOID remove_local_varlist(DLLIST * varlist, ULONG mci)
         nd = nd_nxt;
     }
 }
-

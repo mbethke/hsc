@@ -1,9 +1,6 @@
 /*
- * hsclib/include.c
- *
- * hsc include functions
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 17-Nov-1996
+ */
+/*
+ * hsclib/include.c
+ *
+ * hsc include functions
+ *
+ * updated: 16-May-1997
  * created: 19-Feb-1996
  */
 
@@ -60,7 +63,7 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
 
     if (inpf)                   /* file opened? */
     {                  
-#if (defined MSDOS && !defined HSC_YOUR)
+#if (defined MSDOS) /* HSC_YOUR */
         /* check input > 32K */
         if (estrlen(inpf->lnbuf) > (32*1024))
         {
@@ -70,19 +73,25 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
 #endif
         /* push current input file on input-file-stack */
         if (hp->inpf)
+        {
             ins_dlnode(hp->inpf_stack, hp->inpf_stack->first, (APTR) hp->inpf);
+        }
 
         /* set new base position for input-file */
         /* (if called from a macro or after eg. <$source>) */
         if (base_pos)
+        {
             set_infile_base(inpf, base_pos);
+        }
 
         /* assign new input file to hsc-process */
         hp->inpf = inpf;
 
         /* hide status? */
         if ((optn & IH_PARSE_MACRO) || (optn & IH_PARSE_MACRO))
+        {
             optn |= IH_NO_STATUS;
+        }
 
         /* set char-parse methods */
         inpf->is_nc = hsc_normch;       /* set is_nc-methode */
@@ -90,22 +99,31 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
 
         /* status message: reading new file */
         if (!(optn & IH_NO_STATUS) && !infeof(inpf))
+        {
             hsc_status_file_begin(hp, infget_fname(hp->inpf));
+        }
 
+        /* parse file */
         while (!infeof(inpf) && ok)
-        {                       /* parse file */
-            if (!(optn & IH_NO_STATUS) &&       /* status message */
+        {
+            if (!(optn & IH_NO_STATUS) &&
                 (hp->prev_status_line != infget_y(hp->inpf))
                 )
             {
+                /* status message */
                 hsc_status_line(hp);
                 hp->prev_status_line = infget_y(hp->inpf);
             }
+
             /* parse next item */
             if (optn & IH_PARSE_SOURCE)
+            {
                 ok = hsc_parse_source(hp);
+            }
             else
+            {
                 ok = hsc_parse(hp);
+            }
         }
 
         /* parse at end: check for missing tags, .. */
@@ -114,19 +132,24 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
             ok = hsc_parse_end(hp);
 
             if (ok && (optn & IH_UPDATE_PRJ))
-                ok = hsc_parse_end_id(hp);      /* update project file */
+            {
+                /* update project file */
+                ok = hsc_parse_end_id(hp);
+            }
         }
 
         /* end of file status */
         if (!(optn & IH_NO_STATUS))
         {
-            hsc_status_file_end(hp);    /* status message: file processed */
+            /* status message: file processed */
+            hsc_status_file_end(hp);
         }
-        infclose(hp->inpf);     /*    close file */
+
+        /* close file */
+        infclose(hp->inpf);
 
         /* pull previous input file from input-file-stack
-         * or end hsc-process
-         */
+         * or end hsc-process */
         if (hp->inpf_stack->first)
         {
             /* pull first item from stack */
@@ -139,10 +162,11 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
         {
             hp->inpf = NULL;
         }
-
     }
     else
+    {
         panic("no input file");
+    }
 
     return (ok);
 }

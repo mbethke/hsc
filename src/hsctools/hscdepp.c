@@ -1,9 +1,6 @@
 /*
- * hscdepp
- *
- * hsc dependency procreator
- *
- * Copyright (C) 1996  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,19 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *-------------------------------------------------------------------
- *
- * Author : Thomas Aglassinger (Tommy-Saftwörx)
- * Email  : agi@giga.or.at, agi@sbox.tu-graz.ac.at
- * Address: Lissagasse 12/II/9
- *          8020 Graz
- *          AUSTRIA
- *
- *-------------------------------------------------------------------
- *
+ */
+/*
  * hsctools/hscdepp.c
  *
- * updated: 17-Nov-1996
+ * hsc dependency procreator
+ *
+ * updated: 28-Mar-1997
  * created:  8-Jul-1996
  */
 
@@ -188,7 +179,7 @@ static BOOL args_ok(int argc, char *argv[])
          "NOBACKUP/S", &nobackup, "do not backup makefile",
          "NOTAGLINES/S", &notaglines, "do not write taglines",
          "-DEBUG/S", &debug, "enable debugging output",
-         "HELP=?=-h/S", &arg_help, "display this text",
+         "HELP=?=-h=--help/S", &arg_help, "display this text",
          "LICENSE/S", &arg_license, "display license",
          NULL);
 
@@ -450,7 +441,7 @@ static BOOL read_project(VOID)
     inpf = infopen(prjfile, CHUNKSIZE_INPUTFILE);
     if (inpf)
     {
-        if (hsc_project_read_file(project, inpf))
+        if (hsc_project_read_data(project, inpf))
         {
             if (verbose)
                 fprintf(stderr, HD "%s: project-file read\n", prjfile);

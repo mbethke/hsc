@@ -1,9 +1,6 @@
 /*
- * hsclib/hscprc.h
- *
- * hsc process structure
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+/*
+ * hsclib/hscprc.h
+ *
+ * hsc process structure
  *
  */
 
@@ -39,11 +42,16 @@
 #define OPTION_FILE "hsc.options", "env:hsc.options"
 #define CONFIG_PATH "PROGDIR:"
 
-#elif defined BEBOX
+#elif defined BEOS
 #define CONFIG_FILE "hsc.prefs"
 #define CONFIG_PATH ""          /* TODO: where to search for prefs */
 #define OPTION_FILE "hsc.options"
-#define UNIX                    /* utilise POSIX-layer of BeOS */
+#define UNIX 1                  /* utilise POSIX-layer of BeOS */
+
+#elif defined RISCOS
+#define CONFIG_FILE "hsc:hsc.prefs"
+#define CONFIG_PATH "hsc:"
+#define OPTION_FILE "hsc.options"
 
 #elif defined UNIX
 #define CONFIG_FILE "hsc.prefs"
@@ -54,11 +62,13 @@
 #define CONFIG_FILE "hsc.prefs"
 #define CONFIG_PATH "\\"
 #define OPTION_FILE "hsc.options"
+#error "user-IQ underflow"
 
 #elif defined MSDOS
 #define CONFIG_FILE "HSC.PRE"
 #define CONFIG_PATH "\\"
 #define OPTION_FILE "HSC.OPT"
+#error "user-IQ underflow"
 
 #else
 #error "Operating system not supported: config-file/path"
@@ -67,11 +77,11 @@
 #if (!defined MSDOS) & ((defined WINNT))
 /* handle several OS-es same as MSDOS */
 #define MSDOS 1
+#error "Fuchs du hast die Gans gestohlen, gib sie wieder her..."
 #endif
 
 /* step sizes for expstr's */
-#define ES_STEP_RMTSTR   256    /* tag_macr.c */
-#define ES_STEP_MACRO   1024    /* tag_macr.c */
+#define ES_STEP_MACRO   1024    /* tag_macro.c */
 #define ES_STEP_INFILE  4096    /* input file buffer */
 
 /*
@@ -108,18 +118,26 @@
 #define ENV_HSCUSERS   "HSCUSERS_PATH"  /* to substitute "~" */
 #define ENV_HSCROOT    "HSCROOT_PATH"   /* to substitute "/" */
 
-#define SPECIAL_FILE_ID "::s::" /* used as prefix in filename for */
-                                   /* internal (pseudo-)files (macros,init) */
-#define PARENT_FILE_ID  "::p::" /* used as prefix in filename if */
-              /* parent file on input-stack should be used for message-pos. */
-#define FILENAME_STDIN "STDIN"  /* pseudo-filename for stdin */
+/* used as prefix in filename for
+ * internal (pseudo-)files (macros,init) */
+#define SPECIAL_FILE_ID "::s::"
+
+/* prefix to be used by filenames if parent file on input-stack
+ * should be used for message-pos.
+ *
+ * NOTE: this is set if IH_POS_PARENT is passed on hsc_include() */
+#define PARENT_FILE_ID  "::p::"
+
+/* pseudo-filename for stdin */
+#define FILENAME_STDIN "STDIN"
 
 /* prefix char used for special hsc-tags  */
 #define HSC_SPECIAL_PREFIX "$"
 
-/* attribute that holds "click here" words */
-#define CLICK_HERE_ATTR     "HSC.CLICK-HERE"
+/* names for special attributes */
+#define CLICK_HERE_ATTR     "HSC.CLICK-HERE"    /* attribute that holds "click here" words */
 #define COLOR_NAMES_ATTR    "HSC.COLOR-NAMES"
+#define CONTENT_ATTR        "HSC.CONTENT"       /* keep macro content for content macros */
 #define ANCHOR_ATTR         "HSC.ANCHOR"
 #define RESULT_ATTR         "HSC.EXEC.RESULT"
 #define FILESIZEFORMAT_ATTR "HSC.FORMAT.FILESIZE"
@@ -134,8 +152,11 @@
 #ifdef AMIGA
 #define SYSTEM_ATTR_ID "AMIGA"
 
-#elif defined BEBOX
-#define SYSTEM_ATTR_ID "BEBOX"
+#elif defined BEOS
+#define SYSTEM_ATTR_ID "BEOS"
+
+#elif defined RISCOS
+#define SYSTEM_ATTR_ID "RISCOS"
 
 #elif defined UNIX
 #define SYSTEM_ATTR_ID "UNIX"
@@ -144,7 +165,7 @@
 #define SYSTEM_ATTR_ID "WINNT"
 
 #elif defined MSDOS
-#define SYSTEM_ATTR_ID "LLIBLLIK"       /* "kill bill" backwards, stupid! */
+#define SYSTEM_ATTR_ID "LLIBLLIK"       /* "kill bill" backwards */
 
 #else
 #error "system not supported: SYSTEM_ATTR_ID"
@@ -156,7 +177,7 @@ typedef LONG HSCMSG_CLASS;      /* hsc message class */
 /*
  * hsc process structure
  */
-typedef struct hscprocess
+struct hscprocess
 {
     INFILE *inpf;               /* current input file */
     DLLIST *inpf_stack;         /* stack of nested input files */
@@ -164,16 +185,17 @@ typedef struct hscprocess
     DLLIST *defattr;            /* defined attributes */
     DLLIST *defent;             /* defined special charcters & entities */
     DLLIST *container_stack;    /* stack of container-tags currently open */
+    DLLIST *content_stack;      /* stack of contents of container macros */
     DLLIST *include_dirs;       /* include directories */
     HSCPRJ *project;            /* project data */
     DLLIST *idrefs;             /* list of references to local IDs */
     EXPSTR *destdir;            /* destination root directory */
     EXPSTR *reldir;             /* relative destination directory */
     EXPSTR *tmpstr;             /* temp. string used by several functions */
-    EXPSTR *rmt_str;            /* temp. string used for macro text */
     EXPSTR *curr_msg;           /* current message */
     EXPSTR *curr_ref;           /* current reference message */
     EXPSTR *iconbase;           /* base URI for icons */
+    EXPSTR *server_dir;         /* root dir for server-relative URIs */
     time_t start_time;          /* time process has been started */
 
     DLLIST *select_stack;       /* stack for results of <$select> */
@@ -192,6 +214,8 @@ typedef struct hscprocess
     HSCMSG_CLASS *msg_class;    /* messages with remaped classes */
     ULONG msg_count;            /* numer of messages occured until now */
 
+    enum content_called{no, once, often};
+
     BOOL chkid;                 /* flag: check existence of URIs/IDs */
     BOOL chkuri;
     BOOL compact;               /* flag: create compact output */
@@ -207,7 +231,7 @@ typedef struct hscprocess
     BOOL strip_cmt;             /* flag: strip SGML-comments */
     BOOL strip_ext;             /* flag: strip external references */
     BOOL strip_badws;           /* flag: strip bad white spaces */
-
+    BOOL weenix;                /* flag: unix compatibilty mode */
     BOOL suppress_output;       /* flag: TRUE, until outputable data occure */
     BOOL docbase_set;           /* <BASE HREF=".."> occured */
     BOOL inside_pre;            /* inside preformatted tag <PRE> & Co. */
@@ -227,6 +251,7 @@ typedef struct hscprocess
     STRPTR color_names;         /* predifined names for colors */
     STRPTR strip_tags;          /* tags that should be stripped */
     EXPSTR *whtspc;             /* white spaces buffered */
+    HSCTAG *tag_next_whtspc;    /* set, if a tag did not allow succ.whtspc */
     BOOL strip_next_whtspc;     /* flag: strip next whtite space
                                  * set by parse_tag(), if strip_badws = TRUE */
     BOOL strip_next2_whtspc;    /* flag: strip next but one white space */
@@ -259,8 +284,9 @@ typedef struct hscprocess
                       STRPTR white_spaces, STRPTR text);
       VOID(*CB_id) (struct hscprocess * hp,
                     HSCATTR * attr, STRPTR id);
-}
-HSCPRC;
+};
+
+typedef struct hscprocess HSCPRC;
 
 /*
  * global funcs
@@ -321,6 +347,7 @@ extern VOID hsc_set_jens(HSCPRC * hp, BOOL new_jens);
 extern VOID hsc_set_jerkvalues(HSCPRC * hp, BOOL new_jens);
 extern VOID hsc_set_rplc_ent(HSCPRC * hp, BOOL new_rplc_ent);
 extern VOID hsc_set_rplc_quote(HSCPRC * hp, BOOL new_rplc_quote);
+extern BOOL hsc_set_server_dir(HSCPRC * hp, STRPTR dir);
 extern VOID hsc_set_smart_ent(HSCPRC * hp, BOOL new_smart_ent);
 extern VOID hsc_set_strip_badws(HSCPRC * hp, BOOL new_strip_badws);
 extern VOID hsc_set_strip_cmt(HSCPRC * hp, BOOL new_strip_cmt);
@@ -365,6 +392,7 @@ extern BOOL hsc_get_suppress_output(HSCPRC * hp);
 extern STRPTR hsc_get_destdir(HSCPRC * hp);
 extern STRPTR hsc_get_reldir(HSCPRC * hp);
 extern STRPTR hsc_get_iconbase(HSCPRC * hp);
+extern STRPTR hsc_get_server_dir(HSCPRC * hp);
 
 /* get-methodes for internal values */
 extern STRPTR hsc_get_click_here_str(HSCPRC * hp);
@@ -393,4 +421,3 @@ extern BOOL hsc_standard_nomem_handler(size_t size);
 
 #endif /* NOEXTERN_HSC_HSCPRC */
 #endif /* HSC_HSCPRC_H */
-

@@ -8,11 +8,9 @@
 <$MACRO QUEST NAME:string>
 <$if COND=(SET NAME)><A NAME=(Name)></$if>
 <STRONG>Q:</STRONG><$if COND=(SET Name)></A> </$if>
-
 </$MACRO>
 
-<$MACRO ANSWR>
-<STRONG>A:</STRONG>&nbsp;</$MACRO>
+<$MACRO ANSWR><STRONG>A:</STRONG> </$MACRO>
 
 <* define shortcuts for question-text *>
 <$macro Q.lha>What about those strange <CODE>.lha</CODE> files?</$macro>
@@ -22,6 +20,7 @@
 <$macro Q.unknown><hsc> doesn't know about the tag <TG>XYZ</TG> (the attribute <CODE>ZYX</CODE>), but I need this one!</$macro>
 <$macro Q.ignore><hsc> tells me loads of warnings I don't care about! Is there a way to prevent it from doing this?</$macro>
 <$macro Q.tool>Somewhere in these manual You are talking about a tool called <EXEC>make/weblint/..</EXEC>. Where can I obtain it from?</$macro>
+<$macro Q.make>I have a problem with make: bla sülz fasel laber...</$macro>
 <$macro Q.slow>Why is <hsc> that slow?</$macro>
 
 <$macro Q.uri>Why do You call it URI? I thought it's URL (<EM>Universal Resource Locator</EM> or <EM>U R lost</EM>)?</$macro>
@@ -29,7 +28,7 @@
 <$macro Q.jerk>What are jerks?</$macro>
 
 <P>This chapter provides a list of questions and answers which have come to
-the mind of several people. Some of them are only neccessary because many
+the mind of several people. Some of them are only necessary because many
 users don't read this manual, some of them are not very serious,.. but anyway,
 here's a list of them:</P>
 
@@ -45,10 +44,11 @@ here's a list of them:</P>
 <LI><A HREF="#unknown"><Q.unknown></A>
 <LI><A HREF="#ignore"><Q.ignore></A>
 <LI><A HREF="#tool"><Q.tool></A>
+<LI><A HREF="#make"><Q.make></A>
 <LI><A HREF="#slow"><Q.slow></A>
 </UL>
 
-<STRONG>Miscelleneous questions</STRONG>
+<STRONG>Miscellaneous questions</STRONG>
 <UL>
 <LI><A HREF="#uri"><Q.uri></A>
 <LI><A HREF="#piss"><Q.piss></A>
@@ -97,22 +97,28 @@ in the chapter about
 version for AmigaOS, but the archives or <CODE>ReadMe</CODE>s 
 usually include some notes where to look for other systems.</P>
 
+<P><QUEST NAME="make"><Q.make><BR>
+<ANSWR>Refer to the manual of <make>. Make sure your <make> supports
+implicit rules and conditionals as described within these documents. Make
+sure your editor does not replace TABs by blanks (use <EXEC>memacs</EXEC>,
+which came with your Workbench distribution, if you are not sure).
+
 <P><QUEST NAME="slow"><Q.slow><BR>
 <ANSWR>One reason is, that <hsc> handles (nearly) all resources dynamically
 (<TechNote>That means, it often calls <CODE>malloc()</CODE> and
 <CODE>free()</CODE>, which are known to be quite slow).</P>
 
-<P>Another, quite embarrasing, reason is, that most of these resources are
-kept in linked lists. And therefor, if <hsc> has to look for something, it
-sequentially searches these list. Shame on me, I should use an AVL-tree for
-such things. But the problem with AVL-tree is: though there are lots of
-sources around, most of them are perverted <qq>real</qq> C-sources perpetrated by some
-braindead Unix-fossiles, ignoring the fact that memory can run out or that
-there is a "-Wall" option in most compilers; some of these sources also
-date back to 1863, when no one even pretended there is a language definition
-for <CITE>C</CITE>. Currently I'm too lazy to
-write (and, even more work, test) an AVL-tree myself.
-Maybe in another life...</P>
+<P>Another, quite embarrassing, reason is, that most of these resources are kept
+in linked lists. And therefor, if <hsc> has to look for something, it
+sequentially searches these list. Shame on me, I should use some sort of
+balanced binary tree for such things. But the problem with balanced tree is:
+though there are lots of sources around, most of them are perverted
+<qq>real</qq> C-sources perpetrated by some brain-dead Unix-fossils, ignoring
+the fact that memory can run out or that there is a "-Wall" option in most
+compilers; some of these sources also date back to 1863, when no one even
+pretended there is a language definition for <CITE>C</CITE>. Currently I'm too
+lazy to write (and, even more work, test) a balanced tree myself. Maybe in
+another life...</P>
 
 <HR>
 
@@ -152,8 +158,8 @@ But who cares anyway?</P>
 <ANSWR>..which I personally prefer to puking. Certainly a matter
 of taste.</P>
 
-<QUEST NAME="jerk"><Q.jerk><BR>
-<ANSWR>Jerks are persons suffered by a well-known desease called
+<P><QUEST NAME="jerk"><Q.jerk><BR>
+<ANSWR>Jerks are persons suffered by a well-known epidemic called
 <EM>Netscapissm</EM>. Their sources contain sections like
 <PRE>
     <TG>BODY BGCOLOR=#123456</TG>
@@ -161,6 +167,6 @@ of taste.</P>
 </PRE>
 <P>But, not all jerks became jerks because they like to be a jerk. Very often,
 jerks are forced to use code as seen above by their employee. In this case,
-they should be refered to as <qq>prostitutes</qq>.</P> 
+they should be refered to as <qq>prostitutes</qq>.</P>
 
 </WEBPAGE>

@@ -1,9 +1,6 @@
 /*
- * hsclib/linit.c
- *
- * functions to init & read preferences for a hsc-process
- *
- * Copyright (C) 1996  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,12 +16,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 12-Nov-1996
+ */
+/*
+ * hsclib/linit.c
+ *
+ * functions to init & read preferences for a hsc-process
+ *
+ * updated: 15-Apr-1997
  * created: 19-Feb-1996
  */
 
 #include "hsclib/inc_base.h"
 
+#include "hsclib/defattr.h"
 #include "hsclib/deftag.h"
 #include "hsclib/include.h"
 #include "hsclib/parse.h"
@@ -32,7 +36,7 @@
 #include "hsclib/tag_a.h"
 #include "hsclib/tag_hsc.h"
 #include "hsclib/tag_if.h"
-#include "hsclib/tag_macr.h"
+#include "hsclib/tag_macro.h"
 #include "hsclib/tag_misc.h"
 
 #include "ugly/fname.h"
@@ -72,6 +76,8 @@ static VOID prt_tag(FILE * stream, APTR data)
             fprintf(stderr, "*");
         if (tag->option & HT_REQUIRED)
             fprintf(stream, "/r");
+        if (tag->option & HT_RECOMMENDED)
+            fprintf(stream, "/rcmd");
         if (tag->option & HT_ONLYONCE)
             fprintf(stream, "/1");
         if (tag->option & HT_AUTOCLOSE)
@@ -117,7 +123,7 @@ static STRPTR find_prefs_fname(HSCPRC * hp)
     UBYTE path_ctr = 0;
     FILE *cfgf = NULL;          /* prefs file */
     STRPTR hscenv = NULL;
-    EXPSTR *hscpathstr = init_estr(32); /* buffer to read $HSCPATH */
+    EXPSTR *hscpathstr = init_estr(32);         /* buffer to read $HSCPATH */
 
     static STRARR cfgfn[300];   /* TODO: expstr; buffer to create
                                  *   filename of config file */
@@ -349,7 +355,7 @@ BOOL hsc_init_project(HSCPRC * hp, STRPTR project_fname)
 
         if (hp->inpf)
         {
-            ok = hsc_project_read_file(hp->project, hp->inpf);
+            ok = hsc_project_read_data(hp->project, hp->inpf);
             infclose(hp->inpf);
             if (ok)
             {
@@ -420,18 +426,24 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
     BOOL open_tag;
     HSCTAG *tag;
 
+    /* define hsc internal tags */
     STRPTR hsc_prefs[] =
     {
-    /*
-     * define hsc tags
+    /* tags with special chars as name
+     *
+     * IMPORTANT: When adding new tags with names not starting with
+     *   HSC_TAGID, make sure to update `tag.c:is_hsc_tag()'
      */
         HSC_COMMENT_STR " /SKIPLF /SPECIAL>",
-        HSC_ONLYCOPY_STR " /SPECIAL>",
+        HSC_VERBATIM_STR" /SPECIAL>",
         HSC_INSEXPR_STR " /SPECIAL>",
+    /* tags starting with HSC_TAGID */
+        HSC_CONTENT_STR " /SKIPLF>",
         HSC_DEFENT_STR " /SKIPLF NAME:string/r RPLC:string NUM:num>",
         HSC_DEFICON_STR " /SKIPLF NAME:string/r>",
         HSC_DEFINE_STR " /SKIPLF /SPECIAL>",
         HSC_DEFTAG_STR " /SKIPLF /SPECIAL>",
+        HSC_DEPEND_STR " /SKIPLF ON:string/r FILE:bool>",
         HSC_ELSE_STR " /SKIPLF /MBI=\"" HSC_IF_STR "\">",
         HSC_ELSEIF_STR " /SKIPLF /MBI=\"" HSC_IF_STR "\"" CONDITION_ATTR ":bool>",
         HSC_MESSAGE_STR " /SKIPLF TEXT:string/r CLASS:enum(\"note|warning|error|fatal\")='note'>",
@@ -443,6 +455,7 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
         HSC_LET_STR " /SKIPLF /SPECIAL>",
         HSC_MACRO_STR " /SKIPLF /SPECIAL>",
         HSC_SOURCE_STR " /SKIPLF PRE:bool>",
+        HSC_STRIPWS_STR " TYPE:enum(\"" STRIPWS_ENUM "\")=\"" STRIPWS_BOTH "\">",
         NULL
     };
 
@@ -451,13 +464,15 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
     /*
      * define hsc attributes
      */
-        SYSTEM_ATTR ":string/c=\"" SYSTEM_ATTR_ID "\">",
-        ANCHOR_ATTR ":string=\"this is a feature, not a bug\">",
-        RESULT_ATTR ":num=\"0\">",
-        FILESIZEFORMAT_ATTR ":string=\"%a%u\">",
-        TIMEFORMAT_ATTR ":string=\"%d-%b-%Y, %H:%M\">",
-        LINEFEED_ATTR ":string>",
-        NULL};
+     /* name                 : type     : default value */
+        SYSTEM_ATTR         ":string/c" , SYSTEM_ATTR_ID,
+        ANCHOR_ATTR         ":string"   , "this is a feature, not a bug",
+        CONTENT_ATTR        ":string/c" , NULL,
+        RESULT_ATTR         ":num=\"0\"", NULL, /* a bit strange */
+        FILESIZEFORMAT_ATTR ":string"   , "%a%u",
+        TIMEFORMAT_ATTR     ":string"   , "%d-%b-%Y, %H:%M",
+        LINEFEED_ATTR       ":string>"  , NULL,
+        NULL, NULL};
 
     /* temporarily disable debugging output */
     dbg_disable(hp);
@@ -479,24 +494,14 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
         }
 
         i++;
-
     }
 
     /* init hsc-attributes */
     i = 0;
     while (!(hp->fatal) && hsc_attribs[i])
     {
-        hp->inpf =
-            infopen_str(SPECIAL_FILE_ID "init attr", hsc_attribs[i], 60);
-
-        if (hp->inpf)
-        {
-            handle_hsc_define(hp, NULL);
-            infclose(hp->inpf);
-            hp->inpf = NULL;
-        }
-
-        i++;
+        define_attr_by_text(hp, hsc_attribs[i], hsc_attribs[i+1], 0);
+        i+=2;
     }
 
     /* assign "\n" to linefeed-attribute */
@@ -506,10 +511,12 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
     if (ok)
     {
         hsc_set_tagCB(hp, HSC_COMMENT_STR, handle_hsc_comment, NULL);
+        hsc_set_tagCB(hp, HSC_CONTENT_STR, handle_hsc_content, NULL);
         hsc_set_tagCB(hp, HSC_DEFENT_STR, handle_hsc_defent, NULL);
         hsc_set_tagCB(hp, HSC_DEFICON_STR, handle_hsc_deficon, NULL);
         hsc_set_tagCB(hp, HSC_DEFINE_STR, handle_hsc_define, NULL);
         hsc_set_tagCB(hp, HSC_DEFTAG_STR, handle_hsc_deftag, NULL);
+        hsc_set_tagCB(hp, HSC_DEPEND_STR, handle_hsc_depend, NULL);
         hsc_set_tagCB(hp, HSC_ELSE_STR, handle_hsc_else, NULL);
         hsc_set_tagCB(hp, HSC_ELSEIF_STR, handle_hsc_elseif, NULL);
         hsc_set_tagCB(hp, HSC_EXEC_STR, handle_hsc_exec, NULL);
@@ -522,8 +529,9 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
         hsc_set_tagCB(hp, HSC_LET_STR, handle_hsc_let, NULL);
         hsc_set_tagCB(hp, HSC_MACRO_STR, handle_hsc_macro, NULL);
         hsc_set_tagCB(hp, HSC_MESSAGE_STR, handle_hsc_message, NULL);
-        hsc_set_tagCB(hp, HSC_ONLYCOPY_STR, handle_hsc_onlycopy, NULL);
+        hsc_set_tagCB(hp, HSC_VERBATIM_STR, handle_hsc_verbatim, NULL);
         hsc_set_tagCB(hp, HSC_SOURCE_STR, handle_hsc_source, NULL);
+        hsc_set_tagCB(hp, HSC_STRIPWS_STR, handle_hsc_stripws, NULL);
     }
 
     /* restore debugging output */
@@ -639,4 +647,3 @@ BOOL hsc_init_hscprc(HSCPRC * hp, STRPTR prefs_fname)
 
     return (ok);
 }
-

@@ -1,3 +1,22 @@
+/*
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1993-1997  Thomas Aglassinger
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
 #ifndef UGLY_TYPES_H
 #define UGLY_TYPES_H
 
@@ -9,9 +28,9 @@
  * NOTE: contains also UGLY_VER and UGLY_REV and
  * includes debuggin defines
  *
- * (W) by Tommy-Saftwörx 1994,95,96
+ * (W) by Tommy-Saftwörx 1994,95,96,97
  *
- * updated: 30-Jul-1996
+ * updated: 20-Mar-1997
  * created: 25-Jan-1994
  */
 
@@ -53,7 +72,7 @@ typedef char BYTE;              /* signed 8-bit quantity */
 #endif
 typedef unsigned char UBYTE;    /* unsigned 8-bit quantity */
 
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(RISCOS)
 typedef char *STRPTR;           /* string pointer (NULL terminated) */
 #else
 typedef unsigned char *STRPTR;  /* string pointer (NULL terminated) */
@@ -61,8 +80,13 @@ typedef unsigned char *STRPTR;  /* string pointer (NULL terminated) */
 
 /* Types with specific semantics */
 typedef void VOID;
+#ifndef RISCOS
 typedef short BOOL;
 typedef unsigned char TEXT;
+#else
+typedef int BOOL;
+typedef char TEXT;
+#endif
 
 #ifndef TRUE
 #define TRUE            1
@@ -85,9 +109,15 @@ typedef unsigned char TEXT;
  *
  */
 
+#ifndef RISCOS
 typedef const unsigned char *CONSTRPTR;         /* string constants */
 typedef unsigned char STRARR;   /* string array */
 typedef unsigned char CHAR;     /* single character */
+#else
+typedef const char *CONSTRPTR;         /* string constants */
+typedef char STRARR;   /* string array */
+typedef char CHAR;     /* single character */
+#endif
 
 /*
  * UPTR as an generic pointer. C-math will not operate on UPTR.

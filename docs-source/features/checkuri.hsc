@@ -11,8 +11,8 @@ document is moved or deleted.</P>
 existence of documents in your html project.
 When you refer to a non-existing local URI within your source, <hsc>
 will display a warning message. This does not only include documents
-which are refered to using the <TG>A</TG> tag, but also other data 
-like images being embeded with <TG>IMG</TG>.</P>
+which are refered to using the <TG>A</TG> tag, but also other data
+like images being embedded with <TG>IMG</TG>.</P>
 
 <P>For external URIs, no checks are performed.</P>
 

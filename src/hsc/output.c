@@ -1,9 +1,6 @@
 /*
- * hsc/output.c
- *
- * output functions for hsc
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  9-Sep-1996
+ */
+/*
+ * hsc/output.c
+ *
+ * output functions for hsc
+ *
+ * updated: 20-Mar-1996
  * created:  1-Jul-1995
  */
 
@@ -29,6 +32,11 @@
 #include "hsc/status.h"
 
 #include "ugly/returncd.h"
+
+#ifdef RISCOS
+#include "riscos/unixname.h"
+#include <swis.h>
+#endif
 
 #define OUTPUT_STEPSIZE 8192
 
@@ -149,8 +157,18 @@ BOOL write_output(HSCPRC * hp)
 
             /* close output file */
             if (outfile != stdout)
+            {
                 fclose(outfile);
 
+#ifdef RISCOS
+                {
+                  /* set the filetype to HTML (&FAF) */
+                  char *riscos_filename=unixname_to_riscos(outfilenm);
+                  _swix(OS_File,_IN(0)|_IN(1)|_IN(2),18,riscos_filename,0xFAF);
+                  free(riscos_filename);
+                }
+#endif
+            }
         }
     } else {
 

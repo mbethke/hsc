@@ -1,9 +1,6 @@
 /*
- * hscprj/project.c
- *
- * project managment routines for hsc
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 28-Oct-1996
+ */
+/*
+ * hscprj/project.c
+ *
+ * project managment routines for hsc
+ *
+ * updated: 12-Jan-1997
  * created: 13-Apr-1996
  */
 
@@ -58,6 +61,7 @@ HSCPRJ *new_project(VOID)
     return (hp);
 }
 
+
 /*
  * del_project
  */
@@ -70,6 +74,7 @@ VOID del_project(HSCPRJ * hp)
         ufree(hp);
     }
 }
+
 
 /*
  * check_document_id
@@ -138,8 +143,26 @@ BOOL hsc_project_add_document(HSCPRJ * hp)
 {
     BOOL ok = TRUE;
 
-    app_dlnode(hp->documents, hp->document);
-    hp->document = NULL;
+    if (hp->document)
+    {
+        if (hp->document->docname)
+        {
+            DP(fprintf(stderr, DHP "  add document `%s'\n",
+                       hp->document->docname));
+            app_dlnode(hp->documents, hp->document);
+        }
+        else
+        {
+            DP(fprintf(stderr, DHP "  add document <stdout>: skipped\n"));
+            del_document(hp->document);
+        }
+
+        hp->document = NULL;
+    }
+    else
+    {
+        panic("no document to replace");
+    }
 
     return (ok);
 }
@@ -180,19 +203,27 @@ BOOL hsc_project_del_document(HSCPRJ * hp, STRPTR docname)
 BOOL hsc_project_set_document(HSCPRJ * hp, STRPTR new_docname)
 {
     BOOL ok = TRUE;
-    DLNODE *nd = find_document_node(hp->documents, new_docname);
-    DP(fprintf(stderr, DHP "set document `%s'\n", new_docname));
-
-    /* dettach document from project */
-    if (nd)
+    DLNODE *nd = NULL;
+    if (new_docname)
     {
-        DP(fprintf(stderr, DHP "  remove old document `%s'\n",
-                   ((HSCDOC *) dln_data(nd))->docname));
-        del_dlnode(hp->documents, nd);
+        DP(fprintf(stderr, DHP "set document `%s'\n", new_docname));
+
+        /* dettach document from project */
+        nd = find_document_node(hp->documents, new_docname);
+        if (nd)
+        {
+            DP(fprintf(stderr, DHP "  remove old document `%s'\n",
+                       ((HSCDOC *) dln_data(nd))->docname));
+            del_dlnode(hp->documents, nd);
+        }
+        else
+        {
+            DP(fprintf(stderr, DHP "  new document `%s'\n", new_docname));
+        }
     }
     else
     {
-        DP(fprintf(stderr, DHP "  new document `%s'\n", new_docname));
+        DP(fprintf(stderr, DHP "set document <stdout>\n"));
     }
 
     /* remove current document */
@@ -241,4 +272,3 @@ BOOL hsc_project_add_include(HSCPRJ * hp, STRPTR new_includename)
     app_include(hp->document, new_includename);
     return (ok);
 }
-

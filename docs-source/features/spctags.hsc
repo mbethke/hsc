@@ -11,11 +11,14 @@ include files and lots of other things.</P>
 <H2>List of special tags</H2>
 <UL>
 <LI><A HREF="#comments"><TG>* <I>comment</I> *</TG></A> insert comments
+<LI><A HREF="#content"><TG>$content</TG></A>
+    insert content of container macro
 <LI><A HREF="prefs.html#defent"><TG>$defent</TG></A>, 
     <A HREF="prefs.html#deficon"><TG>$deficon</TG></A>, 
     <A HREF="prefs.html#deftag"><TG>$deftag</TG></A> 
     define entities, icon-entities and tags
 <LI><A HREF="#define"><TG>$define</TG></A> define a new (global) attribute
+<LI><A HREF="#depend"><TG>$depend</TG></A> add a dependency
 <LI><A HREF="exec.html"><TG>$exec</TG></A> execute shell-command
 <LI><A HREF="if.html"><TG>$if</TG>, <TG>$else</TG>, <TG>$elseif</TG></A> conditionals
 <LI><A HREF="#include"><TG>$include</TG></A> include a file
@@ -23,53 +26,87 @@ include files and lots of other things.</P>
 <LI><A HREF="#let"><TG>$let</TG></A> set new attribute value
 <LI><A HREF=":macro/macros.html"><TG>$macro</TG></A> define macro-tags
 <LI><A HREF="#message"><TG>$message</TG></A> display user message
+<LI><A HREF="#stripws"><TG>$stripws</TG></A> strip previous/next white spaces
 <LI><A HREF="#expression"><TG>( <I>expression</I> )</TG></A> insert expression
-<LI><A HREF="#dontparse"><TG>|  <I>don't parse</I> |</TG></A> don't parse section
+<LI><A HREF="#dontparse"><TG>|  <I>verbatim data</I> |</TG></A> insert verbatim data
 </UL>
 
-<$macro SPCTAG NAME:string/r TITLE:string/r>
+<$macro SPCTAG NAME:string/r TITLE:string/r TAGNAME:string>
 <HR>
-<H2><A NAME=(name)><(title)></A></H2>
+<$if COND=(not set TagName)><$let TagName=("$"+Name)></$if>
+<H2><A NAME=(name)>&lt;<(TagName)>&gt; - <(title)></A></H2>
 </$macro>
 
-<$macro POSSATTR>
-<P><STRONG>Possible attributes:</STRONG><DL>
+<$macro POSSATTR /CLOSE>
+<P><STRONG>Possible attributes:</STRONG><DL><$content></DL>
 </$macro>
-<$macro /POSSATTR></DL></$macro>
 
 <* attribute definition title/data *>
-<$macro DTA><DT><CODE></$macro>  
-<$macro /DTA></CODE><DD></$macro>  
+<$macro DTA><DT><CODE></$macro>
+<$macro /DTA></CODE><DD></$macro>
 
-<$macro EXAMPLE>
-<P><STRONG>Example:</STRONG>
-</$macro>
-
-
-<SPCTAG NAME="comments" TITLE="Comments">
+<SPCTAG NAME="comments" TITLE="Comments" TAGNAME="* ... *">
     You can insert a comment with
 
-    <BLOCKQUOTE>
-    <TG>* This is a hsc-comment *</TG>
-    </BLOCKQUOTE>
+    <$source PRE>
+    <* This is a <* nested *> hsc-comment *>
+    </$source>
 
-    You can also nest such comments.<P>
+    As you can see, such comments can also be nested.<P>
 
     And you can comment out sections of html-source without any problems
     for the browser. This simply is possible because comments in the
     hsc-source are not written to the html-object.<P>
 
     Of course, if you need the standard comments, you can use
-    <BLOCKQUOTE>
-    <TG>!-- This is a html/sgml-comment --</TG>
-    </BLOCKQUOTE>
+    <$source PRE>
+    <!-- This is a html/sgml-comment -->
+    </$source>
     as usual.<P>
+
+<SPCTAG NAME="content" TITLE="Insert content">
+    The tag <TG>$content</TG> can be only used inside a
+    <A HREF=":macro/macros.html#container">container macro</A>
+    and inserts the content the user specified inside the start and
+    end tag for the macro.
 
 <SPCTAG NAME="if" TITLE="Conditionals">
     Conditionals are used to decide whether some part of the text should
     be processed or not.
     As there is a lot to tell about them, there exists a whole chapter 
     dealing with <A HREF="if.html">conditionals</A>.
+
+<SPCTAG NAME="depend" TITLE="Add dependencies">
+    If your source should not only be updated if an included
+    file has been modified, you can use the tag <TG>$depend</TG> to
+    add an additional dependency which will be noted in the project
+    data.
+
+    <POSSATTR>
+    <DTA>ON:string</DTA>
+        URI to depend on (relative to destination directory)
+    <DTA>FILE:bool</DTA>
+        If this attribute is set, <CODE>ON</CODE> is no more
+        interpreted as an URI, but as a local filename relative
+        to the source directory.
+    </POSSATTR>
+    <ExampleNote>
+    <$source PRE>
+    <$depend ON="work:dings.dat" FILE>
+    <$exec COMMAND="convdings FROM work:dings.dat" INCLUDE TEMPORARY>
+    </$source>
+
+    <P>In this example, <FILE>dings.dat</FILE> contains some data
+    maintained by an external application. A script called
+    <EXEC>convdings</EXEC> converts <FILE>dings.dat</FILE> to
+    legal html data end send them to <stdout>, which are inserted
+    into the current document.</P>
+
+    Obviously, <FILE>dings.dat</FILE> is not maintained or included
+    by hsc, so the current document does not depend on it.
+    But by specifying the above <TG>$depend</TG>, the current
+    source will be updated if <FILE>dings.dat</FILE> has been
+    modified.
 
 <SPCTAG NAME="include" TITLE="Include file">
     Text files can be included using <TG>$include</TG>.
@@ -89,7 +126,7 @@ include files and lots of other things.</P>
     <DTA>PRE:bool</DTA>
          The included data will be enclosed inside a 
          <TG>PRE</TG> ... <TG>/PRE</TG>, and the whole section will
-         be rendered as preformated.
+         be rendered as pre-formatted.
     <DTA>TEMPORARY:bool</DTA>
          Normally, <hsc> keeps track of all files included and stores 
          the names in the project file. Later, they can be used by
@@ -105,13 +142,13 @@ include files and lots of other things.</P>
 <* " INDENT:num TABSIZE:num=\"4\" " *>
     </POSSATTR>
 
-    <EXAMPLE>
+    <ExampleNote>
     <DL>
     <DT><TG>$include FILE="macro.hsc"</TG>
     <DD>This can be used to include some macro definitions
     <DT><TG>$include FILE="hugo.c" SOURCE PRE</TG>
     <DD>This is reasonable to include a source code that has been
-        written using the programming langugage C.
+        written using some programming language like Pascal, Oberon or E.
     </DL>
 <*
 <SPCTAG NAME="insert" TITLE="Insert several stuff">
@@ -131,7 +168,7 @@ include files and lots of other things.</P>
         <A HREF="strftime.txt"><CODE>strftime()</CODE></A>
         to perform that task, you can use the same format specifications.
 
-        <EXAMPLE>
+        <ExampleNote>
         <DL><TG>$insert TIME FORMAT="%b %d  %y"</TG>
         inserts current date with the strange ANSI-C
         <CODE>__TIME__</CODE>-format.
@@ -139,11 +176,15 @@ include files and lots of other things.</P>
 
     <H3>Insert text</H3>
         As an required argument, you must give a string
-        that contains the text. Example:
+        that contains the text.
+
+        <ExampleNote>
         <UBQ><TG>$insert TEXT="hugo was here!"</TG></UBQ>
         inserts the text "<CODE>hugo was here</CODE>". Of course, this does not
         make much sense.<TG>$insert TEXT="..."</TG> is suggested to be used
-        with attribute values. Example:
+        with attribute values.
+
+        <ExampleNote>
         <UBQ><TG>$insert TEXT=(href)</TG></UBQ>
         inserts the value of the macro-attribute <CODE>href</CODE>.
 *>
@@ -156,13 +197,15 @@ include files and lots of other things.</P>
     <TG>$define <I><A HREF=":macro/attrib.html">attribute</A></I></TG>
     </BLOCKQUOTE>
 
-    <P>If you define an attribute via <TG>$define</TG> inside a macro, it is of
+    <P>If you define an attribute using <TG>$define</TG> inside a macro, it is of
     local existence only and is removed after processing the macro. You
-    can suppress this with using the attribute flag <CODE>/GLOBAL</CODE>: in
+    can suppress this with the attribute modifier <CODE>/GLOBAL</CODE>: in
     this case, the attribute exists until the end of conversion.</P>
 
-    <P>You can use the flag <CODE>/CONST</CODE> to make the attribute read-only.
-    That means it can't be overwritten by <TG>$let</TG></P>
+    <P>You can use the modifier <CODE>/CONST</CODE> to make the attribute read-only.
+    That means it can not be updated with <TG>$let</TG>.</P>
+
+    For an example, see <TG>$let</TG>.
 
 <SPCTAG NAME="let" TITLE="Set new attribute value">
 
@@ -173,7 +216,7 @@ include files and lots of other things.</P>
     <I>new_value</I></TG>
     </BLOCKQUOTE>
 
-    <EXAMPLE>
+    <ExampleNote>
     <$source PRE>
     <$define hugo:string="hugo">       <* create hugo and set to "hugo" *>
     <$let hugo=(hugo+" ist doof.")>    <* update it to "hugo ist doof." *>
@@ -187,35 +230,77 @@ include files and lots of other things.</P>
 
 <SPCTAG NAME="message" TITLE="User messages">
     <P>During conversion, messages might show up. But not only <hsc>
-    creates messages, also the user is able to so, if for instance
-    he wants to perform some plausibility checks of macro arguments.</P>
+    creates messages, also the user is able to so using
+    <TG>$message</TG>. For instance, when he wants to perform some
+    plausibility checks of macro arguments.</P>
     <POSSATTR>
     <DTA>TEXT:string/required</DTA>
          Specifies message text
     <DTA>CLASS:enum("note|warning|error|fatal")='note'</DTA>
          Specifies message class
     </POSSATTR>
-    <EXAMPLE><BR>
-    <TG>$message TEXT="shit happens..." CLASS="fatal"</TG><BR>
-    <TG>$message TEXT="something's wrong" CLASS="warning"</TG>
-
-<SPCTAG NAME="expression" TITLE="Insert expression">
-
-    This tag is used to insert data of attributes and
-    <A HREF="expressions.html">expressions</A>.<BR>
-    <EXAMPLE>
+    <ExampleNote>
     <$source PRE>
-    <$define hugo:string="hugo">       <* create hugo and set to "hugo" *>
+    <$message TEXT="shit happens..." CLASS="fatal">
+    <$message TEXT="something's wrong" CLASS="warning">
+    </$source>
+
+<SPCTAG NAME="stripws" TITLE="Strip white spaces">
+    <POSSATTR>
+    <DTA>TYPE:enum("both|prev|succ|none")="both"</DTA>
+    This determines, which white spaces fromout the current
+    location should be removed.<BR>
+    <CODE>Prev</CODE> will remove
+    all white spaces, which have occured after the previous
+    word and the <qqc>&lt;</qqc> of this tag, <CODE>succ</CODE> will
+    skip all blanks after the <qqc>&gt;</qqc> and until the next
+    text or visible tag.<BR>
+    <CODE>Both</CODE> will act like if both <CODE>prev</CODE> and
+    <CODE>succ</CODE> would have been specified, and
+    <CODE>none</CODE> has no effect on your data.
+    </POSSATTR>
+
+    <ExampleNote>
+    <$source PRE>
+    prev  <$stripws type=both>   succ
+    prev  <$stripws type=prev>   succ
+    prev  <$stripws type=succ>   succ
+    prev  <$stripws type=none>   succ
+    </$source>
+    results in
+    <PRE>
+    prevsucc
+    prev   succ
+    prev  succ
+    prev     succ
+    </PRE>
+    Note that the word <qqc>prev</qqc> is succeeded by two blanks,
+    whereas the word <qqc>succ</qqc> is preceded by three spaces.
+
+<SPCTAG NAME="expression" TITLE="Insert expression" TAGNAME="( ... )">
+
+    The tag <TG>(<I>expression</I>)</TG> is used to insert data
+    of attributes and
+    <A HREF="expressions.html">expressions</A>.<BR>
+    <ExampleNote>
+    <$source PRE>
+    <$define hugo:string="hugo">       <* create hugo and set it to "hugo" *>
     <(hugo+" ist doof.")>              <* insert text "hugo ist doof." *>
     </$source>
 
-<SPCTAG NAME="dontparse" TITLE="Don't parse section">
+<SPCTAG NAME="dontparse" TITLE="Insert verbatim data" TAGNAME="| ... |">
 
     If you created some perverted HTML source or use features
     <hsc> can't handle (which is theoretically impossible), you
-    can keep of <hsc> from parsing this section by surrounding it with
+    can keep <hsc> from parsing this section by surrounding it with
     <TG>| ... |</TG>. Of course, this is a dirty hide-out and should
     be used only for special cases.
 
+    <ExampleNote>
+    <$source PRE><|<B>some &<> bull >> shit</B>|></$source>
+
+    The disadvantage is obvious: It is impossible to
+    use constructs like macros or expressions inside a verbatim
+    data section.
 <BR>
 </WEBPAGE>

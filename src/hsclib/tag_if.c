@@ -1,9 +1,6 @@
 /*
- * hsclib/tag_if.c
- *
- * tag callbacks for <$if>,<$else> and <$elseif>
- *
- * Copyright (C) 1996  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 18-Aug-1996
+ */
+/*
+ * hsclib/tag_if.c
+ *
+ * tag callbacks for <$if>,<$else> and <$elseif>
+ *
+ * updated: 24-Feb-1997
  * created:  7-Oct-1995
  */
 
@@ -29,26 +32,14 @@
 #include "hsclib/parse.h"
 #include "hsclib/skip.h"
 
-/* states for skip_if */
-#define IFST_TEXT    0          /* inside text */
-#define IFST_LT      1          /* after "<" */
-#define IFST_HSC     2          /* after "<$" */
-#define IFST_SLASH   3          /* after "</" */
-#define IFST_SLHSC   4          /* after "</$" */
-#define IFST_IF      5          /* after "<$IF" */
-#define IFST_ELSE    6          /* after "<$ELSE" */
-#define IFST_CIF     7          /* after "</$IF" */
-#define IFST_ELSEIF  8          /* after "<$ELSEIF" */
-#define IFST_TAG     9          /* inside a tag */
-#define IFST_ERR    99          /* error occured */
-
 /* chars that represent TRUE, FALSE and
  * UNDEF (error in if-expression) on if_stack
  */
 #define ISTK_FALSE '0'          /* condition false */
 #define ISTK_TRUE  '1'          /* condition true */
-#define ISTK_UNDEF 'x'          /* condition unknown */
-#define ISTK_ELSE  'e'          /* after else */
+#define ISTK_UNDEF 'x'          /* condition unknown (after error, but still parsing input) */
+#define ISTK_ELSE  'e'          /* after processing alternative condition
+                                 * * read: <$else> or <$elseif> */
 
 typedef BYTE if_t;
 
@@ -56,7 +47,7 @@ typedef BYTE if_t;
 static VOID message_unma_else(HSCPRC * hp, HSCTAG * tag)
 {
     hsc_message(hp, MSG_UNMA_ELSE,
-                "unmatched %T", tag);
+                "unmatched conditional %T", tag);
 }
 
 /* forward references */
@@ -276,10 +267,10 @@ static BOOL ss_empty(HSCPRC * hp)
  */
 static VOID remove_cif_tag(HSCPRC * hp)
 {
-    HSCTAG ciftag;              /* artificial if-tag to remove */
+    HSCTAG endiftag;            /* artificial if-tag to remove */
 
-    ciftag.name = HSC_IF_STR;
-    remove_ctag(hp, &ciftag);   /* remove closing tag from stack */
+    endiftag.name = HSC_IF_STR;
+    remove_end_tag(hp, &endiftag);      /* remove end tag from stack */
     DIF(fprintf(stderr, DHL "</$IF> removed\n"));
 }
 
@@ -327,208 +318,20 @@ static if_t get_condition(HSCPRC * hp)
 }
 
 /*
- *-------------------------------------
- * skip_if: the ultimate if-handler
- *-------------------------------------
- */
-
-/*
- * skip_if
+ * skip_until_conditional
  *
- * skip text, until <$/IF> or <$ELSE> is found
+ * skip text, until <$/IF>, <$ELSEIF> or <$ELSE> is found
  * also handle recursive IFs
  *
- * params: inpf..input file
- * result: IFST_CIF, if exited with </$IF>,
- *         IFST_ELSE, if exited with </$ELSE>
- * errors: call err_eof(), if end-of-file,
- *         return IFST_ERR
  */
-
-static BYTE skip_if(HSCPRC * hp)
-{
-    INFILE *inpf = hp->inpf;
-    BOOL quit = FALSE;          /* TRUE, if end-of-if found */
-    STRPTR nw = NULL;           /* word read from input */
-    BYTE state = IFST_TEXT;     /* current state */
-    LONG if_nest = 0;           /* counter for $IF nesting */
-
-    do
-    {
-        if (state != IFST_TAG)
-            nw = infgetw(inpf);
-        if (nw)
-        {
-            if (state == IFST_TAG)
-            {
-                /*
-                 * skip inside tags
-                 */
-                BYTE tag_state = TGST_TAG;      /* state var passe to */
-                /*     eot_reached() */
-
-                do
-                {
-                    if (eot_reached(hp, &tag_state))    /* CHECK: empty body? */
-                        state = IFST_TEXT;
-                }
-                while ((tag_state != TGST_END) && !(hp->fatal));
-            }
-            else
-            {
-                /*
-                 * NOTE: I know that this section could be
-                 * shorter, but it would also make the
-                 * source less readable
-                 */
-
-                /*
-                 * evaluate next state depending on
-                 * previous state
-                 */
-                switch (state)
-                {
-
-                case IFST_TEXT:
-                    if (!strcmp(nw, "<"))
-                        state = IFST_LT;
-                    break;
-
-                case IFST_LT:
-                    if (!strcmp(nw, "$"))
-                        state = IFST_HSC;
-                    else if (!strcmp(nw, "/"))
-                        state = IFST_SLASH;
-                    else if (!upstrcmp(nw, HSC_COMMENT_STR))
-                    {
-
-                        skip_hsc_comment(hp);
-                        state = IFST_TEXT;
-                    }
-                    else
-                        state = IFST_TAG;
-
-                    break;
-
-                case IFST_HSC:
-                    if (!upstrcmp(nw, "ELSE"))
-                        state = IFST_ELSE;
-                    else if (!upstrcmp(nw, "IF"))
-                        state = IFST_IF;
-                    else if (!upstrcmp(nw, "ELSEIF"))
-                        state = IFST_IF;
-                    else
-                        state = IFST_TAG;
-                    break;
-
-                case IFST_SLASH:
-                    if (!strcmp(nw, "$"))
-                        state = IFST_SLHSC;
-                    else
-                        state = IFST_TAG;
-
-                    break;
-
-                case IFST_SLHSC:
-                    if (!upstrcmp(nw, "IF"))
-                        state = IFST_CIF;
-                    else
-                        state = IFST_TAG;
-
-                    break;
-                }
-
-                /*
-                 * handle special states
-                 */
-                switch (state)
-                {
-
-                case IFST_IF:
-                    state = IFST_TAG;
-                    if_nest++;
-                    DIF(fprintf(stderr, DHL "skip <$IF>   (%ld)\n", if_nest));
-                    break;
-
-                case IFST_ELSE:
-                    if (if_nest)
-                    {
-                        state = IFST_TAG;
-                        DIF(fprintf(stderr, DHL "skip <$ELSE> (%ld)\n", if_nest));
-                    }
-                    else
-                    {
-                        /* TODO: check for 2nd <$ELSE> */
-                        quit = TRUE;
-                    }
-
-                    break;
-
-                case IFST_ELSEIF:
-                    if (if_nest)
-                    {
-                        state = IFST_TAG;
-                        DIF(fprintf(stderr, DHL "skip <$ELSEIF> (%ld)\n", if_nest));
-                    }
-                    else
-                    {
-                        /* TODO: check for 2nd <$ELSE> */
-                        quit = TRUE;
-                    }
-
-                    break;
-
-                case IFST_CIF:
-                    if (if_nest)
-                    {
-
-                        state = IFST_TAG;
-                        if_nest--;
-                        DIF(fprintf(stderr, DHL "skip </$IF>  (%ld)\n", if_nest + 1));
-
-                    }
-                    else
-                        quit = TRUE;
-
-                    break;
-                }
-            }
-        }
-        else
-        {
-            hsc_msg_eof(hp, "missing </" HSC_IF_STR ">");
-            state = IFST_ERR;
-        }
-    }
-    while (!quit && nw);
-
-    /* check for legal end state */
-    if ((state == IFST_CIF)
-        || (state == IFST_ELSE))
-    {
-        parse_wd(hp, ">");
-
-        if (state == IFST_CIF)
-        {
-            DIF(fprintf(stderr, DHL "</$IF> reached\n"));
-        }
-        else
-        {
-            DIF(fprintf(stderr, DHL "<$ELSE> reached\n"));
-        }
-    }
-    else if (state == IFST_ELSEIF)
-    {
-        DIF(fprintf(stderr, DHL "<$ELSEIF> reached\n"));
-    }
-
-    return (state);
-}
-
 static VOID skip_until_conditional(HSCPRC * hp)
 {
     EXPSTR *s = init_estr(32);
-    skip_until_tag(hp, s, HSC_ELSE_STR "|" HSC_ELSEIF_STR, HSC_IF_STR);
+    /* skip until next conditional tag is found; this specific tag
+     * will not be skipped, and be parsed afterwards */
+    skip_until_tag(hp, NULL, s,
+                   HSC_ELSE_STR "|" HSC_ELSEIF_STR, HSC_IF_STR,
+                   SKUT_NO_SKIP_TAGFOUND);
     del_estr(s);
 }
 
@@ -545,64 +348,8 @@ static VOID skip_until_conditional(HSCPRC * hp)
  */
 BOOL handle_hsc_if(HSCPRC * hp, HSCTAG * tag)
 {
-#if 0
-    if_t new_cond = get_condition(hp);
-
-    /* store new_cond on stack */
-    is_push(hp, new_cond);
-
-    if (new_cond != ISTK_TRUE)
-    {
-        BYTE state;
-
-        DIF(DMSG("IF: refused"));
-        state = skip_if(hp);
-        if ((state == IFST_ELSE) || (state == IFST_ELSEIF))
-        {
-            if (new_cond != ISTK_UNDEF)
-            {
-                if (state == IFST_ELSE)
-                {
-                    DIF(DMSG("IF: process ELSE"));
-                    handle_hsc_else(hp, find_strtag(hp->deftag, HSC_ELSE_STR));
-                }
-                else if (state == IFST_ELSEIF)
-                {
-                    DIF(DMSG("IF: process ELSEIF"));
-                    handle_hsc_elseif(hp, find_strtag(hp->deftag, HSC_ELSE_STR));
-                }
-                else
-                {
-                    DIF(panic("unexpected if-state"));
-                }
-            }
-            else
-            {
-                DIF(DMSG("ELSE/ELSEIF: refused (undef)"));
-                state = skip_if(hp);
-                if (state == IFST_ELSE)
-                    message_unma_else(hp, tag);
-                remove_cif_tag(hp);
-            }
-        }
-        else if (state == IFST_CIF)
-            remove_cif_tag(hp);
-        else if (state != IFST_ERR)
-        {
-            D(panic("strange if-state"));
-        }
-    }
-    else
-    {
-        DIF(DMSG(" IF: GRANTED"));
-    }
-#else
-#ifdef OLDIFCOND
-    if_t new_cond = get_condition(hp);
-#else
     BOOL new_condbool = get_varbool_byname(tag->attr, CONDITION_ATTR);
     if_t new_cond = bool2ift(new_condbool);
-#endif
 
     /* store new_cond on stack */
     is_push(hp, new_cond);
@@ -617,7 +364,6 @@ BOOL handle_hsc_if(HSCPRC * hp, HSCTAG * tag)
     {
         DIF(DMSG(" IF: GRANTED"));
     }
-#endif
 
     return (FALSE);
 }
@@ -717,4 +463,3 @@ BOOL handle_hsc_elseif(HSCPRC * hp, HSCTAG * tag)
 
     return (FALSE);
 }
-

@@ -31,12 +31,12 @@ HSCFLAGS=$(HSCMISC) $(IGNORE) prjfile=$(PRJFILE) to=$(DESTDIR) $(STDINC) \
 HSCDEPP = $(PARENT)hscdepp
 HSCPITT = $(PARENT)hscpitt
 
-.PHONY: all all_hsc
+.PHONY: all all_hsc depend rebuild
 
 #
 # rule to update whole docs
 #
-all : all_hsc /index.html
+all : all_hsc $(PARENT)/index.html
 
 #
 # implicit rule for html-files
@@ -44,6 +44,7 @@ all : all_hsc /index.html
 $(DESTDIR)%.html : %.hsc
 	@echo $@
 	@$(HSC) $(HSCFLAGS) $< 
+	@CheckHTML $@ QUIET
 
 #
 # update dependencies
@@ -52,13 +53,18 @@ depend :
 	$(HSCDEPP) file=Makefile prjfile=$(PRJFILE) verbose
 
 #
-# add new file / change includes of existing file
+# rebuild all documents
 #
-# example: make NEW FILE=new.hsc "INCLUDE=inc/macro.hsc inc/sepp.hsc"
+rebuild :
+	$(MAKE) -W inc/macro.hsc
+
+#
+# add new file / change includes of existing file
 #
 NEW :
 ifndef FILE
 	@echo *** pleaese specify variable FILE (and on your option INCLUDE)
+	@echo *** example: make NEW FILE=new.hsc "INCLUDE=inc/macro.hsc inc/sepp.hsc"
 else
 	$(HSC) $(HSCFLAGS) $(INCLUDE) from=$(FILE) 
 endif
@@ -69,31 +75,32 @@ endif
 #
 $(PARENT)index.html : main_index.hsc
 	$(HSC) to=$@ $(HSCMISC) $<
+	@CheckHTML $@ QUIET
 
 # --- DO NOT MODIFY THIS LINE -- hsc-dependencies follow ---
 
-# dependencies updated: Sunday 24-Nov-1996 15:18:58
+# dependencies updated: Sunday 25-May-1997 23:45:00
 
-all_hsc : ../docs/features/spctags.html ../docs/features/exec.html \
+all_hsc : ../docs/messages.html ../docs/features/exec.html \
     ../docs/updates.html ../docs/features/expressions.html \
-    ../docs/future.html ../docs/features/syntax.html \
-    ../docs/macro/attrib.html ../docs/macro/flag.html \
-    ../docs/macro/macros.html ../docs/project/prjfile.html \
+    ../docs/features/syntax.html ../docs/macro/attrib.html \
+    ../docs/macro/flag.html ../docs/project/prjfile.html \
     ../docs/project/makefile.html ../docs/project/make.html \
     ../docs/about.html ../docs/copy.html ../docs/examples.html \
     ../docs/require.html ../docs/source.html ../docs/features/absuris.html \
-    ../docs/features/if.html ../docs/features/prefs.html \
-    ../docs/features/rplcent.html ../docs/distrib.html ../docs/related.html \
-    ../docs/features/strip.html ../docs/features/spcattr.html \
-    ../docs/features/getsize.html ../docs/questions.html \
+    ../docs/features/prefs.html ../docs/features/rplcent.html \
+    ../docs/distrib.html ../docs/related.html ../docs/features/strip.html \
+    ../docs/features/spcattr.html ../docs/features/getsize.html \
     ../docs/project/index.html ../docs/project/hscdepp.html \
-    ../docs/fileargs.html ../docs/install.html ../docs/messages.html \
-    ../docs/author.html ../docs/features/checkuri.html ../docs/index.html \
-    ../docs/ports.html ../docs/envvar.html ../docs/options.html \
-    ../docs/bugs.html ../docs/project/hscpitt.html
+    ../docs/author.html ../docs/features/checkuri.html ../docs/ports.html \
+    ../docs/envvar.html ../docs/options.html ../docs/bugs.html \
+    ../docs/fileargs.html ../docs/undocumented.html ../docs/future.html \
+    ../docs/project/hscpitt.html ../docs/features/spctags.html \
+    ../docs/features/if.html ../docs/install.html ../docs/index.html \
+    ../docs/questions.html ../docs/project/hscpaltrow.html \
+    ../docs/macro/macros.html
 
-../docs/features/spctags.html : features/spctags.hsc inc/macro.hsc \
-    inc/webpage.hsc
+../docs/messages.html : messages.hsc inc/macro.hsc inc/webpage.hsc
 
 ../docs/features/exec.html : features/exec.hsc inc/macro.hsc \
     inc/webpage.hsc exmpl/exec.hsc exmpl/exec.hsc
@@ -103,18 +110,12 @@ all_hsc : ../docs/features/spctags.html ../docs/features/exec.html \
 ../docs/features/expressions.html : features/expressions.hsc inc/macro.hsc \
     inc/webpage.hsc
 
-../docs/future.html : future.hsc inc/macro.hsc inc/webpage.hsc
-
 ../docs/features/syntax.html : features/syntax.hsc inc/macro.hsc \
     inc/webpage.hsc
 
 ../docs/macro/attrib.html : macro/attrib.hsc inc/macro.hsc inc/webpage.hsc
 
 ../docs/macro/flag.html : macro/flag.hsc inc/macro.hsc inc/webpage.hsc
-
-../docs/macro/macros.html : macro/macros.hsc inc/macro.hsc inc/webpage.hsc \
-    exmpl/m_addr.hsc exmpl/m_addr.hsc exmpl/m_file.hsc exmpl/m_next.hsc \
-    exmpl/m_next.hsc
 
 ../docs/project/prjfile.html : project/prjfile.hsc inc/macro.hsc \
     inc/webpage.hsc
@@ -137,8 +138,6 @@ all_hsc : ../docs/features/spctags.html ../docs/features/exec.html \
 ../docs/features/absuris.html : features/absuris.hsc inc/macro.hsc \
     inc/webpage.hsc
 
-../docs/features/if.html : features/if.hsc inc/macro.hsc inc/webpage.hsc
-
 ../docs/features/prefs.html : features/prefs.hsc inc/macro.hsc \
     inc/webpage.hsc
 
@@ -158,26 +157,16 @@ all_hsc : ../docs/features/spctags.html ../docs/features/exec.html \
 ../docs/features/getsize.html : features/getsize.hsc inc/macro.hsc \
     inc/webpage.hsc
 
-../docs/questions.html : questions.hsc inc/macro.hsc inc/webpage.hsc
-
 ../docs/project/index.html : project/index.hsc inc/macro.hsc \
     inc/webpage.hsc
 
 ../docs/project/hscdepp.html : project/hscdepp.hsc inc/macro.hsc \
     inc/webpage.hsc
 
-../docs/fileargs.html : fileargs.hsc inc/macro.hsc inc/webpage.hsc
-
-../docs/install.html : install.hsc inc/macro.hsc inc/webpage.hsc
-
-../docs/messages.html : messages.hsc inc/macro.hsc inc/webpage.hsc
-
 ../docs/author.html : author.hsc inc/macro.hsc inc/webpage.hsc
 
 ../docs/features/checkuri.html : features/checkuri.hsc inc/macro.hsc \
     inc/webpage.hsc
-
-../docs/index.html : index.hsc inc/macro.hsc inc/webpage.hsc
 
 ../docs/ports.html : ports.hsc inc/macro.hsc inc/webpage.hsc
 
@@ -187,7 +176,33 @@ all_hsc : ../docs/features/spctags.html ../docs/features/exec.html \
 
 ../docs/bugs.html : bugs.hsc inc/macro.hsc inc/webpage.hsc
 
+../docs/fileargs.html : fileargs.hsc inc/macro.hsc inc/webpage.hsc
+
+../docs/undocumented.html : undocumented.hsc inc/macro.hsc inc/webpage.hsc
+
+../docs/future.html : future.hsc inc/macro.hsc inc/webpage.hsc
+
 ../docs/project/hscpitt.html : project/hscpitt.hsc inc/macro.hsc \
     inc/webpage.hsc
+
+../docs/features/spctags.html : features/spctags.hsc inc/macro.hsc \
+    inc/webpage.hsc
+
+../docs/features/if.html : features/if.hsc inc/macro.hsc inc/webpage.hsc
+
+../docs/install.html : install.hsc inc/macro.hsc inc/webpage.hsc
+
+../docs/index.html : index.hsc inc/macro.hsc inc/webpage.hsc
+
+../docs/questions.html : questions.hsc inc/macro.hsc inc/webpage.hsc
+
+../docs/project/hscpaltrow.html : project/hscpaltrow.hsc inc/macro.hsc \
+    inc/webpage.hsc
+
+../docs/macro/macros.html : macro/macros.hsc inc/macro.hsc inc/webpage.hsc \
+    exmpl/macro_addr.hsc exmpl/macro_addr.hsc exmpl/macro_file.hsc \
+    exmpl/macro_next.hsc exmpl/macro_next.hsc exmpl/macro_cntnest.hsc \
+    exmpl/macro_cntnest.hsc exmpl/macro_cnt2nest.hsc \
+    exmpl/macro_cnt2nest.hsc exmpl/macro_locale.hsc exmpl/macro_locale.hsc
 
 # --- DO NOT MODIFY THIS LINE -- hsc-dependencies precede ---

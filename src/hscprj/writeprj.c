@@ -1,9 +1,6 @@
 /*
- * hscprj/writeprj.c
- *
- * project-managment output-routines for hsc
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 27-Oct-1996
+ */
+/*
+ * hscprj/writeprj.c
+ *
+ * project-managment output-routines for hsc
+ *
+ * updated: 28-Mar-1997
  * created: 10-Sep-1996
  */
 
@@ -53,7 +56,7 @@ static STRARR timebuf[TIMEBUFSIZE];
  */
 
 /*
- * hsc_write_project_file
+ * hsc_project_write_data
  *
  * write ids to file
  */
@@ -230,13 +233,39 @@ static VOID append_document(EXPSTR * prjstr, HSCDOC * document)
 #endif
 }
 
-/*
- * hsc_write_project_file
- *
- * store all project-data in a string and write it to
- * the file specified with hsc_set_project_filename()
- */
-BOOL hsc_project_write_file(HSCPRJ * hp, STRPTR project_fname)
+/****** hscprj.lib/hsc_project_write_data ************************************
+*
+*   NAME
+*       hsc_project_write_data -- store project data in a file
+*
+*   SYNOPSIS
+*       ok = hsc_project_write_data( project, filename, force )
+*
+*       BOOL hsc_project_write_data
+*            ( HSCPRJ * project, STRPTR filename, BOOL force )
+*
+*   FUNCTION
+*       Store all project data in a file. If the file already exists, it
+*       will be overwritten without asking back.
+*
+*   INPUTS
+*       project  - project data
+*       filename - filename of project file
+*       force    - write data even if no new documents have been atteched;
+*                  enable this, if e.g. you only have removed some documents
+*
+*   RESULT
+*       ok - TRUE, if file could have been written successfully
+*
+*   EXAMPLE
+*       ok = hsc_project_write_data( project, "sepp.project", FALSE );
+*
+*   SEE ALSO
+*
+*
+******************************************************************************
+*/
+BOOL hsc_project_write_data(HSCPRJ * hp, STRPTR project_fname, BOOL force)
 {
     BOOL written = FALSE;
 
@@ -245,6 +274,7 @@ BOOL hsc_project_write_file(HSCPRJ * hp, STRPTR project_fname)
         EXPSTR *prjstr = init_estr(256);
         DLNODE *nd = NULL;
         FILE *outfile = NULL;
+        BOOL write_it = force; /* really write it? */
 
         DP(fprintf(stderr, DHP "update project file `%s'\n",
                    project_fname));
@@ -252,52 +282,60 @@ BOOL hsc_project_write_file(HSCPRJ * hp, STRPTR project_fname)
         /* append header information */
         append_header(prjstr);
 
-        /* append current document to project */
         if ((hp->document) && (hp->document->docname))
         {
+            /* append current document to project */
             hsc_project_add_document(hp);
-        }
-        else
-        {
-            DP(fprintf(stderr, DHP "  no new document to add\n"));
-        }
 
-        /*
-         * append all old project info of other files
-         */
-        nd = dll_first(hp->documents);
-        while (nd)
-        {
-            HSCDOC *document = (HSCDOC *) nd->data;
-
-            append_document(prjstr, document);
-
-            nd = dln_next(nd);
+            /* now it needs an update.. */
+            write_it = TRUE;
         }
 
-        DP(fprintf(stderr, DHP "project file contains:\n%s", estr2str(prjstr)));
-
-        /* write new project file */
-        errno = 0;
-        outfile = fopen(project_fname, "w");
-        if (outfile)
+        if (write_it)
         {
-            errno = 0;
-            fwrite(estr2str(prjstr), sizeof(char),
-                   estrlen(prjstr), outfile);
-
-            if (errno)
+            /*
+             * append all old project info of other files
+             */
+            nd = dll_first(hp->documents);
+            while (nd)
             {
-                DP(fprintf(stderr, DHP "can't write project file\n"));
-                /* TODO: show message "can't open project file" */
+                HSCDOC *document = (HSCDOC *) nd->data;
+
+                append_document(prjstr, document);
+
+                nd = dln_next(nd);
+            }
+
+            DP(fprintf(stderr, DHP "project file contains:\n%s", estr2str(prjstr)));
+
+            /* write new project file */
+            errno = 0;
+            outfile = fopen(project_fname, "w");
+            if (outfile)
+            {
+                errno = 0;
+                fwrite(estr2str(prjstr), sizeof(char),
+                       estrlen(prjstr), outfile);
+
+                if (errno)
+                {
+                    DP(fprintf(stderr, DHP "can't write project file\n"));
+                    /* TODO: show message "can't write project file" */
+                }
+                else
+                    written = TRUE;
             }
             else
-                written = TRUE;
+            {
+                DP(fprintf(stderr, DHP "can't open project file for output\n"));
+                /* TODO: show message "can't open project file" */
+            }
         }
         else
         {
-            DP(fprintf(stderr, DHP "can't open project file for output\n"));
-            /* TODO: show message "can't open project file" */
+            DP(fprintf(stderr, DHP "  no document or docname to add\n"));
+            del_document(hp->document);
+            hp->document = NULL;
         }
 
         del_estr(prjstr);
@@ -309,4 +347,3 @@ BOOL hsc_project_write_file(HSCPRJ * hp, STRPTR project_fname)
 
     return (written);
 }
-

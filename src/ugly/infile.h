@@ -1,4 +1,23 @@
 /*
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1993-1997  Thomas Aglassinger
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+/*
  * ugly/infile.h
  *
  * ugly input file handling functions, header file
@@ -112,6 +131,8 @@ extern int infgotoeol(INFILE * inpf);
 extern VOID del_infilepos(INFILEPOS * pos);
 extern INFILEPOS *new_infilepos(INFILE * inpfile);
 extern INFILEPOS *new_winfilepos(INFILE * inpfile);
+extern INFILEPOS *clone_infilepos(INFILEPOS *ipos);
+
 extern STRPTR ifp_get_fname(INFILEPOS * pos);
 extern ULONG ifp_get_x(INFILEPOS * pos);
 extern ULONG ifp_get_y(INFILEPOS * pos);

@@ -1,9 +1,6 @@
 /*
- * hsc/global.c
- *
- * global vars & funs for hsc
- *
- * Copyright (C) 1995  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 22-Nov-1996
+ */
+/*
+ * hsc/global.c
+ *
+ * global vars & funs for hsc
+ *
+ * updated: 16-May-1997
  * created:  8-Jul-1995
  */
 
@@ -75,7 +78,7 @@ BOOL init_global(VOID)
 
     ok = (inpfilename && msgbuf);
 
-#if (defined MSDOS & (!defined HSC_PUT))
+#if (defined MSDOS) /* HSC_PUT */
 #define MEM_SIZE (15*1024*1024)
     {
         /* alloc 15MB ram, fill them twice

@@ -20,27 +20,50 @@ String constants must be enclosed inside quotes.</P>
     <IMG SRC="hugo.gif" ALT="image">
 </$source>
 
-<A NAME="operators"><H2>Operators</H2></A>
+<H2><A NAME="operators">Operators</A></H2>
 
 <H3>Unary operators</H3>
 <DL>
-    <DT><CODE>not</CODE> <I>expression</I>
-    <DD>negotiate (boolean) expression
-    <DT><CODE>set</CODE> <I>attribute</I>
-    <DD>True, if attribute has been set during macro call
-    <DT><CODE>defined</CODE> <I>attribute</I>
+    <DT><A NAME="not"><CODE>not</CODE></A> <I>expression</I>
+    <DD>Negotiate (boolean) expression
+    <DT><A NAME="set"><CODE>set</CODE></A> <I>attribute</I>
+    <DD>True, if attribute has been set (read: passed a value)
+        within macro call.
+    <DT><A NAME="defined"><CODE>defined</CODE></A> <I>attribute</I>
     <DD>True, if attribute was defined with <TG>$macro</TG> or
         <TG>$define</TG>
-    <DT><CODE>exists(</CODE><I>local uri</I><CODE>)</CODE>
-    <DD>True, if document at local URI exists (<CODE>bool</CODE>)
+    <DT><A NAME="exists"><CODE>Exists(</CODE></A><I>local uri</I><CODE>)</CODE>
+    <DD>True, if document at local URI exists (<CODE>bool</CODE>).
+        This can also be specified as an <fe_absuri>.<BR>
+        <ExampleNote><CODE>Exists("index.html")</CODE>,
+                     <CODE>Exists(":image/next.gif")</CODE>
+    <DT><A NAME="fexists"><CODE>fExists(</CODE></A><I>filename</I><CODE>)</CODE>
+    <DD>True, if a file exists (<CODE>bool</CODE>). If you do not specify
+        a full filename (including a device name), it will be relative to
+        the source root directory.<BR>
+        <ExampleNote><CODE>fExists("sepp:hugo/resi.hsc")</CODE>,
+                     <CODE>fExists("///child.txt")</CODE>,
+                     <CODE>fExists("include/global.hsc")</CODE>
     <DT><CODE><A NAME="getenv">GetEnv</A>(</CODE><I>environment-variable</I><CODE>)</CODE>
-    <DD>get value of an environment variable
-    <DT><CODE><A NAME="getfilesize">GetFileSize</A>(</CODE><I>uri</I><CODE>)</CODE>
-    <DD>get size of a specific file
+    <DD>Get value of an environment variable.<BR>
+        <ExampleNote><CODE>GetEnv("Workbench")</CODE>
+    <DT><CODE><A NAME="getfilesize">GetFileSize</A>(</CODE><I>local uri</I><CODE>)</CODE>
+    <DD>Get size of a specific document.
+        You can use the attribute
+        <A HREF=":features/spcattr.html#format.filesize"><CODE>HSC.Format.FileSize</CODE></A>
+        to change the appearence of the result.<BR>
+        <ExampleNote><CODE>GetFileSize("../../download/hugo.lha")</CODE>,
+                     <CODE>GetFileSize(":nudes/resi.jpg")</CODE>
     <DT><CODE><A NAME="getgmtime">GetGMTime()</A></CODE>
-    <DD>get current Greenwich Mean time
+    <DD>Get current Greenwich Mean time.
+        You can use the attribute
+        <A HREF=":features/spcattr.html#format.time"><CODE>HSC.Format.Time</CODE></A>
+        to change the appearence of the result.<BR>
     <DT><CODE><A NAME="gettime">GetTime()</A></CODE>
-    <DD>get current local time
+    <DD>Get current local time.
+        You can use the attribute
+        <A HREF=":features/spcattr.html#format.time"><CODE>HSC.Format.Time</CODE></A>
+        to change the appearence of the result.<BR>
 </DL>
 
 <H3>Binary operators</H3>
@@ -75,7 +98,7 @@ String constants must be enclosed inside quotes.</P>
 
 <P>At least on my machine.</P>
 
-<A NAME="boolean"><H2>Boolean expressions</H2></A>
+<H2><A NAME="boolean">Boolean expressions</A></H2>
 
 <P>If you pass an expression to a boolean attribute, the expression is
 evaluated as before. If the expression returned an empty string,
@@ -97,7 +120,8 @@ resulting in a value equal to the name of attribute. (In html, writing
     <IMG SRC="hugo.gif" ALT="nufin">
 </$source>
 
-<P>if <CODE>name</CODE> has been set to <CODE>"hugo.gif"</CODE>, or to</P>
+<P>if <CODE>name</CODE> has been set to <CODE>"hugo.gif"</CODE>,
+or to</P>
 
 <$source PRE>
     <IMG SRC="map.gif" ALT="nufin" ISMAP>
@@ -107,11 +131,11 @@ resulting in a value equal to the name of attribute. (In html, writing
 only the second call enables the boolean attribute <CODE>ISMAP</CODE>,
 while it gets stripped for the first call.</P>
 
-<A NAME="priorities"><H2>Priorities</H2></A>
+<H2><A NAME="priorities">Priorities</A></H2>
 <P><STRONG>Important:</STRONG> Different to most programming languages, <hsc>
 does not support priorities for different operators. Therefor, expressions
-are simply processed sequentialy (I'm too lazy to build a tree).</P>
+are simply processed sequentially (Programmer's lazyness rules).</P>
 
-<P>But you can use nested brakets within complex expressions.</P>
+<P>But you can use nested brackets within complex expressions.</P>
 
 </WEBPAGE>

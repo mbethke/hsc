@@ -1,49 +1,49 @@
 <* macro defs (short cuts) *>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 <$macro stdin><CODE>stdin</CODE></$macro>
 <$macro stdout><CODE>stdout</CODE></$macro>
 <$macro stderr><CODE>stderr</CODE></$macro>
 
-<$macro qq>``</$macro>
-<$macro /qq>´´</$macro>
-<$macro qqc>``<CODE></$macro>
-<$macro /qqc></CODE>´´</$macro>
-<$macro vbar>vertical bar (<qq><CODE>|</CODE></qq>)</$macro>
-<$macro colon>colon (<qq><CODE>:</CODE></qq>)</$macro>
-<$macro semicolon>semicolon (<qq><CODE>;</CODE></qq>)</$macro>
-<$macro asterisk>asterisk (<qq><CODE>*</CODE></qq>)</$macro>
-<$macro underscore>underscore (<qq><CODE>_</CODE></qq>)</$macro>
-<$macro period>period (<qq><CODE>.</CODE></qq>)</$macro>
-<$macro hyphen>hyphen (<qq><CODE>-</CODE></qq>)</$macro>
-<$macro slash>slash (<qq><CODE>/</CODE></qq>)</$macro>
-<$macro backslash>backslash (<qq><CODE>\</CODE></qq>)</$macro>
+<$macro qq /CLOSE>``<$content>''</$macro>
+<$macro qqc /CLOSE>``<CODE><$content></CODE>''</$macro>
+<$macro vbar>vertical bar (<qqc>|</qqc>)</$macro>
+<$macro colon>colon (<qqc>:</qqc>)</$macro>
+<$macro semicolon>semicolon (<qqc>;</qqc>)</$macro>
+<$macro asterisk>asterisk (<qqc>*</qqc>)</$macro>
+<$macro underscore>underscore (<qqc>_</qqc>)</$macro>
+<$macro period>period (<qqc>.</qqc>)</$macro>
+<$macro hyphen>hyphen (<qqc>-</qqc>)</$macro>
+<$macro slash>slash (<qqc>/</qqc>)</$macro>
+<$macro backslash>backslash (<qqc>\</qqc>)</$macro>
 
-<$macro TG><CODE>&lt;</$macro>
-<$macro /TG>&gt;</CODE></$macro>
-<$macro EXEC><KBD></$macro>
-<$macro /EXEC></KBD></$macro>
-<$macro FILE><I></$macro>
-<$macro /FILE></I></$macro>
+<$macro TG /CLOSE><CODE>&lt;<$content>&gt;</CODE></$macro>
+<$macro EXEC /CLOSE><KBD><$content></KBD></$macro>
+<$macro FILE /CLOSE><I><$content></I></$macro>
 
-<$macro hsc><EXEC>hsc</EXEC></$macro>
-<$macro hscdepp><EXEC>hscdepp</EXEC></$macro>
-<$macro hscpitt><EXEC>hscpitt</EXEC></$macro>
+<$macro hsc CAP:bool><EXEC><$if cond=(CAP)>H<$else>h</$if>sc</EXEC></$macro>
+<$macro hscdepp LINK:bool CAP:bool><$if cond=(LINK)><A HREF=":project/hscdepp.html"></$if><EXEC><$if cond=(CAP)>H<$else>h</$if>scdepp</EXEC><$if cond=(LINK)></A></$if></$macro>
+<$macro hscpaltrow LINK:bool CAP:bool><$if cond=(LINK)><A HREF=":project/hscpaltrow.html"></$if><EXEC><$if cond=(CAP)>H<$else>h</$if>scpaltrow</EXEC><$if cond=(LINK)></A></$if></$macro>
+<$macro hscpitt LINK:bool CAP:bool><$if cond=(LINK)><A HREF=":project/hscpitt.html"></$if><EXEC><$if cond=(CAP)>H<$else>h</$if>scpitt</EXEC><$if cond=(LINK)></A></$if></$macro>
 <$macro makefile><FILE>Makefile</FILE></$macro>
 <$macro make><EXEC>make</EXEC></$macro>
 
-<$macro UBQ><BLOCKQUOTE></$macro>
-<$macro /UBQ></BLOCKQUOTE></$macro>
+<$macro UBQ><BLOCKQUOTE><$content></BLOCKQUOTE></$macro>
 <$macro WebLint><A HREF="http://www.unipress.com/cgi-bin/WWWeblint">WebLint</A></$macro>
-<$macro Aminet FILE:string TEXT:string><$if COND=(not set TEXT)><$let TEXT=("aminet:"+FILE)></$if><A HREF=("http://wuarchive.wustl.edu/~aminet/pub/"+file)><(text)></A></$macro>
-<$macro AminetReadMe FILE:string TEXT:string><$if COND=(not set TEXT)><$let TEXT=("aminet:"+FILE)></$if><A HREF=("http://wuarchive.wustl.edu/~aminet/pub/"+file)><(text)></A></$macro>
+<$macro Aminet FILE:string TEXT:string><$if COND=(not set TEXT)><$let TEXT=("aminet:"+FILE)></$if><A HREF=("http://wuarchive.wustl.edu/~aminet/dirs/aminet/"+file)><(text)></A></$macro>
+<$macro AminetReadMe FILE:string TEXT:string><$if COND=(not set TEXT)><$let TEXT=("aminet:"+FILE)></$if><A HREF=("http://wuarchive.wustl.edu/~aminet/dirs/aminet/"+file)><(text)></A></$macro>
 <$macro EMAIL address:string><A HREF=("mailto:"+address)><(address)></A></$macro>
-<$macro hsc-support><A HREF="http://www.giga.or.at/~agi/hsc/index.html">hsc-support-w3page</A></$macro>
+<$macro hsc-support><A HREF="http://www.giga.or.at/~agi/hsc/">hsc-support-w3page</A></$macro>
 <$macro hsc.prefs><FILE>hsc.prefs</FILE></$macro>
-<$macro Technote><EM>Technical note</EM>: </$macro>
+<$macro ExampleNote><STRONG>Example</STRONG>: </$macro>
+<$macro TechNote><STRONG>Technical note</STRONG>: </$macro>
 
+<$macro ln_msg id:num/required><A HREF=(":messages.html#message."+id)>message #<(id)></A></$macro>
+<$macro ln_bugs><qq><A HREF=":bugs.html">Known bugs, problems and limitations</A></qq></$macro>
 <$macro ln_define><A HREF=":features/spctags.html#define"><TG>$define</TG></A></$macro>
 <$macro ln_defent><A HREF=":features/prefs.html#defent"><TG>$defent</TG></A></$macro>
 <$macro ln_deficon><A HREF=":features/prefs.html#deficon"><TG>$deficon</TG></A></$macro>
 <$macro ln_deftag><A HREF=":features/prefs.html#deftag"><TG>$deftag</TG></A></$macro>
+<$macro ln_content><A HREF=":features/spctags.html#content"><TG>$content</TG></A></$macro>
 <$macro ln_exec><A HREF=":features/exec.html"><TG>$exec</TG></A></$macro>
 <$macro ln_include><A HREF=":features/spctags.html#include"><TG>$include</TG></A></$macro>
 <$macro ln_let><A HREF=":features/spctags.html#let"><TG>$let</TG></A></$macro>
@@ -78,6 +78,7 @@
 <$macro op_stripcomment><A HREF=":options.html#stripcomment"><KBD>STRIPCOMMENT</KBD></A></$macro>
 <$macro op_stripexternal><A HREF=":options.html#stripexternal"><KBD>STRIPEXTERNAL</KBD></A></$macro>
 <$macro op_striptags><A HREF=":options.html#striptags"><KBD>STRIPTAGS</KBD></A></$macro>
+<$macro op_serverdir><A HREF=":options.html#serverdir"><KBD>SERVERDIR</KBD></A></$macro>
 
 <* environment variables *>
 <$macro env_home><A HREF=":envvar.html"><VAR>HOME</VAR></A></$macro>

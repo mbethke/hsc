@@ -1,4 +1,23 @@
 /*
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1993-1997  Thomas Aglassinger
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+/*
  * ugly/utime.c
  *
  * misc. time-handling functions
@@ -19,7 +38,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 30-Jul-1996
+ * updated:  6-Dec-1996
  * created:  6-Jun-1996
  *
  *-------------------------------------------------------------------
@@ -65,7 +84,6 @@ BOOL time2estr(EXPSTR * dest, struct tm *time)
     /* write time to string */
     while (ok && !strftrc)
     {
-
         /* expand dest */
         ok = app_estr(dest, TIMEBUF_INC_STR);
 
@@ -75,7 +93,6 @@ BOOL time2estr(EXPSTR * dest, struct tm *time)
         /* write string */
         strftrc = strftime(estr2str(dest), estrlen(dest),
                            UGLY_TIME_TEMPLATE_STRFTIME, time);
-
     }
 
     D(if (!ok) fprintf(stderr, DUT "time2estr: FAILED\n"));
@@ -129,11 +146,9 @@ BOOL str2time(struct tm *time, STRPTR timestr)
 
             D(
                  {
-
                  STRARR timebuf2[200];
                  strftime(timebuf2, 200, UGLY_TIME_TEMPLATE_STRFTIME, ltime);
                  fprintf(stderr, DUT "ltime = `%s'\n", timebuf2);
-
                  }
             );
 
@@ -144,24 +159,18 @@ BOOL str2time(struct tm *time, STRPTR timestr)
             }
             else
             {
-                D(fprintf(stderr, DUT "str2time: localtime() FAILED\n",
-                          strlen(TIMEBUF_INC_STR)));
+                D(fprintf(stderr, DUT "str2time: localtime() FAILED\n"));
             }
 
         }
         else
         {
-
-            D(fprintf(stderr, DUT "str2time: mktime() FAILED\n",
-                      strlen(TIMEBUF_INC_STR)));
-
+            D(fprintf(stderr, DUT "str2time: mktime() FAILED\n"));
         }
     }
     else
     {
-
-        D(fprintf(stderr, DUT "str2time: sscanf() FAILED\n",
-                  strlen(TIMEBUF_INC_STR)));
+        D(fprintf(stderr, DUT "str2time: sscanf() FAILED\n"));
     }
 
     return (ok);

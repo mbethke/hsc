@@ -1,3 +1,22 @@
+/*
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1993-1997  Thomas Aglassinger
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
 #ifndef UGLY_USTRING_H
 #define UGLY_USTRING_H
 
@@ -39,6 +58,7 @@ extern void ugly_reallocstr(STRPTR * oldstr, CONSTRPTR newstr, STRPTR file, ULON
 extern STRPTR ustrrpbrk(CONSTRPTR str, CONSTRPTR set);
 extern LONG strenum(STRPTR str, STRPTR set, char sep, BYTE options);
 
+extern int last_ch(STRPTR s);
 extern STRPTR ch2str(const char ch);
 extern BOOL str2long(STRPTR s, LONG * num);
 extern STRPTR long2str(LONG num);

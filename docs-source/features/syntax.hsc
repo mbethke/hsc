@@ -3,12 +3,12 @@
     NEXT="spctags.html">
 
 <P><hsc> performs a syntax check with your source. It testes it for
-things like missing closing tags, illegal nestings or missing
+things like missing closing tags, illegal nesting or missing
 required tags.It also tests attributes for tags, e.g. allowed values 
 for the <CODE>ALIGN</CODE> option of <TG>IMG</TG>.
 </P>
 
-<P>However, the syntax check of <hsc> is not very powerful compaired
+<P>However, the syntax check of <hsc> is not very powerful compared
 to tools that only handle this task.</P>
 
 <P>(Tech. Note: Most errors <hsc> handles are of the kind "Well, now a 

@@ -1,4 +1,23 @@
 /*
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1993-1997  Thomas Aglassinger
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+/*
  * fname.c
  *
  * filename processing functions
@@ -19,7 +38,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 27-Oct-1996
+ * updated:  7-Jan-1997
  * created: 24-May-1994
  *
  *-------------------------------------------------------------------
@@ -365,8 +384,8 @@ static size_t adjust_prefixlen(size_t prefixlen)
 
 STRPTR tmpnamstr(STRPTR prefix)
 {
+    static LONG fileidx = 0;
     STRARR buf[256 + 32];
-    LONG fileidx = 0;
     STRPTR s = NULL;
     FILE *file = NULL;
     size_t prefixlen = 0;
@@ -395,6 +414,7 @@ STRPTR tmpnamstr(STRPTR prefix)
         file = fopen(buf, "r");
         if (file)
         {
+            fclose(file);
             if (fileidx == 0xffff)
                 fileidx = 0;    /* ran out of names */
         }

@@ -2,18 +2,18 @@
     PREV=":macro/macros.html"
     NEXT=":macro/macros.html">
 
-<A NAME="general"><H2>General syntax</H2></A>
+<H2><A NAME="general">General syntax</A></H2>
 
 Conditionals looks like that:
 
 <PRE>
 <CODE>&lt;$if COND=</CODE><I><A HREF="expressions.html">expression</A></I><CODE>&gt;</CODE>
 
-  <I>code to be processed if condition fullfilled</I>
+  <I>code to be processed if condition matches</I>
 
 <CODE>&lt;$elseif COND=</CODE><I><A HREF="expressions.html">expression</A></I><CODE>&gt;</CODE>
 
-  <I>(optional) code to be processed if alternative condition fullfilled</I>
+  <I>(optional) code to be processed if alternative condition matches</I>
 
 <CODE>&lt;$else&gt;</CODE>
 
@@ -23,12 +23,12 @@ Conditionals looks like that:
 </PRE>
 
 <P>Both <TG>$if</TG> and <TG>$elseif</TG> require a boolean attribute 
-<CODE>COND</CODE>; <CODE>false</CODE> is repesented by an empty string,
-<CODE>true</CODE> by any non-empty string. Normaly, you will like to
+<CODE>COND</CODE>; <CODE>false</CODE> is represented by an empty string,
+<CODE>true</CODE> by any non-empty string. Normally, you will like to
 set <CODE>COND</CODE> using
 <A HREF="expressions.html">expressions</A>.</P>
 
-<A NAME="simple"><H2>Some simple examples</H2></A>
+<H2><A NAME="simple">Some simple examples</A></H2>
 
 Now let's see how this works in practice:
 
@@ -57,7 +57,7 @@ Now let's extend this:
 other value for <CODE>NAME</CODE> will insert 
 "<CODE>I don't know you.</CODE>".</P>
 
-<A NAME="nesting"><H2>Nesting conditionals</H2></A>
+<H2><A NAME="nesting">Nesting conditionals</A></H2>
 
 <P>Nesting them is also possible, of course:</P>
 
@@ -75,7 +75,7 @@ other value for <CODE>NAME</CODE> will insert
 </$SOURCE>
 
 
-<A NAME="macros"><H2>Conditionals and macros</H2></A>
+<H2><A NAME="macros">Conditionals and macros</A></H2>
 
 <P>You can not compare <hsc>'s <TG>$if</TG> to primitive and clumsy 
 <CODE>#if</CODE> of the C-preprocessor. The main difference is that 

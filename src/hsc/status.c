@@ -1,9 +1,6 @@
 /*
- * hsc/status.c
- *
- * status message functions for hsc
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  9-Sep-1996
+ */
+/*
+ * hsc/status.c
+ *
+ * status message functions for hsc
+ *
+ * updated: 27-Feb-1997
  * created: 30-Jul-1995
  *
  */
@@ -53,14 +56,16 @@ static STRARR status_buf[MAX_STATUSLEN + 2];    /* buffer for status messages */
  */
 VOID set_return_code(int newrc)
 {
-    if (newrc > return_code) {
+    if (newrc > return_code)
+    {
 #if DEBUG_HSCPRE_RETCODE
         fprintf(stderr, DHSC "returncode: set to %d\n", return_code);
 #endif
         return_code = newrc;
     }
 #if DEBUG_HSCPRE_RETCODE
-    else {
+    else
+    {
         fprintf(stderr, DHSC "returncode: NOT set to %d (is: %d)\n",
                 newrc, return_code);
     }
@@ -79,8 +84,8 @@ VOID status_msg(STRPTR s)
     size_t new_stmsg_len = strlen(s);
     size_t i;
 
-    if (disp_status) {
-
+    if (disp_status)
+    {
         /* display message */
         if (s[0])
             fputs(s, stderr);
@@ -94,7 +99,6 @@ VOID status_msg(STRPTR s)
         fflush(stderr);
 
         prev_stmsg_len = new_stmsg_len;
-
     }
 }
 
@@ -120,7 +124,8 @@ static VOID status_file_and_line(HSCPRC * hp)
 {
     STRPTR filename = hsc_get_file_name(hp);
 
-    if (filename) {
+    if (filename)
+    {
         /* create status-string */
         /* NOTE: this is not done via sprintf(), because
          *   no check for a too long string would be done */
@@ -129,7 +134,9 @@ static VOID status_file_and_line(HSCPRC * hp)
         strncat(status_buf, long2str(hsc_get_file_line(hp)),
                 MAX_STATUSLEN - strlen(status_buf));
         strncat(status_buf, ")", MAX_STATUSLEN - strlen(status_buf));
-    } else {
+    }
+    else
+    {
         strcpy(status_buf, "");
     }
 
@@ -144,11 +151,10 @@ static VOID status_file_and_line(HSCPRC * hp)
  */
 VOID status_lf(VOID)
 {
-    if (disp_status) {
-
+    if (disp_status)
+    {
         fputs("\n", stderr);
         prev_status_line = 0;
-
     }
 }
 
@@ -160,7 +166,8 @@ VOID status_lf(VOID)
  */
 VOID status_file_begin(HSCPRC * hp, STRPTR filename)
 {
-    if (filename) {
+    if (filename)
+    {
         /* create status-string: "<filename> (reading)" */
         /* NOTE: this is not done via sprintf(), because
          *   no check for a too long string would be done */
@@ -193,12 +200,11 @@ VOID status_line(HSCPRC * hp)
     /* set this to '0' to see every line displayed in status */
         && ((hsc_get_file_line(hp) - prev_status_line) > ST_LINE_QUANTUM)
 #endif
-        ) {
-
+        )
+    {
         status_file_and_line(hp);
         status_msg(status_buf);
         prev_status_line = hsc_get_file_line(hp);
-
     }
 }
 
@@ -209,8 +215,8 @@ VOID status_line(HSCPRC * hp)
  */
 VOID status_misc(HSCPRC * hp, STRPTR s)
 {
-    if (disp_status_verbose) {
-
+    if (disp_status_verbose)
+    {
         strcpy(status_buf, "");
 #if 0
         status_file_and_line(hp);
@@ -218,7 +224,6 @@ VOID status_misc(HSCPRC * hp, STRPTR s)
         strncat(status_buf, s, MAX_STATUSLEN - strlen(status_buf));
         status_msg(status_buf);
         status_lf();
-
     }
 }
 
@@ -229,10 +234,18 @@ VOID status_misc(HSCPRC * hp, STRPTR s)
  */
 VOID status_error(STRPTR s)
 {
+    /* store current status flags, enable status output */
+    LONG old_disp_status = disp_status;
+    disp_status = STATUS_LINE;
+
+    /* display error message */
     strncpy(status_buf, "*** ", MAX_STATUSLEN);
     strncat(status_buf, s, MAX_STATUSLEN - strlen(status_buf));
     status_msg(status_buf);
     status_lf();
+
+    /* restore status flags */
+    disp_status = old_disp_status;
+
     set_return_code(RC_ERROR);
 }
-

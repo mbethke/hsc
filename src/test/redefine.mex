@@ -1,0 +1,5 @@
+test/redefine.hsc (3,13): Warning 59: redefined tag <SEPP>
+test/redefine.hsc (11,13): Warning 59: redefined tag <HUGO>
+test/redefine.hsc (14,1): Bad style 67: recommended tag <HTML> missing
+test/redefine.hsc (14,1): Bad style 67: recommended tag <HEAD> missing
+test/redefine.hsc (14,1): Warning 15: required tag <TITLE> missing

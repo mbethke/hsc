@@ -1,9 +1,6 @@
 /*
- * hsclib/input.c
- *
- * basic functions for parsing input
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 17-Nov-1996
+ */
+/*
+ * hsclib/input.c
+ *
+ * basic functions for parsing input
+ *
+ * updated: 16-May-1997
  * created: 29-Jul-1995
  */
 
@@ -49,7 +52,7 @@ BOOL hsc_whtspc(int ch)
 {
     if ((ch == ' ')
         || (ch == '\n')
-#if (!defined MSDOS || defined HSC_INTO)
+#if (!defined MSDOS)  /* HSC_INTO */
         || (ch == '\r')
 #endif
         || (ch == '\t')

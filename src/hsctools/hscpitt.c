@@ -1,9 +1,6 @@
 /*
- * hscpitt
- *
- * hsc project interfering'n'trashing tool
- *
- * Copyright (C) 1996  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,19 +16,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *-------------------------------------------------------------------
+ */
+/*
+ * hscpitt
  *
- * Author : Thomas Aglassinger (Tommy-Saftwörx)
- * Email  : agi@giga.or.at, agi@sbox.tu-graz.ac.at
- * Address: Lissagasse 12/II/9
- *          8020 Graz
- *          AUSTRIA
+ * hsc project interfering'n'trashing tool
  *
  *-------------------------------------------------------------------
  *
  * hsctools/hscpitt.c
  *
- * updated: 24-Nov-1996
+ * updated: 31-Mar-1997
  * created: 15-Oct-1996
  */
 
@@ -96,8 +91,10 @@ static const STRPTR AmigaOS_version = VERSTAG;
 #define CMD_EXTRACT_STR "extract"
 #define CMD_DELETE_STR  "delete"
 #define CMD_ERASE_STR   "erase"
-#define CMD_RENAME_STR  "rename"
+#define CMD_ADD_STR     "add"
+#define CMD_NEW_STR     "new"
 #define CMD_COPY_STR    "copy"
+#define CMD_MOVE_STR    "move"
 
 #define COMMAND_NONE    0
 #define COMMAND_COUNT   1
@@ -105,19 +102,36 @@ static const STRPTR AmigaOS_version = VERSTAG;
 #define COMMAND_EXTRACT 3
 #define COMMAND_DELETE  4
 #define COMMAND_ERASE   5
-#define COMMAND_RENAME  6
-#define COMMAND_COPY    7
+#define COMMAND_ADD     6
+#define COMMAND_NEW     7
+#define COMMAND_COPY    8
+#define COMMAND_MOVE    9
 
 #define COMMAND_ENUMSTR     \
-        CMD_COUNT_STR    "|" \
+        CMD_COUNT_STR   "|" \
         CMD_LIST_STR    "|" \
         CMD_EXTRACT_STR "|" \
         CMD_DELETE_STR  "|" \
-        CMD_ERASE_STR
+        CMD_ERASE_STR   "|" \
+        CMD_ADD_STR
 
 /*
  * global vars
  */
+
+/* command strings */
+static STRPTR command_name[] =
+{
+    "***NONE***",
+    CMD_COUNT_STR,
+    CMD_LIST_STR,
+    CMD_EXTRACT_STR,
+    CMD_DELETE_STR,
+    CMD_ERASE_STR,
+    CMD_ADD_STR,
+    NULL
+};
+
 static int return_code = RC_FAIL;       /* exit code of program */
 
 static STRPTR prjfile = NULL;
@@ -130,19 +144,6 @@ static BOOL arg_help = FALSE;
 static BOOL arg_license = FALSE;
 
 static HSCPRJ *project = NULL;
-
-/* command strings */
-static STRPTR command_name[] =
-{
-    "***NONE***",
-    CMD_COUNT_STR,
-    CMD_LIST_STR,
-    CMD_EXTRACT_STR,
-    CMD_DELETE_STR,
-    CMD_RENAME_STR,
-    CMD_COPY_STR,
-    NULL
-};
 
 /*
  * cleanup: free all resources
@@ -172,10 +173,9 @@ static BOOL hscpitt_nomem_handler(size_t size)
     fputs(SHIT "out of memory\n", stderr);
 
     return_code = RC_FAIL;
+    exit(return_code);          /* abort immediatly */
 
-    exit(return_code);
-
-    return (FALSE);             /* immediatly abort */
+    return (FALSE);
 }
 
 VOID msg_corrupt_pf(HSCPRJ * hp, STRPTR reason)
@@ -195,11 +195,16 @@ BOOL update_project_file(HSCPRJ * project)
 
     D(fprintf(stderr, DHP "update_project_file()\n"));
     /* TODO: create backup */
-    ok = hsc_project_write_file(project, prjfile);
+
+    errno = 0;
+    ok = hsc_project_write_data(project, prjfile, TRUE);
 
     if (!ok)
     {
-        fprintf(stderr, "error writing project file\n");        /* TODO: be more specific */
+        fprintf(stderr, HP "error writing `%s'", prjfile);
+        if (errno)
+            fprintf(stderr, HP ": %s", strerror(errno));
+        fprintf(stderr, "\n");
         set_return_code(RC_ERROR);
     }
 
@@ -266,7 +271,7 @@ static BOOL args_ok(int argc, char *argv[])
          "PRJFILE/T/K", &prjfile, "project file",
          "QUIET/S", &quiet, "act quietly",
          "-DEBUG/S", &debug, "enable debugging output",
-         "HELP=?=-h/S", &arg_help, "display this text",
+         "HELP=?=-h=--help/S", &arg_help, "display this text",
          "LICENSE/S", &arg_license, "display license",
          NULL);
 
@@ -376,7 +381,7 @@ static BOOL read_project(VOID)
     inpf = infopen(prjfile, 1024);
     if (inpf)
     {
-        if (hsc_project_read_file(project, inpf))
+        if (hsc_project_read_data(project, inpf))
         {
             if (!quiet)
             {
@@ -395,6 +400,12 @@ static BOOL read_project(VOID)
         fprintf(stderr, "\n");
     }
 
+    /* set error return code if neccessary */
+    if (!ok)
+    {
+        set_return_code(RC_ERROR);
+    }
+
     return (ok);
 }
 
@@ -410,7 +421,22 @@ static BOOL chkArg0(STRPTR command)
     BOOL ok = TRUE;
     if (cmdArgNum)
     {
-        printf("no arguments allowed to command `%s'\n", command);
+        fprintf(stderr, "no arguments allowed for command `%s'\n", command);
+        set_return_code(RC_ERROR);
+        ok = FALSE;
+    }
+    return (ok);
+}
+
+/* check for two args */
+static BOOL chkArg2(STRPTR command, STRPTR arg1, STRPTR arg2)
+{
+    BOOL ok = TRUE;
+    if (cmdArgNum != 2)
+    {
+        fprintf(stderr, "two arguments required for command `%s': "
+                "%s and %s\n", command, arg1, arg2);
+        set_return_code(RC_ERROR);
         ok = FALSE;
     }
     return (ok);
@@ -422,7 +448,8 @@ static BOOL chkArgAny(STRPTR command)
     BOOL ok = TRUE;
     if (!cmdArgNum)
     {
-        printf("arguments required for command `%s'\n", command);
+        fprintf(stderr, "arguments required for command `%s'\n", command);
+        set_return_code(RC_ERROR);
         ok = FALSE;
     }
     return (ok);
@@ -433,6 +460,55 @@ static BOOL chkArgAny(STRPTR command)
  * functions for commands
  *
  *-------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------*/
+
+/*
+ * command_add
+ *
+ * add new document and source to project
+ */
+VOID command_add(HSCPRJ * project, DLLIST * arglist)
+{
+    if (chkArg2(CMD_ADD_STR, "DOCUMENT", "SOURCE"))
+    {
+        BOOL deleted = FALSE;
+        DLNODE *docNameNd = dll_first(arglist);
+        DLNODE *docSourceNd = dln_next(docNameNd);
+        STRPTR docName = (STRPTR) dln_data(docNameNd);
+        STRPTR docSource = (STRPTR) dln_data(docSourceNd);
+
+        /* try to remove document */
+        deleted = hsc_project_del_document(project, docName);
+
+        if (!deleted)
+        {
+            D(fprintf(stderr, DHP " add doc=`%s'\n    src=`%s'\n",
+                      docName, docSource));
+
+            /* set document as current document */
+            hsc_project_set_document(project, docName);
+            hsc_project_set_source(project, docSource);
+            hsc_project_add_document(project);
+
+            /* update project file */
+            if (update_project_file(project))
+            {
+                if (!quiet)
+                {
+                    printf("Added document `%s'\n", docName);
+                }
+            }
+        }
+        else
+        {
+            printf("Document `%s' already in project\n", docName);
+            set_return_code(RC_WARN);
+        }
+    }
+}
+
+/*-------------------------------------------------------------------*/
 
 /*
  * command_delete
@@ -563,7 +639,7 @@ static VOID printfVar(STRPTR var, STRPTR value)
     printf("%s=\"%s\"\n", var, value);
 }
 
-static VOID extractDocument(HSCPRJ * project, HSCDOC * document, BOOL emptyLine)
+static VOID extract_document(HSCPRJ * project, HSCDOC * document, BOOL emptyLine)
 {
     /* show empty line; not for first document */
     if (emptyLine)
@@ -575,7 +651,7 @@ static VOID extractDocument(HSCPRJ * project, HSCDOC * document, BOOL emptyLine)
     printfVar("DOCUMENT", document->docname);
     printfVar("SOURCE", document->sourcename);
 
-#if 0
+#if 1
     /* display includes */
     if (document->includes)
     {
@@ -606,7 +682,7 @@ VOID command_extract(HSCPRJ * project, DLLIST * arglist)
             /* remove document and source file */
             if (document)
             {
-                extractDocument(project, document, emptyLine);
+                extract_document(project, document, emptyLine);
                 emptyLine = TRUE;
             }
             else
@@ -628,7 +704,7 @@ VOID command_extract(HSCPRJ * project, DLLIST * arglist)
         {
             HSCDOC *document = (HSCDOC *) dln_data(docNode);
 
-            extractDocument(project, document, emptyLine);
+            extract_document(project, document, emptyLine);
             emptyLine = TRUE;
 
             /* process next node, show empty line if
@@ -715,7 +791,7 @@ BOOL process_command(HSCPRJ * project, LONG command, DLLIST * arglist)
     }
     else
     {
-        fprintf(stderr, DHP "command args: NONE\n");
+        D(fprintf(stderr, DHP "command args: NONE\n"));
     }
     D(fprintf(stderr, DHP "cmdarg#: %ld\n", cmdArgNum));
 
@@ -735,6 +811,9 @@ BOOL process_command(HSCPRJ * project, LONG command, DLLIST * arglist)
         break;
     case COMMAND_ERASE:
         command_erase(project, arglist);
+        break;
+    case COMMAND_ADD:
+        command_add(project, arglist);
         break;
     default:
         {
@@ -794,4 +873,3 @@ int main(int argc, char *argv[])
     }
     return (return_code);
 }
-

@@ -31,7 +31,7 @@
 <$else>
 <IMG SRC=":image/noback.gif" ALT="--" ALIGN="middle">
 </$if>
-<** insert "previos" button **>
+<** insert "previous" button **>
 <$if COND=(SET Prev)>
 <A HREF=(Prev)><IMG SRC=":image/prev.gif" ALT="Previous" ALIGN="middle"></A>
 <$else>
@@ -48,7 +48,7 @@
 <*****************************
 * WEBPAGE                    *
 ******************************>
-<$macro WEBPAGE Title:string/r
+<$macro WEBPAGE /CLOSE Title:string/r
                 Chapter:string=""
                 Next:uri prev:uri
                 Back:uri=":index.html"
@@ -88,13 +88,8 @@
 
 
 <H1><(Title)></H1>
-</$macro>
-
-<*****************************
- * /WEBPAGE                  *
- *   foot line (sigh & date) *
- *****************************>
-<$macro /WEBPAGE>
+<$content>
+<*
 <HR>
 <$let HSC.FORMAT.TIME="%d-%b-%Y">
 <ADDRESS>
@@ -102,6 +97,7 @@
   (<A HREF="mailto:agi@giga.or.at">agi@giga.or.at</A>),
   <(GetTime())>
 </ADDRESS>
+*>
 </BODY></HTML>
 </$macro>
 

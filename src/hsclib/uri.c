@@ -1,9 +1,6 @@
 /*
- * uri.c
- *
- * functions for uri parsing of tag arguments
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  4-Dec-1996
+ */
+/*
+ * uri.c
+ *
+ * functions for uri parsing of tag arguments
+ *
+ * updated: 11-May-1997
  * created: 16-Jul-1995
  */
 
@@ -33,8 +36,6 @@
 #include "hsclib/uri.h"
 
 #define PARENT_URI "../"        /* string for parent dir within URIs */
-
-#define weenix jens /* TODO:remove this */
 
 /*
  * conv_path2uri
@@ -69,17 +70,11 @@ VOID conv_path2uri(EXPSTR * dest, STRPTR path)
         }
     }
 
-#elif defined MSDOS
-    /* replace "\" by "/" */
-    while (path[0])
-    {
-        if ((path[0] == '\\'))
-            app_estrch(dest, '/');
-        else
-            app_estrch(dest, path[0]);
-        path++;
-    }
+#elif defined RISCOS
+    /* simply copy path */
+    set_estr(dest, path);
 
+#elif defined MSDOS /* dos1 */
 #elif defined UNIX
     /* simply copy path */
     set_estr(dest, path);
@@ -134,17 +129,10 @@ VOID conv_uri2path(EXPSTR * dest, STRPTR uri, BOOL weenix)
         }
     }
 
-#elif defined MSDOS
-    /* replace "\" by "/" */
-    while (uri[0])
-    {
-        if (uri[0] == '/')
-            app_estrch(dest, '\\');
-        else
-            app_estrch(dest, uri[0]);
-        uri++;
-    }
+#elif defined RISCOS
+    set_estr(dest, uri);
 
+#elif defined MSDOS /* dos2 */
 #elif defined UNIX
     set_estr(dest, uri);
 #else
@@ -196,102 +184,118 @@ static VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_f
     clr_estr(dest_uri);
     clr_estr(dest_fname);
 
-    /* if a <BASE HREF=".."> was found before,
-     * therefor treat URI as absolute
-     */
-    if (hp->docbase_set)
-        kind = URI_ext;
-
-    /* evaluate kind of URI */
-    if (kind == URI_abs)
-        uri++;                  /* skip ":" */
-
-    /* reset destination filename */
-    set_estr(dest_fname, "");
-
-    if (kind == URI_abs)
+    if  (kind == URI_relserv)
     {
-        /*
-         * parse absolute uri
-         */
-        D(fprintf(stderr, DHL "exists `%s' [abs]\n", uri));
-
-        /* check if local uri exists */
-        {
-            EXPSTR *dest_relfname = init_estr(32);
-            conv_uri2path(dest_relfname, uri, hp->weenix);
-
-            estrcpy(dest_fname, hp->destdir);
-            estrcat(dest_fname, dest_relfname);
-
-            del_estr(dest_relfname);
-        }
-
-        D(fprintf(stderr, DHL "  -> file `%s'\n",
-                  estr2str(dest_fname)));
-
-        /* create path of destination file */
-        estrcpy(dest_uri, hp->reldir);
-        app_estr(dest_uri, uri);
-
-        get_relfname(rel_path, uri, estr2str(hp->reldir));
-        D(fprintf(stderr, DHL "  -> rel. path `%s' (`%s')\n",
-                  estr2str(rel_path),
-                  estr2str(hp->reldir)));
+        /* skip "/" in URI */
+        STRPTR uri2 = uri + 1;
 
         /* debug */
-        D(fprintf(stderr, DHL "  -> real path `%s'\n", uri));
+        D(fprintf(stderr, DHL "exists `%s' [relserv]\n", uri));
 
-        /* convert (filesystem depending) path to uri */
-        conv_path2uri(dest_uri, estr2str(rel_path));
-
-        /* debug */
-        D(fprintf(stderr, DHL "  -> real uri  `%s'\n",
-                  estr2str(dest_uri)));
-    }
-    else if (kind == URI_rel)
-    {
-        /*
-         * parse relative uri
-         */
-        EXPSTR *uri_path = init_estr(32);
+        /* convert server relative URI to local filename
+         * by preceding server_dir */
+        conv_uri2path(rel_path, uri2, hp->weenix);
+        estrcpy(dest_fname, hp->server_dir);
+        estrcat(dest_fname, rel_path);
 
         /* debug */
-        D(fprintf(stderr, DHL "exists `%s' [rel]\n", uri));
+        D(fprintf(stderr, DHL "  server-dir=`%s'\n", estr2str(hp->server_dir)));
+        D(fprintf(stderr, DHL "  rel. path =`%s'\n", estr2str(rel_path)));
 
-        /* create local filename */
-        conv_uri2path(uri_path, uri, hp->weenix);
-        estrcat(dest_fname, hp->destdir);
-        estrcat(dest_fname, hp->reldir);
-        estrcat(dest_fname, uri_path);
-
-        /* create uri (only copy path) */
+        /* keep URI untouched */
         set_estr(dest_uri, uri);
-
-        /* debug */
-        D(
-             {
-             fprintf(stderr, DHL "  -> real path `%s'\n",
-                     estr2str(dest_fname));
-             fprintf(stderr, DHL "  -> real uri  `%s'\n",
-                     estr2str(dest_uri));
-             }
-        );
-
-        del_estr(uri_path);
     }
     else
     {
-#if 0
-        STRARR tmp[300];
+        /* convert relative/project uris */
 
-        strcpy(tmp, "unknown uri-kind: ");
-        strcat(tmp, uri);
-        panic(tmp);
-#endif
-        set_estr(dest_uri, uri);
-        set_estr(dest_fname, "");
+        /* if a <BASE HREF="..."> was found before,
+         * treat all relative URIs as absolute
+         */
+        if (hp->docbase_set)
+        {
+            kind = URI_ext;
+        }
+
+        /* evaluate kind of URI */
+        if (kind == URI_abs)
+        {
+            uri++;                  /* skip ":" */
+        }
+
+        if (kind == URI_abs)
+        {
+            /*
+             * parse absolute uri
+             */
+            D(fprintf(stderr, DHL "exists `%s' [abs]\n", uri));
+
+            /* check if local uri exists */
+            {
+                EXPSTR *dest_relfname = init_estr(32);
+                conv_uri2path(dest_relfname, uri, hp->weenix);
+
+                estrcpy(dest_fname, hp->destdir);
+                estrcat(dest_fname, dest_relfname);
+
+                del_estr(dest_relfname);
+            }
+
+            D(fprintf(stderr, DHL "  -> file `%s'\n",
+                      estr2str(dest_fname)));
+
+            /* create path of destination file */
+            estrcpy(dest_uri, hp->reldir);
+            app_estr(dest_uri, uri);
+
+            get_relfname(rel_path, uri, estr2str(hp->reldir));
+            D(fprintf(stderr, DHL "  -> rel. path `%s' (`%s')\n",
+                      estr2str(rel_path),
+                      estr2str(hp->reldir)));
+
+            /* debug */
+            D(fprintf(stderr, DHL "  -> real path `%s'\n", uri));
+
+            /* convert (filesystem depending) path to uri */
+            conv_path2uri(dest_uri, estr2str(rel_path));
+        }
+        else if (kind == URI_rel)
+        {
+            /*
+             * parse relative uri
+             */
+            EXPSTR *uri_path = init_estr(32);
+
+            /* debug */
+            D(fprintf(stderr, DHL "exists `%s' [rel]\n", uri));
+
+            /* create local filename */
+            conv_uri2path(uri_path, uri, hp->weenix);
+            estrcat(dest_fname, hp->destdir);
+            estrcat(dest_fname, hp->reldir);
+            estrcat(dest_fname, uri_path);
+
+            /* create uri (only copy path) */
+            set_estr(dest_uri, uri);
+
+            del_estr(uri_path);
+        }
+        else
+        {
+            set_estr(dest_uri, uri);
+            set_estr(dest_fname, "");
+        }
     }
+
+    /* debug */
+    D(
+         {
+         fprintf(stderr, DHL "  -> real file `%s'\n",
+                 estr2str(dest_fname));
+         fprintf(stderr, DHL "  -> real uri  `%s'\n",
+                 estr2str(dest_uri));
+         }
+    );
 
     /* free resources */
     del_estr(rel_path);
@@ -326,7 +330,8 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
     {
         /* check for valid uri */
         URIKIND kind = uri_kind(uri);
-        if ((kind == URI_ext) || (kind == URI_relserv))
+        if ((kind == URI_ext) ||
+            ((kind == URI_relserv) && !(estrlen(hp->server_dir))))
         {
             if (kind == URI_ext)
             {
@@ -334,16 +339,31 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
                  * check global uri
                  */
                 if (!host)
+                {
                     host = "";
+                }
                 if (!port)
+                {
                     port = "";
+                }
                 if (!host)
+                {
                     host = "";
+                }
 
                 /*
                  * TODO: parse global uris
                  */
             }
+            else if (kind == URI_relserv)
+            {
+                hsc_message(hp, MSG_SERVER_URI, "server relative URI to %q", uri);
+            }
+            else
+            {
+                panic("what kind of uri now?");
+            }
+
             set_estr(dest_uri, uri);
         }
         else
@@ -359,19 +379,23 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
 
             /* evaluate kind of URI */
             if (kind == URI_abs)
+            {
                 noabsuri++;     /* skip ":" */
+            }
 
             /* extract path and #name */
             if (noabsuri[0] == '#')
             {
                 path = NULL;
-                name = noabsuri + 1;    /* skip '#' for ":#id" */
+                name = noabsuri + 1;    /* skip '#' for "#id" */
             }
             else
             {
                 path = strtok(uri, "#");
                 name = strtok(NULL, "");
             }
+
+            /* TODO: handle HREF="suck.cgi?arg=..." */
 
             if (path)
             {
@@ -381,6 +405,7 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
                  * check existence of local uri
                  */
                 conv_hscuri2fileNuri(hp, dest_uri, dest_fname, path);
+
                 if (hp->chkuri
                     && !(hsc_get_msg_ignore(hp, MSG_NO_URIPATH)))
                 {
@@ -428,10 +453,10 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
                                     panic("unknown returncode");
                                     break;
                                 }
-                            }
-                        }
-                    }
-                }
+                            }   /* if fnamecmp */
+                        }       /* if hp->chkid */
+                    }           /* if exists */
+                }               /* if hp->chkuri */
             }
             else
             {
@@ -451,4 +476,3 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
         }                       /* else (rsrc) */
     }                           /* if (uri) */
 }
-

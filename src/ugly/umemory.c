@@ -1,11 +1,6 @@
 /*
- * ugly/umemory.c
- *
- * additional memory manegment functions;
- * implements some parts of Amiga-developer-tool
- * "MungWall" at source-level
- *
- * Copyright (C) 1994,95,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1993-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +16,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 13-Sep-1996
+ */
+/*
+ * ugly/umemory.c
+ *
+ * additional memory manegment functions;
+ * implements some parts of Amiga-developer-tool
+ * "MungWall" at source-level
+ *
+ * updated: 12-May-1997
  * created: 29-Mar-1994
  *
  */
@@ -57,6 +60,7 @@
  * size of wall build around every memory block
  */
 #define UMEM_WALLSIZE 16
+
 /*
  * blocksize memory allocations are rounded up by OS
  * (this one's only needed to compute the amount of
@@ -107,16 +111,18 @@ static UGLYMEM *find_umem(void *mem)
     UGLYMEM *nxtum = first;
     UGLYMEM *found = NULL;
 
-    while (nxtum && (!found)) {
-
+    while (nxtum && (!found))
+    {
         if (nxtum->ptr == mem)
+        {
             found = nxtum;
+        }
         nxtum = nxtum->next;
-
     }
 
 #if DEBUG_UGLY_MEMORY==2
-    if (!found) {
+    if (!found)
+    {
         fprintf(stderr, "*memory* FIND_UMEM: couln't find %p\n", mem);
     }
 #endif
@@ -133,9 +139,11 @@ static UGLYMEM *find_prev(UGLYMEM * umem)
     UGLYMEM *pprev = NULL;
     BOOL found = FALSE;
 
-    while (prev && (!found)) {
+    while (prev && (!found))
+    {
         found = (prev == umem);
-        if (!found) {
+        if (!found)
+        {
             pprev = prev;
             prev = prev->next;
         }
@@ -154,7 +162,9 @@ static void fill_mem4(void *mem, size_t size, UBYTE value[4])
     size_t i;
 
     for (i = 0; i < size; i++)
+    {
         (((UBYTE *) mem)[i]) = value[i % 4];
+    }
 }
 
 static void fill_mem(void *mem, size_t size, UBYTE value)
@@ -162,7 +172,9 @@ static void fill_mem(void *mem, size_t size, UBYTE value)
     size_t i;
 
     for (i = 0; i < size; i++)
+    {
         (((UBYTE *) mem)[i]) = value;
+    }
 }
 
 /*
@@ -175,23 +187,26 @@ static void del_uglymem(UGLYMEM * umem)
     UGLYMEM *prev = find_prev(umem);
 
     /* unlink from list */
-    if (prev) {
+    if (prev)
+    {
         prev->next = umem->next;
-    } else {
+    }
+    else
+    {
         first = umem->next;
     }
 
     /* check for damaged wall */
-    if (!ugly_walldamaged(umem)) {
-
+    if (!ugly_walldamaged(umem))
+    {
         /* wall ok:
          *
          * fill memory with $DEADBEEF,
          * free memory */
         fill_mem4(umem->lower, umem->size + 2 * UMEM_WALLSIZE, deadbeef);
         free(umem->lower);
-
     }
+
     /* free memory structure */
     umem->lower = NULL;
     umem->upper = NULL;
@@ -210,12 +225,12 @@ static UGLYMEM *new_uglymem(size_t memsize, STRPTR memfile, ULONG memline)
 {
     UGLYMEM *newmem = (UGLYMEM *) malloc(sizeof(UGLYMEM));
 
-    if (newmem) {
-
+    if (newmem)
+    {
         newmem->lower = (STRPTR) ugly_malloc_notracking(memsize
                                                         + 2 * UMEM_WALLSIZE);
-        if (newmem->lower) {
-
+        if (newmem->lower)
+        {
             /* compute location of main mem/upper wall */
             newmem->ptr = (void *) (newmem->lower + UMEM_WALLSIZE);
             newmem->upper = (newmem->lower + UMEM_WALLSIZE + memsize);
@@ -239,11 +254,15 @@ static UGLYMEM *new_uglymem(size_t memsize, STRPTR memfile, ULONG memline)
 
             /* update fillchar */
             if (ugly_fillchar == 0xff)
+            {
                 ugly_fillchar = 0x81;
+            }
             else
+            {
                 ugly_fillchar++;
-
-        } else
+            }
+        }
+        else
             free(newmem);
     }
     return (newmem);
@@ -260,27 +279,33 @@ static void ugly_memdump(void *ptr, size_t size)
 
     /* limit size */
     if (size > 16)
+    {
         size = 16;
+    }
 
     fprintf(stderr, "  %p:", ptr);
-    if (data) {
-
+    if (data)
+    {
         size_t i;
 
         /* hex dump */
-        for (i = 0; i < size; i++) {
-
+        for (i = 0; i < size; i++)
+        {
             if (!(i % 4))
+            {
                 fprintf(stderr, " ");
+            }
             fprintf(stderr, "%02x", data[i]);
 
         }
 
         /* fill with blanks */
-        while (i < 16) {
-
+        while (i < 16)
+        {
             if (!(i % 4))
+            {
                 fprintf(stderr, " ");
+            }
             fprintf(stderr, "  ");
             i++;
         }
@@ -288,13 +313,20 @@ static void ugly_memdump(void *ptr, size_t size)
         fprintf(stderr, "  \"");
         /* ascii dump */
         for (i = 0; i < size; i++)
+        {
             if (data[i] < ' ')
+            {
                 fprintf(stderr, ".");
+            }
             else
+            {
                 fprintf(stderr, "%c", data[i]);
+            }
+        }
         fprintf(stderr, "\"\n");
 
-    } else
+    }
+    else
         fprintf(stderr, "NULL\n");
 
 }
@@ -317,6 +349,12 @@ static void umem_info(UGLYMEM * umem)
  *-------------------------------------
  */
 
+/*
+ * str_ubyte
+ *
+ * convert a UBYTE-value to hex/dez/char and return
+ * results as a displayable string
+ */
 static STRPTR str_ubyte(UBYTE val)
 {
     static STRARR strbuf[30];
@@ -330,26 +368,35 @@ static STRPTR str_ubyte(UBYTE val)
     return (strbuf);
 }
 
+/*
+ * ugly_walldamaged
+ *
+ * check memory walls a specifc entry in memory-list,
+ * output message if wall is damaged
+ */
 static BOOL ugly_walldamaged(UGLYMEM * umem)
 {
     size_t i = 0;
     BOOL damaged = FALSE;
 
-    while (!damaged && (i < UMEM_WALLSIZE)) {
-
+    while (!damaged && (i < UMEM_WALLSIZE))
+    {
         BOOL lower_damaged = (umem->lower[i] != umem->fillchar);
         BOOL upper_damaged = (umem->upper[i] != umem->fillchar);
 
         damaged = lower_damaged || upper_damaged;
-        if (damaged) {
-
+        if (damaged)
+        {
             STRPTR wall;
             UBYTE value;
 
-            if (lower_damaged) {
+            if (lower_damaged)
+            {
                 wall = "LOWER";
                 value = umem->lower[i];
-            } else {
+            }
+            else
+            {
                 wall = "UPPER";
                 value = umem->upper[i];
             }
@@ -364,20 +411,27 @@ static BOOL ugly_walldamaged(UGLYMEM * umem)
             fprintf(stderr, "  * upper wall:\n");
             ugly_memdump(umem->upper, UMEM_WALLSIZE);
 
-        } else
+        }
+        else
+        {
             i++;
-
+        }
     }
 
     return (damaged);
 }
 
+/*
+ * uglymem_wallcheck
+ *
+ * display a header message and check all walls for consistency
+ */
 void uglymem_wallcheck(STRPTR msg, STRPTR file, ULONG line)
 {
     UGLYMEM *umem = first;
 
-    if (umem) {
-
+    if (umem)
+    {
         /* report header */
         fprintf(stderr, "MEMORY WALL-CHECK (%s)", msg);
         if (file)
@@ -385,14 +439,17 @@ void uglymem_wallcheck(STRPTR msg, STRPTR file, ULONG line)
         fprintf(stderr, "\n");
 
         /* check all elements */
-        while (umem) {
-
-            if (umem->ptr) {
+        while (umem)
+        {
+            if (umem->ptr)
+            {
                 ugly_walldamaged(umem);
                 umem = umem->next;
-            } else {
+            }
+            else
+            {
                 umem = NULL;
-                fprintf(stderr, "##\n## panic: memory list trashed\n##\n");
+                fprintf(stderr, "\n** PANIC: memory list trashed\n");
             }
         }
     }
@@ -413,22 +470,27 @@ void uglymem_report(STRPTR msg, STRPTR file, ULONG line, STRPTR date, STRPTR tim
 {
     UGLYMEM *umem = first;
 
-    if (umem) {
-
+    if (umem)
+    {
         /* report header */
         fprintf(stderr, "MEMORY REPORT (%s)\n", msg);
         if (file)
+        {
             fprintf(stderr, "(\"%s\" (%lu), at %s, %s)\n",
                     file, line, date, time);
+        }
 
         /* print all elements */
-        while (umem) {
-
-            if (umem->ptr) {
+        while (umem)
+        {
+            if (umem->ptr)
+            {
                 umem_info(umem);
                 ugly_memdump(umem->ptr, umem->size);
                 umem = umem->next;
-            } else {
+            }
+            else
+            {
                 umem = NULL;
                 fprintf(stderr, "##\n## panic: memory list trashed\n##\n");
             }
@@ -446,24 +508,30 @@ void uglymem_stats(STRPTR msg, STRPTR file, ULONG line, STRPTR date, STRPTR time
     /* statistics header */
     fprintf(stderr, "MEMORY STATISTICS (%s)\n", msg);
     if (file)
+    {
         fprintf(stderr, "(\"%s\" (%lu), at %s, %s)\n",
                 file, line, date, time);
+    }
 
     /* memory statistics */
     fprintf(stderr, "  bytes used: %lu max: %lu/%lu  ",
             ugly_curmem_usage, ugly_real_maxmem_usage,
             ugly_maxmem_usage);
     if (ugly_maxmem_usage)
+    {
         fprintf(stderr, "slack: %lu%%\n",
                 (100 * (ugly_real_maxmem_usage - ugly_maxmem_usage))
                 / ugly_maxmem_usage);
+    }
     else
+    {
         fprintf(stderr, "no slack\n");
+    }
+
     fprintf(stderr, "  nodes used: %lu (max: %lu)\n",
             ugly_curnod_usage, ugly_maxnod_usage);
     fprintf(stderr, "  calls to: umalloc(%lu)   ufree(%lu)\n",
             ugly_umalloc_count, ugly_ufree_count);
-
 }
 
 /*
@@ -484,10 +552,14 @@ void atexit_uglymemory_real(void)
 
     /* release all lost mem */
     while (first)
+    {
         del_uglymem(first);
+    }
 
     if (mem_lost)
+    {
         fprintf(stderr, "\n%lu bytes of memory lost!\n", mem_lost);
+    }
 }
 
 /*
@@ -512,20 +584,24 @@ void *ugly_malloc_notracking(size_t size)
     void *mem;
     BOOL retry;
 
-    do {
-
+    do
+    {
         mem = malloc(size);
-        if (!mem && ugly_nomem_handler) {
-
+        if (!mem && ugly_nomem_handler)
+        {
             /* call nomem-handler */
             retry = (*ugly_nomem_handler) (size);
             if (!retry)
+            {
                 exit(EXIT_FAILURE);     /* abort programm */
-
-        } else
+            }
+        }
+        else
+        {
             retry = FALSE;
-
-    } while (retry);
+        }
+    }
+    while (retry);
 
     return (mem);
 }
@@ -541,15 +617,15 @@ void *ugly_malloc_tracking(size_t size, STRPTR file, ULONG line)
 #if DEBUG_UGLY_MEMORY==2
     fprintf(stderr, "*memory* UMALLOC() from `%s' (%lu)\n", file, line);
 #endif
-    if (size) {
-
+    if (size)
+    {
         /* update num. of calls to umalloc() */
         ugly_umalloc_count++;
 
         /* alloc new uglymem */
         umem = new_uglymem(size, file, line);
-        if (umem) {
-
+        if (umem)
+        {
             mem = umem->ptr;
 
             /* update memory usage and num of nodes */
@@ -562,10 +638,10 @@ void *ugly_malloc_tracking(size_t size, STRPTR file, ULONG line)
             ugly_curnod_usage++;
             if (ugly_curnod_usage > ugly_maxnod_usage)
                 ugly_maxnod_usage = ugly_curnod_usage;
-
         }
-    } else {
-
+    }
+    else
+    {
         /* zero-alloc */
 
         /* update num. of failed calls to umalloc() */
@@ -573,7 +649,6 @@ void *ugly_malloc_tracking(size_t size, STRPTR file, ULONG line)
 
         uglymem_message("MALLOC: zero-sized allocation");
         uglymem_meminfo(NULL, file, line);
-
     }
 
     return (mem);
@@ -586,13 +661,17 @@ void ugly_free(void *ptr, STRPTR file, ULONG line)
 {
 #if DEBUG_UGLY_MEMORY==2
     fprintf(stderr, "*memory* UFREE() from `%s' (%lu)\n", file, line);
+#elif 0
+    fputc('.', stderr);         /* still alive? */
+    fflush(stderr);
 #endif
-    if (ptr) {
+    if (ptr)
+    {
 
         UGLYMEM *umem = find_umem(ptr);
 
-        if (umem) {
-
+        if (umem)
+        {
             /* update num. of calls to ufree() */
             ugly_ufree_count++;
 
@@ -603,16 +682,17 @@ void ugly_free(void *ptr, STRPTR file, ULONG line)
             /* remove node from mem-list */
             del_uglymem(umem);
             ugly_curnod_usage--;
-
-        } else {
-
+        }
+        else
+        {
             /* ptr has never been allocated */
 
             /* update num. of calls to ufree() */
             ugly_ufree_count_fail++;
 
             /* -> error message */
-            uglymem_message("*** FREE: memory never allocated");
+            uglymem_message("*** FREE: memory never allocated "
+                            " or released twice");
             uglymem_meminfo(ptr, file, line);
         }
     }
@@ -620,15 +700,28 @@ void ugly_free(void *ptr, STRPTR file, ULONG line)
 
 /*
  * ugly_realloc
+ *
+ * replacement of realloc()
  */
 void *ugly_realloc(void *ptr, size_t size, STRPTR file, ULONG line)
 {
-    ugly_free(ptr, file, line); /* free old mem */
-    return (ugly_malloc_tracking(size, file, line));    /* alloc new mem */
+    void *newptr = ugly_malloc_tracking(size, file, line);
+    UGLYMEM *umem = find_umem(ptr);
+
+    if (newptr && umem)
+    {
+        /* copy old data */
+        memcpy(newptr, umem->ptr, umem->size);
+        /* free old memory */
+        ugly_free(ptr, file, line);
+    }
+    return (newptr);
 }
 
 /*
- * * ugly_calloc
+ * ugly_calloc
+ *
+ * replacement of calloc()
  */
 void *ugly_calloc(size_t count, size_t size, STRPTR file, ULONG line)
 {
@@ -637,8 +730,8 @@ void *ugly_calloc(size_t count, size_t size, STRPTR file, ULONG line)
 
     /* fill mem with zero */
     if (mem)
+    {
         memset(mem, 0, size * count);
-
+    }
     return (mem);
 }
-

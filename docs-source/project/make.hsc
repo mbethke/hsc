@@ -21,7 +21,7 @@ whenever the others change. [...]</P>
 and provides commands for updating each file.</P>
 </BLOCKQUOTE>
 
-<P>As of it's geral purpose design, <make> also fits to be used
+<P>As of it's general purpose design, <make> also fits to be used
 in combination with <hsc>. See the section about <ln_related> 
 where to obtain <make>.
 

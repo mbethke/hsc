@@ -5,7 +5,7 @@
 <CODE>HEIGHT</CODE> for tags like <TG>IMG</TG>. If you know the
 exact size of your image, you can tell it the browser. This might
 speed up the layout-engine, because the browser doesn't have to
-wait for the image to be transfered or needs to relayout the page
+wait for the image to be transfered or needs to re-layout the page
 after the transfer.</P>
 
 <H2>Usage</H2>
@@ -18,7 +18,7 @@ attributes <CODE>WIDTH</CODE> and <CODE>HEIGHT</CODE> with the
 dimensions obtained from the image data.</P>
 
 <P>If you have already set those attributes yourself, <hsc> will
-only validate the values, and warn about missmatches.</P>
+only validate the values, and warn about mismatches.</P>
 
 <P>Supported image formats are GIF, JFIF/JPEG and PNG.</P>
 
@@ -40,7 +40,7 @@ the <TG>IMG</TG>-tag seen above will be extended to
 <$source PRE>
     <IMG SRC="image/niceguy.gif" ALT="Picture of some nice guy" WIDTH="64" HEIGHT="64">
 </$source>
-in the html-object. If you do not like the double-quotes assigned to the 
-size-values, use the CLI-option <op_quotestyle> to change this behavior.
+in the html-object. If you do not like the double quotes assigned to the
+size values, use the CLI-option <op_quotestyle> to change this behavior.
 
 </WEBPAGE>

@@ -1,4 +1,23 @@
 /*
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1993-1997  Thomas Aglassinger
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+/*
  * ugly/ustrlist.c
  *
  * string list functions
@@ -19,7 +38,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 14-Oct-1996
+ * updated:  9-Mar-1997
  * created: 14-Oct-1996
  *
  *-------------------------------------------------------------------
@@ -29,7 +48,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
 
 #define NOEXTERN_UGLY_USTRLIST_H
 #include "ustrlist.h"
@@ -49,7 +67,7 @@ VOID del_string_node(APTR data)
 STRPTR new_string_node(STRPTR data)
 {
 #if 0
-    D(fprintf(stderr, DHL "new string `%s'\n", data);
+    D(fprintf(stderr, DHL "new string `%s'\n", data));
 #endif
     return (strclone(data));
 }
@@ -78,7 +96,7 @@ int cmp_string_node(APTR cmp_data, APTR lst_data)
 /*
  * del_strlist: cleanup whole list of strings
  */
-VOID del_strlist(DLLIST *list)
+VOID del_strlist(DLLIST * list)
 {
     del_dllist(list);
 }
@@ -86,7 +104,7 @@ VOID del_strlist(DLLIST *list)
 /*
  * del_strlist: cleanup whole list of strings
  */
-VOID clr_strlist(DLLIST *list)
+VOID clr_strlist(DLLIST * list)
 {
     del_all_dlnodes(list);
 }
@@ -96,7 +114,42 @@ VOID clr_strlist(DLLIST *list)
  */
 DLLIST *init_strlist(VOID)
 {
-    return( init_dllist(del_string_node) );
+    return (init_dllist(del_string_node));
 }
 
+/*
+ * app_strnode
+ *
+ * append new string to string-list (at end)
+ */
+DLNODE *app_strnode(DLLIST * list, STRPTR str)
+{
+    STRPTR scp = new_string_node(str);
+    DLNODE *nd = NULL;
+
+    if (scp)
+    {
+        nd = app_dlnode(list, (APTR) scp);
+    }
+
+    return nd;
+}
+
+/*
+ * add_strnode
+ *
+ * add new string to string-list (at begining)
+ */
+DLNODE *add_strnode(DLLIST * list, STRPTR str)
+{
+    STRPTR scp = new_string_node(str);
+    DLNODE *nd = NULL;
+
+    if (scp)
+    {
+        nd = add_dlnode(list, (APTR) scp);
+    }
+
+    return nd;
+}
 

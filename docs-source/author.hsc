@@ -7,9 +7,9 @@
     QAUTHOR='Ride, "Natural Grace"'>
 
 <P>The main reason because this topic is one of the first if you are
-browsing this documentation sequencially is <EM>not</EM> that I want
-to recieve as much EMail as possible. This page is designed to keep
-my EMail-traffic as low as possible.</P>
+browsing this documentation sequentially is <EM>not</EM> that I want
+to receive as much email as possible. This page is designed to keep
+my email-traffic as low as possible.</P>
 
 <H2>Before you contact me</H2>
 
@@ -26,10 +26,10 @@ problems compiling <hsc>, make sure you've read <FILE>source/README</FILE>
 and also checked <FILE>Makefile.dodl</FILE>, which should be usable
 even for complete idiots.</P>
 
-<P>Maybe there is already bugfix availabel at the <hsc-support>,
+<P>Maybe there is already bugfix available at the <hsc-support>,
 so check this, too. (Note: Traditionally, the most distressing bugs
 are reported and fixed a few days after a new release showed up in
-Aminet, so it's probably a good habbit to take a look at this page
+Aminet, so it's probably a good habit to take a look at this page
 about a week after downloading <hsc> from Aminet.)</P>
 
 <H2>On what to contact me</H2>
@@ -39,20 +39,23 @@ If you..
 <LI>..think that <hsc> accepts severe errors in your sources without
     warning about it; note the word <EM>severe</EM> in the last sentence.
 <LI>..have any questions about <hsc> and it's usage which are not covered
-    sufficiently in this documentation or located at a completly
-    unexpeted place (which should be quite unlikely because I meanwhile 
-    consider these docs to be quite useful).
+    sufficiently in this documentation or located at a completely
+    unexpected place (which should be quite unlikely because I meanwhile
+    consider this documentation to be quite useful).
 <LI>..want to port <hsc> to another system that supports some sort of
     command line interface. 
     See also <A HREF=":ports.html">Existing ports</A>.
 <LI>..find some errors or warnings compiling <hsc> for one of the
-    supported systems, exept the warnings mentioned in 
+    supported systems, except the warnings mentioned in
     <qq><FILE>source/README</FILE></qq>.
 <LI>..have any (reasonable) suggestions how to improve <hsc>; but note that I'm 
     currently not thinking about any conceptional changes.
 </UL>
 you should contact me.
 
+<P>If you include binary data, MIME attechments are accepted. 
+Prefered archives are <CODE>.lha</CODE>, <CODE>.lzx</CODE> and
+<CODE>.tar.gz</CODE>.</P>
 
 <H2>On what NOT to contact me</H2>
 
@@ -70,13 +73,13 @@ You should not contact me on the following topics:
     or OS/2.
 <LI>Your compiler has problems compiling a simple ANSI-C program.
     (You won't believe it, but there are still such compilers around)
-<LI>General discussion about html-tags and how to use them. I don't
+<LI>General discussion about html tags and how to use them. I don't
     know the correct usage of several tags defined in <hsc.prefs>
     myself because I usually use pure html-2.0 and only some features
     of html-0.32 like image maps and tables.
 </UL>
 
-If you fail to exclude the above topics from your EMail, you might
+If you fail to exclude the above topics from your email, you might
 get a reply consisting of a single term: 
 <qq>Read the fucking manual!</qq>.
 
@@ -95,7 +98,7 @@ bug-report:
 <LI>Include a single command call or batch-script and hsc source
     (or at least part of) that reproduces the bug.
 <LI>Do not send me all your sources for your whole site, try to trace
-    the bug back to a singel input-file and macro, if possible.
+    the bug back to a single input-file and macro, if possible.
 </UL>
 
 <P>You don't have to provide information about the exact version of the
@@ -103,7 +106,7 @@ operating system or compiler used, but I might asked you for that in
 a reply, so keep this at hand.<P>
 
 <P>The more specific and smaller your bug-report is, the more likely
-I might fix it. Altough, I can't promise that I will fix all bugs
+I might fix it; although  I can't promise that I will fix all bugs
 reported to me in reasonable time.</P>
 
 <P>If your bug-report fails to include the above informations, I might
@@ -111,7 +114,7 @@ completely ignore it.</P>
 
 <H2>...and finally</H2>
 
-<P>You can reach me via EMail at <EMAIL ADDRESS="agi@giga.or.at"> or
+<P>You can reach me via email at <EMAIL ADDRESS="agi@giga.or.at"> or
 <EMAIL ADDRESS="agi@sbox.tu-graz.ac.at">. Note that I might reply from
 another address, but add only one of these two to your address book,
 they should be valid for a longer time.</P>

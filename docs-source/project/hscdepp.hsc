@@ -7,11 +7,15 @@
 ** macro to format an explanation
 *>
 <$MACRO explan TITLE:string/r NAME:string>
+<DT>
+<$stripws>
 <** create named reference **>
 <$IF COND=(SET NAME)>
-<A NAME=(Name)><$ELSE>
-<A NAME=(Title)></$IF>
-<DT><** create heading **>
+    <A NAME=(Name)>
+<$ELSE>
+    <A NAME=(Title)>
+</$IF>
+<$stripws>
 <KBD><(Title)></KBD></A>
 <DD>
 </$MACRO>

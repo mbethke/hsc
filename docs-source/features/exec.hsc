@@ -1,13 +1,13 @@
 <WEBPAGE chapter="hsc - " title="Execute shell-commands"
          PREV="rplcent.html" NEXT=":options.html">
 
-<P>You can invoke shell-commands during processing of a hsc-source. The
+<P>You can invoke shell-commands during processing of a hsc source. The
 output of the command can be assigned to an special attribute or
-immediatly being included into the document. This can be useful to 
+immediately being included into the document. This can be useful to
 include data from external applications (like databases), prepared
 by scripts (eg. Rexx), which of course you have to write yourself.</P>
 
-<P>This functionality is provided by the hsc-tag <TG>$exec</TG></P>
+<P>This functionality is provided by the hsc tag <TG>$exec</TG></P>
 
 <H2>Possible attributes</H2>
 
@@ -16,7 +16,7 @@ by scripts (eg. Rexx), which of course you have to write yourself.</P>
 <DD>Specifies command to be executed. This attribute is required
 
 <DT><CODE>INCLUDE</CODE>
-<DD>If this attribute occures, the output the command sends to 
+<DD>If this attribute occurs, the output the command sends to
     <stdout> (or the filename specified with <CODE>FILE</CODE>)
     is included in the document.
 
@@ -28,7 +28,7 @@ by scripts (eg. Rexx), which of course you have to write yourself.</P>
 <DT><CODE>FILE="</CODE><I>output-filename</I><CODE>"</CODE>
 <DD>Specifies filename where the command is expected to store
     the output. The filename is relative to the source-directory.
-    If this attribute is not set, <hsc> will asume the command
+    If this attribute is not set, <hsc> will assume the command
     to output to <stdout> and will redirect the output to a 
     temporary file. This attribute is only useful if you have
     also set at least one of <CODE>INCLUDE</CODE> or 
@@ -46,7 +46,7 @@ by scripts (eg. Rexx), which of course you have to write yourself.</P>
     else is going to remove it, it will continue to exist until 
     doomsday or the next head-crash.
 
-    <P>If you didn't specifiy a output-filename (using <CODE>FILE</CODE>), 
+    <P>If you didn't specify an output filename (using <CODE>FILE</CODE>),
     this  can clutter your temporary-directory (usually "<FILE>t:</FILE>")
     with loads of files having strange names like 
     "<FILE>hsc0x321764.tmp</FILE>".</P>
@@ -58,14 +58,14 @@ by scripts (eg. Rexx), which of course you have to write yourself.</P>
     <CODE>INCLUDE</CODE> has been activated, too - no messages
     showed up during including the file.</P>
 
-    <STRONG>Note</STRONG>: Never trust Freeware-programmers when they
+    <STRONG>Note</STRONG>: Never trust freeware-programmers when they
     start removing your files. So never use <TG>$exec</TG> on important
     data without any backup, and always use <CODE>REMOVE="off"</CODE>
     if your data are not really completely temporary.
 </DL>
 
 <P>Additionally, you can use all attributes of <TG>$include</TG> that change
-the appearence of the included data, like <CODE>PRE</CODE>, 
+the appearance of the included data, like <CODE>PRE</CODE>,
 <CODE>SOURCE</CODE> etc. - Of course, this only makes sense if the
 <CODE>INCLUDE</CODE>-attribute has been set.</P>
 
@@ -81,7 +81,7 @@ one call to <TG>$exec</TG>.</P>
     it's source. Note that this is not a very useful example.
 <DT><TG>$exec COMMAND="list #?.hsc" TEMPORARY INCLUDE SOURCE PRE</TG>
 <DD>List all hsc-sources in the current directory and include
-    this list into the current document. The ouptput of the
+    this list into the current document. The output of the
     <KBD>list</KBD>-command is redirected to a temporary file,
     which is removed afterwards.
 <DT><TG>$exec COMMAND="echo Hello! &gt;echo.tmp" TEMPORARY INCLUDE FILE="echo.tmp"</TG>
@@ -137,7 +137,7 @@ also look for it. But the next one will fail:</P>
 but <hsc> tries to read <FILE>tmp.list</FILE>, which most likely will
 not exist.</P>
 
-<P>Another problem will occure, if you redirect the output yourself
+<P>Another problem will occur, if you redirect the output yourself
 within the command call, but do not specify the 
 <CODE>FILE</CODE>-attribute: <hsc> will try to redirect the output twice: 
 For example,</P>

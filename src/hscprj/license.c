@@ -1,9 +1,6 @@
 /*
- * hscprj/license.c
- *
- * routines to display license
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 17-Nov-1996
+ */
+/*
+ * hscprj/license.c
+ *
+ * routines to display license
+ *
+ * updated: 25-Jan-1997
  * created: 17-Nov-1996
  */
 
@@ -40,7 +43,20 @@ STRPTR hsc_license =            /* the usual boring text */
 
 "You should have received a copy of the GNU General Public License\n"
 "along with this program; if not, write to the Free Software\n"
-"Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\n";
+"Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\n"
+
+/* author address */
+"To contact author, write to:\n"
+"  Thomas Aglassinger\n"
+"  Lissagasse 12/2/9\n"
+"  8020 Graz\n"
+"  AUSTRIA\n\n"
+
+/* support w3page */
+"For support and updates, look at `http://www.giga.or.at/~agi/hsc/'\n\n"
+;
+
+
 
 /*
  * show_license

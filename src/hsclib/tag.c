@@ -1,9 +1,6 @@
 /*
- * tag.c
- *
- * hsc-tag funcs for hsc
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  4-Aug-1996
+ */
+/*
+ * hsclib/tag.c
+ *
+ * hsc-tag funcs for hsc
+ *
+ * updated: 25-Mar-1997
  * created:  8-Sep-1995
  */
 
@@ -233,8 +236,26 @@ HSCTAG *app_tag(DLLIST * taglist, STRPTR tagid)
     {
         del_hsctag((APTR) newtag);
         newtag = NULL;
-    }             
+    }
 
     return (newtag);
+}
+
+/* decides if a tag is a hsc-tag */
+BOOL is_hsc_tag(HSCTAG * tag)
+{
+    STRPTR name = tag->name;
+    BOOL it_is =
+    (!upstrcmp(name, HSC_COMMENT_STR))
+    || (!upstrcmp(name, HSC_VERBATIM_STR))
+    || (!upstrcmp(name, HSC_INSEXPR_STR))
+    || (!upstrncmp(((tag)->name), HSC_TAGID, strlen(HSC_TAGID)));
+    return (it_is);
+}
+
+/* decides if a tag is a macro-tag */
+BOOL is_macro_tag( HSCTAG *tag )
+{
+    return((BOOL)(((tag->option) & HT_MACRO)>0));
 }
 

@@ -1,9 +1,28 @@
 /*
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+/*
  * hsclib/msgid.h
  *
  * defines for message-ids (warnings, errors,..)
  *
- * updated: 14-Oct-1996
+ * updated:  2-Mar-1997
  * created: 30-Jul-1995
  */
 
@@ -34,14 +53,12 @@
 
 /*
  * obsolete numbers:
- * - 67
+ * - see below
  * #define MSG_NO_OUTPUT          (MSG_FATAL+  4)  / * can't open output file * /
  * #define MSG_NO_OUTFNAME        (MSG_FATAL+  5)  / * can't evaluate outp-filenm. * /
  * #define MSG_WSPC_AROUND_TAG    (MSG_STYLE+  8)  / * white space around tag * /
- * #define MSG_EXPT_H1            (MSG_PORT + 28)  / * Hx: first heading H1 * /
- * #define MSG_ENUM_SUSPICIOUS    (MSG_WARN + 36)  / * suspicios enum value * /
  * #define MSG_ILLG_NUMENT        (MSG_ERROR+ 32)  / * illegal numeric entity * /
- * #define MSG_RPLC_SPCCHR        (MSG_NOTE + 52)  / * replaced special char * /
+ * #define MSG_ONEW_COMMENT       (MSG_PORT + 56)  / * SGML one word comment * /
  *
  */
 
@@ -73,6 +90,7 @@
 #define MSG_UNMA_CTAG          (MSG_ERROR+ 13)  /* unmatched end-tag */
 #define MSG_CTAG_NESTING       (MSG_WARN + 14)  /* illegal end-tag nesting */
 #define MSG_MISS_REQTAG        (MSG_WARN + 15)  /* required tag missing */
+#define MSG_MISS_RCMDTAG       (MSG_STYLE+ 67)  /* required tag missing */
 #define MSG_MISS_CTAG          (MSG_WARN + 16)  /* end-tag missing */
 #define MSG_UNKN_TAG_OPTION    (MSG_ERROR+ 17)  /* unknown tag option */
 #define MSG_TAG_OBSOLETE       (MSG_WARN + 37)  /* obsolete tag */
@@ -99,6 +117,7 @@
  */
 #define MSG_UNKN_ATTR          (MSG_ERROR+ 20)  /* unknown attribute */
 #define MSG_NO_URIPATH         (MSG_WARN + 21)  /* path to URI not found */
+#define MSG_SERVER_URI         (MSG_WARN + 36)  /* suspicios enum value */
 #define MSG_ARG_NO_QUOTE       (MSG_WARN + 22)  /* argument without quote */
 #define MSG_EMPTY_SYMB_REF     (MSG_ERROR+ 23)  /* empty symbol reference */
 #define MSG_ILLG_ATTR_FLAG     (MSG_WARN + 24)  /* attribute flag not allowed here */
@@ -119,13 +138,13 @@
 /*
  * messages from tag handles
  */
+#define MSG_ANCHOR_HEADING     (MSG_STYLE+ 28)  /* heading inside anchor */
 #define MSG_ANCH_NO_NMHR       (MSG_ERROR+ 29)  /* A : no NAME or HREF */
 #define MSG_CL_TAG_ARG         (MSG_ERROR+ 62)  /* args for end-tag */
 #define MSG_LF_IN_COMMENT      (MSG_PORT + 48)  /* LF within comment */
 #define MSG_GT_IN_COMMENT      (MSG_PORT + 49)  /* GT within comment */
-#define MSG_CMTEND_QUOTE       (MSG_PORT + 50)  /* SGML-comment ends in quotes */
-#define MSG_ZERO_COMMENT       (MSG_PORT + 55)  /* SGML zero comment */
-#define MSG_ONEW_COMMENT       (MSG_PORT + 56)  /* SGML one word comment */
+#define MSG_ZERO_COMMENT       (MSG_PORT + 50)  /* SGML zero comment */
+#define MSG_TEXT_IN_COMMENT    (MSG_WARN + 55)  /* text outside comment context */
 
 /*
  * messages from hsc-tag handles
@@ -133,10 +152,12 @@
 #define MSG_SYSTEM_RETURN      (MSG_WARN + 54)  /* external process result <> 0 */
 #define MSG_UNMA_ELSE          (MSG_ERROR+ 53)  /* unmatched $ELSE */
 #define MSG_DEFTAG_NO_OPEN     (MSG_FATAL+ 57)  /* no opening tag for deftag cl. */
+#define MSG_REDEFINE_ENDTAG    (MSG_ERROR+ 52)  /* redefined end tag */
 #define MSG_REDEFINE_TAG       (MSG_WARN + 59)  /* redefined & replaced tag */
 #define MSG_USER_MESSAGE       (           39)  /* user message */
 #define MSG_BLINK_SUX          (MSG_STYLE+ 25)  /* blink sucks  */
 #define MSG_FRAME_SUX          (MSG_STYLE+ 76)  /* frames are disgusting */
+#define MSG_NO_CONTENT         (MSG_FATAL+ 28)  /* no content */
 
 /*
  * messages within expressions

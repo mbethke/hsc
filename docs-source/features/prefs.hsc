@@ -11,7 +11,7 @@ attributes</A> are set up there also.</P>
 easy to add new syntax elements. For this task, the hsc tags
 <ln_deftag>, <ln_defent> and <ln_deficon> can be used.</P>
 
-<A NAME="default"><H2>Default preferences</H2></A>
+<H2><A NAME="default">Default preferences</A></H2>
 
 <P>The <hsc.prefs> coming with this distribution should
 support most elements needed for everyday use. This includes
@@ -19,11 +19,11 @@ full html-2.0-support, tables, figures, client-side
 image-maps and several elements only used by special
 browsers.</P>
 
-<P>But several weeks ago, something terrible has happended:
+<P>But several weeks ago, something terrible has happened:
 html-0.32 has been released. From my point of view, this
 nothing more than the proof that those browser-developers,
 who clutter their software with loads of jerk-tags are too
-tumb to write a DTD (Document Type Definition) themselves
+thumb to write a DTD (Document Type Definition) themselves
 and that the only reason that w3c still exists is that
 someone has to write those DTDs to pretend that there is a
 concept behind html.</P>
@@ -35,10 +35,10 @@ current <hsc.prefs> is in a bit chaotic state and a mixture
 of html-2.0, html-3.0-draft and html-0.32. I am really to lazy to
 keep track with all this shit..</P>
 
-<P>Anyway, this shouldn't cause real problems for you, expept maybe some
+<P>Anyway, this shouldn't cause real problems for you, except maybe some
 wrong jerk-related warnings.</P>
 
-<A NAME="search"><H2>Searching for the preferences</H2></A>
+<H2><A NAME="search">Searching for the preferences</A></H2>
 
 <hsc> looks at several places when trying to open <hsc.prefs>:
 <UL>
@@ -56,10 +56,10 @@ an error message.</P>
 you can use <KBD><A HREF=":options.html#status">STATUS=VERBOSE</A></KBD>
 when invoking <hsc>. This will display the preferences used.</P>
 
-<A NAME="tags"><H2>Special tags to modify syntax-definition</H2></A>
+<H2><A NAME="tags">Special tags to modify syntax-definition</A></H2>
 
 <$macro SPCTAG NAME:string/r TITLE:string/r>
-<A NAME=(name)><H3><(title)></H3></A>
+<H3><A NAME=(name)><(title)></A></H3>
 </$macro>
 
 All the tags below should be used within <hsc.prefs> only.
@@ -108,7 +108,7 @@ simple examples, which should also work somehow, though some features of
 <hsc.prefs> every time on startup uses an awful lot of time.
 Usually, processing your main data takes shorter than
 reading the preferences. You can reduce this time, if you
-create your own <hsc.prefs> with all tags and entites you
+create your own <hsc.prefs> with all tags and entities you
 don't need removed. But I recommend to avoid this because
 you might have to edit your preferences again with the next
 update of <hsc>, if any new features have been added.</P>

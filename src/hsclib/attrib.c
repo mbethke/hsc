@@ -1,9 +1,6 @@
 /*
- * hsclib/attribute.c
- *
- * hsc-variable funcs for hsc
- *
- * Copyright (C) 1995,96  Thomas Aglassinger
+ * This source code is part of hsc, a html-preprocessor,
+ * Copyright (C) 1995-1997  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated:  4-Dec-1996
+ */
+/*
+ * hsclib/attribute.c
+ *
+ * hsc-variable funcs for hsc
+ *
+ * updated: 25-May-1997
  * created:  2-Sep-1995
  *
  */
@@ -223,15 +226,25 @@ int cmp_varname(APTR cmpstr, APTR vardata)
     STRPTR varstr = NULL;
 
     if (vardata)
+    {
         varstr = ((HSCATTR *) vardata)->name;
+    }
 
     if (varstr)
-        if (!upstrcmp(cmpstr, varstr))
-            return (-1);
+    {
+        if (!upstrcmp((STRPTR) cmpstr, varstr))
+        {
+            return -1;
+        }
         else
-            return (0);
+        {
+            return 0;
+        }
+    }
     else
-        return (0);
+    {
+        return 0;
+    }
 }
 
 /*
@@ -276,12 +289,19 @@ HSCATTR *find_varname(DLLIST * varlist, STRPTR name)
  */
 STRPTR set_vartext(HSCATTR * var, STRPTR newtext)
 {
+    if (!var)
+    {
+        panic("NULL attribute detected");
+    }
+
     if (newtext != var->text)
     {
         ufreestr(var->text);
         var->text = NULL;
         if (newtext)
+        {
             var->text = strclone(newtext);
+        }
     }
 
     return (var->text);
