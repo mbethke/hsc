@@ -68,8 +68,7 @@ BOOL handle_hsc_include(HSCPRC * hp, HSCTAG * tag);
  * nested commets are supported
  *
  */
-BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag) {
    skip_hsc_comment(hp, NULL);
    return (FALSE);
 }
@@ -77,28 +76,22 @@ BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag)
 /*
  * handle_hsc_verbatim
  *
- * copy text until '|>' occures;
+ * copy text until '|>' occurs;
  * no syntax check or whatever is performed
  *
  */
-BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag) {
    EXPSTR *content = init_estr(256);
-   if (skip_hsc_verbatim(hp, content))
-   {
+   if (skip_hsc_verbatim(hp, content)) {
       /* remove "|>" from content */
       STRPTR strend = estr2str(content) + estrlen(content);
       while (strend[0] != '|')
-      {
-         strend--;
-      }
+         --strend;
       strend[0] = 0;
 
       /* output content */
       if (content && content->es_data && hp->suppress_output)
-      {
          hp_enable_output(hp, "some text");
-      }
 
       hsc_output_text(hp, "", estr2str(content));
    }
@@ -114,8 +107,7 @@ BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag)
  *
  * TODO: what to use as error-location, when inserting expression?
  */
-BOOL handle_hsc_insert_expression(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_insert_expression(HSCPRC * hp, HSCTAG * tag) {
    HSCATTR *dest = new_hscattr(PREFIX_TMPATTR "insert.expression");
    STRPTR value = NULL;
 
@@ -124,8 +116,7 @@ BOOL handle_hsc_insert_expression(HSCPRC * hp, HSCTAG * tag)
 
    /* compute expression */
    value = eval_expression(hp, dest, ")");
-   if (value)
-   {
+   if (value) {
       parse_gt(hp);
       hsc_include_string(hp, SPECIAL_FILE_ID "insert expression", value,
             IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
@@ -184,8 +175,7 @@ static VOID do_include(HSCPRC * hp, STRPTR filename,
  *
  * include a sub file
  */
-BOOL handle_hsc_include(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_include(HSCPRC * hp, HSCTAG * tag) {
    STRPTR fname_arg = get_vartext_byname(tag->attr, "FILE");
    LONG indent = get_varnum_byname(tag->attr, "INDENT");
    LONG tabsize = get_varnum_byname(tag->attr, "TABSIZE");
@@ -210,8 +200,7 @@ BOOL handle_hsc_include(HSCPRC * hp, HSCTAG * tag)
  *
  * user error message
  */
-BOOL handle_hsc_message(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_message(HSCPRC * hp, HSCTAG * tag) {
    STRPTR msg_text = get_vartext_byname(tag->attr, "TEXT");
    STRPTR msg_class = get_vartext_byname(tag->attr, "CLASS");
 
@@ -226,8 +215,7 @@ BOOL handle_hsc_message(HSCPRC * hp, HSCTAG * tag)
          msgid |= MSG_ERROR;
       else if (!upstrcmp(msg_class, "FATAL"))
          msgid |= MSG_FATAL;
-      else
-      {
+      else {
          D(if (upstrcmp(msg_class, "NOTE"))
                panic("illegal user message class")
           );
@@ -288,13 +276,13 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
       BOOL usetmpfile = FALSE;
       ULONG old_msg_count = hp->msg_count;
 
-      /* check, if file should be read after execution */
+      /* check if file should be read after execution */
       if (attribute_attr)
          attribute_name = get_vartext(attribute_attr);
       if (attribute_name || include)
          read_file = TRUE;
 
-      /* check, if output should be redirected to temp. file */
+      /* check if output should be redirected to temp. file */
       if (!filename && read_file) {
          usetmpfile = TRUE;
          set_vartext(file_attr, tmpnamstr(TMP_PREFIX));
@@ -305,7 +293,7 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
          D(fprintf(stderr, DHL "  use file `%s'\n", filename));
       }
 
-      /* check, if output-file should be removed */
+      /* check if output-file should be removed */
       if (remove_str) {
          if (!upstrcmp(remove_str, "ON")) {
             remove_file = TRUE;
@@ -422,13 +410,12 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
       if (result_attr) {
          set_vartext(result_attr, long2str((LONG) result));
       } else {
-         D(panic("no result-attribute"));
+         D(panic("no result attribute"));
       }
 
       del_estr(cmdstr);
       del_estr(msg);
-   }
-   else
+   } else
       panic("attribute missing");
 
    return (FALSE);
@@ -445,8 +432,7 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
  *
  * write string to file
  */
-BOOL handle_hsc_export(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_export(HSCPRC * hp, HSCTAG * tag) {
    STRPTR filename = get_vartext_byname(tag->attr, "FILE");
    STRPTR data = get_vartext_byname(tag->attr, "DATA");
    BOOL append = get_varbool_byname(tag->attr, "APPEND");
@@ -494,8 +480,7 @@ BOOL handle_hsc_export(HSCPRC * hp, HSCTAG * tag)
  *
  * insert current time
  */
-BOOL handle_hsc_time(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_time(HSCPRC * hp, HSCTAG * tag) {
    STRPTR timefmt = get_vartext_byname(tag->attr, "FORMAT");
    EXPSTR *timebuf = init_estr(TIMEBUF_INC);
    BOOL strftrc = 0;           /* result of strftime() */
@@ -505,8 +490,7 @@ BOOL handle_hsc_time(HSCPRC * hp, HSCTAG * tag)
    if (!timefmt)
       timefmt = "%d-%b-%Y, %H:%M";
 
-   while (!(hp->fatal) && !strftrc)
-   {
+   while (!(hp->fatal) && !strftrc) {
       /* expand timebuffer */
       for (i = 0; i < TIMEBUF_INC; i++)
          app_estrch(timebuf, '.');
@@ -517,8 +501,7 @@ BOOL handle_hsc_time(HSCPRC * hp, HSCTAG * tag)
       strftrc = strftime(estr2str(timebuf), estrlen(timebuf),
             timefmt, localtime(&(hp->start_time)));
    }
-   if (strftrc)
-   {
+   if (strftrc) {
       INFILEPOS *base = new_infilepos(hp->inpf);
       hsc_base_include_string(hp, SPECIAL_FILE_ID "insert time",
             estr2str(timebuf),
@@ -535,8 +518,7 @@ BOOL handle_hsc_time(HSCPRC * hp, HSCTAG * tag)
  *
  * insert text
  */
-BOOL handle_hsc_text(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_text(HSCPRC * hp, HSCTAG * tag) {
    STRPTR text = get_vartext_byname(tag->attr, "TEXT");
 
    /* include text */
@@ -553,8 +535,7 @@ BOOL handle_hsc_text(HSCPRC * hp, HSCTAG * tag)
  *
  * main insert handle
  */
-BOOL handle_hsc_insert(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_insert(HSCPRC * hp, HSCTAG * tag) {
    BOOL insert_text = FALSE;
    BOOL insert_time = get_varbool_byname(tag->attr, HSC_TIME_STR);
 
@@ -565,8 +546,7 @@ BOOL handle_hsc_insert(HSCPRC * hp, HSCTAG * tag)
       handle_hsc_text(hp, tag);
    else if (insert_time)
       handle_hsc_time(hp, tag);
-   else
-   {
+   else {
 
       /* unknown option for $insert */
       hsc_message(hp, MSG_MISS_REQ_ATTR,
@@ -582,8 +562,7 @@ BOOL handle_hsc_insert(HSCPRC * hp, HSCTAG * tag)
  * <$DEFTAG> define a new tag
  *-------------------------------------
  */
-BOOL handle_hsc_deftag(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_deftag(HSCPRC * hp, HSCTAG * tag) {
    BOOL ok = FALSE;
    BOOL open_tag = FALSE;
 
@@ -599,13 +578,11 @@ BOOL handle_hsc_deftag(HSCPRC * hp, HSCTAG * tag)
  *-------------------------------------
  */
 static VOID msg_illegal_defent(HSCPRC * hp, STRPTR msg) {
-   hsc_message(hp, MSG_ILLG_DEFENT,
-         "illegal entity definition (%s)", msg);
+   hsc_message(hp, MSG_ILLG_DEFENT, "illegal entity definition (%s)", msg);
 }
 
 static VOID msg_dubious_defent(HSCPRC * hp, STRPTR msg) {
-   hsc_message(hp, MSG_DEFENT_WARN,
-         "dubious entity definition (%s)", msg);
+   hsc_message(hp, MSG_DEFENT_WARN, "dubious entity definition (%s)", msg);
 }
 
 BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag) {
@@ -620,29 +597,26 @@ BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag) {
          if ((NULL == rplc) || (strlen(rplc) <= 1)) {
             if ((num >= 128) && (num <= 65535)) {
                DLNODE *nd = NULL;
-               STRPTR lcname = strclone(name);
 
-               lowstr(lcname);
                if((num > 255) && (NULL != rplc) && strlen(rplc)) {
                   msg_dubious_defent(hp, "RPLC specified for NUM > 255");
                }
-               if(NULL != (nd = find_dlnode(hp->defent->first, (APTR)lcname, cmp_strent))) {
+               if(NULL != (nd = find_dlnode(hp->defent->first, (APTR)name, cmp_strent))) {
                   if(num == ((HSCENT*)(dln_data(nd)))->numeric) {
                      msg_dubious_defent(hp, "duplicate entity - updating flags");
                      ((HSCENT*)(dln_data(nd)))->prefnum = prefnum;
                      ((HSCENT*)(dln_data(nd)))->replace[0] = *rplc;
                   } else
-                     msg_illegal_defent(hp, "illegal entity redefinition");
+                     msg_illegal_defent(hp, "NAME defined with different NUM");
                } else if(NULL != (nd = find_dlnode(hp->defent->first, (APTR)num, cmp_nument))) {
-                  if(0 == strcmp(lcname,((HSCENT*)(dln_data(nd)))->name)) {
+                  if(0 == strcmp(name,((HSCENT*)(dln_data(nd)))->name)) {
                      msg_dubious_defent(hp, "duplicate NUM - updating flags");
                      ((HSCENT*)(dln_data(nd)))->prefnum = prefnum;
                      ((HSCENT*)(dln_data(nd)))->replace[0] = *rplc;
                   } else
-                     msg_illegal_defent(hp, "illegal entity redefinition");
+                     msg_illegal_defent(hp, "NUM defined with different NAME");
                } else
-                  add_ent(hp->defent, lcname, rplc[0], num, prefnum);
-               freestr(lcname);
+                  add_ent(hp->defent, name, rplc[0], num, prefnum);
             } else
                msg_illegal_defent(hp, "illegal range for NUM (must be 128<=NUM<=65535)");
          } else
@@ -660,8 +634,7 @@ BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag) {
  * <$DEFSTYLE> define a new CSS style
  *-------------------------------------
  */
-BOOL handle_hsc_defstyle(HSCPRC *hp, HSCTAG *tag)
-{
+BOOL handle_hsc_defstyle(HSCPRC *hp, HSCTAG *tag) {
    app_dlnode(hp->defstyle,
          new_styleattr(
             get_vartext_byname(tag->attr, "NAME"),
@@ -674,8 +647,7 @@ BOOL handle_hsc_defstyle(HSCPRC *hp, HSCTAG *tag)
  * <$DEFICON> define a new icon-entity
  *-------------------------------------
  */
-BOOL handle_hsc_deficon(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_deficon(HSCPRC * hp, HSCTAG * tag) {
    STRPTR name = get_vartext_byname(tag->attr, "NAME");
    DLNODE *nd = NULL;
 
@@ -692,11 +664,9 @@ BOOL handle_hsc_deficon(HSCPRC * hp, HSCTAG * tag)
  * <$DEFINE> create a new (global) attribute
  *-------------------------------------
  */
-BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag) {
    HSCVAR *attr = define_attr_by_hp(hp, NULL, 0);
-   if (attr)
-   {
+   if (attr) {
       DDA(prt_varlist(hp->defattr, "attributes after $DEFINE"));
 
       /* check for closing ">" */
@@ -711,8 +681,7 @@ BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag)
  * $LAZY handle
  *-------------------------------------
  */
-static HSCTAG *def_lazy_name(HSCPRC *hp)
-{
+static HSCTAG *def_lazy_name(HSCPRC *hp) {
    STRPTR nw = NULL;
    HSCTAG *lazy = NULL;
    DLLIST *lazy_list = hp->deflazy;
@@ -721,33 +690,23 @@ static HSCTAG *def_lazy_name(HSCPRC *hp)
    nw = infget_tagid(hp);
 
    /* create new lazy */
-   if (nw)
-   {
+   if (nw) {
       lazy = find_strtag(lazy_list, nw);
       if (lazy)
-      {
          hsc_message(hp, MSG_REDEFINE_LAZY, "redefined lazy ", lazy);
-      }
       else
-      {
          /* create a new opening lazy */
          lazy = app_tag(lazy_list, nw);
-      }
    }                           /* err_eof already called in infget_tagid() */
-
    return (lazy);
 }
 
 
-BOOL handle_hsc_lazy(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_lazy(HSCPRC * hp, HSCTAG * tag) {
    BOOL ok = FALSE;
    HSCTAG *lazy = def_lazy_name(hp);
    if (lazy)
-   {
       ok = def_tag_args(hp, lazy);
-   }
-
    return (FALSE);
 }
 
@@ -757,18 +716,15 @@ BOOL handle_hsc_lazy(HSCPRC * hp, HSCTAG * tag)
  *
  * add dependency to current document
  */
-BOOL handle_hsc_depend(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_depend(HSCPRC * hp, HSCTAG * tag) {
    STRPTR filename = get_vartext_byname(tag->attr, "ON");
    BOOL file = get_varbool_byname(tag->attr, "FILE");
 
-   if (filename)
-   {
+   if (filename) {
       EXPSTR *dest_fname = init_estr(64);
 
       /* convert URI to local filename */
-      if (!file)
-      {
+      if (!file) {
          conv_hscuri2file(hp, dest_fname, filename);
          filename = estr2str(dest_fname);
       }
@@ -778,12 +734,9 @@ BOOL handle_hsc_depend(HSCPRC * hp, HSCTAG * tag)
       app_include(hp->project->document, filename);
 
       del_estr(dest_fname);
-   }
-   else
-   {
+   } else {
       panic("attribute missing");
    }
-
    return (FALSE);
 }
 
@@ -796,8 +749,7 @@ BOOL handle_hsc_depend(HSCPRC * hp, HSCTAG * tag)
  * <$LET> set/reset/clear attribute value
  *-------------------------------------
  */
-BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag) {
    INFILE *inpf = hp->inpf;
    STRPTR varname = infgetw(inpf);
    HSCVAR *attr = NULL;
@@ -874,8 +826,7 @@ BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
  * <$SOURCE> include a source part
  *-------------------------------------
  */
-BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag) {
    BOOL pre = get_varbool_byname(tag->attr, "PRE");
    BOOL ok = TRUE;
    EXPSTR *source_content = init_estr(ES_STEP_SOURCE);
@@ -883,13 +834,10 @@ BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
 
    /* avoid nesting of <PRE> */
    if (hp->inside_pre)
-   {
       pre = FALSE;            /* TODO: lauch warning */
-   }
 
    /* insert leading <PRE> */
-   if (pre)
-   {
+   if (pre) {
       hsc_include_string(hp, SPECIAL_FILE_ID "insert <PRE>", "<PRE>",
             IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
    }
@@ -899,16 +847,14 @@ BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
          SKUT_NO_CONTENT_TAGFOUND | SKUT_NO_ANALYSE_TAGS);
 
    /* include source */
-   if (ok)
-   {
+   if (ok) {
       /* include pseudo-file */
       hsc_base_include_string(hp, SPECIAL_FILE_ID "source",
             estr2str(source_content),
             IH_PARSE_SOURCE | IH_NO_STATUS, base);
 
       /* insert tailing </PRE> */
-      if (pre)
-      {
+      if (pre) {
          hsc_include_string(hp, SPECIAL_FILE_ID "insert </PRE>",
                "</PRE>\n",
                IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
@@ -925,39 +871,29 @@ BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
  * <$StripWS> strip white spaces
  *-------------------------------------
  */
-BOOL handle_hsc_stripws(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL handle_hsc_stripws(HSCPRC * hp, HSCTAG * tag) {
    STRPTR strip_type = get_vartext_byname(tag->attr, "TYPE");
    BOOL strip_prev = FALSE;
    BOOL strip_succ = FALSE;
 
    /* determine what to strip */
-   if (!upstrcmp(strip_type, STRIPWS_BOTH))
-   {
+   if (!upstrcmp(strip_type, STRIPWS_BOTH)) {
       strip_prev = TRUE;
       strip_succ = TRUE;
-   }
-   else if (!upstrcmp(strip_type, STRIPWS_PREV))
-   {
+   } else if (!upstrcmp(strip_type, STRIPWS_PREV)) {
       strip_prev = TRUE;
-   }
-   else if (!upstrcmp(strip_type, STRIPWS_SUCC))
-   {
+   } else if (!upstrcmp(strip_type, STRIPWS_SUCC)) {
       strip_succ = TRUE;
-   }
-   else if (!upstrcmp(strip_type, STRIPWS_NONE))
-   {
+   } else if (!upstrcmp(strip_type, STRIPWS_NONE)) {
       /* nufin, use defaults */
    }
 
    /* now strip it */
-   if (strip_prev)
-   {
+   if (strip_prev) {
       clr_estr(hp->whtspc);
    }
 
-   if (strip_succ)
-   {
+   if (strip_succ) {
       hsc_output_text(hp, NULL, NULL);        /* flush current white spaces */
       hp->strip_next_whtspc = TRUE;
    }
