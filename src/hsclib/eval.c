@@ -1601,10 +1601,12 @@ STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr)
          dest1->quote = '\"';
       }
    } else if (ch == '{') {
+      DDA(prt_varlist(hp->defattr, "attributes before symref"));
       /* process brace */
       exprstr = eval_expression(hp, dest1, "}");
       inungets(exprstr,inpf);
       exprstr = eval_attrref(hp,dest1);
+      DDA(prt_varlist(hp->defattr, "attributes after symref"));
    } else if (ch != EOF) {
       /* write current char read back to input buffer */
       inungetc(ch, inpf);

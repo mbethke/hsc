@@ -79,7 +79,6 @@ VOID del_styleattr(APTR data)
    fprintf(stderr, DHL "   del_styleattr %s (mci=%d)\n",
          var->name, var->macro_id);
 #endif
-
    ufreestr(((HSCSTYLE*)data)->name);
    ufreestr(((HSCSTYLE*)data)->value);
    ufree(data);

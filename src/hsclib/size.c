@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +23,7 @@
  *
  * evaluate values for WIDTH and HEIGHT from file
  *
- * updated: 28-Nov-1996
+ * updated: 23-Mar-2003
  * created:  7-Jan-1996
  */
 
@@ -454,7 +455,6 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                 app_estr(srcpath, ", transparent");
             hsc_status_misc(hp, estr2str(srcpath));
 
-            fprintf(stderr,"SIZE: %ld/%ld\n",width,height);
             if(hp->xhtml) {
                /* in XHTML mode, add to the STYLE attribute */
                add_width_height_attrs(hp,width,height);

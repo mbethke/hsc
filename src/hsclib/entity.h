@@ -37,8 +37,8 @@
 typedef struct hscent
 {
     STRPTR name;                /* name/id (eg &"uuml"; ) */
-    STRPTR replace;             /* replace by (eg "ü" ) */
-    LONG numeric;               /* numeric code of entity ( eg &#"123"; ) */
+    short numeric;               /* numeric code of entity ( eg &#"123"; ) */
+    char replace[2];            /* replace by (eg "ü" ) */
 }
 HSCENT;
 
@@ -61,7 +61,7 @@ extern int cmp_nument(APTR cmpstr, APTR entdata);
 extern int cmp_rplcent(APTR cmpstr, APTR entdata);
 
 extern HSCENT *app_entnode(DLLIST * entlist, STRPTR entid);
-extern BOOL add_ent(DLLIST * entlist, STRPTR entid, STRPTR entreplace, LONG num);
+extern void add_ent(DLLIST * entlist, STRPTR entid, char entreplace, short num);
 
 #endif /* NOEXTERN_HSCLIB_ENTITY_H */
 

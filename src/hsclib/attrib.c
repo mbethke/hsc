@@ -42,13 +42,14 @@
  */
 
 /*
- * ptr_var
+ * prt_var
  */
+#ifdef DEBUG
 static VOID prt_var(FILE * stream, APTR data)
 {
    HSCATTR *var = (HSCATTR *) data;
 
-   if (var)
+   if (NULL != var)
    {
       int varquote = var->quote;
       if (varquote == VQ_NO_QUOTE)
@@ -81,6 +82,7 @@ VOID prt_varlist(DLLIST * varlist, STRPTR title)
    fprintf(stderr, DHL "%s\n", title);
    fprintf_dllist(stderr, varlist, prt_var);
 }
+#endif
 
 /*
  *-------------------------------------

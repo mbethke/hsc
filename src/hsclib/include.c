@@ -57,9 +57,7 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
     ok = (inpf != NULL);
 
     if (optn & IH_POS_PARENT)
-    {
         panic("IH_POS_PARENT set");
-    }
 
     if (inpf)                   /* file opened? */
     {
@@ -70,18 +68,14 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
         /* set new base position for input-file */
         /* (if called from a macro or after eg. <$source>) */
         if (base_pos)
-        {
             set_infile_base(inpf, base_pos);
-        }
 
         /* assign new input file to hsc-process */
         hp->inpf = inpf;
 
         /* hide status? */
-        if ((optn & IH_PARSE_MACRO) || (optn & IH_PARSE_MACRO))
-        {
+        if (optn & IH_PARSE_MACRO)
             optn |= IH_NO_STATUS;
-        }
 
         /* set char-parse methods */
         inpf->is_nc = hsc_normch;       /* set is_nc-methode */
@@ -89,16 +83,13 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
 
         /* status message: reading new file */
         if (!(optn & IH_NO_STATUS) && !infeof(inpf))
-        {
             hsc_status_file_begin(hp, infget_fname(hp->inpf));
-        }
 
         /* parse file */
         while (!infeof(inpf) && ok)
         {
             if (!(optn & IH_NO_STATUS) &&
-                (hp->prev_status_line != infget_y(hp->inpf))
-                )
+                (hp->prev_status_line != infget_y(hp->inpf)))
             {
                 /* status message */
                 hsc_status_line(hp);
@@ -106,14 +97,7 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
             }
 
             /* parse next item */
-            if (optn & IH_PARSE_SOURCE)
-            {
-                ok = hsc_parse_source(hp);
-            }
-            else
-            {
-                ok = hsc_parse(hp);
-            }
+            ok = (optn & IH_PARSE_SOURCE) ? hsc_parse_source(hp) : hsc_parse(hp);
         }
 
         /* parse at end: check for missing tags, .. */
@@ -174,9 +158,7 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
 
     /* status message: reading input */
     if (!(optn & (IH_PARSE_MACRO | IH_PARSE_HSC)))
-    {
         hsc_status_file_begin(hp, filename);
-    }
 
     /* check for stdin to use as input-file */
     if (!(strcmp(filename, FILENAME_STDIN1) &&
@@ -198,8 +180,7 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
     errno = 0;
     inpf = infopen(filename, ES_STEP_INFILE);
 
-    if (inpf)
-    {
+    if (inpf) {
         /* include opened file */
         ok = hsc_include(hp, inpf, optn, base_pos);
 
@@ -207,10 +188,8 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
          * or an include-file and update project-data
          * if neccessary
          */
-        if (ok && hp->project)
-        {
-            if (optn & IH_IS_SOURCE)
-            {
+        if (ok && hp->project) {
+            if (optn & IH_IS_SOURCE) {
                 if (!filename)
                     filename = FILENAME_STDIN1;
                 D(fprintf(stderr, DHL "INCLUDE source: `%s'\n", filename));
@@ -220,17 +199,14 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
 
             /* check if this file is an include-file
              * and update project-data if neccessary */
-            if (filename && (optn & IH_IS_INCLUDE))
-            {
+            if (filename && (optn & IH_IS_INCLUDE)) {
                 D(fprintf(stderr, DHL "INCLUDE subfile: `%s'\n", filename));
                 hsc_project_add_include(hp->project, filename);
             }
         }
-    }
-    else
-    {
+    } else
         hsc_msg_noinput(hp, filename);  /* couldn't open file */
-    }
+
     /* if we got a path part earlier, remove the corresponding incdir node */
     if(0 != estrlen(fpath)) {
        del_dlnode(hp->include_dirs,dll_first(hp->include_dirs));
@@ -249,8 +225,7 @@ BOOL hsc_base_include_string(HSCPRC * hp, STRPTR filename, STRPTR s, ULONG optn,
     BOOL ok;
     INFILE *inpf = NULL;
 
-    if (optn & IH_POS_PARENT)
-    {
+    if (optn & IH_POS_PARENT) {
         filename = PARENT_FILE_ID;
         optn &= ~IH_POS_PARENT;
     }
@@ -283,27 +258,21 @@ static BOOL find_includefile(HSCPRC *hp, EXPSTR * dest, STRPTR filename)
     /* reset filename */
     set_estr(dest, filename);
 
-    if (!fexists(filename))
-    {
+    if (!fexists(filename)) {
         DLNODE *nd = dll_first(hp->include_dirs);
 
         /* process all include-directories.. */
-        while (nd && !found)
-        {
+        while (nd && !found) {
             /* concat incdir+filename, check if it exists,
              * process next or abort loop */
             link_fname(dest, (STRPTR) dln_data(nd), filename);
             D(fprintf(stderr, DHL "  try `%s'\n", estr2str(dest)));
             if (fexists(estr2str(dest)))
-            {
                 found = TRUE;
-            }
             else
                 nd = dln_next(nd);
         }
-    }
-    else
-    {
+    } else {
         /* found in current directory */
         found = TRUE;
     }
@@ -322,8 +291,7 @@ BOOL hsc_include_file(HSCPRC * hp, STRPTR filename, ULONG optn)
     BOOL ok = FALSE;
     EXPSTR *real_filename = init_estr(64);
 
-    if(NULL == filename)
-    {
+    if(NULL == filename) {
        fprintf(stderr,"hsc_include_file(): NULL/empty filename!\n");
        return ok;
     }

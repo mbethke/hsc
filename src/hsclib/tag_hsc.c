@@ -625,10 +625,11 @@ BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag)
                }
                if(NULL != (nd = find_dlnode(hp->defent->first, (APTR) name, cmp_strent)))
                   msg_illg_defent(hp, "duplicate entity");
-               else if(NULL != (nd = find_dlnode(hp->defent->first, (APTR) num, cmp_nument)))
+               else if(NULL != (nd = find_dlnode(hp->defent->first,
+                           (APTR)num, cmp_nument)))
                   msg_illg_defent(hp, "duplicate NUM");
                if (!nd)
-                  add_ent(hp->defent, name, rplc, num);
+                  add_ent(hp->defent, name, rplc[0], num);
             } else
                msg_illg_defent(hp, "illegal range for NUM (must be 160<=NUM<=65535)");
          } else
@@ -669,7 +670,7 @@ BOOL handle_hsc_deficon(HSCPRC * hp, HSCTAG * tag)
    if (nd)
       msg_illg_defent(hp, "duplicate entity");
    else
-      add_ent(hp->defent, name, NULL, ICON_ENTITY);
+      add_ent(hp->defent, name, '\0', ICON_ENTITY);
 
    return (FALSE);
 }
@@ -789,25 +790,22 @@ BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
    HSCVAR *attr = NULL;
    BOOL ok = FALSE;
 
-   if (varname)
-   {
+   if (varname) {
       /* create temporary dummy attribute that is
        * used to store the value, if attribute
        * passed is a constant
        */
       HSCVAR *dummy = new_hscattr(PREFIX_TMPATTR "let");
 
-      if('{' == varname[0]) {
+      if('{' == varname[0])
          varname = eval_expression(hp,dummy,"}");
-      }
+
       /* find attribute */
       attr = find_varname(hp->defattr, varname);
-      if (attr)
-      {
+      if (attr) {
          STRPTR eq_sign = infgetw(inpf);
 
-         if (attr->varflag & VF_CONST)
-         {
+         if (attr->varflag & VF_CONST) {
             /* tried to set constant */
             hsc_message(hp, MSG_ATTR_CONST,
                   "attempt to modify constant %A", attr);
@@ -819,10 +817,8 @@ BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
          }
 
          /* check if a "=" comes next */
-         if (eq_sign)
-         {
-            if (!strcmp(eq_sign, "="))
-            {
+         if (eq_sign) {
+            if (!strcmp(eq_sign, "=")) {
                STRPTR brace = infgetw(inpf);
                if(!strcmp(brace,"{")) {
                   /* assigning from a symbolic reference */
@@ -834,17 +830,11 @@ BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
                   inungets(brace,inpf);
                   eval_expression(hp, attr, NULL);
                }
-            }
-            else if (!strcmp(eq_sign, "?"))
-            {
+            } else if (!strcmp(eq_sign, "?")) {
                /* conditional assignment */
                if (parse_eq(hp))
-               {
                   eval_conditional_assignment(hp, attr);
-               }
-            }
-            else
-            {
+            } else {
                /* N->clear or reset attribute to default value */
                clr_vartext(attr);
                /* write previous word back (should be ">") */
@@ -855,9 +845,7 @@ BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
          }
          /* check for closing ">" */
          ok = parse_gt(hp);
-      }
-      else
-      {
+      } else {
          hsc_msg_unkn_attr_ref(hp, varname);
       }
 

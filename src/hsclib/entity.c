@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,8 +55,8 @@ HSCENT *new_hscent(STRPTR newid)
     {
         /* init new entity item */
         newent->name = strclone(newid);         /* set id */
-        newent->replace = NULL;
-        newent->numeric = 0L;
+        newent->replace[0] = newent->replace[1] = '\0';
+        newent->numeric = 0;
     }
 
     return (newent);
@@ -74,7 +75,7 @@ VOID del_entity(APTR data)
 #endif
 
     ufreestr(ent->name);
-    ufreestr(ent->replace);
+    ent->replace[0] = '\0';
     ent->numeric = 0;
     ufree(ent);
 }
@@ -88,9 +89,8 @@ HSCENT *cpy_hscent(HSCENT * oldent)
 {
     HSCENT *newent = new_hscent(oldent->name);
 
-    if (newent)
-    {
-        newent->replace = strclone(oldent->replace);
+    if (newent) {
+        newent->replace[0] = oldent->replace[0];
         newent->numeric = oldent->numeric;
     }
 
@@ -178,47 +178,27 @@ int cmp_rplcent(APTR cmpstr, APTR entdata)
  * params: entid..name of the new entity (eg "uuml")
  * result: ptr to the new entity or NULL if no mem
  */
-HSCENT *app_entnode(DLLIST * entlist, STRPTR entid)
-{
+HSCENT *app_entnode(DLLIST * entlist, STRPTR entid) {
     HSCENT *newent;
 
     newent = new_hscent(entid);
-    if (newent)
-    {
-        if (app_dlnode(entlist, newent) == NULL)
-        {
+    if (newent) {
+        if (app_dlnode(entlist, newent) == NULL) {
             del_entity((APTR) newent);
             newent = NULL;
         }
     }
-
     return (newent);
 }
 
 /*
  * add_ent
  */
-BOOL add_ent(DLLIST * entlist, STRPTR entid, STRPTR entreplace, LONG num)
-{
+void add_ent(DLLIST * entlist, STRPTR entid, char entreplace, short num) {
     HSCENT *newent = app_entnode(entlist, entid);
 
     if (entreplace)
-        newent->replace = strclone(entreplace);
-
+        newent->replace[0] = entreplace;
     newent->numeric = num;
-
-#if 0
-    DDE(
-           {
-           STRPTR rplc = entreplace;
-           if (!rplc)
-           rplc = "(empty)";
-           fprintf(stderr, DHL "defent: \"%s\" \"%s\" %ld\n",
-                   entid, rplc, num);
-           }
-    );
-#endif
-
-    return (TRUE);
 }
 

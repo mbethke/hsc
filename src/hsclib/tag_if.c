@@ -382,7 +382,8 @@ BOOL handle_hsc_cif(HSCPRC * hp, HSCTAG * tag)
     if (is_empty(hp))
     {
         /* this can happen, if <$if> had errors in args */
-        DIF(fprintf(stderr, DHL "%s: unhandled handler conditional\n", tag->name));
+        DIF(fprintf(stderr, DHL "%s: unhandled handler conditional\n",
+                 tag->name));
     }
     else
     {
