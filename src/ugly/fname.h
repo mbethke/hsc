@@ -41,6 +41,7 @@
  * MAX_FNAME         max. length of filename
  * MAX_FEXT          max. length of file extension
  * PATH_SEPARATOR    to separate diretories and devices
+ * PATHL_SEPARATOR   to separate a list of paths in a string
  * DIR_SEPARATOR     to separate directories
  * PARENT_DIR        to be inserted to refer to parent directory
  * FNAME_IGNORE_CASE flag; ignore case within filenames
@@ -49,64 +50,70 @@
  */
 
 #if defined(AMIGA) || defined(AROS)   /* AmigaOS */
-#define MAX_FPATH 256
-#define MAX_FNAME  31
-#define MAX_FEXT   30
+#define MAX_FPATH (256)
+#define MAX_FNAME  (31)
+#define MAX_FEXT   (30)
 #define PATH_SEPARATOR    "/:"
+#define PATHL_SEPARATOR   ";"
 #define DIR_SEPARATOR     '/'
 #define PARENT_DIR        "/"
-#define FNAME_IGNORE_CASE 1
-#define SUGGEST_CRLF_SHIT 0
+#define FNAME_IGNORE_CASE (1)
+#define SUGGEST_CRLF_SHIT (0)
 
 #elif defined RISCOS                   /* RiscOS */
-#define MAX_FPATH 255
-#define MAX_FNAME  32
-#define MAX_FEXT   32
+#define MAX_FPATH (255)
+#define MAX_FNAME  (32)
+#define MAX_FEXT   (32)
 #define PATH_SEPARATOR    "/"
+#define PATHL_SEPARATOR   ":"
 #define DIR_SEPARATOR     '/'
 #define PARENT_DIR        "../"
-#define FNAME_IGNORE_CASE 1
-#define SUGGEST_CRLF_SHIT 0
+#define FNAME_IGNORE_CASE (1)
+#define SUGGEST_CRLF_SHIT (0)
 
 #elif defined NEXTSTEP                 /* NeXTStep */
-#define MAX_FPATH 254
-#define MAX_FNAME 254
-#define MAX_FEXT  253
+#define MAX_FPATH (254)
+#define MAX_FNAME (254)
+#define MAX_FEXT  (253)
 #define PATH_SEPARATOR    "/"
+#define PATHL_SEPARATOR   ":"
 #define DIR_SEPARATOR     '/'
 #define PARENT_DIR        "../"
-#define FNAME_IGNORE_CASE 0
-#define SUGGEST_CRLF_SHIT 0
+#define FNAME_IGNORE_CASE (0)
+#define SUGGEST_CRLF_SHIT (0)
 
 #elif defined BEOS                     /* BeOS */
-#define MAX_FPATH 254
-#define MAX_FNAME  64
-#define MAX_FEXT   63
+#define MAX_FPATH (254)
+#define MAX_FNAME  (64)
+#define MAX_FEXT   (63)
 #define PATH_SEPARATOR    "/"
+#define PATHL_SEPARATOR   ":"
 #define DIR_SEPARATOR     '/'
 #define PARENT_DIR        "../"
-#define FNAME_IGNORE_CASE 1
-#define SUGGEST_CRLF_SHIT 0
+#define FNAME_IGNORE_CASE (1)
+#define SUGGEST_CRLF_SHIT (0)
 
-#elif defined UNIX                     /* Weenix */
-#define MAX_FPATH 254
-#define MAX_FNAME 254
-#define MAX_FEXT  253
+#elif defined UNIX                     /* Unixoids */
+#define MAX_FPATH (254)
+#define MAX_FNAME (254)
+#define MAX_FEXT  (253)
 #define PATH_SEPARATOR    "/"
+#define PATHL_SEPARATOR   ":"
 #define DIR_SEPARATOR     '/'
 #define PARENT_DIR        "../"
-#define FNAME_IGNORE_CASE 0
-#define SUGGEST_CRLF_SHIT 0
+#define FNAME_IGNORE_CASE (0)
+#define SUGGEST_CRLF_SHIT (0)
 
 #elif defined WINNT                    /* bullshit 1 */
-#define MAX_FPATH 254
-#define MAX_FNAME 254
-#define MAX_FEXT  253
+#define MAX_FPATH (254)
+#define MAX_FNAME (254)
+#define MAX_FEXT  (253)
 #define PATH_SEPARATOR    "\\:"
+#define PATHL_SEPARATOR   ";"
 #define DIR_SEPARATOR     '\\'
 #define PARENT_DIR        "..\\"
-#define FNAME_IGNORE_CASE 1
-#define SUGGEST_CRLF_SHIT 0
+#define FNAME_IGNORE_CASE (1)
+#define SUGGEST_CRLF_SHIT (0)
 
 #else
 #error "Operating system not supported: filename-functions"
