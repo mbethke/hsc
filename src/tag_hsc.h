@@ -20,9 +20,9 @@
 */
 extern BOOL handle_hsc_comment( INFILE *inpf, HSCTAG *tag );
 
-extern BOOL handle_hsc_tag( INFILE *inpf, HSCTAG *tag ); /* TODO: remove this */
 extern BOOL handle_hsc_defent( INFILE *inpf, HSCTAG *tag );
 extern BOOL handle_hsc_deftag( INFILE *inpf, HSCTAG *tag );
+extern BOOL handle_hsc_exec( INFILE *inpf, HSCTAG *tag );
 extern BOOL handle_hsc_insert( INFILE *inpf, HSCTAG *tag );
 extern BOOL handle_hsc_include( INFILE *inpf, HSCTAG *tag );
 extern BOOL handle_hsc_let( INFILE *inpf, HSCTAG *tag );

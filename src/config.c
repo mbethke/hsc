@@ -3,7 +3,7 @@
 **
 ** config handling for hsc; reads "hscdef.cfg"
 **
-** updated:  8-Oct-1995
+** updated: 19-Oct-1995
 ** created: 12-Jul-1995
 */
 
@@ -41,6 +41,8 @@
 #include "entity.h"
 #include "tag.h"
 #include "vars.h"
+
+#include "deftag.h"
 
 /*
 ** include tag handles
@@ -204,9 +206,10 @@ BOOL read_hsctags( void )
         HSC_DEFENT_STR  " NOCOPY SKIPLF NAME:string/r RPLC:string>",
         HSC_DEFTAG_STR  " NOCOPY SKIPLF IGNOREARGS>",
         HSC_ELSE_STR    " NOCOPY SKIPLF>",
+        HSC_EXEC_STR    " NOCOPY SKIPLF COMMAND:string/r>",
         HSC_IF_STR      " NOCOPY SKIPLF IGNOREARGS CLOSE>",
-        HSC_INSERT_STR  " NOCOPY TEXT:string PRE:bool TIME:bool FORMAT:string>",
-        HSC_INCLUDE_STR " NOCOPY SKIPLF FILE:string/r>",
+        HSC_INSERT_STR  " NOCOPY TEXT:string TIME:bool FORMAT:string>",
+        HSC_INCLUDE_STR " NOCOPY SKIPLF SOURCE:bool FILE:string/r>",
         HSC_LET_STR     " NOCOPY SKIPLF IGNOREARGS>",
         HSC_MACRO_STR   " NOCOPY SKIPLF IGNOREARGS>",
         NULL
@@ -260,6 +263,7 @@ BOOL read_hsctags( void )
         add_tag_handle( deftag, HSC_DEFENT_STR  , handle_hsc_defent  , NULL );
         add_tag_handle( deftag, HSC_DEFTAG_STR  , handle_hsc_deftag  , NULL );
         add_tag_handle( deftag, HSC_ELSE_STR    , handle_hsc_else    , NULL );
+        add_tag_handle( deftag, HSC_EXEC_STR    , handle_hsc_exec    , NULL );
         add_tag_handle( deftag, HSC_IF_STR      , handle_hsc_if      , handle_hsc_cif );
         add_tag_handle( deftag, HSC_INCLUDE_STR , handle_hsc_include , NULL );
         add_tag_handle( deftag, HSC_INSERT_STR  , handle_hsc_insert  , NULL );
@@ -282,14 +286,15 @@ BOOL config_tag_handles( void )
 {
     BOOL ok = TRUE;
 
-    add_tag_handle( deftag, "!", handle_sgml_comment, NULL );
-    add_tag_handle( deftag, "A", handle_anchor, handle_canchor );
-    add_tag_handle( deftag, "H1", handle_heading, NULL );
-    add_tag_handle( deftag, "H2", handle_heading, NULL );
-    add_tag_handle( deftag, "H3", handle_heading, NULL );
-    add_tag_handle( deftag, "H4", handle_heading, NULL );
-    add_tag_handle( deftag, "H5", handle_heading, NULL );
-    add_tag_handle( deftag, "H6", handle_heading, NULL );
+    add_tag_handle( deftag, "!"   , handle_sgml_comment, NULL );
+    add_tag_handle( deftag, "A"   , handle_anchor, handle_canchor );
+    add_tag_handle( deftag, "BASE", handle_heading, NULL );
+    add_tag_handle( deftag, "H1"  , handle_heading, NULL );
+    add_tag_handle( deftag, "H2"  , handle_heading, NULL );
+    add_tag_handle( deftag, "H3"  , handle_heading, NULL );
+    add_tag_handle( deftag, "H4"  , handle_heading, NULL );
+    add_tag_handle( deftag, "H5"  , handle_heading, NULL );
+    add_tag_handle( deftag, "H6"  , handle_heading, NULL );
 
 
     /* entities */
@@ -323,8 +328,7 @@ BOOL config_ok( void )
     */
     defent  = init_dllist( del_entity);
     deftag  = init_dllist( del_tag );
-    cltags  = init_dllist( NULL );
-    hsctags = init_dllist( del_tag );
+    cltags  = init_dllist( del_tag );
     vars    = init_dllist( del_var );
 
     /* init vararg (defined in "vars.c") */
@@ -332,7 +336,7 @@ BOOL config_ok( void )
     vararg   = init_estr( ES_STEP_VARARG );
     tmpstr   = init_estr( 0 );
 
-    if ( cltags && defent && deftag && hsctags && IF_stack
+    if ( cltags && defent && deftag && IF_stack
          && tmpstr && vararg )
     {
 

@@ -3,7 +3,7 @@
 **
 ** cleanup function for hsc
 **
-** updated:  7-Oct-1995
+** updated: 16-Oct-1995
 ** created:  1-Jul-1995
 */
 
@@ -19,6 +19,7 @@
 
 #include "global.h"
 #include "error.h"
+#include "output.h"
 
 #include "entity.h"
 #include "tag.h"
@@ -33,7 +34,7 @@
 void cleanup( void )
 {
     /* close file */
-    if ( outfile && (outfile!=stdout) ) fclose( outfile );
+    close_output();
     close_error();
 
     /* release lists */
@@ -41,9 +42,10 @@ void cleanup( void )
     del_dllist( deftag );
     del_dllist( cltags );
     del_dllist( vars );
-    del_dllist( hsctags );
 
     del_dllist( ignore );
+    del_dllist( incfile );
+    del_dllist( werror );
 
     /* release expstrings */
     del_estr( IF_stack );

@@ -75,10 +75,16 @@ BOOL set_estr( EXPSTR *es, CONSTRPTR s )
     size_t new_len  = strlen(s)+1;
     STRPTR old_data = es->es_data;
 
-    if ( set_estr_mem( es, modadj( new_len, es->es_step ) ) )
+    if ( (es->es_size==es->es_step)
+         && (es->es_size > new_len ) )
     {
 
-        strcpy( es->es_data, s );      /* copy & release old data */
+        strcpy( es->es_data, s );      /* copy new data */
+        es->es_len = new_len;          /* set new len */
+
+    } else if ( set_estr_mem( es, modadj( new_len, es->es_step ) ) ) {
+
+        strcpy( es->es_data, s );      /* copy new & release old data */
         ufreestr( old_data );
 
         es->es_len = new_len;          /* set new len */

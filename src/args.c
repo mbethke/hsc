@@ -3,7 +3,7 @@
 **
 ** user argument handling for hsc
 **
-** updated:  7-Oct-1995
+** updated: 15-Oct-1995
 ** created:  1-Jul-1995
 */
 
@@ -50,31 +50,31 @@ BOOL args_ok( int argc, char *argv[] )
     BOOL   ok; /* return value */
     STRPTR destdir_arg = NULL; /* temp vars for set_args() */
     STRPTR projdir_arg = NULL;
-    struct arglist *my_args;
+    struct arglist *hsc_args;
 
     /* create arg-table */
-    my_args = prepare_args( "HSC_ARGS",
+    hsc_args = prepare_args( "HSC_ARGS",
               /* file args */
               "From"            , &inpfilename, "input file",
               "To"              , &outfilename, "output file (default: stdout)",
               "ErrFile=ef/T/K"  , &errfilename, "error file (default: stderr)",
               "DestDir/K"       , &destdir_arg, "destination directory",
-#if 0
+              "Include=inc/K/M" , &incfile    , "file(s) to be included",
               "ProjDir/K"       , &projdir_arg, "project main directory (rel.path)",
-#endif
+
               /* numeric */
               "MaxErr/N/K"      , &max_error  , "max. number of errors (default:20)",
               "Ignore=ign/N/K/M", &ignore     , "ignore message number",
               /* switches */
-              "AbsUri=au/S"     , &absuri     , "use absolute URIs",
               "CheckUri=cu/S"   , &chkuri     , "check existence of local URIs",
-              "InsAnch=ia/S"    , &insanch    , "insert stripped URIs as text",
 #if 0
+              "InsAnch=ia/S"    , &insanch    , "insert stripped URIs as text",
               "PipeIn=pi/S"     , &pipe_in    , "read input file from stdin",
 #endif
               "RplcEnt=re/S"    , &rplc_ent   , "replace entities",
               "SmartEnt=sa/S"   , &smart_ent  , "replace special entities",
 #if 0
+              "StripCmt=sc/S"   , &stripcmt   , "strip SGML comments",
               "StripUri=su/S"   , &stripuri   , "strip external URIs",
 #endif
               "Status=st/S"     , &statusmsg  , "enable status message",
@@ -92,7 +92,7 @@ BOOL args_ok( int argc, char *argv[] )
 #endif
               NULL );
 
-    ok = ( my_args != NULL );
+    ok = ( hsc_args != NULL );
 
     /* set & test args */
     if ( ok ) {
@@ -100,14 +100,14 @@ BOOL args_ok( int argc, char *argv[] )
         EXPSTR *outfnbuf = init_estr( MAX_PATH );
                                         /* buffer to create output filename */
 
-        ok = set_args( argc, argv, my_args );
+        ok = set_args( argc, argv, hsc_args );
         ok &= ( !need_help && ( inpfilename || pipe_in ) );
 
         if ( !ok ) {
 
             /* display help, if error in args or HELP-switch set */
             fprintf_prginfo( stderr );
-            fprintf_arghelp( stderr, my_args );
+            fprintf_arghelp( stderr, hsc_args );
 
         } else if ( !outfnbuf ) {
 
@@ -136,6 +136,12 @@ BOOL args_ok( int argc, char *argv[] )
             if ( inpfilename )
                 rel_destdir = strclone( get_fpath( inpfilename ) );
 
+            /* compute project directory */
+            projdir = strclone( app_fname( projdir_arg, NULL ) );
+            destdir = strclone( app_fname( destdir_arg, NULL ) );
+            if ( !projdir || !destdir )
+                err_mem( NULL );
+
             /*
             ** if no destdir or output-filename given,
             ** outfilename stays NULL. this let open_output
@@ -145,13 +151,7 @@ BOOL args_ok( int argc, char *argv[] )
 
                 /* copy destination directory and */
                 /* add "/" if neccessary */
-                /* compute project directory */
-                projdir = strclone( app_fname( projdir_arg, NULL ) );
-                if ( !projdir )
-                    err_mem( NULL );
-
                 /* compute destination directory */
-                destdir = strclone( app_fname( destdir_arg, NULL ) );
                 if ( destdir ) {
 
                     if ( outfilename ) {
@@ -200,8 +200,7 @@ BOOL args_ok( int argc, char *argv[] )
 
                     }
 
-                } else
-                    err_mem( NULL );
+                }
 
                 if ( fnsux ) {
 
@@ -227,7 +226,7 @@ BOOL args_ok( int argc, char *argv[] )
         }
 
         /* release mem used by args */
-        free_args( my_args );
+        free_args( hsc_args );
         del_estr( outfnbuf );
 
     } else

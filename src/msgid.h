@@ -3,7 +3,7 @@
 **
 ** defines for message-ids (warnings, errors,..)
 **
-** updated:  8 -Oct-1995
+** updated: 22-Oct-1995
 ** created: 30-Jul-1995
 */
 
@@ -26,7 +26,7 @@
 
 /*
 **=========================
-** next message number: 54
+** next message number: 62
 **=========================
 **
 ** obsolete numbers:
@@ -70,6 +70,8 @@
 #define MSG_TAG_OBSOLETE       (WARN + 37)  /* obsolete tag */
 #define MSG_TAG_JERK           (WARN + 38)  /* jerk tag */
 #define MSG_ILLG_WHTSPC        (ERROR+ 47)  /* illegal whitespace */
+#define MSG_MBI                (ERROR+ 60)  /* must be inside */
+#define MSG_NAW                (ERROR+ 61)  /* not allowed with */
 
 /*
 ** messages within entities
@@ -87,7 +89,10 @@
 #define MSG_ARG_NO_QUOTE       (WARN + 22)  /* argument without quote */
 #define MSG_EMPTY_SYMB_REF     (ERROR+ 23)  /* empty symbol reference */
 #define MSG_UNKN_SYMB_REF      (ERROR+ 24)  /* unknown symbol reference */
-#define MSG_ILLEGAL_SYMB_TYPE  (ERROR+ 25)  /* illegal symbol type */
+
+#define MSG_UNEX_ATTR_TYPE     (ERROR+ 25)  /* illegal symbol type */
+#define MSG_ILLEGAL_SYMB_TYPE  (ERROR+ 25)  /* TODO: remove this */
+
 #define MSG_SYMB_2ND_DEFAULT   (ERROR+ 26)  /* default value already set */
 #define MSG_SYMB_BOOL_DEFAULT  (ERROR+ 27)  /* default vaule for bool */
 #define MSG_ENUM_UNKN          (ERROR+ 35)  /* unknown enum value */
@@ -107,11 +112,17 @@
 #define MSG_LF_IN_COMMENT      (WARN + 48)  /* LF within comment */
 #define MSG_GT_IN_COMMENT      (WARN + 49)  /* GT within comment */
 #define MSG_CMTEND_QUOTE       (WARN + 50)  /* SGML-comment ends in quotes */
+#define MSG_ZERO_COMMENT       (WARN + 55)  /* SGML zero comment */
+#define MSG_ONEW_COMMENT       (WARN + 56)  /* SGML one word comment */
 
 /*
 ** messages from hsc-tag handles
 */
 #define MSG_UNMA_ELSE          (ERROR+ 53)  /* unmatched $ELSE */
+#define MSG_SYSTEM_RETURN      (WARN + 54)  /* external process result <> 0 */
+#define MSG_DEFTAG_NO_OPEN     (FATAL+ 57)  /* no opening tag for deftag cl.*/
+#define MSG_REDEFINE_TAG       (FATAL+ 58)  /* tried to redefine tag */
+#define MSG_REDEFINE_MACRO     (WARN + 59)  /* redefined & replaced macro */
 
 /*
 ** misc. messages

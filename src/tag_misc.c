@@ -3,7 +3,7 @@
 **
 ** misc tag handles
 **
-** updated:  5-Oct-1995
+** updated: 16-Oct-1995
 ** created: 30-Jul-1995
 */
 
@@ -43,6 +43,20 @@ UBYTE prev_heading_num = 0; /* stores previous heading */
 ** global funs
 **
 */
+
+/*
+** handle_base: tag handle for <BASE>
+**
+** enable switch docbase_set; this affects "uri.c"
+** and from now on, all relative uris will be absolute
+*/
+BOOL handle_base( INFILE *inpf, HSCTAG *tag )
+{
+    docbase_set = TRUE;
+
+    return (TRUE);
+
+}
 
 
 /*
@@ -102,27 +116,54 @@ BOOL handle_sgml_comment( INFILE *inpf, HSCTAG *tag )
 
     if ( nw ) {
 
-            /* check for whitespace after "!" */
-            if ( strlen( infgetcws( inpf ) ) ) {
+        BOOL comment = FALSE;
+        BOOL oneword = FALSE;
+        BOOL end_min  = FALSE;
 
-                message( MSG_ILLG_WHTSPC, inpf );
-                errstr( "illegal white space" );
-                errlf();
+        if ( !strncmp( nw, "--", 2 ) ) {
 
+            size_t slen = strlen( nw ); /* length of current word */
+
+            comment = TRUE;
+
+            /* check for "--" */
+            if ( slen >= 4 ) {
+
+                /* word starts with "--" and ends with "--" */
+                end_min = ( (nw[slen-1]=='-') && (nw[slen-1]=='-') );
+                oneword = TRUE;
             }
 
-        if ( strncmp( nw, "--", 2 ) )
+        }
+
+        /* check for whitespace after "!" */
+        if ( strlen( infgetcws( inpf ) ) ) {
+
+            message( MSG_ILLG_WHTSPC, inpf );
+            errstr( "illegal white space" );
+            errlf();
+
+        }
+
+        if ( !strcmp( nw, ">" ) ) {/* zero-comment */
+
+            message( MSG_ONEW_COMMENT, inpf );
+            errstr( "zero SGML comment" );
+            errlf();
+
+        } else if ( !comment )
             skip_until_eot( inpf );     /* unknown "!"-command: skip */
         else {
 
             /* handle comment */
-            BOOL end_min  = FALSE;
             BOOL end_gt   = FALSE;
             BOOL in_quote = FALSE;
 
             while ( !fatal_error && !end_gt ) {
 
+                /* read next word */
                 nw = infgetw( inpf );
+
                 if ( nw ) {
 
                     size_t slen = strlen( nw );
@@ -148,26 +189,33 @@ BOOL handle_sgml_comment( INFILE *inpf, HSCTAG *tag )
 
                         }
 
+                    else {
 
-                    /*
-                    ** check for LF
-                    */
-                    else if ( !strcmp( nw, "\n" ) ) {
+                        if ( oneword ) {
+                            oneword = FALSE;
+                            end_min = FALSE;
+                        }
 
-                        in_quote = TRUE;
-                        message( MSG_LF_IN_COMMENT, inpf );
-                        errstr( "line feed inside SGML-comment" );
-                        errlf();
+                        /*
+                        ** check for LF
+                        */
+                        if ( !strcmp( nw, "\n" ) ) {
 
-                    /*
-                    ** check for quote
-                    */
-                    } else if ( !strcmp( nw, "\"" ) || !strcmp( nw, "'" ) )
-                        in_quote = !in_quote;
+                            in_quote = FALSE;
+                            message( MSG_LF_IN_COMMENT, inpf );
+                            errstr( "line feed inside SGML-comment" );
+                            errlf();
 
+                        /*
+                        ** check for quote
+                        */
+                        } else if ( !strcmp( nw, "\"" ) || !strcmp( nw, "'" ) )
+                            in_quote = !in_quote;
+
+                    }
 
                 } else
-                    err_eof( inpf );
+                    err_eof( inpf, "reading SGML-comment" );
 
                 if ( end_gt && in_quote ) {
 
@@ -176,13 +224,18 @@ BOOL handle_sgml_comment( INFILE *inpf, HSCTAG *tag )
                     errlf();
 
                 }
+
+                if ( end_gt && oneword ) {
+
+                    message( MSG_ONEW_COMMENT, inpf );
+                    errstr( "one-word SGML comment" );
+                    errlf();
+
+                }
             }
-
-
-
         }
     } else
-        err_eof( inpf );
+        err_eof( inpf, "reading SGML-comment" );
 
     return (TRUE);
 }

@@ -3,7 +3,7 @@
 **
 ** output functions for hsc
 **
-** updated:  8-Oct-1995
+** updated: 16-Oct-1995
 ** created:  1-Jul-1995
 */
 
@@ -98,5 +98,16 @@ int outstr( CONSTRPTR str )
         ch_written = fputs( str, outfile );
 
     return( ch_written );
+}
+
+/*
+** close_output
+**
+** close output file, if it not stdout
+*/
+VOID close_output( VOID )
+{
+    if ( outfile && (outfile!=stdout) )
+        fclose( outfile );
 }
 

@@ -50,7 +50,7 @@ BOOL was_ext_uri = FALSE;
 */
 BOOL handle_anchor( INFILE *inpf, HSCTAG *tag )
 {
-    DLLIST *vars   = tag->op_args;
+    DLLIST *vars   = tag->attr;
     HSCVAR *vhref  = find_varname( vars, "HREF" );
     HSCVAR *vname  = find_varname( vars, "NAME" );
     STRPTR  href   = NULL;

@@ -4,7 +4,7 @@
 **
 ** functions for uri parsing of tag arguments
 **
-** updated: 26-Sep-1995
+** updated: 16-Oct-1995
 ** created: 16-Jul-1995
 */
 
@@ -33,12 +33,17 @@
 
 #include "vars.h"
 
+#define NOEXTERN_HSC_URI_H
+#include "uri.h"
+
 #define PARENT_URI "../" /* string for parent dir within URIs */
 
 /* TODO: do all this with EXPSTR */
-char argbuf[ MAX_URILEN ];             /* buffer for URI names */
-char relnam[ MAX_PATHLEN ];            /* result for get_relfname() */
-char reluri[ MAX_PATHLEN ];            /* result for conv_path2uri() */
+char argbuf[ MAX_URILEN ];   /* buffer for URI names */
+char relnam[ MAX_PATHLEN ];  /* result for get_relfname() */
+char reluri[ MAX_PATHLEN ];  /* result for conv_path2uri() */
+char dest_uri[MAX_URILEN];   /* result of parse_uri(); destination uri name */
+                             /*   that is written to the output file */
 
 
 /*
@@ -171,6 +176,35 @@ STRPTR conv_uri2path( STRPTR uri )
 }
 
 
+/*
+** uri_kind
+**
+** evaluate kind of uri
+*/
+URIKIND uri_kind( STRPTR uri )
+{
+    URIKIND kind = URI_abs;
+
+    if ( upstrncmp( uri, ABSURI_ID, strlen( ABSURI_ID ) ) ) {
+
+        STRPTR colon_pos = strchr( uri, ':' );
+        STRPTR slash_pos = strchr( uri, '/' );
+
+        if ( colon_pos )
+            if ( slash_pos )
+                if ( colon_pos < slash_pos )
+                    kind = URI_ext;
+                else
+                    kind = URI_rel;
+            else
+                kind = URI_ext;
+        else
+            kind = URI_rel;
+
+    }
+
+    return( kind );
+}
 
 
 /*
@@ -185,20 +219,17 @@ STRPTR conv_uri2path( STRPTR uri )
 STRPTR parse_uri( STRPTR uri, INFILE *inpf )
 {
 
-    STRPTR rsrc = NULL;
     STRPTR host = NULL;
     STRPTR port = NULL;
     STRPTR path = NULL;
     STRPTR name = NULL;
     char dest_fname[MAX_PATHLEN]; /* destination file name that's existence */
                                   /* is checked if chkuri is enabled */
-    char dest_uri[MAX_URILEN];    /* destination uri name that is written to */
-                                  /* the output file */
     if (uri) {
 
         /* check for valid uri */
-        rsrc = strchr( uri, ':' );
-        if ( rsrc ) {
+        URIKIND kind = uri_kind( uri );
+        if ( kind == URI_ext ) {
 
             /*
             ** check global uri
@@ -218,6 +249,14 @@ STRPTR parse_uri( STRPTR uri, INFILE *inpf )
             ** check local uri
             */
 
+            /* evaluate kind of URI */
+            if ( kind == URI_abs )
+                uri++;
+
+            if ( docbase_set && (kind == URI_rel) )
+                kind = URI_abs;
+
+
             /* extract path and #name */
             if ( uri[0] == '#' ) {
                 path = "";
@@ -227,11 +266,13 @@ STRPTR parse_uri( STRPTR uri, INFILE *inpf )
                 name = strtok( NULL, "" );
             }
 
+            strcpy( dest_fname, projdir );
+
             if ( path ) {
 
                 FILE *exist;
 
-                if ( absuri ) {
+                if ( kind == URI_abs ) {
 
                     /*
                     **
@@ -243,7 +284,7 @@ STRPTR parse_uri( STRPTR uri, INFILE *inpf )
                         fprintf( stderr, "** exists %s [abs]\n", path );
 
                     /* check if local uri exists */
-                    strcpy( dest_fname, destdir );
+                    strcat( dest_fname, destdir );
                     strcat( dest_fname, path );
 
                     /* debug */
@@ -267,7 +308,7 @@ STRPTR parse_uri( STRPTR uri, INFILE *inpf )
                     if (debug)
                         fprintf( stderr, "**   -> real uri  %s\n", uri );
 
-                } else { /* if (absuri) */
+                } else { /* if (kind==URI_abs) */
 
                     /*
                     ** parse relative uri
@@ -279,7 +320,7 @@ STRPTR parse_uri( STRPTR uri, INFILE *inpf )
                         fprintf( stderr, "** exists %s [rel]\n", path );
 
                     /* check if local uri exists */
-                    strcpy( dest_fname, destdir );
+                    strcat( dest_fname, destdir );
                     strcat( dest_fname, rel_destdir );
                     strcat( dest_fname, conv_uri2path(path) );
 

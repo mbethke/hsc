@@ -2,6 +2,38 @@
                    hsc version history
                    ===================
 
+Version 0.9.2, 23-Oct-1995
+ - improved docs
+ - changed concept for absolute URIs: switch ABSURI
+   does no more exist, abs. URIs now start with ":"
+   and can be mixed with relative URIs (suggested
+   by Arno Hollosi)
+ - <$IF>..<$ELSE>..</$IF> for conditional conversion
+ - <$EXEC COMMAND=".."> to start shell commands
+ - added SOURCE option for <$INCLUDE>
+ - closing macro now not only inherits attributes
+   passed to the opening macro, but also its values
+   (kick me for that!)
+ - check for redefinance of tag/macro
+ - writing to output starts after useful data
+   (skip empty lines, white-spaces, comments and
+   hsc-tags in config/include files)
+ - removed bug in handler for SGML comments, if "\n"
+   was found inside comment
+ - Zero-SGML comments now work ( "<!>" only)
+ - support JERK-attributes
+ - more information displayed if unexpected end of
+   file reached
+ - removed enforcer-hit when writing to stdout
+ - several minor bugs fixed
+ - speed up for dynamic string handling
+ - not compiled with gcc 2.6.3; compiled with a friend's
+   sas/c because I got silly enforcer hits when compiling
+   with gcc; even more strange, they only occure with
+   Amiga-version of gcc; compiling hsc under Linux or
+   FreeBSD (x86) causes no problems; I really should get
+   gcc 2.7.0 for my Amiga..
+
 Version 0.9.1,  9-Oct-1995
  - featuring "hsc.prefs"! (Gott, lass Hirn vom Himmel fallen)
  - improved docs (a bit)

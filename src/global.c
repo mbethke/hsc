@@ -3,7 +3,7 @@
 **
 ** global vars & funs for hsc
 **
-** updated:  7-Oct-1995
+** updated: 15-Oct-1995
 ** created:  8-Jul-1995
 */
 
@@ -26,9 +26,10 @@ STRPTR destdir     = NULL;             /* destination dir */
 STRPTR projdir     = NULL;             /* project main directory */
 
 ULONG   max_error = 20;                /* abort after too many errors */
-DLLIST *ignore = NULL;                 /* list of warning to ignore */
-
-BOOL absuri    = FALSE;                /* work with absolute URIs */
+DLLIST *ignore  = NULL;                /* list of warning to ignore */
+DLLIST *werror  = NULL;                /* warnings that should be handled as errors */
+DLLIST *incfile = NULL;                /* list of files that should be
+                                       /*   included before main file */
 BOOL chkuri    = FALSE;                /* check existence of local URIs */
 BOOL debug     = FALSE;                /* flag: debugging output */
 BOOL insanch   = FALSE;                /* flag: insert text of anchor */
@@ -36,6 +37,7 @@ BOOL need_help = FALSE;                /* flag: display help text */
 BOOL pipe_in   = FALSE;                /* flag: use stdin as input file */
 BOOL rplc_ent  = FALSE;                /* replace entities */
 BOOL smart_ent = FALSE;                /* replace special entities (&<>") */
+BOOL stripcmt  = FALSE;                /* flag: strip SGML comments */
 BOOL stripuri  = FALSE;                /* flag: strip external URIs */
 BOOL statusmsg = FALSE;                /* flag: status message (line num) */
 BOOL verbose   = FALSE;                /* flag: verbose output */
@@ -54,6 +56,7 @@ EXPSTR *tmpstr   = NULL;               /* temp. string used by several fncs */
                                        /* parse.c   - parse_text() */
 EXPSTR *IF_stack = NULL;               /* IF-stack pointer */
 BOOL    suppress_output = TRUE;        /* flag checked by outch() */
+BOOL    docbase_set = FALSE;           /* TRUE, if <BASE ..> occured */
 
 /*
 **

@@ -79,8 +79,10 @@ extern STRPTR projdir;
 
 extern ULONG max_error;
 extern DLLIST *ignore;
+extern DLLIST *ignore;
+extern DLLIST *werror;
+extern DLLIST *incfile;
 
-extern BOOL absuri;
 extern BOOL chkuri;
 extern BOOL debug;
 extern BOOL insanch;
@@ -88,6 +90,7 @@ extern BOOL need_help;
 extern BOOL pipe_in;
 extern BOOL rplc_ent;
 extern BOOL smart_ent;
+extern BOOL stripcmt;
 extern BOOL stripuri;
 extern BOOL statusmsg;
 extern BOOL verbose;
@@ -102,6 +105,7 @@ extern STRPTR rel_destdir;
 extern EXPSTR *tmpstr;
 extern EXPSTR *IF_stack;
 extern BOOL    suppress_output;
+extern BOOL    docbase_set;
 
 /*
 ** global funcs

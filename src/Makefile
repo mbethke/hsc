@@ -13,11 +13,11 @@
 #**
 sys  = DEF=AMIGA
 dest = t:
-norm = $(sys) DEF=UMEM_TRACKING DBG=SF OBJNAME=$(dest) DEF=DEBUG DEF=DEBUG_CONFIG
+norm = $(sys) DEF=UMEM_TRACKING DBG=SF OBJNAME=$(dest) DEF=DEBUG
 optim= $(sys) NODBG STRIPDEBUG SMALLCODE OPT OPTSIZE IGN=304
 link = sc LINK
 comp = sc
-ign  = IGNORE=93
+ign  =
 
 
 #**
@@ -46,8 +46,8 @@ ign  = IGNORE=93
 # compiler mode
 # (norm/optim)
 #
-#mode = $(optim)
-mode = $(norm)
+mode = $(optim)
+#mode = $(norm)
 
 #
 # copy symbol
@@ -75,14 +75,14 @@ all : hsc
 #
 #
 
-hsc : $(dest)hsc.o $(dest)args.o $(dest)cleanup.o $(dest)config.o $(dest)entity.o $(dest)error.o \
-	    $(dest)global.o $(dest)output.o $(dest)parse.o $(dest)skip.o $(dest)status.o         \
-	    $(dest)tagargs.o $(dest)tag.o $(dest)vars.o $(dest)uri.o                             \
-	    $(tag_handles) $(ugly_mod) 
-	$(link) $(sys) $(dest)hsc.o $(dest)args.o $(dest)cleanup.o $(dest)config.o $(dest)entity.o \
-	    $(dest)error.o $(dest)global.o $(dest)output.o $(dest)parse.o $(dest)skip.o \
-	    $(dest)status.o $(dest)tagargs.o $(dest)tag.o $(dest)vars.o $(dest)uri.o  \
-	    $(tag_handles) $(ugly_mod)	
+hsc : $(dest)hsc.o $(dest)args.o $(dest)cleanup.o $(dest)config.o $(dest)entity.o $(dest)error.o\
+	    $(dest)deftag.o $(dest)eval.o $(dest)global.o $(dest)output.o $(dest)parse.o\
+	    $(dest)skip.o $(dest)status.o $(dest)tagargs.o $(dest)tag.o $(dest)vars.o $(dest)uri.o\
+	    $(tag_handles) $(ugly_mod)
+	$(link) $(sys) $(dest)hsc.o $(dest)args.o $(dest)cleanup.o $(dest)config.o $(dest)deftag.o\
+	 $(dest)entity.o $(dest)error.o $(dest)eval.o $(dest)global.o $(dest)output.o $(dest)parse.o\
+	 $(dest)skip.o $(dest)status.o $(dest)tagargs.o $(dest)tag.o $(dest)vars.o $(dest)uri.o\
+	 $(tag_handles) $(ugly_mod)
 	$(copy1)
 	$(copy2)
 	$(copy3)
@@ -102,11 +102,17 @@ $(dest)cleanup.o : cleanup.c entity.h global.h tag.h vars.h
 $(dest)config.o : config.c entity.h error.h global.h msgid.h tag.h tag_macr.h tag_hsc.h vars.h
 	$(comp) $(mode) config.c
 
+$(dest)deftag.o : deftag.c error.h global.h vars.h
+	$(comp) $(mode) deftag.c
+
 $(dest)entity.o : entity.c global.h error.h
 	$(comp) $(mode) entity.c
 
 $(dest)error.o : error.c global.h
 	$(comp) $(mode) error.c
+
+$(dest)eval.o : eval.c global.h vars.h
+	$(comp) $(mode) eval.c
 
 $(dest)global.o : global.c
 	$(comp) $(mode) global.c

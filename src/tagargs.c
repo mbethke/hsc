@@ -4,7 +4,7 @@
 **
 ** functions for parsing of tag arguments
 **
-** updated: 16-Sep-1995
+** updated: 16-Oct-1995
 ** created: 29-Jul-1995
 */
 
@@ -36,44 +36,46 @@
 
 /*
 **-------------------------------------
-** parse simple chars
+** parse simple chars/words
 **-------------------------------------
 */
 
 /*
-** parse_ch
+** parse_wd
 **
-** check if a expected char really occured and
+** check if a expected word really occured and
 ** display error message if neccessary
 **
 ** params: inpf.....input file to read char from
-**         exptch...expected char
+**         expstr...expected word
 ** result: TRUE if successful, FALSE if wrong char found
 */
-BOOL parse_ch( INFILE *inpf, int exptch )
+BOOL parse_wd( INFILE *inpf, STRPTR expstr )
 {
-    /*
-    ** TODO: read word, check last char, test whtspc
-    */
-    int ch = EOF;
+    BOOL   value = TRUE;
 
-    if ( !fatal_error ) {
+    if ( expstr ) {
 
-        ch = infgetc( inpf );          /* read next char */
+        STRPTR nw    = infgetw( inpf );
+        if ( !nw || upstrcmp( nw, expstr ) ) {
 
-        if ( ch != exptch ) {              /* equal to expected char? */
+            message( MSG_UNEXPT_CH, inpf );
+            errstr( "expected " );
+            errqstr( expstr );
 
-            message( MSG_UNEXPT_CH, inpf );        /* N->error message */
-            errqstr( ch2str(exptch) );
-            errstr( " expected, found " );
-            errqstr( ch2str(ch) );
+            if ( nw ) {
+
+                errstr( ", found " );
+                errqstr( nw );
+
+            }
+
             errlf();
-
+            value = FALSE;
         }
-
     }
 
-    return ( (BOOL)( (ch == exptch) && !fatal_error ) );
+    return( value );
 }
 
 
@@ -87,7 +89,7 @@ BOOL parse_ch( INFILE *inpf, int exptch )
 */
 BOOL parse_eq( INFILE *inpf )
 {
-    return ( parse_ch(inpf,'=') );
+    return ( parse_wd(inpf,"=") );
 }
 
 /*
@@ -100,7 +102,7 @@ BOOL parse_eq( INFILE *inpf )
 */
 BOOL parse_gt( INFILE *inpf )
 {
-    return ( parse_ch(inpf,'>') );
+    return ( parse_wd(inpf,">") );
 }
 
 

@@ -3,7 +3,7 @@
 **
 ** hsc-variable funcs for hsc
 **
-** updated: 27-Sep-1995
+** updated: 22-Oct-1995
 ** created:  2-Sep-1995
 **
 */
@@ -472,7 +472,7 @@ STRPTR parse_vararg( HSCVAR *var, INFILE *inpf )
         if ( ch != EOF )
             var->quote = VQ_NO_QUOTE;
         else
-            err_eof( inpf );
+            err_eof( inpf, "reading attribute" );
     else
         var->quote = ch;
 
@@ -538,7 +538,7 @@ STRPTR parse_vararg( HSCVAR *var, INFILE *inpf )
             parse_gt( inpf );
 
         } else
-            err_eof( inpf );
+            err_eof( inpf, "reading attribute" );
 
     } else if ( var->quote != EOF ) {
 
@@ -569,7 +569,7 @@ STRPTR parse_vararg( HSCVAR *var, INFILE *inpf )
             end = TRUE;
 
             if ( ch == EOF )
-                err_eof( inpf );
+                err_eof( inpf, "reading attribute" );
             else if ( (ch==var->quote)
                       || ( ch==CH_LF )
                       || ( (var->quote==VQ_NO_QUOTE)
@@ -615,7 +615,7 @@ STRPTR parse_vararg( HSCVAR *var, INFILE *inpf )
                 str_vararg = parse_uri( str_vararg, inpf );
             else {
 
-                DDA( fprintf( stderr, "**   didn't parse uri \"%s\"\n",
+                DDA( fprintf( stderr, "**    didn't parse uri \"%s\"\n",
                               str_vararg ) );
 
             }
@@ -649,7 +649,7 @@ BOOL read_enum_str( HSCVAR *var, INFILE *inpf )
     BOOL ok;
     int  ch;
 
-    ok = parse_ch( inpf, '(' );        /* check for ")" */
+    ok = parse_wd( inpf, "(" );        /* check for "(" */
     ok &= clr_estr( tmpstr );          /* reset string */
 
     ch = infgetc( inpf );
@@ -665,7 +665,7 @@ BOOL read_enum_str( HSCVAR *var, INFILE *inpf )
     if ( !ok )
         err_mem( inpf );
     else if ( ch == EOF )
-        err_eof( inpf );
+        err_eof( inpf, "reading enumerator" );
     else if ( ch ==CH_LF )
         err_eol( inpf );
 
@@ -740,7 +740,7 @@ HSCVAR *define_var( STRPTR varname, DLLIST *varlist, INFILE *inpf, UBYTE flag )
     if ( str_vartype )
         val_vartype = str2vartype( str_vartype );
     else
-        err_eof( inpf );
+        err_eof( inpf, "defining attribute" );
 
     if ( val_vartype == VT_NONE ) {
 
@@ -782,7 +782,7 @@ HSCVAR *define_var( STRPTR varname, DLLIST *varlist, INFILE *inpf, UBYTE flag )
             /* get next word */
             nw = infgetw( inpf );
             if ( !nw )
-                err_eof( inpf );
+                err_eof( inpf, "defining attribute" );
 
             /*
             ** loop: handle flags and deftext value
@@ -857,6 +857,8 @@ HSCVAR *define_var( STRPTR varname, DLLIST *varlist, INFILE *inpf, UBYTE flag )
                         BOOL ok = FALSE;
 
                         ok |= check_attr_option( nw, var,
+                                  VF_JERK_STR, VF_JERK_SHT, VF_JERK );
+                        ok |= check_attr_option( nw, var,
                                   VF_NOQUOTE_STR, VF_NOQUOTE_SHT, VF_NOQUOTE );
                         ok |= check_attr_option( nw, var,
                                   VF_ONLYONCE_STR, VF_ONLYONCE_SHT, VF_ONLYONCE );
@@ -872,7 +874,7 @@ HSCVAR *define_var( STRPTR varname, DLLIST *varlist, INFILE *inpf, UBYTE flag )
                         }
 
                     } else
-                        err_eof( inpf );
+                        err_eof( inpf, "defining attribute" );
 
                 } else {
 
@@ -914,9 +916,9 @@ HSCVAR *define_var( STRPTR varname, DLLIST *varlist, INFILE *inpf, UBYTE flag )
 **
 ** NOTE: the VF_MACRO-flag of the copy is enabled!
 */
-HSCVAR *copy_local_var( HSCVAR *locvar, ULONG mci )
+HSCVAR *copy_local_var( DLLIST *destlist, HSCVAR *locvar, ULONG mci )
 {
-    HSCVAR *var = app_var( vars, locvar->name );
+    HSCVAR *var = app_var( destlist, locvar->name );
 
     if ( var ) {
 
@@ -939,7 +941,7 @@ HSCVAR *copy_local_var( HSCVAR *locvar, ULONG mci )
 ** attribute list.
 **
 */
-BOOL copy_local_varlist( DLLIST *varlist, ULONG mci )
+BOOL copy_local_varlist( DLLIST *destlist, DLLIST *varlist, ULONG mci )
 {
     BOOL ok = TRUE;
 
@@ -952,7 +954,7 @@ BOOL copy_local_varlist( DLLIST *varlist, ULONG mci )
 
         while ( nd && ok ) {
 
-            var =  copy_local_var( (HSCVAR*)(nd->data), mci );
+            var =  copy_local_var( destlist, (HSCVAR*)(nd->data), mci );
             ok  &= (BOOL)(var!=NULL);
             nd  =  nd->next;
 
@@ -965,11 +967,64 @@ BOOL copy_local_varlist( DLLIST *varlist, ULONG mci )
 }
 
 /*
+** set_local_var
+**
+** copies a local attribute to the global attribute list
+**
+** NOTE: the VF_MACRO-flag of the set is enabled!
+*/
+HSCVAR *set_local_var( DLLIST *destlist, HSCVAR *locvar, ULONG mci )
+{
+    HSCVAR *var = find_varname( destlist, locvar->name );
+
+    if ( var ) {
+
+        var->macro_id = mci;
+        var->vartype = locvar->vartype;
+        set_vartext( var, locvar->text );
+
+    } else
+        panic( "set_local_var to UNKNOWN ATTR" );
+
+    return( var );
+}
+
+/*
+** set_local_vars
+**
+** add all local attributes of a macro to the global
+** attribute list.
+**
+*/
+BOOL set_local_varlist( DLLIST *destlist, DLLIST *varlist, ULONG mci )
+{
+    BOOL ok = TRUE;
+
+    if ( mci == MCI_ERROR )
+        panic( "mci=MCI_ERROR" );
+    else {
+
+        DLNODE *nd = varlist->first;
+        HSCVAR *var;
+
+        while ( nd && ok ) {
+
+            var =  set_local_var( destlist, (HSCVAR*)(nd->data), mci );
+            ok  &= (BOOL)(var!=NULL);
+            nd  =  nd->next;
+
+        }
+    }
+
+    return( ok );
+}
+
+/*
 ** remove_local_varlist
 */
-void remove_local_varlist( ULONG mci )
+void remove_local_varlist( DLLIST *varlist, ULONG mci )
 {
-    DLNODE *nd = vars->first;
+    DLNODE *nd = varlist->first;
 
     while ( nd ) {
 
@@ -978,11 +1033,11 @@ void remove_local_varlist( ULONG mci )
 
         if ( var->macro_id == mci ) {
 
-            DDA( fprintf( stderr, "**   del %s\n", var->name ) );
-            del_dlnode( vars, nd );
+            DDA( fprintf( stderr, "**    del %s\n", var->name ) );
+            del_dlnode( varlist, nd );
 
         } else
-            DDA( fprintf( stderr, "**   skip %s\n", var->name ) );
+            DDA( fprintf( stderr, "**    skip %s\n", var->name ) );
 
         nd = nd_nxt;
 

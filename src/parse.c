@@ -3,7 +3,7 @@
 **
 ** parse file: handle for entities & tags
 **
-** updated:  8-Oct-1995
+** updated: 22-Oct-1995
 ** created:  1-Jul-1995
 **
 */
@@ -39,6 +39,8 @@
 #include "entity.h"
 #include "tag.h"
 #include "vars.h"
+
+#include "deftag.h"
 
 #define NOEXTERN_PARSE_H
 #include "parse.h"
@@ -101,7 +103,7 @@ BOOL hsc_whtspc( int ch )
 ** was replaced by its entity
 */
 
-void message_rplc( STRPTR what, STRPTR by, INFILE *inpf )
+VOID message_rplc( STRPTR what, STRPTR by, INFILE *inpf )
 {
     message( MSG_RPLC_ENT, inpf );
     errstr( "replaced " );
@@ -109,6 +111,69 @@ void message_rplc( STRPTR what, STRPTR by, INFILE *inpf )
     errstr( " by " );
     errqstr( by );
     errlf();
+}
+
+BOOL check_mbinaw( HSCTAG *tag, INFILE *inpf )
+{
+    BOOL ok = TRUE;
+
+    /* check for tags that must be called before */
+    if ( tag->mbi ) {
+
+        DLNODE *nd    = cltags->first;
+        LONG    found = 0;
+
+        while ( nd && !found ) {
+
+            HSCTAG *ctag = (HSCTAG*) nd->data;
+
+            found = strenum( ctag->name, tag->mbi, '|', STEN_NOCASE );
+            nd = nd->next;
+
+        }
+
+        if ( !found ) {
+
+            message( MSG_MBI, inpf );
+            errtag( tag->name );
+            errstr( " must be inside " );
+            errtag( tag->mbi );
+            errlf();
+
+            ok = FALSE;
+
+        }
+
+    }
+
+    /* check for tags that are not to be called before */
+    if ( tag->naw ) {
+
+        DLNODE *nd    = cltags->first;
+        LONG    found = 0;
+
+        while ( nd ) {
+
+            HSCTAG *ctag = (HSCTAG*) nd->data;
+
+            found = strenum( ctag->name, tag->mbi, '|', STEN_NOCASE );
+            if ( found ) {
+
+                message( MSG_NAW, inpf );
+                errtag( tag->name );
+                errstr( " not allowed within " );
+                errtag( ctag->name );
+                errlf();
+
+                ok = FALSE;
+
+            }
+            nd = nd->next;
+
+        }
+    }
+
+    return( ok );
 }
 
 /*
@@ -165,7 +230,11 @@ BOOL parse_tag( INFILE *inpf)
 
 
             /* check for hsctag; if not, enable output */
-            if ( upstrncmp( nxtwd, HSC_TAGID, strlen(HSC_TAGID) ) )
+            if ( suppress_output
+                 && upstrncmp( nxtwd, HSC_TAGID, strlen(HSC_TAGID) )
+                 && strcmp( nxtwd, HSC_COMMENT_STR )
+                 && strcmp( nxtwd, HSC_ONLYCOPY_STR )
+               )
                 suppress_output = FALSE;         /* enable output */
             if ( !suppress_output )
                 D( fprintf( stderr, "** tag <" ) );
@@ -246,10 +315,25 @@ BOOL parse_tag( INFILE *inpf)
                 if ( tag->option & (HT_ONLYONCE | HT_REQUIRED) )
                     tag->occured = TRUE;
 
+                /* check for must be inside/not allowed within */
+                if ( !check_mbinaw( tag, inpf ) )
+                    hnd = NULL;
+
+                /* set attributes or check for ">" */
+                if ( tag && !(tag->option & HT_IGNOREARGS) ) {
+
+                    tci = set_tag_args( tag, inpf, open_tag );
+                    if ( tci == MCI_ERROR )
+                        hnd = NULL;
+
+                } else if ( !hnd )
+                    if ( !parse_wd( inpf, ">" ) )
+                        skip_until_eot( inpf );
+
                 /* closing tag required? */
                 if ( tag->option & HT_CLOSE ) {
 
-                    if ( !app_dlnode( cltags, (APTR) tag->name ) )
+                    if ( !app_ctag( cltags, tag ) )
                         err_mem( inpf );
                 }
             }
@@ -289,61 +373,35 @@ BOOL parse_tag( INFILE *inpf)
                 /* set closing handle */
                 hnd = tag->c_handle;
 
-                /* remove closing tag from stack */
-                remove_ctag( tag, inpf );
-#if 0
-                /* search for tag on stack of occured tags */
-                nd = find_dlnode( cltags->first, (APTR) nxtwd, cmp_strctg );
-                if ( nd == NULL ) {
+                /* check for no args */
+                if ( !parse_wd( inpf, ">" ) ) {
 
-                    /* closing tag not found on stack */
-                    /* ->unmatched closing tag without previous opening tag */
-                    message( MSG_UNMA_CTAG, inpf );
-                    errstr( "Unmatched closing tag " );
-                    errctag( nxtwd );
+                    message( MSG_CL_MACR_ARG, inpf );
+                    errstr( "No attributes allowd for closing tags" );
                     errlf();
 
-                } else {
-
-                    /* closing tag found on stack */
-                    STRPTR foundnm = (STRPTR) nd->data;
-                    STRPTR lastnm  = (STRPTR) cltags->last->data;
-
-                    /* check if name of closing tag is -not- equal
-                    /* to the name of the last tag last on stack */
-                    /* ->illegal tag nesting */
-                    if ( upstrcmp(lastnm, foundnm)
-                         && !(tag->option | HT_MACRO) )
-                    {
-
-                        message( MSG_CTAG_NESTING, inpf );
-                        errstr( "Illegal closing tag nesting (expected " );
-                        errctag( lastnm );
-                        errstr( ", found " );
-                        errctag( nxtwd );
-                        errch( ')' );
-                        errlf();
-
-                    }
+                    skip_until_eot( inpf );
 
                 }
 
-                /* remove node for closing tag from cltags-list */
-                del_dlnode( cltags, nd );
-#endif
+                /* set values of attributes stored
+                ** in closing tag,
+                ** remove closing tag from stack
+                */
+                remove_ctag( tag, inpf );
             }
         }
 
         /*
         ** processed for opening AND closing tag
         */
-
+#if 0
         /* set attributes */
         if ( tag && !(tag->option & HT_IGNOREARGS) )
             tci = set_tag_args( tag, inpf, open_tag );
         else if ( !hnd )
             skip_until_eot( inpf );
-
+#endif
         write_tag = ( !(tag) || !(tag->option & HT_NOCOPY) );
 
         /* call handle if available */
@@ -409,7 +467,6 @@ BOOL parse_amp( INFILE *inpf )
             ** get entity-id, test for unknwon entity
             */
             char *nxtwd;
-            char nxtch;
             DLNODE *nd;
 
             /* get entity id */
@@ -451,15 +508,8 @@ BOOL parse_amp( INFILE *inpf )
             }
 
             /* check for closing ';' */
-            nxtch = infgetc( inpf );
-            if ( nxtch != ';' ) {
-
-                message( MSG_EXPT_SEMIK, inpf );
-                errqstr( ";" );
-                errstr( " expected (found: " );
-                errqstr( ch2str( nxtch ) );
-                errstr( ")\n" );
-            }
+            parse_wd( inpf, ";" );
+            /* TODO: check for whitespace before ";" */
 
             /* set output text */
             txtout = infget_log( inpf );
@@ -480,7 +530,8 @@ BOOL parse_text( INFILE *inpf )
 {
     STRPTR  nw = infgetcw( inpf );
 
-    suppress_output = FALSE;
+    if ( suppress_output && (strcmp( nw, "\n" )) )
+        suppress_output = FALSE;
 
     /*
     ** check unmatched ">"
@@ -617,6 +668,46 @@ BOOL parse_hsc( INFILE *inpf )
 }
 
 /*
+** parse_source
+**
+** parse input chars with full hsc support
+**
+** params: inpf...input file
+**
+** result: TRUE, if no error
+*/
+BOOL parse_source( INFILE *inpf )
+{
+    if ( !fatal_error ) {
+
+        char *nxtwd = infgetw( inpf );
+
+        if ( nxtwd ) {
+
+            /* write white-spaces */
+            outstr( infgetcws( inpf ) );
+
+            /*
+            ** process next word
+            */
+            if ( !strcmp(nxtwd, "<") )
+                outstr( "&lt;" );
+            else if ( !strcmp(nxtwd, ">") )
+                outstr( "&gt;" );
+            else if ( !strcmp(nxtwd, "&") )
+                outstr( "&amp;" );
+            else {
+
+                parse_text( inpf );
+
+            }
+        }
+    }
+
+    return (BOOL)( !fatal_error );
+}
+
+/*
 **---------------------------
 ** parse end functions
 **---------------------------
@@ -651,7 +742,7 @@ void check_tag_missing( APTR data )
 */
 void check_not_closed( APTR data )
 {
-    STRPTR name = (STRPTR)data;
+    STRPTR name = ((HSCTAG*)data)->name;
 
     message( MSG_MISS_CTAG, parse_end_file );
     errstr( "closing tag missing: " );
@@ -717,7 +808,11 @@ BOOL include_hsc( STRPTR filename, INFILE *inpf, FILE *outf, ULONG optn )
 
             if ( !(optn & (IH_PARSE_MACRO | IH_PARSE_HSC) ) )
                 status_infile( inpf, FALSE );    /*    status message */
-            ok = parse_hsc( inpf );
+
+            if ( optn & IH_PARSE_SOURCE )
+                ok = parse_source( inpf );
+            else
+                ok = parse_hsc( inpf );
         }
 
         if ( ok && (optn & IH_PARSE_END) ) {     /*    parse end */
@@ -793,4 +888,28 @@ BOOL include_hsc_string( STRPTR filename, STRPTR s, FILE *outf, ULONG optn )
 
     return( ok );
 }
+
+/*
+** includes_ok
+**
+** include all files passed with "INCLUDE=file"
+*/
+BOOL include_ok( VOID )
+{
+    if ( incfile ) {
+
+        DLNODE *nd = incfile->first;
+
+        while ( nd && !fatal_error ) {
+
+            STRPTR filename = (STRPTR) nd->data;
+            include_hsc_file( filename, outfile, 0 );
+            nd = nd->next;
+
+        }
+    }
+
+    return( (BOOL) !fatal_error );
+}
+
 

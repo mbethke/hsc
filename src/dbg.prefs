@@ -1,0 +1,17 @@
+<*********************>
+<*** HTML 1.0 tags ***>
+<*********************>
+<$deftag ! IGNOREARGS>
+<$deftag A CLOSE NOCOPY NAW="A" HREF:uri NAME:string REL:string>
+<$deftag B CLOSE>
+<$deftag BODY CLOSE ONLYONCE>
+<$deftag BR>
+<$deftag CODE CLOSE>
+<$deftag HTML CLOSE ONLYONCE>
+<$deftag HEAD CLOSE ONLYONCE>
+<$deftag LI MBI="UL|OL">
+<$deftag IMG SRC:uri ALT:string ALIGN:enum(top|bottom|middle|*) ISMAP:bool>
+<$deftag I CLOSE>
+<$deftag TT CLOSE>
+<$deftag TITLE CLOSE ONLYONCE>
+<$deftag UL CLOSE>

@@ -3,7 +3,7 @@
 **
 ** error vars & funs for hsc
 **
-** updated:  6-Oct-1995
+** updated: 16-Oct-1995
 ** created:  9-Jul-1995
 **
 ** TODO: programable desription string to format error messages
@@ -350,7 +350,7 @@ int message( ULONG id, INFILE *f )
 
     } else if ( debug )
         /* in debug mode, display a dot ('.') for every oppressed message */
-        fputc( '.', errfile );
+        fputc( '#', errfile );
 
 
     return (ctr);
@@ -365,40 +365,62 @@ int message( ULONG id, INFILE *f )
 */
 
 
-int err_eof( INFILE *inpf )
+VOID err_eof( INFILE *inpf, STRPTR descr )
 {
     message( MSG_UNEX_EOF, inpf );
-    return ( errstr( "unexpected end of file\n" ) );
+
+    errstr( "unexpected end of file" );
+    if ( descr ) {
+
+        errstr( " (" );
+        errstr( descr );
+        errstr( ")" );
+
+    }
+    errlf();
 }
 
-int err_eol( INFILE *inpf )
+VOID err_eol( INFILE *inpf )
 {
     message( MSG_UNEX_EOL, inpf );
-    return ( errstr( "unexpected end of line\n" ) );
+    errstr( "unexpected end of line" );
+    errlf();
 }
 
-int err_streol( INFILE *inpf )
+VOID err_streol( INFILE *inpf )
 {
     message( MSG_STR_EOL, inpf );
-    return ( errstr( "string exeeds line\n" ) );
+    errstr( "string exeeds line" );
+    errlf();
 }
 
-int err_mem( INFILE *inpf )
+VOID err_mem( INFILE *inpf )
 {
     message( MSG_NO_MEM, inpf );
-    return ( errstr( "out of memory\n" ) );
+    errstr( "out of memory" );
+    errlf();
 }
 
-int err_write( FILE *outf )
+VOID err_write( FILE *outf )
 {
     message( MSG_WRITE_ERR, NULL );
-    return ( errstr( "write error\n" ) );
+    errstr( "write error" );
+    errlf();
 }
 
-int err_longstr( INFILE *inpf )
+VOID err_longstr( INFILE *inpf )
 {
     message( FATAL_LONG_STR, inpf );
-    return ( errstr( "maximum string length exceeded (Thank K&R)\n" ) );
+    errstr( "maximum string length exceeded (Thank K&R)" );
+    errlf();
+}
+
+VOID err_illgwspc( INFILE *inpf )
+{
+    message( MSG_ILLG_WHTSPC, inpf );
+    errstr( "illegal white-space" );
+    errlf();
+
 }
 
 
@@ -409,15 +431,11 @@ int err_longstr( INFILE *inpf )
 ** bad style: white space around tag
 **
 */
-int err_wst( INFILE *inpf )
+VOID err_wst( INFILE *inpf )
 {
     message( MSG_WSPC_AROUND_TAG, inpf );
     errstr( "White space around tag" );
     errlf();
-
-    /* always return 1; ishould change that to the */
-    /*num of chars printed, but i'm too lazy.. */
-    return ( 1 );
 }
 
 /*

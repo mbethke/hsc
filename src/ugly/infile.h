@@ -30,7 +30,6 @@ typedef struct infile {
     EXPSTR *wordbuf;         /* word buffer */
     EXPSTR *wspcbuf;         /* word buffer (white spaces) */
     EXPSTR *logstr;          /* log string */
-    STRPTR eow;              /* string of chars used as end of word */
 
     size_t filepos;          /* file position */
     ULONG  flnctr;           /* line number in file */

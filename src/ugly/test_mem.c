@@ -9,7 +9,7 @@
 #include "memory.h"
 #include "string.h"
 
-void main( void )
+int main( void )
 {
     APTR hugo1, hugo2, hugo3, hugo4;
 
@@ -29,4 +29,5 @@ void main( void )
 
     umem_report( "hugo after free" );
 
+    return( 0 );
 }

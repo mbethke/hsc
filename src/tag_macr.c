@@ -3,7 +3,7 @@
 **
 ** tag handles for "<$MACRO>" and "<macro>"
 **
-** updated:  8-Oct-1995
+** updated: 16-Oct-1995
 ** created:  5-Aug-1995
 */
 
@@ -25,6 +25,7 @@
 
 #include "config.h"
 #include "cleanup.h"
+#include "deftag.h"
 #include "error.h"
 #include "msgid.h"
 #include "parse.h"
@@ -34,15 +35,17 @@
 
 EXPSTR *rmt_str = NULL;      /* temp. buffer to read macro text */
 
+/* TODO: skip hsc comments */
+
 /* states for read_macro_text */
 #define MAST_TEXT   0 /* inside text      */
 #define MAST_LT     1 /* after "<"        */
 #define MAST_SLASH  2 /* after "</"       */
 #define MAST_CMACRO 3 /* after "</$MACRO" */
 #define MAST_TAG    8 /* inside a tag     */
+#define MAST_COMT   9 /* inside comment   */
 #define MAST_ERR   99 /* error occured    */
 
-extern BOOL parse_wd( INFILE *inpf, STRPTR expstr ); /* TODO: what a pervert! */
 
 /*
 **-------------------------------------
@@ -56,7 +59,7 @@ extern BOOL parse_wd( INFILE *inpf, STRPTR expstr ); /* TODO: what a pervert! */
 ** handle for macro: add local attributes to global attributes,
 ** include macro text, remove local attributes
 **
-** params: open_mac..TRUE, if called by an openning macro
+** params: open_mac..TRUE, if called by an opening macro
 **         inpf......input file
 */
 BOOL handle_macro( BOOL open_mac, INFILE *inpf, HSCTAG *macro )
@@ -65,16 +68,14 @@ BOOL handle_macro( BOOL open_mac, INFILE *inpf, HSCTAG *macro )
     EXPSTR *text;       /* macro text */
     EXPSTR *fname;      /* pseudo-filename */
     DLLIST *args;
-    ULONG   mci = 0;    /* tag-call-id returned by set_tag_args() */
+    ULONG   mci = get_mci();
 
     /* determine filename & args */
+    args = macro->attr;
     if ( open_mac ) {
         text  = macro->op_text ;
-        args  = macro->op_args;
     } else {
         text  = macro->cl_text ;
-        args  = macro->cl_args; /* TODO: remove this */
-        args  = macro->op_args;
     }
     fname = init_estr( 0 );
 
@@ -97,17 +98,9 @@ BOOL handle_macro( BOOL open_mac, INFILE *inpf, HSCTAG *macro )
 
     if ( ok ) {
 
-        /* parse args */
-        mci = set_tag_args( macro, inpf, open_mac );
-        if ( mci == MCI_ERROR ) ok = FALSE;
-        DMC( prt_varlist( args, "macro args (after set_macro_args)" ) );
-    }
-
-    if ( ok ) {
-
         /* copy local vars to global list */
-        ok = copy_local_varlist( args, mci );
-        DMC( prt_varlist( vars, "global vars (after copy_local_vars)" ) );
+        ok = copy_local_varlist( vars, args, mci );
+        DMC( prt_varlist( vars, "global attr (after copy_local_vars)" ) );
 
     }
 
@@ -119,7 +112,7 @@ BOOL handle_macro( BOOL open_mac, INFILE *inpf, HSCTAG *macro )
 
     /* cleanup */
     if ( mci != MCI_ERROR )
-        remove_local_varlist( mci );   /* remove local vars */
+        remove_local_varlist( vars, mci );  /* remove local vars */
     clr_varlist( args );               /* clear macro vars */
     del_estr( fname );                 /* release pseudo-filename */
 
@@ -156,31 +149,6 @@ BOOL handle_cl_macro( INFILE *inpf, HSCTAG *tag )
 **-------------------------------------
 */
 
-#if 0
-/*
-** rmt_check_for
-**
-** read next word from input, compare it with cmpstr,
-** append word to rmt_str
-*/
-BOOL rmt_check_for( INFILE *inpf, STRPTR cmpstr )
-{
-    STRPTR  nw = infgetw( inpf );
-    BOOL    eq = FALSE;
-
-    if ( nw ) {
-
-        eq = !upstrcmp( nw, cmpstr );
-        app_estr( rmt_str, infgetcws( inpf ) );
-        app_estr( rmt_str, infgetcw( inpf ) );
-
-    } else
-        err_eof( inpf );
-
-    return( eq );
-}
-#endif
-
 /*
 ** read_macro_text
 **
@@ -200,10 +168,7 @@ BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
     }
 
     if ( macstr ) {                    /* init sucessfull? */
-#if 0
-        BOOL   quote     = FALSE;    /* TRUE, if between single quotes */
-        BOOL   dquote    = FALSE;    /* TRUE, if between double quotes */
-#endif
+
         STRPTR nw        = NULL;     /* word read from input */
         BYTE   state     = MAST_TEXT;/* current state */
 
@@ -304,31 +269,10 @@ BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
                 }
             } else {
 
-                err_eof( inpf );
+                err_eof( inpf, "expecting </" HSC_MACRO_STR ">" );
                 state = MAST_ERR;
 
             }
-
-#if 0
-            if ( rmt_check_for( inpf, "<" )
-                 &&  rmt_check_for( inpf, "/" )
-                 &&  rmt_check_for( inpf, HSC_TAGID )
-                 &&  rmt_check_for( inpf, HSC_MACRO_STR )
-               )
-            {
-
-                ok = TRUE;
-                parse_gt( inpf );
-
-            } else {
-
-                if ( !app_estr( macstr, estr2str(rmt_str) ) )
-                    err_mem( inpf );
-                if ( !set_estr( rmt_str, "" )
-                    err_mem( inpf );
-
-            }
-#endif
 
         } /* while */
 
@@ -336,6 +280,21 @@ BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
         if ( state == MAST_CMACRO ) {
 
             ok = parse_wd( inpf, ">" );
+
+        }
+
+        /* if last char of macrotext is LF,
+        ** replace it with a white space
+        */
+        if ( ok ) {
+
+            STRPTR ms  = estr2str( macstr );
+            size_t len = strlen( ms );
+
+            /* TODO: better call leftstr() here and strip last ch */
+            if ( len && ( ms[len-1]=='\n' ) )
+                ms[len-1] = ' ';
+
 
         }
 
@@ -385,7 +344,7 @@ BOOL handle_hsc_macro( INFILE *inpf, HSCTAG *tag )
         if ( ok ) {
 
             /* set tag handles & flags */
-            tag->option |= HT_NOCOPY | HT_IGNOREARGS ;
+            tag->option |= HT_NOCOPY;
             tag->o_handle = handle_op_macro;
             tag->c_handle = handle_cl_macro;
 

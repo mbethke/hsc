@@ -4,7 +4,7 @@
 **
 ** functions for skipping several things
 **
-** updated:  8-Oct-1995
+** updated: 18-Oct-1995
 ** created:  8-Oct-1995
 */
 
@@ -68,7 +68,7 @@ BOOL copy_until_gt( INFILE *inpf )
 
         nw = infgetw( inpf );
         if ( !nw )
-            err_eof( inpf );
+            err_eof( inpf, "\">\" expected" );
         else if ( !strcmp( nw, ">" ) ) {
             end_gt = TRUE;
         } else if ( !strcmp( nw, "\"" ) )
@@ -161,7 +161,7 @@ BOOL eot_reached( INFILE *inpf, BYTE *state )
         }
     } else {
 
-        err_eof( inpf );
+        err_eof( inpf, "\">\" expected" );
         *state = TGST_ERR;
 
     }
@@ -257,15 +257,17 @@ BOOL skip_hsc_comment( INFILE *inpf, BOOL copy )
 
         } else {
 
-            err_eof( inpf );
+            err_eof( inpf, "missing end of hsc-comment (\"*>\")" );
             abort = TRUE;
 
         }
 
     } while ( !abort );
 
+#if 0
     if ( infeof(inpf) && nesting )
         err_eof(inpf);
+#endif
 
     return ( (BOOL) !fatal_error);
 }

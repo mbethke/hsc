@@ -17,7 +17,7 @@
 extern STRPTR parse_strarg( INFILE *inpf );
 extern STRPTR parse_tagoptn( INFILE *inpf );
 
-extern BOOL parse_ch( INFILE *inpf, int exptch );
+extern BOOL parse_wd( INFILE *inpf, STRPTR expstr );
 extern BOOL parse_eq( INFILE *inpf );
 extern BOOL parse_gt( INFILE *inpf );
 extern char parse_quote( INFILE *inpf );

@@ -18,6 +18,9 @@
 
 #define NUM_NAME 6
 
+char newp[ MAX_PATH ];   /* new path (result of get_relfname() ) */
+
+
 void test_app_fname( STRPTR dir, STRPTR fn )
 {
     STRPTR appfn =  app_fname( dir, fn );
@@ -124,7 +127,6 @@ void old_test_reldir( STRPTR absn, STRPTR curp )
 
 STRPTR get_relfname( STRPTR absn, STRPTR curp )
 {
-    char newp[ MAX_PATH ];   /* new path (result) */
     char tmpb[ MAX_PATH ];   /* temp buffer */
     char fname[ MAX_FNAME ]; /* file name only */
     char abspa[ MAX_PATH ];  /* absolute path only */

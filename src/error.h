@@ -67,13 +67,14 @@ extern int errlong( ULONG num );
 
 extern int message( ULONG id, INFILE *f );
 
-extern int err_eof( INFILE *inpf );
-extern int err_wst( INFILE *inpf, STRPTR );
-extern int err_eol( INFILE *inpf );
-extern int err_mem( INFILE *inpf );
-extern int err_write( FILE *inpf );
-extern int err_streol( INFILE *inpf );
-extern int err_longstr( INFILE *inpf );
+extern VOID err_eof( INFILE *inpf, STRPTR descr );
+extern VOID err_eol( INFILE *inpf );
+extern VOID err_streol( INFILE *inpf );
+extern VOID err_mem( INFILE *inpf );
+extern VOID err_write( FILE *outf );
+extern VOID err_longstr( INFILE *inpf );
+extern VOID err_illgwspc( INFILE *inpf );
+extern VOID err_wst( INFILE *inpf );
 
 extern void call_panic( STRPTR text, STRPTR file, ULONG line );
 

@@ -27,12 +27,13 @@
 #define VT_STR_BOOL   "BOOL"           /* boolean */
 #define VT_STR_NUM    "NUM"            /* numeric */
 #define VT_STR_ENUM   "ENUM"           /* enumerator */
-#define VT_STR_TEXT   "TEXT"           /* text (without quotes) */
+#define VT_STR_TEXT   "TEXT"           /* text (without quotes) TODO: remove */
 
 /* variable flags */
 #define VF_ONLYONCE   (1<<0)           /* attribute may occure only once */
 #define VF_REQUIRED   (1<<1)           /* attribute is required */
 #define VF_NOQUOTE    (1<<2)           /* does not require quote */
+#define VF_JERK       (1<<3)           /* attribute for jerks */
 #define VF_MACRO      (1<<7)           /* macro attr (see below) */
 
 /*
@@ -49,6 +50,8 @@
 ** attribute list. (see "copy_local_varlist()" in "vars.c")
 */
 
+#define VF_JERK_STR     "JERK"         /* attr only used by jerks */
+#define VF_JERK_SHT     "J"
 #define VF_ONLYONCE_STR "ONLYONCE"     /* attr mey appear only once in tag */
 #define VF_ONLYONCE_SHT "1"
 #define VF_REQUIRED_STR "REQUIRED"     /* attr is required */
@@ -63,7 +66,8 @@
 #define VQ_NO_QUOTE 0
 
 /* error return value for set_macro_args() to set var->macro_id with */
-#define MCI_ERROR  0xffffffff
+#define MCI_ERROR   0xffffffff
+#define MCI_APPCTAG 0xfffffffe /* used by app_ctag(); see "tag.c" */
 
 
 /* variable structure */
@@ -102,8 +106,10 @@ extern BOOL   clr_varlist( DLLIST *varlist );
 extern STRPTR get_vartext( DLLIST *varlist, STRPTR name );
 extern BOOL   get_varbool( DLLIST *varlist, STRPTR name );
 
-extern BOOL   copy_local_varlist( DLLIST *varlist, ULONG mci );
-extern void   remove_local_varlist( ULONG mci );
+/* attribute list manipulation */
+extern BOOL copy_local_varlist( DLLIST *destlist, DLLIST *varlist, ULONG mci );
+extern BOOL set_local_varlist( DLLIST *destlist, DLLIST *varlist, ULONG mci );
+extern void remove_local_varlist( DLLIST *varlist, ULONG mci );
 extern BOOL check_varlist( DLLIST *varlist, INFILE *inpf );
 
 extern HSCVAR *define_var( STRPTR varname, DLLIST *varlist, INFILE *inpf, UBYTE flag );

@@ -5,7 +5,7 @@
 **
 ** (for macro handles, see "tag_macr.c")
 **
-** updated:  8-Oct-1995
+** updated: 19-Oct-1995
 ** created: 23-Jul-1995
 */
 
@@ -32,6 +32,7 @@
 #include "tag.h"
 #include "vars.h"
 
+#include "deftag.h"
 #include "tag_macr.h"
 #include "tag_if.h"
 
@@ -97,6 +98,7 @@ BOOL hsc_insert_text( STRPTR text )
     return (ok);
 }
 
+#if 0
 /*
 **-------------------------------------
 ** pseudo-handle for closing hsc-tag
@@ -137,7 +139,7 @@ BOOL handle_hsc_close( INFILE *inpf, HSCTAG *tag )
 
     return ( ok );
 }
-
+#endif
 
 
 /*
@@ -194,7 +196,7 @@ BOOL handle_hsc_onlycopy( INFILE *inpf, HSCTAG *tag )
     } while ( !abort );
 
     if ( prev_ch == EOF )
-        err_eof(inpf);
+        err_eof(inpf, "skipping source");
 
     return (TRUE);
 }
@@ -212,10 +214,48 @@ BOOL handle_hsc_onlycopy( INFILE *inpf, HSCTAG *tag )
 */
 BOOL handle_hsc_include( INFILE *inpf, HSCTAG *tag )
 {
-    STRPTR fname = get_vartext( tag->op_args, "FILE" );
+    STRPTR fname  = get_vartext( tag->attr, "FILE" );
+    BOOL   source = get_varbool( tag->attr, "SOURCE" );
+    ULONG  optn   = 0;
 
+    if ( source )
+        optn |= IH_PARSE_SOURCE;
     if ( fname )
-        include_hsc_file( fname, outfile, 0 );
+        include_hsc_file( fname, outfile, optn );
+
+    return (TRUE);
+}
+
+
+/*
+**-------------------------------------
+** $EXEC handle
+**-------------------------------------
+*/
+
+/*
+** handle_hsc_exec
+**
+** exec a sub file
+*/
+BOOL handle_hsc_exec( INFILE *inpf, HSCTAG *tag )
+{
+    STRPTR cmd = get_vartext( tag->attr, "COMMAND" );
+
+    if ( cmd ) {
+
+       int result = system( cmd );
+
+       if ( result ) {
+
+            message( MSG_SYSTEM_RETURN, inpf );
+            errstr( "Calling external command returned " );
+            errstr( long2str( (LONG) result ) );
+            errlf();
+
+       }
+
+    }
 
     return (TRUE);
 }
@@ -235,7 +275,7 @@ BOOL handle_hsc_include( INFILE *inpf, HSCTAG *tag )
 BOOL handle_hsc_time( INFILE *inpf, HSCTAG *tag )
 {
     STRARR timebuf[TIMEBUF_SIZE];
-    STRPTR timefmt = get_vartext( tag->op_args, "FORMAT" );
+    STRPTR timefmt = get_vartext( tag->attr, "FORMAT" );
 
     /* set default time format */
     if ( !timefmt )
@@ -256,7 +296,7 @@ BOOL handle_hsc_time( INFILE *inpf, HSCTAG *tag )
 */
 BOOL handle_hsc_text( INFILE *inpf, HSCTAG *tag )
 {
-    STRPTR text = get_vartext( tag->op_args, "TEXT" );
+    STRPTR text = get_vartext( tag->attr, "TEXT" );
 
     /* include text */
     include_hsc_string( "[insert TEXT]", text, outfile, IH_PARSE_HSC );
@@ -273,9 +313,9 @@ BOOL handle_hsc_text( INFILE *inpf, HSCTAG *tag )
 BOOL handle_hsc_insert( INFILE *inpf, HSCTAG *tag )
 {
     BOOL insert_text = FALSE;
-    BOOL insert_time = get_varbool( tag->op_args, HSC_TIME_STR );
+    BOOL insert_time = get_varbool( tag->attr, HSC_TIME_STR );
 
-    if ( get_vartext( tag->op_args, HSC_TEXT_STR ) )
+    if ( get_vartext( tag->attr, HSC_TEXT_STR ) )
         insert_text = TRUE;
 
     if ( insert_text )
@@ -286,122 +326,17 @@ BOOL handle_hsc_insert( INFILE *inpf, HSCTAG *tag )
 
         /* unknown option for $insert */
         message( MSG_MISSING_ATTR, inpf );
-        errstr( "required attribute for <$" );
+        errstr( "required attribute for <" );
         errstr( HSC_INSERT_STR );
         errstr( "> missing\n" );
 
     }
 
     /* clear attributes */
-    clr_varlist( tag->op_args );
+    clr_varlist( tag->attr );
 
     return( TRUE );
 }
-
-/*
-**-------------------------------------
-** functions for <HSC_VAR>
-**-------------------------------------
-*/
-
-#if 0
-/*
-** set_var_value
-*/
-BOOL set_var_value( STRPTR varname, INFILE *inpf )
-{
-    BOOL ok = FALSE;
-
-    ok = (BOOL)( define_var( varname, vars, inpf, 0 ) );
-
-    if ( !ok )
-        skip_until_gt( inpf );
-    else
-        ok = parse_ch( inpf, '>' );
-
-    return (ok);
-}
-
-
-
-/*
-** handle_hsc_var
-**
-** set or insert a var
-*/
-BOOL handle_hsc_var( INFILE *inpf )
-{
-    BOOL   ok = FALSE;
-    STRPTR varname = NULL;
-    STRPTR nw = infgetw( inpf );
-
-    /* get varname */
-    if ( nw ) {
-
-        varname = strclone( nw );
-        if ( !varname )
-            err_mem( inpf );
-
-    } else
-        err_eof( inpf );
-
-    if ( varname ) {
-
-        nw = infgetw( inpf );
-        if ( nw ) {
-
-            if ( !strcmp( nw, "=" ) ) {
-
-                /* set new value */
-                ok = set_var_value( varname, inpf );
-
-            } else if ( !strcmp( nw, ">" ) ) {
-
-                /* insert value */
-                HSCVAR *var = find_varname( vars, varname );
-                if ( var ) {
-
-                    char text[MAX_ARGLEN+2];
-
-                    if ( var->text ) {
-
-                        strcpy( text, "" );
-                        if ( var->quote != VQ_NO_QUOTE )
-                            strcat( text, ch2str( (char) var->quote ) );
-                        strcat( text, var->text );
-                        if ( var->quote != VQ_NO_QUOTE )
-                            strcat( text, ch2str( (char) var->quote ) );
-
-                        ok = hsc_insert_text( text );
-                    }
-                } else {
-                    /* unknown var */
-                    message( MSG_UNKN_SYMB, inpf );
-                    errstr( "Undefined " );
-                    errsym( varname );
-                    errlf();
-
-                }
-
-
-
-            } else {
-
-                /* syntax error */
-                unkn_hscoptn( HSC_VAR_STR, nw, inpf );
-                skip_until_gt( inpf );
-            }
-
-        }
-
-        ufreestr( varname );
-
-    } else
-        err_eof( inpf );
-
-    return (ok);
-}
-#endif
 
 /*
 **-------------------------------------
@@ -426,8 +361,8 @@ BOOL handle_hsc_deftag( INFILE *inpf, HSCTAG *tag )
 */
 BOOL handle_hsc_defent( INFILE *inpf, HSCTAG *tag )
 {
-    STRPTR name = get_vartext( tag->op_args, "NAME" );
-    STRPTR rplc = get_vartext( tag->op_args, "RPLC" );
+    STRPTR name = get_vartext( tag->attr, "NAME" );
+    STRPTR rplc = get_vartext( tag->attr, "RPLC" );
     LONG   num  = 0; /* TODO: get numeric */
     BOOL   ok;
 
@@ -449,7 +384,7 @@ BOOL handle_hsc_let( INFILE *inpf, HSCTAG *tag )
 
     if ( varname ) {
 
-        ok = parse_ch( inpf, ':' );
+        ok = parse_wd( inpf, ":" );
         if ( ok || define_var( varname, vars, inpf, 0 ) )
             ok = TRUE;
         if ( ok )

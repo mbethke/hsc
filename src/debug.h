@@ -26,10 +26,10 @@
 #define DEBUG         1 /* misc. debugging */
 #define DEBUG_ATTRVAL 1 /* display attribute values */
 #define DEBUG_CONFIG  0 /* display config messages */
-#define DEBUG_DEFATTR 0 /* display defined attributes */
+#define DEBUG_DEFATTR 1 /* display defined attributes */
 #define DEBUG_DEFENT  0 /* display defined entities */
 #define DEBUG_DEFTAG  0 /* display defined tags */
-#define DEBUG_MACRO   0 /* display macro */
+#define DEBUG_MACRO   1 /* display macro */
 
 #else
 

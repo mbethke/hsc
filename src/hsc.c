@@ -1,17 +1,16 @@
 /*
 ** hsc.c - HTML sucks completely
 **
-** updated: 12-Sep-1995
+** updated: 15-Oct-1995
 ** created:  1-Jul-1995
 */
 
 /*
 ** TODO:
-** - skip_in_tag();
-** - input.c, skip.c
+** - input.c
 ** - options for attributes
+** - multiple attributes (eg FIG SHAPE)
 ** - check for comments inside $macro and $if
-** - execute external prog <$EXEC "..">
 ** - set error messages <$ERROR "..">
 ** - set configurable error string
 ** - handler for break signal
@@ -20,7 +19,7 @@
 ** - HT_STRIP_EXTERNAL to strip whole tag
 **   if it references to an external URI
 **
-** - <$GOTO> and <$LABEL>
+** - <$GOTO> and <$LABEL> (??)
 ** - <$WHILE> (??)
 ** - check "NAME" with <A>
 ** - hsc.refs
@@ -53,6 +52,11 @@
 #include "error.h"
 #include "status.h"
 
+#ifdef AMIGA
+/* AMIGA version string */
+static STRPTR version_string = "$VER:hsc 0.9.2 (23.10.1995)";
+#endif
+
 /*
 **
 ** main function
@@ -60,13 +64,10 @@
 */
 int main( int argc, char *argv[] )
 {
-#ifdef AMIGA
-    static STRPTR version_string = "$VER:hsc 0.9.1 (9.10.1995)";
-#endif
     BOOL ok = FALSE;
 
     /* set program information */
-    set_prginfo( "hsc", "Tommy-Saftwörx", 0, 9, 1,
+    set_prginfo( "hsc", "Tommy-Saftwörx", 0, 9, 2,
         "HTML Sucks Completely", "This is FreeWare." );
 
 #ifdef UMEM_TRACKING
@@ -89,11 +90,11 @@ int main( int argc, char *argv[] )
 
         if ( open_error()              /* init error file */
              && open_output()          /* open output file */
-             && config_ok() )          /* read config */
+             && config_ok()            /* read config */
+             && include_ok() )        /* read include files */
         {
             /* include file parsed in args */
             ok = include_hsc_file( inpfilename, outfile, IH_PARSE_END );
-
         }
 
     }

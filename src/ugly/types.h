@@ -9,12 +9,12 @@
 **
 ** NOTE: contains also UGLY_VER and UGLY_REV
 **
-** Version 1.0.3, (W) by Tommy-Saftwörx 1994,95
+** Version 1.0.5, (W) by Tommy-Saftwörx 1994,95
 **
-** updated:  7-Sep-1995
+** updated: 16-Oct-1995
 ** created: 25-Jan-1994
 **
-** $VER: types.h 1.0.3 (7.9.1995)
+** $VER: types.h 1.0.5 (16.10.1995)
 **
 */
 
@@ -63,6 +63,7 @@ typedef unsigned char  *STRPTR;     /* string pointer (NULL terminated) */
 
 
 /* Types with specific semantics */
+typedef void            VOID;
 typedef short           BOOL;
 typedef unsigned char   TEXT;
 

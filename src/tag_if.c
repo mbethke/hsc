@@ -3,7 +3,7 @@
 **
 ** tag handles for <$IF> and <$ELSE>
 **
-** updated:  8-Oct-1995
+** updated: 22-Oct-1995
 ** created:  7-Oct-1995
 */
 
@@ -19,6 +19,7 @@
 
 #include "global.h"
 #include "error.h"
+#include "eval.h"
 #include "msgid.h"
 #include "output.h"
 #include "tagargs.h"
@@ -47,7 +48,7 @@
 #define IFST_SLHSC 4 /* after "</$" */
 #define IFST_IF    5 /* after "<$IF" */
 #define IFST_ELSE  6 /* after "<$ELSE" */
-#define IFST_CIF   7 /* after "<$/IF" */
+#define IFST_CIF   7 /* after "</$IF" */
 #define IFST_TAG   8 /* inside a tag */
 #define IFST_ERR  99 /* error occured */
 
@@ -55,36 +56,14 @@
 #define ISTK_FALSE '0'
 #define ISTK_TRUE  '1'
 
-
-BOOL parse_wd( INFILE *inpf, STRPTR expstr )
+/* error message */
+void message_unma_else( INFILE *inpf, HSCTAG *tag )
 {
-    BOOL   value = TRUE;
-
-    if ( expstr ) {
-
-        STRPTR nw    = infgetw( inpf );
-        if ( nw ) {
-
-            if ( upstrcmp( nw, expstr ) ) {
-
-                message( ERROR, inpf );  /* TODO: error message */
-                errstr( "Expected " );
-                errqstr( expstr );
-                errstr( ", found " );
-                errqstr( nw );
-                errlf();
-                value = FALSE;
-
-            }
-        } else {
-
-            err_eof( inpf );
-            value = FALSE;
-
-        }
-    }
-
-    return( value );
+    message( MSG_UNMA_ELSE, inpf );
+    errtag( tag->name );
+    errstr( " not assoziated with " );
+    errtag( HSC_IF_STR );
+    errlf();
 }
 
 /*
@@ -108,6 +87,9 @@ VOID is_push( BOOL value )
     if ( !app_estrch( IF_stack, ch ) )
         err_mem( NULL );
 
+    D( fprintf( stderr, "** push IF-stack: \"%s\"\n", estr2str( IF_stack ) ) );
+
+
 }
 
 /* is_get: get first value from the if-stack */
@@ -119,26 +101,30 @@ BOOL is_get( VOID )
 
         STRPTR stkstr = estr2str( IF_stack );
 
-        if ( !stkstr || !(stkstr[0]) )
-            D( panic( "IF_stack EMPTY" ) );
-        else {
+        D( fprintf( stderr, "** get  IF-stack: \"%s\"\n", stkstr ) );
 
-            char lastch = stkstr[strlen(stkstr)];
+        if ( stkstr && (stkstr[0]) ) {
+
+            char lastch = stkstr[strlen(stkstr)-1];
             if ( lastch == ISTK_TRUE )
                 value = TRUE;
             else if ( lastch != ISTK_FALSE )
                 D( panic( "Illegal value on IF_stack" ) );
 
-        }
+        } else
+            D( panic( "IF_stack EMPTY" ) );
+
 
     } else
         D( panic( "IF_stack EMPTY" ) );
+
+    D( fprintf( stderr, "** get  IF-stack: value=%d\n", value ) );
 
     return( value );
 
 }
 
-/* is_push: remove first value of the if-stack */
+/* is_pop: remove first value of the if-stack */
 BOOL is_pop( VOID )
 {
     BOOL value = is_get();
@@ -146,8 +132,10 @@ BOOL is_pop( VOID )
     if ( !strlen(estr2str(IF_stack)) )
         D( panic( "Popping empty IF_stack" ) );
 
-    if ( !get_left_estr( IF_stack, IF_stack, strlen(estr2str(IF_stack)) ) )
+    if ( !get_left_estr( IF_stack, IF_stack, strlen(estr2str(IF_stack))-1 ) )
         err_mem( NULL );
+
+    D( fprintf( stderr, "** pop  IF-stack: \"%s\"\n", estr2str( IF_stack ) ) );
 
     return( value );
 }
@@ -163,6 +151,23 @@ BOOL is_empty( VOID )
     return( result );
 }
 
+/*
+**-------------------------------------
+** misc. functions
+**-------------------------------------
+*/
+
+/*
+** remove_cif_tag
+**
+** remove </$IF> from closing tag stack
+*/
+VOID remove_cif_tag( INFILE *inpf )
+{
+    HSCTAG ciftag; /* artificial if-tag to remove */
+    ciftag.name = HSC_IF_STR;
+    remove_ctag( &ciftag, inpf );  /* remove closing tag from stack */
+}
 
 /*
 **-------------------------------------
@@ -305,7 +310,7 @@ BYTE skip_if( INFILE *inpf )
             }
         } else {
 
-            err_eof( inpf );
+            err_eof( inpf, "missing </" HSC_IF_STR "> or <" HSC_ELSE_STR ">" );
             state = IFST_ERR;
 
         }
@@ -317,102 +322,26 @@ BYTE skip_if( INFILE *inpf )
          || (state == IFST_ELSE) )
     {
 
+        /* remove closing if-tag from stack */
+        if ( state == IFST_CIF ) {
+
+            remove_cif_tag( inpf );    
+            is_pop();
+
+        }
+
         if ( !parse_wd( inpf, ">" ) )
             skip_until_eot( inpf );
+        D(  {
+            if ( state==IFST_CIF )
+                fprintf( stderr, "** </$IF> reached\n" );
+            else
+                fprintf( stderr, "** <$ELSE> reached\n" );
+            } );
 
     }
 
     return( state );
-}
-
-/*
-**-------------------------------------
-** eval_if: evaluate IF-expression
-**-------------------------------------
-*/
-
-HSCVAR *getvar_if( INFILE *inpf )
-{
-    STRPTR  varname = NULL;
-    HSCVAR *var = NULL;
-
-    if ( parse_wd( inpf, "<" ) ) {
-
-        varname = infgetw( inpf );
-        if ( varname )
-            varname = strclone( varname );
-        else
-            err_eof( inpf );
-
-        if ( !varname )
-            err_mem( inpf );
-        else {
-
-            if ( parse_wd( inpf, ">" ) )
-                var = find_varname( vars, varname );
-            else
-                skip_until_eot( inpf );
-            ufreestr( varname );
-        }
-
-    } else
-        skip_until_eot( inpf );
-
-    return( var );
-}
-
-/*
-** eval_ifexpr
-**
-** params: inpf..input file
-** result: result of evaluation (IF_TRUE or FALSE)
-**
-*/
-BOOL eval_ifexpr( INFILE *inpf, BOOL *err, STRPTR endstr )
-{
-    BOOL    value = FALSE;
-    STRPTR  nw    = infgetw( inpf );
-    HSCVAR *var   = NULL;
-
-    if ( !strcmp( nw, "<" ) ) {
-
-         /* TODO: eval bool var */
-
-    } else if ( !upstrcmp( nw, "DEFINED" ) ) {
-
-        var = getvar_if( inpf );
-        *err = fatal_error;
-        if ( var )
-            value = TRUE;
-
-    } else if ( !upstrcmp( nw, "EXISTS" ) ) {
-
-        /* TODO: exists */
-
-    } else if ( !upstrcmp( nw, "EXTERN" ) ) {
-
-        /* TODO: external reference */
-
-    } else if ( !upstrcmp( nw, "NOT" ) ) {
-
-        value = !eval_ifexpr( inpf, err, NULL );
-
-    } else if ( !upstrcmp( nw, "SET" ) ) {
-
-        /* get attribute, check for existence, check if value set */
-        var = getvar_if( inpf );
-        *err = fatal_error;
-        if ( var && var->text )
-            value = TRUE;
-
-
-    }
-
-    if ( !(*err) )
-        if ( !parse_wd( inpf, endstr ) )
-            *err = TRUE;
-
-    return( value );
 }
 
 
@@ -431,7 +360,7 @@ BOOL handle_hsc_if( INFILE *inpf, HSCTAG *tag )
 {
     BOOL ok    = TRUE;
     BOOL err   = FALSE; /* error flag */
-    BOOL value = eval_ifexpr( inpf, &err, ">" );
+    BOOL value = eval_bool( inpf, &err, ">" );
 
     is_push( value );
     if ( !value ) {
@@ -459,9 +388,11 @@ BOOL handle_hsc_cif( INFILE *inpf, HSCTAG *tag )
     BOOL ok = TRUE;
 
     is_pop();                          /* remove if-value from stack */
+#if 0
     remove_ctag( tag, inpf );          /* remove closing tag from stack */
     if ( !parse_wd( inpf, ">" ) )
         skip_until_eot( inpf );
+#endif
 
     return ( ok );
 }
@@ -476,11 +407,7 @@ BOOL handle_hsc_else( INFILE *inpf, HSCTAG *tag )
     BOOL ok = TRUE;
     if ( is_empty() ) {
 
-        message( MSG_UNMA_ELSE, inpf );
-        errtag( tag->name );
-        errstr( " not assoziated with " );
-        errtag( HSC_IF_STR );
-        errlf();
+        message_unma_else( inpf, tag );
 
     } else if ( !is_get() ) {
 
@@ -492,10 +419,11 @@ BOOL handle_hsc_else( INFILE *inpf, HSCTAG *tag )
 
         D( fprintf( stderr, "** ELSE: refused\n" ) );
         state = skip_if( inpf );
-        if ( state == IFST_ELSE )
-            /* TODO: </$IF> expected */;
-        remove_ctag( tag, inpf );      /* remove closing tag from stack */
+        if ( state == IFST_ELSE ) {
 
+            message_unma_else( inpf, tag );
+
+        }
     }
 
     return ( ok );
