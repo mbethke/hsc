@@ -49,24 +49,23 @@
 static BOOL include_macro(HSCPRC * hp, HSCTAG * macro, STRPTR macro_text, STRPTR filename, INFILEPOS * fpos)
 {
     BOOL ok = TRUE;
-    ULONG mci = get_mci(hp);    /* obtain local scope */
+    ULONG mci = get_mci(hp);;    /* obtain local scope */
 
     /* copy local attributes to global list */
     ok = copy_local_varlist(hp->defattr, macro->attr, mci);
-    DMC(prt_varlist(hp->defattr, "global attr (after copy_local_vars)"));
+    DMC(prt_varlist(hp->defattr, "global attr (after copy_local_varlist)"));
 
-    if (ok)
-    {
+    if (ok) {
         /* include macro file */
         ok = hsc_base_include_string(hp, filename, macro_text,
                                      IH_PARSE_MACRO, fpos);
     }
 
     /* cleanup */
-    if (mci != MCI_ERROR)
-    {
+    if (mci != MCI_ERROR) {
         /* remove local attributes */
         remove_local_varlist(hp->defattr, mci);
+        DMC(prt_varlist(hp->defattr, "global attr (after remove_local_varlist)"));
     }
     unget_mci(hp);              /* restore scope */
 
@@ -91,17 +90,12 @@ static VOID dbg_print_macro(HSCPRC * hp, HSCTAG * macro, BOOL open_mac, STRPTR p
     DMC(fprintf(stderr, DHL "--%s ", prefix));
     if (open_mac)
     {
-        if ((macro)->option & HT_CLOSE)
-        {
+        if ((macro)->option & HT_CLOSE) {
             DMC(fprintf(stderr, "start macro <%s>\n", (macro)->name));
-        }
-        else
-        {
+        } else {
             DMC(fprintf(stderr, "simple macro <%s>\n", (macro)->name));
         }
-    }
-    else
-    {
+    } else {
         DMC(fprintf(stderr, "end macro </%s>\n", (macro)->name));
     }
 }
@@ -116,13 +110,10 @@ static BOOL handle_macro(HSCPRC * hp, HSCTAG * macro, BOOL open_mac)
     dbg_print_macro(hp, macro, open_mac, "BEGIN");
 
     /* determine relative file position and macro text */
-    if (open_mac)
-    {
+    if (open_mac) {
         text = macro->op_text;
         fpos = macro->start_fpos;
-    }
-    else
-    {
+    } else {
         text = macro->cl_text;
         fpos = macro->end_fpos;
     }
@@ -288,16 +279,14 @@ BOOL handle_hsc_content(HSCPRC * hp, HSCTAG * tag) {
             /* update content attribute */
             set_vartext(content_attr, content);
 
-#ifndef EXPERIMENTAL_CONTAINER
             /* move local attributes from global list to buffer list */
             move_local_varlist(old_attribs, hp->defattr, scope_id);
-/*
             DDA(prt_varlist(hp->defattr, "attributes after move_local_varlist"));
             DDA(prt_varlist(old_attribs, "moved attributes"));
-*/
-            /* switch back to above scope */
-            unget_mci(hp);
-#endif
+            
+            /* TODO: why the hell was this here ?
+             * switch back to above scope */
+            /* get_mci(hp); */
 
             /* now include the macro content */
             hsc_base_include_string(hp, SPECIAL_FILE_ID "macro-content",
@@ -309,14 +298,12 @@ BOOL handle_hsc_content(HSCPRC * hp, HSCTAG * tag) {
             /* push entry pulled above back to content stack */
             add_dlnode(hp->content_stack, content);
 
-#ifndef EXPERIMENTAL_CONTAINER
             /* restore local attribs and scope from before */
             move_local_varlist(hp->defattr, old_attribs, scope_id);
-            get_mci(hp);
-/*
+            /* TODO: see above get_mci()
+             unget_mci(hp); */
             DDA(prt_varlist(hp->defattr, "attributes after move_local_varlist/restore"));
-*/
-#endif
+
             /* restore content attribute */
             set_vartext(content_attr, old_content);
 
