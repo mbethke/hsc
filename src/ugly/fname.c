@@ -418,7 +418,7 @@ STRPTR tmpnamstr(STRPTR suggested_prefix)
 
     if (fileidx != 0)
     {
-        s = buf;
+       s = buf;
     }
 
     return (s);
@@ -428,94 +428,82 @@ STRPTR tmpnamstr(STRPTR suggested_prefix)
  * get_relfname: get relative filename, according to given path
  *
  * params: absn..absolute filename
- *         curp..current path
+*         curp..current path
  *
  * EXAMPLE:
- *  "image/back.gif" and "image/hugo/" -> "/back.gif"
- *  "image/back.gif" and ""            -> "image/back.gif"
- *  "image/back.gif" and "people/"     -> "/image/back.gif"
- */
+*  "image/back.gif" and "image/hugo/" -> "/back.gif"
+*  "image/back.gif" and ""            -> "image/back.gif"
+*  "image/back.gif" and "people/"     -> "/image/back.gif"
+*/
 BOOL get_relfname(EXPSTR * dest, STRPTR absn, STRPTR curp)
 {
-    EXPSTR *fname = init_estr(32);      /* file name only */
-    EXPSTR *abspa = init_estr(32);      /* absolute path only */
-    EXPSTR *tmpp1 = init_estr(32);      /* temp pointer */
-    EXPSTR *tmpp2 = init_estr(32);
-    STRPTR rest_absp = NULL;    /* rest of current path */
-    STRPTR absp = NULL;         /* path processing */
-    int cmp_result;             /* stores result returned by upstrcmp */
+   EXPSTR *fname = init_estr(32);      /* file name only */
+   EXPSTR *abspa = init_estr(32);      /* absolute path only */
+   EXPSTR *tmpp1 = init_estr(32);      /* temp pointer */
+   EXPSTR *tmpp2 = init_estr(32);
+   STRPTR rest_absp = NULL;    /* rest of current path */
+   STRPTR absp = NULL;         /* path processing */
+   int cmp_result;             /* stores result returned by upstrcmp */
 
-    /* init string array */
-    clr_estr(dest);
-    get_fname(fname, absn);
-    get_fpath(abspa, absn);
-    absp = estr2str(abspa);
+   /* init string array */
+   clr_estr(dest);
+   get_fname(fname, absn);
+   get_fpath(abspa, absn);
+   absp = estr2str(abspa);
 
-    /*
-     * skip all equal subdirs
-     */
-    do
-    {
-        get_fsdir(tmpp1, absp);
-        get_fsdir(tmpp2, curp);
-        cmp_result = upstrcmp(estr2str(tmpp1), estr2str(tmpp2));
+   /*
+    * skip all equal subdirs
+    */
+   do {
+      get_fsdir(tmpp1, absp);
+      get_fsdir(tmpp2, curp);
+      cmp_result = upstrcmp(estr2str(tmpp1), estr2str(tmpp2));
 
-        if (!cmp_result)
-        {
+      if (!cmp_result) {
+         absp += estrlen(tmpp1);
+         curp += estrlen(tmpp2);
+      }
+   } while (estrlen(tmpp1)
+         && estrlen(tmpp2)
+         && (!cmp_result));
+
+   /* remember equal part of path */
+   rest_absp = absp;
+
+   /*
+    * for every subdir in absp unequal to
+    * corresponding subdir curp, insert a parent dir
+    */
+   if (curp[0])
+      do {
+         get_fsdir(tmpp1, absp);
+         get_fsdir(tmpp2, curp);
+         cmp_result = upstrcmp(estr2str(tmpp1), estr2str(tmpp2));
+
+         if (cmp_result) {
             absp += estrlen(tmpp1);
             curp += estrlen(tmpp2);
-        }
-    }
-    while (estrlen(tmpp1)
-           && estrlen(tmpp2)
-           && (!cmp_result));
+            app_estr(dest, PARENT_DIR);
+         }
+      } while (strlen(curp) && cmp_result);
 
-    /* remember equal part of path */
-    rest_absp = absp;
+   /* append equal part of path */
+   app_estr(dest, rest_absp);
 
-    /*
-     * for every subdir in absp unequal to
-     * corresponding subdir curp, insert a parent dir
-     */
-    if (curp[0])
-        do
-        {
-            get_fsdir(tmpp1, absp);
-            get_fsdir(tmpp2, curp);
-            cmp_result = upstrcmp(estr2str(tmpp1), estr2str(tmpp2));
+   /* append name of file */
+   app_estr(dest, estr2str(fname));
 
-            if (cmp_result)
-            {
-                absp += estrlen(tmpp1);
-                curp += estrlen(tmpp2);
-                app_estr(dest, PARENT_DIR);
-#if 0
-                printf("absp: (tmpp1) [%d] `%s'\n", estrlen(tmpp1), absp);
-                printf("curp: (tmpp2) [%d] `%s'\n", estrlen(tmpp2), curp);
-                printf("dest: `%s'\n", estr2str(dest));
-#endif
-            }
-        }
-        while (strlen(curp) && cmp_result);
-
-    /* append equal part of path */
-    app_estr(dest, rest_absp);
-
-    /* append name of file */
-    app_estr(dest, estr2str(fname));
-
-    /* relaese resources */
-    del_estr(fname);
-    del_estr(abspa);
-    del_estr(tmpp1);
-    del_estr(tmpp2);
-
-    return (ok_fnl_fpath(dest));
+   /* relaese resources */
+   del_estr(fname);
+   del_estr(abspa);
+   del_estr(tmpp1);
+   del_estr(tmpp2);
+   return (ok_fnl_fpath(dest));
 }
 
 BOOL optimize_fname(STRPTR *target_name, STRPTR source_name)
 {
-/* Some system dependant defines */
+   /* Some system dependant defines */
 #if defined AMIGA
 #define PARENT_DIRECTORY_BEGIN  "/"
 #define PARENT_DIRECTORY_INSIDE "//"
