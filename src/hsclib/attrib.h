@@ -108,13 +108,13 @@
 /* error return value for set_macro_args() to set var->macro_id with */
 #define MCI_GLOBAL  (0)           /* indicate global attributes */
 #define MCI_ERROR   (0xffffffff)
-#define MCI_APPCTAG (0xfffffffe ) /* used by app_ctag(); see "tag.c" */
+#define MCI_APPCTAG (0xfffffffe)  /* used by app_ctag(); see "tag.c" */
 
 /* attribute structure */
 typedef struct hscattr
 {
     STRPTR name;                /* macro id */
-    STRPTR deftext;             /* deftext text */
+    STRPTR deftext;             /* default text */
     STRPTR text;                /* text to be expanded to */
     STRPTR enumstr;             /* enumerator string */
     ULONG macro_id;             /* macro-call-id for local var */
