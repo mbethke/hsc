@@ -50,7 +50,7 @@
  * next message number
  *=========================
  */
-#define MAX_MSGID (92-1)
+#define MAX_MSGID (93-1)
 
 /*
  * obsolete numbers:
@@ -112,6 +112,7 @@
 #define MSG_ILLG_DEFENT        (MSG_ERROR+ 69)  /* illegal entity definition */
 #define MSG_ICON_ENTITY        (MSG_PORT + 58)  /* icon-entity found */
 #define MSG_RPLC_ICON          (MSG_NOTE + 77)  /* icon-entity found */
+#define MSG_DEFENT_WARN        (MSG_WARN + 92)  /* suspicious entity definition */
 
 /* 
  * messages pertaining to Cascading Style Sheets
