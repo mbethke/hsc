@@ -277,8 +277,10 @@ VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_fname, S
             /* dir correction, so path collapsing will always work */
             if(FE_DIR == fgetentrytype(estr2str(dest_fname))) {
                /* make sure there's a training slash */
-               if('/' != estr2str(dest_fname)[strlen(estr2str(dest_fname)) - 1])
-                  app_estr(dest_fname,"/");
+               if(0 != strcmp(PATH_SEPARATOR,
+                               estr2str(dest_fname) + strlen(estr2str(dest_fname)) -
+                                 strlen(PATH_SEPARATOR)))
+                  app_estr(dest_fname, PATH_SEPARATOR);
             }
             /* make document directory name */
             estrcpy(docdir, hp->destdir);
