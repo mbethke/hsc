@@ -56,8 +56,7 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
     if (optn & IH_POS_PARENT)
         panic("IH_POS_PARENT set");
 
-    if (inpf)                   /* file opened? */
-    {
+    if (inpf) {                  /* file opened? */
         /* push current input file on input-file-stack */
         if (hp->inpf)
             add_dlnode(hp->inpf_stack, (APTR) hp->inpf);
@@ -83,8 +82,7 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
             hsc_status_file_begin(hp, infget_fname(hp->inpf));
 
         /* parse file */
-        while (!infeof(inpf) && ok)
-        {
+        while (!infeof(inpf) && ok) {
             if (!(optn & IH_NO_STATUS) &&
                 (hp->prev_status_line != infget_y(hp->inpf)))
             {
@@ -98,20 +96,18 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
         }
 
         /* parse at end: check for missing tags, .. */
-        if (ok && (optn & IH_PARSE_END))
-        {                       /* parse end (unclosed tags etc) */
+        if (ok && (optn & IH_PARSE_END)) {
+           /* parse end (unclosed tags etc) */
             ok = hsc_parse_end(hp);
 
-            if (ok && (optn & IH_UPDATE_PRJ))
-            {
+            if (ok && (optn & IH_UPDATE_PRJ)) {
                 /* update project file */
                 ok = hsc_parse_end_id(hp);
             }
         }
 
         /* end of file status */
-        if (!(optn & IH_NO_STATUS))
-        {
+        if (!(optn & IH_NO_STATUS)) {
             /* status message: file processed */
             hsc_status_file_end(hp);
         }
@@ -121,21 +117,16 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
 
         /* pull previous input file from input-file-stack
          * or end hsc-process */
-        if (hp->inpf_stack->first)
-        {
+        if (hp->inpf_stack->first) {
             /* pull first item from stack */
             hp->inpf = (INFILE *) hp->inpf_stack->first->data;
             hp->inpf_stack->first->data = NULL;
 
             del_dlnode(hp->inpf_stack, hp->inpf_stack->first);
-        }
-        else
-        {
+        } else {
             hp->inpf = NULL;
         }
-    }
-    else
-    {
+    } else {
         panic("no input file");
     }
 
@@ -166,11 +157,8 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
        
        get_fpath(fpath,filename);
        /* if there is a path, add it to the list of include directories */
-       if(0 != estrlen(fpath)) {
-          STRPTR newpath = umalloc(estrlen(fpath) + 1);
-          strcpy(newpath,estr2str(fpath));
-          add_dlnode(hp->include_dirs,newpath);
-       }
+       if(0 != estrlen(fpath))
+          hsc_add_include_directory(hp,estr2str(fpath));
     }
 
     /* open & read input file */

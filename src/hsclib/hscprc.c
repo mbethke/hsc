@@ -687,11 +687,13 @@ VOID hsc_reset_msg_class(HSCPRC * hp) {
  * methods for include-directories
  */
 BOOL hsc_add_include_directory(HSCPRC * hp, STRPTR dir) {
-    return ((BOOL) (app_strnode(hp->include_dirs, dir) != NULL));
+   if(strlen(dir) > MAX_FPATH-2)
+      return FALSE;
+   return ((BOOL) (app_strnode(hp->include_dirs, dir) != NULL));
 }
 
 VOID hsc_clr_include_directory(HSCPRC * hp) {
-    clr_strlist(hp->include_dirs);
+   clr_strlist(hp->include_dirs);
 }
 
 /*
@@ -801,4 +803,4 @@ BOOL hsc_standard_nomem_handler(size_t size) {
 }
 
 /* $Id$ */
-/* vi: set ts=4: */
+/* vi: set ts=3 sw=3: */
