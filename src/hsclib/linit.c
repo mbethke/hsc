@@ -333,7 +333,7 @@ VOID hsc_set_tagCB(HSCPRC * hp, STRPTR name,
     {
         /* set handles */
         DC(fprintf(stderr, DHL "add handles for <%s> (%p,%p)\n",
-                   name, op_hnd, cl_hnd));
+                   name, (void*)op_hnd, (void*)cl_hnd));
         tag->o_handle = op_hnd;
         tag->c_handle = cl_hnd;
     }
