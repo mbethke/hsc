@@ -155,9 +155,7 @@ void hp_enable_output(HSCPRC * hp, STRPTR cause)
  */
 DLNODE *find_end_tag_node(HSCPRC * hp, STRPTR tagname)
 {
-   DLNODE *nd = find_dlnode_bw(hp->container_stack->last,
-         (APTR) tagname, cmp_strtag);
-   return nd;
+   return find_dlnode_bw(dll_last(hp->container_stack), (APTR) tagname, cmp_strtag);
 }
 
 /*
@@ -168,44 +166,33 @@ DLNODE *find_end_tag_node(HSCPRC * hp, STRPTR tagname)
  */
 HSCTAG *find_end_tag(HSCPRC * hp, STRPTR tagname)
 {
-   HSCTAG *tag = NULL;
-   DLNODE *nd = find_dlnode_bw(hp->container_stack->last,
+   DLNODE *nd = find_dlnode_bw(dll_last(hp->container_stack),
          (APTR) tagname, cmp_strtag);
 
-   if (nd)
-   {
-      tag = (HSCTAG *) dln_data(nd);
-   }
-
-   return tag;
+   return (HSCTAG*) ((NULL != nd) ? dln_data(nd) : NULL);
 }
 
 /*
  * find_end_container
  *
  * search container stack for the first macro which is a
- * container macro anjd return the cerresponding tag structure
+ * container macro and return the cerresponding tag structure
  */
 HSCTAG *find_end_container_macro(HSCPRC * hp)
 {
    HSCTAG *tag = NULL;
    DLNODE *nd = dll_last(hp->container_stack);
 
-   while (nd)
-   {
+   while (nd) {
       HSCTAG *nd_tag = (HSCTAG *) dln_data(nd);
 
-      if (nd_tag->option & HT_CONTENT)
-      {
+      if (nd_tag->option & HT_CONTENT) {
          tag = nd_tag;
          nd = NULL;
-      }
-      else
-      {
+      } else {
          nd = dln_prev(nd);
       }
    }
-
    return tag;
 }
 
@@ -217,7 +204,7 @@ HSCTAG *find_end_container_macro(HSCPRC * hp)
  * tag, if tag is a macro and has a closing tag.
  *
  * params: hp.....hscprc with container_stack to be modified
-*         tagid..name of the new tag (eg "IMG")
+ *         tagid..name of the new tag (eg "IMG")
  * result: ptr to the new tag or NULL if no mem
  */
 HSCTAG *append_end_tag(HSCPRC * hp, HSCTAG * tag)
@@ -237,11 +224,8 @@ HSCTAG *append_end_tag(HSCPRC * hp, HSCTAG * tag)
       /* clone attributes, if tag is a
        * macro tag and has a closing tag
        */
-      if ((tag->option & HT_MACRO)
-            && (tag->option & HT_CLOSE))
-      {
+      if ((tag->option & HT_MACRO) && (tag->option & HT_CLOSE))
          ok = copy_local_varlist(end_tag->attr, tag->attr, MCI_APPCTAG);
-      }
 
       /* remeber position where start tag has been called */
       /* (for message "end tag missing) */
@@ -273,26 +257,23 @@ HSCTAG *append_end_tag(HSCPRC * hp, HSCTAG * tag)
 VOID remove_end_tag(HSCPRC * hp, HSCTAG * tag)
 {
    /* search for tag on stack of occured tags */
-   DLNODE *nd = find_dlnode_bw(hp->container_stack->last, (APTR) tag->name, cmp_strtag);
-   if (nd == NULL)
-   {
+   DLNODE *nd = find_dlnode_bw(dll_last(hp->container_stack), (APTR) tag->name, cmp_strtag);
+   if (nd == NULL) {
       /* closing tag not found on stack */
       /* ->unmatched closing tag without previous opening tag */
       hsc_message(hp, MSG_UNMA_CTAG, "unmatched %C", tag);
-   }
-   else
-   {
+   } else {
       /* closing tag found on stack */
       HSCTAG *end_tag = (HSCTAG *) dln_data(nd);
       STRPTR foundnm = (STRPTR) end_tag->name;
-      STRPTR lastnm = (STRPTR) dln_data(dll_last(hp->container_stack));
+      STRPTR lastnm = (STRPTR)(((HSCTAG*)dln_data(dll_last(hp->container_stack)))->name);
 
       /* check if name of closing tag is -not- equal
        * to the name of the last tag last on stack
        * ->illegal tag nesting
        */
       if (upstrcmp(lastnm, foundnm)
-            && !(tag->option | HT_MACRO)
+            && !(tag->option & HT_MACRO)
             && !(is_hsc_tag(tag)))
       {
          hsc_message(hp, MSG_CTAG_NESTING,
@@ -301,16 +282,14 @@ VOID remove_end_tag(HSCPRC * hp, HSCTAG * tag)
       }
 
       /* if closing tag has any attributes defined,
-       * it must be a closing macto tag. so copy
+       * it must be a closing macro tag. so copy
        * the attributes of the closing tag to the
        * attributes of the macro tag. therefor,
        * the closing macro tag inherits the
        * attributes of his opening macro
        */
       if (end_tag->attr)
-      {
          set_local_varlist(tag->attr, end_tag->attr, MCI_APPCTAG);
-      }
 
       /* remove node for closing tag from container_stack */
       del_dlnode(hp->container_stack, nd);
@@ -488,13 +467,9 @@ BOOL hsc_parse_tag(HSCPRC * hp)
                   if (hsc_whtspc(ch))
                   {
                      if (hp->strip_badws)
-                     {
                         hp->strip_next2_whtspc = TRUE;
-                     }
                      else if (!hp->strip_next2_whtspc)
-                     {
                         now_tag_strip_whtspc = tag;
-                     }
                   }
                   inungetc(ch, inpf);
                }
@@ -554,62 +529,44 @@ BOOL hsc_parse_tag(HSCPRC * hp)
 
          /* append tag-name to tag_name_str */
          if (!hp->compact)
-         {
             app_estr(hp->tag_name_str, infgetcws(inpf));
-         }
          app_estr(hp->tag_name_str, infgetcw(inpf));
 
          if (!hp->suppress_output)
-         {
             D(fprintf(stderr, "/%s>\n", nxtwd));
-         }
 
          /* search for tag in taglist */
          /* (see if it exists at all) */
          nd = find_dlnode(taglist->first, (APTR) nxtwd, cmp_strtag);
-         if (nd == NULL)
-         {
+         if (nd == NULL) {
             /* closing tag is absolutely unknown */
             hsc_message(hp, MSG_UNKN_TAG,   /* tag not found */
                   "unknown %c", nxtwd);
             skip_until_eot(hp, hp->tag_attr_str);
-         }
-         else
-         {
+         } else {
             tag = (HSCTAG *) nd->data;      /* fitting tag in taglist */
 
             /* check for preceding white-spaces */
-            if ((tag->option & HT_WHTSPC) && anyWhtspc(hp))
-            {
+            if ((tag->option & HT_WHTSPC) && anyWhtspc(hp)) {
                if (hp->strip_badws)
-               {
                   hp->strip_next_whtspc = TRUE;
-               }
                else if (!hp->strip_next_whtspc)
-               {
                   hsc_message(hp, MSG_PREC_WHTSPC,
                         "preceding white space for %C", tag);
-               }
             }
 
-            if (tag->option & (HT_CLOSE | HT_AUTOCLOSE))
-            {
+            if (tag->option & (HT_CLOSE | HT_AUTOCLOSE)) {
                /* set closing handle */
                hnd = tag->c_handle;
 
                /* check for no args */
-               if (!parse_wd(hp, ">"))
-               {
+               if (!parse_wd(hp, ">")) {
                   hsc_message(hp, MSG_CL_TAG_ARG,
                         "no attributes allowed for end-tags");
-               }
-               else
-               {
+               } else {
                   /* set ">" in string that contains closing text */
                   if (!hp->compact)
-                  {
                      set_estr(hp->tag_close_str, infgetcws(inpf));
-                  }
                   app_estr(hp->tag_close_str, infgetcw(inpf));
                }
 
@@ -1102,28 +1059,20 @@ BOOL hsc_parse(HSCPRC * hp)
 
       /* add white spaces to buffer */
       if (cws)
-      {
          app_estr(hp->whtspc, cws);
-      }
 
       /* parse text */
       if (nxtwd)
       {
          if (!strcmp(nxtwd, "<"))
-         {
             /* parse tag */
             hsc_parse_tag(hp);
-         }
          else if (!strcmp(nxtwd, "&"))
-         {
             /* parse entity */
             hsc_parse_amp(hp);
-         }
          else
-         {
             /* handle text */
             hsc_parse_text(hp);
-         }
       }
    }
 
@@ -1148,29 +1097,19 @@ BOOL hsc_parse_source(HSCPRC * hp)
 
       /* add white spaces to buffer */
       if (cws)
-      {
          app_estr(hp->whtspc, cws);
-      }
 
       if (nxtwd)
       {
          /* process next word */
          if (!strcmp(nxtwd, "<"))
-         {
             hsc_output_text(hp, "", "&lt;");
-         }
          else if (!strcmp(nxtwd, ">"))
-         {
             hsc_output_text(hp, "", "&gt;");
-         }
          else if (!strcmp(nxtwd, "&"))
-         {
             hsc_output_text(hp, "", "&amp;");
-         }
          else
-         {
             hsc_parse_text(hp);
-         }
       }
    }
    return (BOOL) (!hp->fatal);
