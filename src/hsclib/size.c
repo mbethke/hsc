@@ -52,10 +52,12 @@ static UBYTE msof[] =
 };
 
 /* PNG image header */
+#if 0
 static unsigned char id_PNG[] =
 {
     137, 80, 78, 71, 13, 10, 26, 10
 };
+#endif
 
 /* file indeces for PNG */
 #define WIDTH_PNG  16
@@ -108,16 +110,26 @@ static VOID try_setattr(HSCPRC * hp, HSCVAR * attr, ULONG value)
 
             /* append attribute name and "=" */
             app_estr(hp->tag_attr_str, " ");
-            app_estr(hp->tag_attr_str, attr->name);
+            if(hp->lctags) {
+               STRPTR tmp = ugly_strclone(attr->name,hp->inpf->filename,
+                                          hp->inpf->pos_y);
+               lowstr(tmp);
+               app_estr(hp->tag_attr_str, tmp);
+               ugly_freestr(tmp,hp->inpf->filename,hp->inpf->pos_y);
+            } else {
+               app_estr(hp->tag_attr_str, attr->name);
+            }
             app_estr(hp->tag_attr_str, "=");
 
             /* append quotes and value */
-            if ((hp->quotemode == QMODE_KEEP) || (hp->quotemode == QMODE_DOUBLE))
+            if ((hp->quotemode == QMODE_KEEP) ||
+                (hp->quotemode == QMODE_DOUBLE))
                 app_estrch(hp->tag_attr_str, '\"');
             else if (hp->quotemode == QMODE_SINGLE)
                 app_estrch(hp->tag_attr_str, '\'');
             app_estr(hp->tag_attr_str, long2str(value));        /* append value */
-            if ((hp->quotemode == QMODE_KEEP) || (hp->quotemode == QMODE_DOUBLE))
+            if ((hp->quotemode == QMODE_KEEP) ||
+                (hp->quotemode == QMODE_DOUBLE))
                 app_estrch(hp->tag_attr_str, '\"');
             else if (hp->quotemode == QMODE_SINGLE)
                 app_estrch(hp->tag_attr_str, '\'');
@@ -136,6 +148,64 @@ static VOID try_setattr(HSCPRC * hp, HSCVAR * attr, ULONG value)
     }
 }
 
+/* 
+ * merge_style_strings 
+ *
+ * Merges an existing STYLE attribute with a new string
+ */
+EXPSTR *merge_style_strings(HSCPRC *hp, STRPTR addstyle) {
+   EXPSTR *nstyle = init_estr(32);
+   STRPTR s,p;
+   
+   s = estr2str(hp->tag_attr_str);
+   if(NULL == (p = upstrstr(s,"style="))) {
+      /* no STYLE attribute present yet */
+      app_estr(hp->tag_attr_str, " ");
+      app_estr(hp->tag_attr_str, hp->lctags ? "style=\"" : "STYLE=\"");
+      app_estr(hp->tag_attr_str, addstyle);
+      app_estr(hp->tag_attr_str, "\"");
+      set_estr(nstyle,addstyle);
+      return nstyle;
+   } else {
+      EXPSTR *nattr = init_estr(32);
+      STRPTR oldstyle = p+6;
+      char quote;
+      
+      /* copy all upto STYLE= */
+      set_estrn(nattr,s,p-s+6);
+      quote = *oldstyle;
+      if(('"' != quote) && ('\'' != quote))
+         quote = ' ';
+      else
+         app_estrch(nattr,quote);
+      /* copy quoted string, not including closing quote/blank */
+      while(*++oldstyle != quote) {
+         app_estrch(nstyle,*oldstyle);
+         app_estrch(nattr,*oldstyle);
+      }
+      /* append semicolon unless already present */
+      if(';' != oldstyle[-1]) {
+         app_estr(nstyle,";");
+         app_estr(nattr,";");
+      }
+      /* append style to merge in [+quote] */
+      app_estr(nstyle,addstyle);
+      app_estr(nattr,addstyle);
+
+      /* append rest of attributes to nattr */
+      app_estr(nattr,oldstyle);
+
+      /*
+      fprintf (stderr,"newstyle: '%s'\n",estr2str(nstyle));
+      fprintf (stderr,"newattr: '%s'\n",estr2str(nattr));
+      */
+      /* set new attribute string */
+      set_estr(hp->tag_attr_str,estr2str(nattr));
+      del_estr(nattr);
+      return nstyle;
+   }
+}
+
 /*
  * get_attr_size
  *
@@ -147,12 +217,11 @@ static VOID try_setattr(HSCPRC * hp, HSCVAR * attr, ULONG value)
  */
 BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
 {
-    HSCVAR *asrc = tag->uri_size;
     STRPTR srcuri = NULL;
 
-    if (asrc)
+    if (tag->uri_size)
     {
-        srcuri = get_vartext(asrc);
+        srcuri = get_vartext(tag->uri_size);
     }
     else
     {
@@ -210,7 +279,6 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
                 size_t i = 0;
 
                 /*TODO: recognize and report progressive */
-                /*TODO: warning for progressive */
                 while (!found && (i < (bytes_read - 8)))
                 {
                     if ((buf[i] == 0xff) && (buf[i + 1] != 0xff))
@@ -425,8 +493,14 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
         /* set attribute values */
         if (height && width)
         {
-            HSCVAR *awidth = find_varname(tag->attr, "WIDTH");
-            HSCVAR *aheight = find_varname(tag->attr, "HEIGHT");
+            HSCVAR *astyle=NULL, *awidth=NULL, *aheight=NULL;
+
+            if(hp->xhtml) {
+               astyle = find_varname(tag->attr, "STYLE");
+            } else {
+               awidth = find_varname(tag->attr, "WIDTH");
+               aheight = find_varname(tag->attr, "HEIGHT");
+            }
 
             /* status message telling about the dimension */
             app_estr(srcpath, ": ");
@@ -445,15 +519,28 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
             }
             hsc_status_misc(hp, estr2str(srcpath));
 
-            /* now really set them */
-            try_setattr(hp, awidth, width);
-            try_setattr(hp, aheight, height);
+            if(hp->xhtml) {
+               /* in XHTML mode, add to the STYLE attribute */
+               /* space for string: "width:XXXXXXXXXXpx;height:XXXXXXXXXXpx" */
+               char stylebuf[7+10+2+7+10+2+1];
+               EXPSTR *newstyle;
+
+               /* make new CSS style attributes */
+               sprintf(stylebuf,"width:%ldpx;height:%ldpx",width,height);
+               /* merge into potentially existing attribute */
+               newstyle = merge_style_strings(hp,stylebuf);
+               set_vartext(astyle,estr2str(newstyle));
+               del_estr(newstyle);
+            } else {
+               /* in regular HTML mode, set WIDTH/HEIGHT */
+               try_setattr(hp, awidth, width);
+               try_setattr(hp, aheight, height);
+            }
         }
 
         /* free local resources */
         del_estr(srcpath);
         del_estr(imgpath);
     }
-
     return (TRUE);
 }

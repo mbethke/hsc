@@ -49,7 +49,7 @@
  * next message number
  *=========================
  */
-#define MAX_MSGID (87-1)
+#define MAX_MSGID (91-1)
 
 /*
  * obsolete numbers:
@@ -99,6 +99,8 @@
 #define MSG_ILLG_CTAG          (MSG_ERROR+ 66)  /* illegal end-tag */
 #define MSG_SUCC_WHTSPC        (MSG_PORT + 78)  /* succeeding white-space */
 #define MSG_PREC_WHTSPC        (MSG_PORT + 79)  /* preceeding white-space */
+#define MSG_XHTML_NOTCLOSED    (MSG_WARN + 88)  /* EMPTY tag not closed in
+                                                   XHTML mode */
 
 /*
  * messages within entities
@@ -120,21 +122,25 @@
 #define MSG_SERVER_URI         (MSG_WARN + 36)  /* suspicios enum value */
 #define MSG_ARG_NO_QUOTE       (MSG_PORT + 22)  /* argument without quote */
 #define MSG_EMPTY_SYMB_REF     (MSG_ERROR+ 23)  /* empty symbol reference */
-#define MSG_ILLG_ATTR_FLAG     (MSG_WARN + 24)  /* attribute flag not allowed here */
-
+#define MSG_ILLG_ATTR_FLAG     (MSG_WARN + 24)  /* attribute flag not allowed
+                                                   here */
 #define MSG_UNEX_ATTR_TYPE     (MSG_ERROR+ 25)  /* illegal symbol type */
 #define MSG_UNEX_ATTR_VALUE    (MSG_WARN + 45)  /* unexpected attribute value */
-
 #define MSG_SYMB_2ND_DEFAULT   (MSG_ERROR+ 26)  /* default value already set */
 #define MSG_ENUM_UNKN          (MSG_WARN + 35)  /* unknown enum value */
 #define MSG_NOARG_ATTR         (MSG_ERROR+ 42)  /* attr requires arg */
 #define MSG_UNKN_ATTR_OPTION   (MSG_ERROR+ 43)  /* unknown attr option */
 #define MSG_MISS_REQ_ATTR      (MSG_ERROR+ 44)  /* required attr missing */
+#define MSG_MISS_RCMD_ATTR     (MSG_STYLE+ 90)  /* recommended attr missing */
 #define MSG_ATTR_REDEFINED     (MSG_WARN + 63)  /* attr already defined */
-#define MSG_ILLG_ATTRNAME      (MSG_ERROR+ 64)  /* illegal attribute identifier */
+#define MSG_ILLG_ATTRNAME      (MSG_ERROR+ 64)  /* illegal attribute
+                                                   identifier */
 #define MSG_UNKN_BINOP         (MSG_ERROR+ 65)  /* unknown binary operator */
 #define MSG_ATTR_CONST         (MSG_ERROR+ 27)  /* can't change constant attr */
 #define MSG_IMG_CORRUPT        (MSG_ERROR+  8)  /* image corrupt */
+#define MSG_ATTR_OBSOLETE      (MSG_WARN + 87)  /* attribute is obsolete */
+#define MSG_ATTR_AFTER_SLASH   (MSG_ERROR+ 89)  /* attribute after closing slash
+                                                   in XHTML mode */
 
 /*
  * messages from tag handles

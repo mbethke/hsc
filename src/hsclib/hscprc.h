@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +49,7 @@
 #define CONFIG_PATH "hsc:"
 #define OPTION_FILE "hsc.options"
 
-#elif (defined NEXTSTEP) || (defined UNIX) || (defined BEOS)
+#elif (defined NEXTSTEP) || (defined UNIX) || (defined BEOS) || (defined WINNT)
 #define CONFIG_FILE "hsc.prefs"
 #define CONFIG_PATH "/usr/local/lib/", "/usr/lib/"
 #define OPTION_FILE "hsc.options"
@@ -111,8 +112,9 @@
  * NOTE: this is set if IH_POS_PARENT is passed on hsc_include() */
 #define PARENT_FILE_ID  "::p::"
 
-/* pseudo-filename for stdin */
-#define FILENAME_STDIN "STDIN"
+/* pseudo-filenames for stdin */
+#define FILENAME_STDIN1 "STDIN"
+#define FILENAME_STDIN2 "-"
 
 /* prefix char used for special hsc-tags  */
 #define HSC_SPECIAL_PREFIX "$"
@@ -131,6 +133,9 @@
 #define FILESIZEFORMAT_ATTR "HSC.FORMAT.FILESIZE"
 #define TIMEFORMAT_ATTR     "HSC.FORMAT.TIME"
 #define LINEFEED_ATTR       "HSC.LF"
+#define HSCVERSION_ATTR     "HSC.VERSION"
+#define HSCREVISION_ATTR    "HSC.REVISION"
+
 
 /* attribute that hold condition on <$if/$elseif> */
 #define CONDITION_ATTR "COND"
@@ -151,6 +156,9 @@
 
 #elif defined UNIX
 #define SYSTEM_ATTR_ID "Unix"
+
+#elif defined WINNT
+#define SYSTEM_ATTR_ID "Win32"
 
 /* dos4 */
 #else
@@ -208,14 +216,14 @@ struct hsc_process
     STRPTR filename_document;   /* document-name to be stored in project */
 
     HSCIGN *msg_ignore;         /* messages to be ignored */
-    BOOL msg_ignore_notes;      /* message-classes to be ignores */
+    BOOL msg_ignore_notes;      /* message-classes to be ignored */
     BOOL msg_ignore_style;
     BOOL msg_ignore_port;
     HSCMSG_CLASS *msg_class;    /* messages with remaped classes */
     ULONG msg_count;            /* number of messages/errors occured until now */
     ULONG max_messages;          /* maximum number of messages/errors allowed */
     ULONG max_errors;
-    unsigned char *image_buffer;        /* buffer to get image dimension from file */
+    unsigned char *image_buffer;  /* buffer to get image dimension from file */
 
     BOOL chkid;                 /* flag: check existence of URIs/IDs */
     BOOL chkuri;
@@ -232,12 +240,16 @@ struct hsc_process
     BOOL strip_ext;             /* flag: strip external references */
     BOOL strip_badws;           /* flag: strip bad white spaces */
     BOOL weenix;                /* flag: unix compatibilty mode */
+    BOOL xhtml_emptytag;        /* flag: processing empty XHTML tag */
     BOOL suppress_output;       /* flag: TRUE, until outputable data occure */
     BOOL docbase_set;           /* <BASE HREF=".."> occured */
     BOOL inside_pre;            /* inside preformatted tag <PRE> & Co. */
     BOOL inside_anchor;         /* inside anchor-tag <A> */
     BOOL inside_title;          /* inside title-tag <TITLE> */
     BOOL prostitute;            /* use "prostitute" or "jerk"? */
+    BOOL nested_errors;         /* show "location of previous call" msgs */
+    BOOL lctags;                /* force all tags to lowercase */
+    BOOL xhtml;                 /* try to be XHTML compatible */
 
     BOOL fatal;                 /* fatal error occured; abort process */
 
@@ -285,23 +297,9 @@ struct hsc_process
     VOID(*CB_id) (struct hsc_process * hp,
                   HSCATTR * attr, STRPTR id);
 
-#ifdef MSDOS
-    /* some compilers seem to have problems with this line.. */
-    enum content_called
-    {
-        no, once, often
-    };
-#endif
-
 };
 
 typedef struct hsc_process HSCPRC;
-
-#if (!defined MSDOS) & ((defined WINNT))
-/* handle several OS-es same as MSDOS */
-#define MSDOS 1
-#error "Fuchs du hast die Gans gestohlen, gib sie wieder her..."
-#endif
 
 /*
  * global funcs
@@ -367,6 +365,9 @@ extern VOID hsc_set_smart_ent(HSCPRC * hp, BOOL new_smart_ent);
 extern VOID hsc_set_strip_badws(HSCPRC * hp, BOOL new_strip_badws);
 extern VOID hsc_set_strip_cmt(HSCPRC * hp, BOOL new_strip_cmt);
 extern VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext);
+extern VOID hsc_set_nested_errors(HSCPRC * hp, BOOL new_nested_errors);
+extern VOID hsc_set_lctags(HSCPRC * hp, BOOL new_lctags);
+extern VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml);
 
 /* set-methodes for values */
 extern BOOL hsc_set_destdir(HSCPRC * hp, STRPTR dir);

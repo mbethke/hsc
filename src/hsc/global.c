@@ -67,26 +67,11 @@ BOOL init_global(VOID)
 
     return_code = RC_OK;
 
-    /* init random generator */
-    srand((int) time(NULL));
-
     /* init some string */
     inpfilename = init_estr(32);
     msgbuf = init_estr(64);
 
     ok = (inpfilename && msgbuf);
-
-#if (defined MSDOS)             /* HSC_PUT */
-#define MEM_SIZE (15*1024*1024)
-    {
-        /* alloc 15MB ram, fill them twice
-         * and never release them;
-         * espececially funny for Dos-externders */
-        STRPTR mem = umalloc(MEM_SIZE);
-        memset(mem, 0xaBadCafe, MEM_SIZE);
-        memset(mem, 0xDeadF00d, MEM_SIZE);
-    }
-#endif
 
     return (ok);
 }

@@ -141,6 +141,10 @@ VOID reset_hscprc(HSCPRC * hp)
     /* check for prostitute */
     hp->prostitute = (getenv(ENV_HSCSALARY) != NULL);
 
+    hp->nested_errors = TRUE;
+    hp->lctags = FALSE;
+    hp->xhtml = FALSE;
+
     /* allow infinite number messages */
     hp->max_messages = MAXIMUM_MESSAGE_INFINITE;
     hp->max_errors = MAXIMUM_MESSAGE_INFINITE;
@@ -288,6 +292,21 @@ BOOL hsc_get_strip_cmt(HSCPRC * hp)
 BOOL hsc_get_strip_ext(HSCPRC * hp)
 {
     return (hp->strip_ext);
+}
+
+BOOL hsc_get_nested_errors(HSCPRC * hp)
+{
+    return (hp->nested_errors);
+}
+
+BOOL hsc_get_lctags(HSCPRC * hp)
+{
+    return (hp->lctags);
+}
+
+BOOL hsc_get_xhtml(HSCPRC * hp)
+{
+    return (hp->xhtml);
 }
 
 /*
@@ -536,6 +555,26 @@ VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext)
     D(fprintf(stderr, DHL "flag: strip_ext=%d\n", new_strip_ext));
 }
 
+VOID hsc_set_nested_errors(HSCPRC * hp, BOOL new_nested_errors)
+{
+    hp->nested_errors = new_nested_errors;
+    D(fprintf(stderr, DHL "flag: nested_errors=%d\n", new_nested_errors));
+}
+
+VOID hsc_set_lctags(HSCPRC * hp, BOOL new_lctags)
+{
+    hp->lctags = new_lctags;
+    D(fprintf(stderr, DHL "flag: lctags=%d\n", new_lctags));
+}
+
+VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml)
+{
+    if((hp->xhtml = new_xhtml))
+       hp->lctags = TRUE;            /* XHTML implies LOWERCASETAGS */
+       hp->quotemode = QMODE_DOUBLE; /* use double quotes by default */
+    D(fprintf(stderr, DHL "flag: xhtml=%d\n", new_xhtml));
+}
+
 /*
  * set values
  */
@@ -778,15 +817,17 @@ STRPTR compactWs(HSCPRC * hp, STRPTR ws)
         STRPTR containsLF = strchr(ws, '\n');
         STRPTR containsCR = strchr(ws, '\r');
 
-        if (containsLF)
+        if (containsLF) {
             if (containsCR)
                 newWs = "\r\n";
             else
                 newWs = "\n";
-        else if (containsCR)
-            newWs = "\r";
-        else
-            newWs = " ";
+        } else {
+           if (containsCR)
+              newWs = "\r";
+           else
+              newWs = " ";
+        }
     }
 
     return (newWs);

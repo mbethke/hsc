@@ -37,7 +37,7 @@
 #define RC_ERROR 10
 #define RC_FAIL  20
 
-#elif (defined RISCOS) || (defined BEOS) || (defined NEXTSTEP) || (defined UNIX) || (defined MSDOS)
+#elif (defined RISCOS) || (defined BEOS) || (defined NEXTSTEP) || (defined UNIX) || (defined WINNT)
 
 #define RC_OK     0
 #define RC_WARN   0

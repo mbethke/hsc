@@ -74,7 +74,6 @@ STRPTR ugly_strclone(CONSTRPTR oldstr, STRPTR file, ULONG line)
 
     if (oldstr)
     {
-
         /* alloc mem for clone */
 #if DEBUG_UGLY_MEMORY
         newstr = (STRPTR) ugly_malloc_tracking(strlen(oldstr) + 1, file, line);
@@ -83,14 +82,31 @@ STRPTR ugly_strclone(CONSTRPTR oldstr, STRPTR file, ULONG line)
 #endif
 
         if (newstr)             /* alloc sucessful? */
-            strcpy(newstr, oldstr);     /* Y-> copy data */
-
+           strcpy(newstr, oldstr);     /* Y-> copy data */
+        else
+           panic("out of memory while trying to clone string");
     }
     return (newstr);            /* return result */
 }
 
 /*
- * upstr: convert a string to upper case
+ * lowstr: convert a string to lowercase
+ *
+ * params: *s...string to convert
+ *
+ */
+STRPTR lowstr(STRPTR s)
+{
+    STRPTR s_old = s;
+
+    if (s)
+        for (; *s != '\0'; s++)
+            *s = tolower(*s);
+
+    return s_old;
+}
+/*
+ * upstr: convert a string to uppercase
  *
  * params: *s...string to convert
  *

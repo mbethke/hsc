@@ -125,7 +125,7 @@ BOOL write_output(HSCPRC * hp)
 
             DLNODE *nd = dll_first(outlist);
 
-            status_msg("writting output..");
+            status_msg("writing output..");
             errno = 0;
 
             /* write whole list of output-strings */

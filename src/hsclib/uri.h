@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001 Matthias Bethke 
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +32,7 @@
 
 typedef enum
 {
-    URI_abs,                    /* starts with ":" */
+    URI_abs=0,                  /* starts with ":" */
     URI_ext,                    /* contains ":" before first "/" */
     URI_rel,                    /* no ":" */
     URI_relserv                 /* starts with "/"; server relative */

@@ -48,6 +48,7 @@
 
 #ifndef NOEXTERN_UGLY_USTRING_H
 
+extern STRPTR lowstr(STRPTR s);
 extern STRPTR upstr(STRPTR s);
 extern int upstrcmp(CONSTRPTR s1, CONSTRPTR s2);
 extern int upstrncmp(CONSTRPTR s1, CONSTRPTR s2, size_t n);

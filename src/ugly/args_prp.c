@@ -373,11 +373,12 @@ struct arglist *prepare_args(STRPTR arglist_name,...)
                          * check, if arg multiple arg without keyword
                          */
                         if (new_flags & ARG_MULTIPLE)
-                            if (!(new_flags & ARG_KEYWORD))
+                            if (!(new_flags & ARG_KEYWORD)) {
                                 if (new_arglist->al_multiple)
                                     set_preperr(APE_DOUBLE_MULTIPLE, 0);
                                 else
                                     new_arglist->al_multiple = newarg;
+                            }
 
                         /*
                          * append new argument entry to list

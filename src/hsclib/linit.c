@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001  Matthias Bethke 
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +23,7 @@
  *
  * functions to init & read preferences for a hsc-process
  *
+ * updated: 08-May-2001
  * updated: 17-Dec-1997
  * created: 19-Feb-1996
  */
@@ -39,12 +41,15 @@
 #include "hsclib/tag_macro.h"
 #include "hsclib/tag_misc.h"
 
+#include "hsc/hsc_rev.h"
+
 #include "ugly/fname.h"
 
 #if DEBUG
 /*
  * debugging print functions
  */
+#if 0
 static VOID prt_ent(FILE * stream, APTR data)
 {
     HSCENT *ent = (HSCENT *) data;
@@ -60,6 +65,7 @@ static VOID prt_ent(FILE * stream, APTR data)
     else
         fprintf(stream, " <NULL>");
 }
+#endif
 
 static VOID prt_tag(FILE * stream, APTR data)
 {
@@ -82,6 +88,8 @@ static VOID prt_tag(FILE * stream, APTR data)
             fprintf(stream, "/1");
         if (tag->option & HT_AUTOCLOSE)
             fprintf(stream, "/sc");
+        if (tag->option & HT_EMPTY)
+            fprintf(stream, "/e");
         if (tag->option & HT_SPECIAL)
             fprintf(stream, "/a");
         fprintf(stream, ">");
@@ -394,6 +402,8 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
         FILESIZEFORMAT_ATTR ":string"   , "%a%u",
         TIMEFORMAT_ATTR     ":string"   , "%d-%b-%Y, %H:%M",
         LINEFEED_ATTR       ":string>"  , NULL,
+        HSCVERSION_ATTR     ":num/c="STRINGIFY(VERSION), NULL,
+        HSCREVISION_ATTR    ":num/c="STRINGIFY(REVISION), NULL,
         NULL, NULL};
 
     /* temporarily disable debugging output */
@@ -518,8 +528,7 @@ BOOL hsc_init_hscprc(HSCPRC * hp, STRPTR prefs_fname)
 {
     BOOL ok = FALSE;            /* return value */
 
-    if (hsc_init_tagsNattr(hp)
-        && hsc_init_basicEntities(hp)
+    if ( hsc_init_basicEntities(hp)
         && hsc_read_prefs(hp, prefs_fname)
         && hsc_assign_tagCBs(hp)
         )
@@ -570,3 +579,5 @@ BOOL hsc_init_hscprc(HSCPRC * hp, STRPTR prefs_fname)
 
     return (ok);
 }
+
+/* vi: set tabstop=4: */

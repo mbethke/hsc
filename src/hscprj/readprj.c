@@ -84,7 +84,7 @@ static ULONG read_ulong(HSCPRJ * hp)
         ch = infgetc(inpf);
         if (ch != ' ')
         {
-            digit = x2int(ch);
+            digit = x2int((char)ch);
             if (digit == EOF)
                 num = 0;
             else
@@ -106,12 +106,19 @@ static ULONG read_ulong(HSCPRJ * hp)
  *
  * read string length, alloc mem and read string into it
  */
-static STRPTR read_string(HSCPRJ * hp)
+static STRPTR read_string(HSCPRJ * hp, BOOL len_format)
 {
     STRPTR dest = NULL;
+    ULONG len;
 
-    ULONG len = read_ulong(hp);
+    if(!len_format) {
+     STRPTR s;
+      s = infreadtoeol(hp->inpf);
+      inungetc(0x0a,hp->inpf);
+      return s;
+    }
 
+    len = read_ulong(hp);
     if (len)
     {
         ULONG i;
@@ -143,7 +150,7 @@ static STRPTR read_string(HSCPRJ * hp)
 /*
  * read_caller: read file position
  */
-static CALLER *read_caller(HSCPRJ * hp)
+static CALLER *read_caller(HSCPRJ * hp, BOOL v2format)
 {
     CALLER *caller = NULL;
     STRPTR callerid = infgetw(hp->inpf);
@@ -154,7 +161,7 @@ static CALLER *read_caller(HSCPRJ * hp)
 
         if (ch == ' ')
         {
-            STRPTR fname = read_string(hp);
+            STRPTR fname = read_string(hp,v2format);
             caller = new_caller(fname, read_ulong(hp), read_ulong(hp));
             ufreestr(fname);
         }
@@ -169,11 +176,7 @@ static CALLER *read_caller(HSCPRJ * hp)
         inungetcw(hp->inpf);
         D(fprintf(stderr, DHP "skip EMPTY CALLER\n"));
     }
-    else
-    {
-        hsc_msg_project_corrupt(hp, ID_CALLER_STR " expected");
-    }
-    return (caller);
+    return caller;
 }
 
 /*
@@ -224,11 +227,12 @@ static STRPTR read_command(HSCPRJ * hp)
 /*
  * read header
  */
-static BOOL read_header(HSCPRJ * hp)
+static int read_header(HSCPRJ * hp)
 {
     STRARR fileid[1 + sizeof(FILEID_HSCPRJ)];
     BOOL ok = FALSE;
     STRPTR cmd = NULL;
+    ULONG version=0;
     size_t i;
 
     /* read fileid */
@@ -264,11 +268,11 @@ static BOOL read_header(HSCPRJ * hp)
         /* check version */
         if (cmd && !strcmp(cmd, LINE_VERSION_STR))
         {
-            ULONG version = read_ulong(hp);
+            version = read_ulong(hp);
 
             DP(fprintf(stderr, DHP "version: %lu\n", version));
 
-            if (version && (version <= 2))
+            if (version && (version <= 3))
             {
                 ok = read_lf(hp);
             }
@@ -284,8 +288,9 @@ static BOOL read_header(HSCPRJ * hp)
         }
 
     }
-    return (ok);
+    return (int)(ok ? version : ok);
 }
+
 
 /*
  * hsc_project_read_data
@@ -300,22 +305,27 @@ static BOOL read_header(HSCPRJ * hp)
 BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf)
 {
     BOOL ok = FALSE;
+    BOOL v2format;
 
     if (inpf)
     {
+        int version;
+        
         hp->inpf = inpf;
 
         DP(fprintf(stderr, DHP "read project-file from `%s'\n",
                      infget_fname(inpf)));
 
-        if (read_header(hp))
+        if (0 != (version = read_header(hp)))
         {
             HSCDOC *document = NULL;
             STRPTR cmd = NULL;
 
+            v2format = (BOOL)(version <= 2);
             do
             {
                 cmd = read_command(hp);
+                DP(fprintf(stderr,"HSC READ CMD: '%s'\n",cmd);)
                 if (cmd)
                 {
                     if (!strcmp(cmd, LINE_REM_STR))
@@ -331,7 +341,7 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf)
                                     if (ch != '\n')
                                     fprintf(stderr, "%c", ch);
                                     }
-                            );
+                            )
                         }
                         while ((ch != EOF) && (ch != '\n'));
                         DP(fprintf(stderr, "'\n"));
@@ -339,7 +349,7 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf)
                     else if (!strcmp(cmd, LINE_DOCUMENT_STR))
                     {
                         /* begin new DOCUMENT */
-                        STRPTR docname = read_string(hp);
+                        STRPTR docname = read_string(hp,v2format);
                         if (docname)
                         {
                             document = new_document(docname);
@@ -353,7 +363,7 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf)
                         /* assign SOURCE */
                         if (document)
                         {
-                            STRPTR sourcename = read_string(hp);
+                            STRPTR sourcename = read_string(hp,v2format);
                             if (sourcename)
                             {
                                 reallocstr(&(document->sourcename),
@@ -372,7 +382,7 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf)
                         /* assign TITLE */
                         if (document)
                         {
-                            STRPTR titlename = read_string(hp);
+                            STRPTR titlename = read_string(hp,v2format);
                             if (titlename)
                             {
                                 set_estr(document->title, titlename);
@@ -390,12 +400,12 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf)
                         /* append new ID */
                         if (document)
                         {
-                            STRPTR idname = read_string(hp);
+                            STRPTR idname = read_string(hp,v2format);
                             if (idname)
                             {
                                 HSCIDD *iddef =
                                 app_iddef(document, idname);
-                                iddef->caller = read_caller(hp);
+                                iddef->caller = read_caller(hp,v2format);
                                 /* free mem allocated by read_string() */
                                 ufree(idname);
                             }
@@ -411,12 +421,12 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf)
                         /* store new INCLUDE */
                         if (document)
                         {
-                            STRPTR incname = read_string(hp);
+                            STRPTR incname = read_string(hp,v2format);
                             if (incname)
                             {
                                 HSCINC *inc =
                                 app_include(document, incname);
-                                inc->caller = read_caller(hp);
+                                inc->caller = read_caller(hp,v2format);
                                 /* free mem allocated by read_string() */
                                 ufree(incname);
                             }
@@ -436,9 +446,7 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf)
                 {
                     DP(fprintf(stderr, DHP "EOF\n"));
                 }
-            }
-            while (cmd && !hp->fatal);
-
+            } while (cmd && !hp->fatal);
             ok = !hp->fatal;
         }
         hp->inpf = NULL;
@@ -447,3 +455,4 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf)
     return (ok);
 }
 
+    /* vi: set ts=2 sw=2 expandtab: */

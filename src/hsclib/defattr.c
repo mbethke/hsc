@@ -42,24 +42,24 @@
  */
 static BYTE str2vartype(STRPTR s)
 {
-    BYTE vartype = VT_NONE;
-
-    if (!upstrcmp(VT_STR_URI, s))
-        vartype = VT_URI;
-    else if (!upstrcmp(VT_STR_STRING, s))
-        vartype = VT_STRING;
-    else if (!upstrcmp(VT_STR_BOOL, s))
-        vartype = VT_BOOL;
-    else if (!upstrcmp(VT_STR_NUM, s))
-        vartype = VT_NUM;
-    else if (!upstrcmp(VT_STR_ENUM, s))
-        vartype = VT_ENUM;
-    else if (!upstrcmp(VT_STR_ID, s))
-        vartype = VT_ID;
-    else if (!upstrcmp(VT_STR_COLOR, s))
-        vartype = VT_COLOR;
-
-    return (vartype);
+   BYTE vartype = VT_NONE;
+   
+   if (!upstrcmp(VT_STR_URI, s))
+      vartype = VT_URI;
+   else if (!upstrcmp(VT_STR_STRING, s))
+      vartype = VT_STRING;
+   else if (!upstrcmp(VT_STR_BOOL, s))
+      vartype = VT_BOOL;
+   else if (!upstrcmp(VT_STR_NUM, s))
+      vartype = VT_NUM;
+   else if (!upstrcmp(VT_STR_ENUM, s))
+      vartype = VT_ENUM;
+   else if (!upstrcmp(VT_STR_ID, s))
+      vartype = VT_ID;
+   else if (!upstrcmp(VT_STR_COLOR, s))
+      vartype = VT_COLOR;
+   
+   return (vartype);
 }
 
 /*
@@ -69,31 +69,33 @@ static BYTE str2vartype(STRPTR s)
  */
 static BOOL check_reqvar(HSCPRC * hp, HSCATTR * var)
 {
-    BOOL ok = TRUE;
+   BOOL ok = TRUE;
+   
+   if ((var->varflag & VF_RECOMMENDED) && (!var->text))
+      hsc_message(hp, MSG_MISS_RCMD_ATTR, "recommended %A missing", var);
 
-    if ((var->varflag & VF_REQUIRED)
-        && (!var->text))
-    {
-        hsc_message(hp, MSG_MISS_REQ_ATTR,
-                    "required %A missing", var);
-        ok = FALSE;
-    }
-
-    return (ok);
+   if ((var->varflag & VF_REQUIRED) && (!var->text))
+   {
+      hsc_message(hp, MSG_MISS_REQ_ATTR,
+            "required %A missing", var);
+      ok = FALSE;
+   }
+   
+   return (ok);
 }
 
 BOOL check_varlist(HSCPRC * hp, DLLIST * varlist)
 {
-    DLNODE *nd = varlist->first;
-    BOOL ok = TRUE;
-
-    while (nd)
-    {
-        ok &= check_reqvar(hp, (HSCATTR *) (nd->data));
-        nd = nd->next;
-    }
-
-    return (ok);
+   DLNODE *nd = varlist->first;
+   BOOL ok = TRUE;
+   
+   while (nd)
+   {
+      ok &= check_reqvar(hp, (HSCATTR *) (nd->data));
+      nd = nd->next;
+   }
+   
+   return (ok);
 }
 
 /*
@@ -108,9 +110,9 @@ BOOL check_varlist(HSCPRC * hp, DLLIST * varlist)
  */
 LONG get_mci(HSCPRC * hp)
 {
-    hp->tag_call_id++;
-
-    return (hp->tag_call_id);
+   hp->tag_call_id++;
+   
+   return (hp->tag_call_id);
 }
 
 /*
@@ -119,11 +121,11 @@ LONG get_mci(HSCPRC * hp)
  */
 VOID unget_mci(HSCPRC * hp)
 {
-    hp->tag_call_id--;
-    if (hp->tag_call_id < 0)
-    {
-        panic("MCI underflow");
-    }
+   hp->tag_call_id--;
+   if (hp->tag_call_id < 0)
+   {
+      panic("MCI underflow");
+   }
 }
 
 /*
@@ -132,7 +134,7 @@ VOID unget_mci(HSCPRC * hp)
  */
 LONG get_current_mci(HSCPRC * hp)
 {
-    return (hp->tag_call_id);
+   return (hp->tag_call_id);
 }
 
 /*
@@ -148,19 +150,20 @@ LONG get_current_mci(HSCPRC * hp)
  */
 static BOOL read_enum_str(HSCPRC * hp, HSCATTR * var)
 {
-    HSCATTR *attr = new_hscattr(PREFIX_TMPATTR "enumerator");
-    attr->vartype = VT_STRING;
-
-    /* store enumstr in var-struct */
-    if (eval_expression(hp, attr, NULL))
-    {
-        DDA(fprintf(stderr, DHL "  enum: %s\n", estr2str(hp->tmpstr)));
-        var->enumstr = strclone(get_vartext(attr));
-    }
-
-    del_hscattr(attr);
-
-    return ((BOOL) (!hp->fatal));
+   HSCATTR *attr = new_hscattr(PREFIX_TMPATTR "enumerator");
+   attr->vartype = VT_STRING;
+   
+   /* store enumstr in var-struct */
+   if (eval_expression(hp, attr, NULL))
+   {
+      /*DDA(fprintf(stderr, DHL "  enum: %s\n", estr2str(hp->tmpstr)));*/
+      var->enumstr = strclone(get_vartext(attr));
+      DDA(fprintf(stderr, DHL "  enum: %s\n",var->enumstr));
+   }
+   
+   del_hscattr(attr);
+   
+   return ((BOOL) (!hp->fatal));
 }
 
 /*
@@ -170,33 +173,33 @@ static BOOL read_enum_str(HSCPRC * hp, HSCATTR * var)
  * if so, set the corresponding option value within the attribute.
  *
  * params: option..option string to check for (read from input)
- *         attr....attribute to update option value for
- *         id......id string of option (eg "REQUIRED")
- *         sid.....short id string (eg "R")
- *         value...option value to OR with old tag's option value
+*         attr....attribute to update option value for
+*         id......id string of option (eg "REQUIRED")
+*         sid.....short id string (eg "R")
+*         value...option value to OR with old tag's option value
  * result: TRUE, if tag's option value updated
  */
 static BOOL check_attr_option(HSCPRC * hp, STRPTR option, HSCATTR * attr, STRPTR id, STRPTR sid, ULONG value, ULONG unmasked_flags)
 {
-    BOOL found = FALSE;
-
-    if (!((upstrcmp(option, id)) && (upstrcmp(option, sid))))
-    {
-        DDA(fprintf(stderr, DHL "  option %s\n", id));
-
-        if (value & unmasked_flags)
-        {
-            hsc_message(hp, MSG_ILLG_ATTR_FLAG,
-                        "attribute option %q not allowed in this context",
-                        id);
-        }
-        else
-            attr->varflag |= value;
-
-        found = TRUE;
-    }
-
-    return (found);
+   BOOL found = FALSE;
+   
+   if (!((upstrcmp(option, id)) && (upstrcmp(option, sid))))
+   {
+      DDA(fprintf(stderr, DHL "  option %s\n", id));
+      
+      if (value & unmasked_flags)
+      {
+         hsc_message(hp, MSG_ILLG_ATTR_FLAG,
+               "attribute option %q not allowed in this context",
+               id);
+      }
+      else
+         attr->varflag |= value;
+      
+      found = TRUE;
+   }
+   
+   return (found);
 }
 
 /*
@@ -206,208 +209,194 @@ static BOOL check_attr_option(HSCPRC * hp, STRPTR option, HSCATTR * attr, STRPTR
  * (starts parsing after ":", so ":" has to be read before)
  *
  * params: varname..name of new var
- *         varlist..list new var should be inserted at the beginning
- *         inpf.....input file where to read def from
- *         flag.....flags: VF_ONLYONCE to avoid re-definition of a var
+*         varlist..list new var should be inserted at the beginning
+*         inpf.....input file where to read def from
+*         flag.....flags: VF_ONLYONCE to avoid re-definition of a var
  * result: ptr to new var
  *
  * definition syntax in input file:
- *   <vartype>[/flag]["="<deftext value>]
- *   legal vartypes: see VT_STR_xx in "vars.h"
- *   legal flags   : see VF_STR_xx in "vars.h"
- */
+*   <vartype>[/flag]["="<deftext value>]
+*   legal vartypes: see VT_STR_xx in "vars.h"
+*   legal flags   : see VF_STR_xx in "vars.h"
+*/
 HSCATTR *define_var(HSCPRC * hp, DLLIST * varlist, ULONG unmasked_flags)
 {
-    HSCATTR *var = NULL;        /* result */
-    BOOL ok = FALSE;
-    BYTE val_vartype = VT_NONE; /* var-type (numeric) */
-    BOOL newattr = FALSE;       /* next word read from input */
-    STRPTR nw = NULL;
-    STRPTR varname = NULL;
-    BOOL eof_called = FALSE;    /* used at end-of-func, if nw==NULL */
-    INFILE *inpf = hp->inpf;
-
-    /* read attribute name */
-    nw = infget_attrid(hp);
-    if (nw)
-    {
-        varname = strclone(nw); /* remember attribute name */
-    }
-    else
-        eof_called = TRUE;      /* err_eof() called already */
-
-    /* read attribute type */
-    if (nw)
-        if (parse_wd(hp, ":"))
-        {
-            nw = infgetw(inpf);
-            if (nw)
-                val_vartype = str2vartype(nw);
-        }
-        else
-            inungetcw(inpf);
-
-    if (nw)
-    {
-        /*
-         * look if attr already exist;
-         * if yes, clear old attribute
-         * to redefine the new one
-         */
-        var = find_varname(varlist, varname);
-        if (var)
-        {
-            DLNODE *nd = find_attrnode(varlist, varname);
-
-            /* remove old attribute */
-            if (nd)
-                del_dlnode(varlist, nd);
-            else
-                panic("no node for redefined attribute");
-
-            hsc_message(hp, MSG_ATTR_REDEFINED,
-                        "redefined %a", varname);
-        }
-
-        /*
-         * create new attribute
-         */
-        DDA(fprintf(stderr, DHL "new attr: %s\n", varname));
-        var = app_var(varlist, varname);
-
-        /* set type */
-        var->vartype = val_vartype;
-        if (var->vartype == VT_ENUM)
-        {
-            /* init enum-attribute */
-            read_enum_str(hp, var);
-        }
-        else if (var->vartype == VT_BOOL)
-        {
-            /* init boolean attr with FALSE */
-            set_varbool(var, FALSE);
-        }
-
-        newattr = TRUE;
-
-    }
-
-    /* disable "/STRIPEXT" and "/GETSIZE" for non-URI-attributes */
-    if (nw)
-    {
-        if (var->vartype != VT_URI)
-            unmasked_flags |= VF_GETSIZE | VF_STRIPEXT;
-
-        nw = infgetw(inpf);     /* get net word */
-    }
-
-    /*
-     * handle attribute flags
-     */
-    while (nw && !strcmp(nw, "/"))
-    {
-        nw = infgetw(inpf);     /* read flag identifier */
-        if (nw)
-        {
-            BOOL ok = FALSE;
-
-            ok |= check_attr_option(hp, nw, var,
-                                    VF_CONST_STR, VF_CONST_SHT,
-                                    VF_CONST, unmasked_flags);
-            ok |= check_attr_option(hp, nw, var,
-                                    VF_GLOBAL_STR, VF_GLOBAL_SHT,
-                                    VF_GLOBAL, unmasked_flags);
-            ok |= check_attr_option(hp, nw, var,
-                                    VF_JERK_STR, VF_JERK_SHT,
-                                    VF_JERK, unmasked_flags);
-            ok |= check_attr_option(hp, nw, var,
-                                    VF_ONLYONCE_STR, VF_ONLYONCE_SHT,
-                                    VF_ONLYONCE, unmasked_flags);
-            ok |= check_attr_option(hp, nw, var,
-                                    VF_REQUIRED_STR, VF_REQUIRED_SHT,
-                                    VF_REQUIRED, unmasked_flags);
-            ok |= check_attr_option(hp, nw, var,
-                                    VF_GETSIZE_STR, VF_GETSIZE_SHT,
-                                    VF_GETSIZE, unmasked_flags);
-            ok |= check_attr_option(hp, nw, var,
-                                    VF_STRIPEXT_STR, VF_STRIPEXT_SHT,
-                                    VF_STRIPEXT, unmasked_flags);
-            if (!ok)
-            {
-                hsc_message(hp, MSG_UNKN_ATTR_OPTION,
-                            "unknown attribute flag %q", nw);
-            }
-
-            /* read next word (should be "/", "=" or next attr / ">") */
-            nw = infgetw(inpf);
-        }
-        else
-            hsc_msg_eof(hp, "defining attribute");
-
-    }
-
-    /*
-     * handle default value
-     */
-    if (nw && !strcmp(nw, "="))
-    {
-        /* get new deftext value */
-        STRPTR new_deftext = NULL;
-        LONG old_attrflag = var->varflag;
-
-        /* disable quotemode-checking */
-        var->varflag |= VF_KEEP_QUOTES;
-
-        if (!(var->deftext))
-            new_deftext = eval_expression(hp, var, NULL);
-        else
-        {
-            STRPTR dummy;
-
-            hsc_message(hp, MSG_SYMB_2ND_DEFAULT,
-                        "default value for %A already set", var);
-
-            /* skip illegal default value */
-            dummy = eval_expression(hp, var, NULL);
-        }
-
-        /* restore quotemode-checking */
-        var->varflag = old_attrflag;
-
-        /* store default text value */
-        if (new_deftext)
-            var->deftext = strclone(new_deftext);
-
-        /* read next word, only to be ungotten below */
-        nw = infgetw(inpf);
-    }
-
-    /* check for unexpected end of file */
-    if (!nw)
-    {
-        if (!eof_called)
-            hsc_msg_eof(hp, "defining attribute");
-    }
-    else
-    {
-        /* end of var definition reached */
-        inungetcw(inpf);
-        ok = TRUE;
-    }
-
-    /* cleanup */
-    if (!ok && var)
-    {
-        DLNODE *nd = find_attrnode(varlist, varname);
-        if (nd)
-            del_dlnode(varlist, (APTR) nd);
-        else
-            del_hscattr(var);
-        var = NULL;
-    }
-    ufreestr(varname);
-
-    return (var);
+   HSCATTR *var = NULL;        /* result */
+   BOOL ok = FALSE;
+   BYTE val_vartype = VT_NONE; /* var-type (numeric) */
+   BOOL newattr = FALSE;       /* next word read from input */
+   STRPTR nw = NULL;
+   STRPTR varname = NULL;
+   BOOL eof_called = FALSE;    /* used at end-of-func, if nw==NULL */
+   INFILE *inpf = hp->inpf;
+   
+   /* read attribute name */
+   nw = infget_attrid(hp);
+   if (nw)
+      varname = strclone(nw); /* remember attribute name */
+   else
+      eof_called = TRUE;      /* err_eof() called already */
+   
+   /* read attribute type */
+   if (nw) {
+      if (parse_wd(hp, ":")) {
+         nw = infgetw(inpf);
+         if (nw)
+            val_vartype = str2vartype(nw);
+      } else
+         inungetcw(inpf);
+   }
+   
+   if (nw) {
+      /*
+       * look if attr already exist;
+       * if yes, clear old attribute
+       * to redefine the new one
+       */
+      var = find_varname(varlist, varname);
+      if (var) {
+         DLNODE *nd = find_attrnode(varlist, varname);
+         
+         /* remove old attribute */
+         if (nd)
+            del_dlnode(varlist, nd);
+         else
+            panic("no node for redefined attribute");
+         
+         hsc_message(hp, MSG_ATTR_REDEFINED,
+               "redefined %a", varname);
+      }
+      
+      /*
+       * create new attribute
+       */
+      DDA(fprintf(stderr, DHL "new attr: %s\n", varname));
+      var = app_var(varlist, varname);
+      
+      /* set type */
+      var->vartype = val_vartype;
+      if (var->vartype == VT_ENUM) {
+         /* init enum-attribute */
+         read_enum_str(hp, var);
+      } else if (var->vartype == VT_BOOL) {
+         /* init boolean attr with FALSE */
+         set_varbool(var, FALSE);
+      }
+      
+      newattr = TRUE;
+   }
+   
+   /* disable "/STRIPEXT" and "/GETSIZE" for non-URI-attributes */
+   if (nw) {
+      if (var->vartype != VT_URI)
+         unmasked_flags |= VF_GETSIZE | VF_STRIPEXT;
+      
+      nw = infgetw(inpf);     /* get net word */
+   }
+   
+   /*
+    * handle attribute flags
+    */
+   while (nw && !strcmp(nw, "/")) {
+      nw = infgetw(inpf);     /* read flag identifier */
+      if (nw) {
+         BOOL ok = FALSE;
+         
+         ok |= check_attr_option(hp, nw, var,
+               VF_CONST_STR, VF_CONST_SHT,
+               VF_CONST, unmasked_flags);
+         ok |= check_attr_option(hp, nw, var,
+               VF_GLOBAL_STR, VF_GLOBAL_SHT,
+               VF_GLOBAL, unmasked_flags);
+         ok |= check_attr_option(hp, nw, var,
+               VF_JERK_STR, VF_JERK_SHT,
+               VF_JERK, unmasked_flags);
+         ok |= check_attr_option(hp, nw, var,
+               VF_ONLYONCE_STR, VF_ONLYONCE_SHT,
+               VF_ONLYONCE, unmasked_flags);
+         ok |= check_attr_option(hp, nw, var,
+               VF_REQUIRED_STR, VF_REQUIRED_SHT,
+               VF_REQUIRED, unmasked_flags);
+         ok |= check_attr_option(hp, nw, var,
+               VF_GETSIZE_STR, VF_GETSIZE_SHT,
+               VF_GETSIZE, unmasked_flags);
+         ok |= check_attr_option(hp, nw, var,
+               VF_STRIPEXT_STR, VF_STRIPEXT_SHT,
+               VF_STRIPEXT, unmasked_flags);
+         ok |= check_attr_option(hp, nw, var,
+               VF_OBSOLETE_STR, VF_OBSOLETE_SHT,
+               VF_OBSOLETE, unmasked_flags);
+         ok |= check_attr_option(hp, nw, var,
+               VF_RECOMMENDED_STR, VF_RECOMMENDED_SHT,
+               VF_RECOMMENDED, unmasked_flags);
+         if (!ok) {
+            hsc_message(hp, MSG_UNKN_ATTR_OPTION,
+                  "unknown attribute flag %q", nw);
+         }
+         
+         /* read next word (should be "/", "=" or next attr / ">") */
+         nw = infgetw(inpf);
+      } else
+         hsc_msg_eof(hp, "defining attribute");
+      
+   }
+   
+   /*
+    * handle default value
+    */
+   if (nw && !strcmp(nw, "=")) {
+      /* get new deftext value */
+      STRPTR new_deftext = NULL;
+      LONG old_attrflag = var->varflag;
+      
+      /* disable quotemode-checking */
+      var->varflag |= VF_KEEP_QUOTES;
+      
+      if (!(var->deftext))
+         new_deftext = eval_expression(hp, var, NULL);
+      else {
+         STRPTR dummy;
+         
+         hsc_message(hp, MSG_SYMB_2ND_DEFAULT,
+               "default value for %A already set", var);
+         
+         /* skip illegal default value */
+         dummy = eval_expression(hp, var, NULL);
+      }
+      
+      /* restore quotemode-checking */
+      var->varflag = old_attrflag;
+      
+      /* store default text value */
+      if (new_deftext)
+         var->deftext = strclone(new_deftext);
+      
+      /* read next word, only to be ungotten below */
+      nw = infgetw(inpf);
+   }
+   
+   /* check for unexpected end of file */
+   if (!nw) {
+      if (!eof_called)
+         hsc_msg_eof(hp, "defining attribute");
+   } else {
+      /* end of var definition reached */
+      inungetcw(inpf);
+      ok = TRUE;
+   }
+   
+   /* cleanup */
+   if (!ok && var) {
+      DLNODE *nd = find_attrnode(varlist, varname);
+      if (nd)
+         del_dlnode(varlist, (APTR) nd);
+      else
+         del_hscattr(var);
+      var = NULL;
+   }
+   ufreestr(varname);
+   
+   return (var);
 }
 
 /*
@@ -416,50 +405,36 @@ HSCATTR *define_var(HSCPRC * hp, DLLIST * varlist, ULONG unmasked_flags)
  * define a new attribute with obtaining data from hsc-process
  *
  * SEE ALSO:
- *   define_attr_by_text
- */
+*   define_attr_by_text
+*/
 HSCATTR *define_attr_by_hp(HSCPRC * hp, STRPTR default_value, ULONG unmasked_flags)
 {
-    HSCATTR *attr = define_var(hp, hp->defattr, 0);
-    if (attr)
-    {
-        /* set scope for local attribute */
-        if (attr->varflag & VF_GLOBAL)
-        {
-            attr->macro_id = MCI_GLOBAL;
-        }
-        else
-        {
-            attr->macro_id = get_current_mci(hp);
-        }
-
-        /* see "attrib.h" why this */
-        attr->varflag |= VF_MACRO;
-
-        /* set new value (copy from default) if passed */
-        if (get_vardeftext(attr))
-        {
-            if (default_value)
-            {
-                panic("default value already set");
-            }
-            else
-            {
-                clr_vartext(attr);
-            }
-        }
-
-        /* set default value passed in function args */
-        if (default_value)
-        {
-            set_vartext(attr, default_value);
-        }
-
-        /* remove default value */
-        clr_attrdef(attr);
-    }
-
-    return (attr);
+   HSCATTR *attr = define_var(hp, hp->defattr, 0);
+   if (attr)
+   {
+      /* set scope for local attribute */
+      attr->macro_id = ((attr->varflag & VF_GLOBAL) ?
+         MCI_GLOBAL : get_current_mci(hp));
+      
+      /* see "attrib.h" why this */
+      attr->varflag |= VF_MACRO;
+      
+      /* set new value (copy from default) if passed */
+      if (get_vardeftext(attr)) {
+         if (default_value)
+            panic("default value already set");
+         else
+            clr_vartext(attr);
+      }
+      
+      /* set default value passed in function args */
+      if (default_value)
+         set_vartext(attr, default_value);
+      
+      /* remove default value */
+      clr_attrdef(attr);
+   }
+   return (attr);
 }
 
 /*
@@ -494,30 +469,30 @@ HSCATTR *define_attr_by_hp(HSCPRC * hp, STRPTR default_value, ULONG unmasked_fla
  */
 HSCATTR *define_attr_by_text(HSCPRC * hp, STRPTR attr_text, STRPTR default_value, ULONG unmasked_flags)
 {
-    /* NOTE: this functions works a bit strange */
-    EXPSTR *define_text = init_estr(0);
-    INFILE *old_inpf = hp->inpf;
-    HSCATTR *attr = NULL;
-
-    /* create attribute definition */
-    set_estr(define_text, attr_text);
-    app_estr(define_text, ">");
-
-    hp->inpf = infopen_str(PARENT_FILE_ID "define_attr_by_text",
-                           estr2str(define_text), 0);
-
-    /* process attribute definition */
-    if (hp->inpf)
-    {
-        attr = define_attr_by_hp(hp, default_value, unmasked_flags);
-        infclose(hp->inpf);
-    }
-
-    /* cleanup */
-    hp->inpf = old_inpf;
-    del_estr(define_text);
-
-    return (attr);
+   /* NOTE: this functions works a bit strange */
+   EXPSTR *define_text = init_estr(0);
+   INFILE *old_inpf = hp->inpf;
+   HSCATTR *attr = NULL;
+   
+   /* create attribute definition */
+   set_estr(define_text, attr_text);
+   app_estr(define_text, ">");
+   
+   hp->inpf = infopen_str(PARENT_FILE_ID "define_attr_by_text",
+         estr2str(define_text), 0);
+   
+   /* process attribute definition */
+   if (hp->inpf)
+   {
+      attr = define_attr_by_hp(hp, default_value, unmasked_flags);
+      infclose(hp->inpf);
+   }
+   
+   /* cleanup */
+   hp->inpf = old_inpf;
+   del_estr(define_text);
+   
+   return (attr);
 }
 
 /*
@@ -536,15 +511,15 @@ HSCATTR *define_attr_by_text(HSCPRC * hp, STRPTR attr_text, STRPTR default_value
  */
 static HSCATTR *copy_local_var(DLLIST * destlist, HSCATTR * locvar, ULONG mci)
 {
-    HSCATTR *var = app_var(destlist, locvar->name);
-
-    var->macro_id = mci;
-    var->vartype = locvar->vartype;
-    var->varflag = locvar->varflag & (~VF_MACRO);       /* disable VF_MACRO */
-    set_vartext(var, locvar->text);
-    var->quote = locvar->quote;
-
-    return (var);
+   HSCATTR *var = app_var(destlist, locvar->name);
+   
+   var->macro_id = mci;
+   var->vartype = locvar->vartype;
+   var->varflag = locvar->varflag & (~VF_MACRO);       /* disable VF_MACRO */
+   set_vartext(var, locvar->text);
+   var->quote = locvar->quote;
+   
+   return (var);
 }
 
 /*
@@ -556,26 +531,26 @@ static HSCATTR *copy_local_var(DLLIST * destlist, HSCATTR * locvar, ULONG mci)
  */
 BOOL copy_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci)
 {
-    BOOL ok = TRUE;
-
-    if (mci == MCI_ERROR)
-    {
-        panic("mci=MCI_ERROR");
-    }
-    else
-    {
-        DLNODE *nd = varlist->first;
-        HSCATTR *var;
-
-        while (nd && ok)
-        {
-            var = copy_local_var(destlist, (HSCATTR *) (nd->data), mci);
-            ok &= (BOOL) (var != NULL);
-            nd = nd->next;
-        }
-    }
-
-    return (ok);
+   BOOL ok = TRUE;
+   
+   if (mci == MCI_ERROR)
+   {
+      panic("mci=MCI_ERROR");
+   }
+   else
+   {
+      DLNODE *nd = varlist->first;
+      HSCATTR *var;
+      
+      while (nd && ok)
+      {
+         var = copy_local_var(destlist, (HSCATTR *) (nd->data), mci);
+         ok &= (BOOL) (var != NULL);
+         nd = nd->next;
+      }
+   }
+   
+   return (ok);
 }
 
 /*
@@ -587,20 +562,20 @@ BOOL copy_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci)
  */
 static HSCATTR *set_local_var(DLLIST * destlist, HSCATTR * locvar, ULONG mci)
 {
-    HSCATTR *var = find_varname(destlist, locvar->name);
-
-    if (var)
-    {
-        var->macro_id = mci;
-        var->vartype = locvar->vartype;
-        set_vartext(var, locvar->text);
-    }
-    else
-    {
-        panic("set_local_var to UNKNOWN ATTR");
-    }
-
-    return (var);
+   HSCATTR *var = find_varname(destlist, locvar->name);
+   
+   if (var)
+   {
+      var->macro_id = mci;
+      var->vartype = locvar->vartype;
+      set_vartext(var, locvar->text);
+   }
+   else
+   {
+      panic("set_local_var to UNKNOWN ATTR");
+   }
+   
+   return (var);
 }
 
 /*
@@ -612,26 +587,26 @@ static HSCATTR *set_local_var(DLLIST * destlist, HSCATTR * locvar, ULONG mci)
  */
 BOOL set_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci)
 {
-    BOOL ok = TRUE;
-
-    if (mci == MCI_ERROR)
-    {
-        panic("mci=MCI_ERROR");
-    }
-    else
-    {
-        DLNODE *nd = varlist->first;
-        HSCATTR *var;
-
-        while (nd && ok)
-        {
-            var = set_local_var(destlist, (HSCATTR *) (nd->data), mci);
-            ok &= (BOOL) (var != NULL);
-            nd = nd->next;
-        }
-    }
-
-    return (ok);
+   BOOL ok = TRUE;
+   
+   if (mci == MCI_ERROR)
+   {
+      panic("mci=MCI_ERROR");
+   }
+   else
+   {
+      DLNODE *nd = varlist->first;
+      HSCATTR *var;
+      
+      while (nd && ok)
+      {
+         var = set_local_var(destlist, (HSCATTR *) (nd->data), mci);
+         ok &= (BOOL) (var != NULL);
+         nd = nd->next;
+      }
+   }
+   
+   return (ok);
 }
 
 /*
@@ -639,16 +614,16 @@ BOOL set_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci)
  */
 VOID remove_local_varlist(DLLIST * varlist, ULONG mci)
 {
-    DLNODE *nd = varlist->first;
-
-    while (nd)
-    {
-        HSCATTR *var = (HSCATTR *) nd->data;    /* var data of node */
-        DLNODE *nd_nxt = nd->next;      /* next node */
-
-        if (var->macro_id == mci)
-            del_dlnode(varlist, nd);
-
-        nd = nd_nxt;
-    }
+   DLNODE *nd = varlist->first;
+   
+   while (nd)
+   {
+      HSCATTR *var = (HSCATTR *) nd->data;    /* var data of node */
+      DLNODE *nd_nxt = nd->next;      /* next node */
+      
+      if (var->macro_id == mci)
+         del_dlnode(varlist, nd);
+      
+      nd = nd_nxt;
+   }
 }

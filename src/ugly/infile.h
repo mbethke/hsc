@@ -126,6 +126,7 @@ extern BOOL inf_isws(char ch, INFILE * inpf);
 extern size_t infskip_ws(INFILE * inpf);
 
 extern int infeof(INFILE * inpf);
+extern STRPTR infreadtoeol(INFILE * inpf);
 extern int infgotoeol(INFILE * inpf);
 
 extern VOID del_infilepos(INFILEPOS * pos);

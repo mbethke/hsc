@@ -46,7 +46,7 @@ STRPTR hsc_license =            /* the usual boring text */
 "Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\n"
 
 /* support w3page */
-"For support, look at `http://www.giga.or.at/~agi/hsc/'.\n\n"
+"For support, visit `http://www.linguistik.uni-erlangen.de/~msbethke/software.html'.\n\n"
 ;
 
 

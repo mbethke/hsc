@@ -333,11 +333,12 @@ static BOOL read_makefile(VOID)
         do
         {
             line = fgets(buf, MAXBUFSIZE, file);
-            if (line)
+            if (line) {
                 if (!strcmp(line, STR_DEPENDS_FOLLOW))
                     found = TRUE;
                 else
                     app_estr(lines_precede, line);
+            }
         }
         while (!found && !errno && line);
 
@@ -467,12 +468,6 @@ static BOOL read_project(VOID)
  * create dependency-lines from project-info,
  */
 
-/* append linefeed to dependency-line */
-static VOID depline_applf(ULONG * linelen)
-{
-    *linelen = 0;
-    app_estr(lines_depend, "\n");
-}
 
 /* append string to dependency-line */
 static VOID depline_appstr(STRPTR s, ULONG * linelen)

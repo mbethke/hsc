@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001 Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,7 +46,7 @@
  * IDs in project file
  */
 #define FILEID_HSCPRJ    "HSC_PROJECT"
-#define VERSION_HSCPRJ   2
+#define VERSION_HSCPRJ   3
 
 #define LINE_VERSION_STR  "VERSION"
 #define LINE_REM_STR      "#"

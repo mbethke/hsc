@@ -66,6 +66,7 @@ BOOL skip_expression(HSCPRC * hp, EXPSTR * content, int endmark);
 
 /* a small debugging-function to print a single char
  * in hex, dez and, if useful,  ascii-representation */
+#if DEBUG
 static VOID dbg_printc(int ch)
 {
     fprintf(stderr, "%02x #%03d", ch, ch);
@@ -75,6 +76,7 @@ static VOID dbg_printc(int ch)
     }
     fprintf(stderr, "\n");
 }
+#endif
 
 /*
  * skip_next_lf
@@ -170,15 +172,14 @@ BOOL eoc_reached(HSCPRC * hp, BYTE * state, LONG * nest)
                 *state = CMST_STAR;
             else if (!strcmp(nw, "<"))
                 *state = CMST_TAG;
-            else if (!strcmp(nw, ">"))
-                if (*nest)
-                {
-                    (*nest)--;
-                    *state = CMST_TEXT;
-                }
-                else
-                    *state = CMST_END;
-
+            else if (!strcmp(nw, ">")) {
+               if (*nest)
+               {
+                  (*nest)--;
+                  *state = CMST_TEXT;
+               } else
+                  *state = CMST_END;
+            }
             break;
 
         case CMST_TAG:

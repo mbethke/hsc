@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001 Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,7 +71,7 @@ static VOID append_ulong(EXPSTR * dest, ULONG num)
 
 static VOID append_string(EXPSTR * dest, STRPTR s)
 {
-    append_ulong(dest, (ULONG) strlen(s));
+/*    append_ulong(dest, (ULONG) strlen(s)); */
     app_estr(dest, s);
 }
 
@@ -117,6 +118,7 @@ static VOID append_title(EXPSTR * prjstr, STRPTR title)
     }
 }
 
+#if 0
 static VOID append_id(EXPSTR * prjstr, STRPTR id)
 {
     app_estr(prjstr, LINE_ID_STR);
@@ -124,6 +126,7 @@ static VOID append_id(EXPSTR * prjstr, STRPTR id)
     append_string(prjstr, id);
     app_estr(prjstr, "\n");
 }
+#endif
 
 static VOID append_include(EXPSTR * prjstr, HSCINC * include)
 {
@@ -137,6 +140,7 @@ static VOID append_include(EXPSTR * prjstr, HSCINC * include)
 #endif
 }
 
+#if 0
 static VOID append_reference(EXPSTR * prjstr, HSCREF * reference)
 {
 #if 1
@@ -149,6 +153,7 @@ static VOID append_reference(EXPSTR * prjstr, HSCREF * reference)
     DP(fprintf(stderr, DHP "  refers `%s'\n", reference->name));
 #endif
 }
+#endif
 
 static VOID append_iddef(EXPSTR * prjstr, HSCIDD * iddef)
 {
@@ -196,6 +201,7 @@ static VOID append_doc_includes(EXPSTR * prjstr, DLLIST * inclist)
 }
 
 /* append other documents referered */
+#if 0
 static VOID append_doc_references(EXPSTR * prjstr, DLLIST * reflist)
 {
     DLNODE *nd = dll_first(reflist);
@@ -205,6 +211,7 @@ static VOID append_doc_references(EXPSTR * prjstr, DLLIST * reflist)
         nd = dln_next(nd);
     }
 }
+#endif
 
 /* append ids defined within documents */
 static VOID append_doc_iddefs(EXPSTR * prjstr, DLLIST * iddefs)

@@ -144,8 +144,6 @@ static DLLIST *command_arglist = NULL;
 static BOOL force = FALSE;
 static BOOL quiet = FALSE;
 static BOOL debug = FALSE;
-static BOOL arg_help = FALSE;
-static BOOL arg_license = FALSE;
 
 static HSCPRJ *project = NULL;
 

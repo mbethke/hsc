@@ -106,19 +106,7 @@
 #define DIR_SEPARATOR     '\\'
 #define PARENT_DIR        "..\\"
 #define FNAME_IGNORE_CASE 1
-#define SUGGEST_CRLF_SHIT 1
-
-#define MSDOS 1 /* isn't this nasty? */
-
-#elif defined MSDOS                    /* bullshit 2 */
-#define MAX_FPATH 128
-#define MAX_FNAME   8
-#define MAX_FEXT    3
-#define PATH_SEPARATOR    "\\:"
-#define DIR_SEPARATOR     '\\'
-#define PARENT_DIR        "..\\"
-#define FNAME_IGNORE_CASE 1
-#define SUGGEST_CRLF_SHIT 1
+#define SUGGEST_CRLF_SHIT 0
 
 #else
 #error "Operating system not supported: filename-functions"

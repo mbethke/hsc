@@ -126,8 +126,10 @@ static BOOL is_child_file(STRPTR filename)
 static BOOL really_display_message(HSCPRC * hp, HSCMSG_ID msg_id)
 {
     HSCMSG_CLASS msg_class = hsc_get_msg_class(hp, msg_id);
-    HSCMSG_ID msg_id_unmasked = msg_id & MASK_MESSAGE;
     BOOL disp_msg = TRUE;       /* function result */
+#if DEBUG
+    HSCMSG_ID msg_id_unmasked = msg_id & MASK_MESSAGE;
+#endif
 
     if (hp->fatal)
     {
@@ -156,7 +158,7 @@ static BOOL really_display_message(HSCPRC * hp, HSCMSG_ID msg_id)
          * to enable, still display it */
         if (hsc_get_msg_ignore(hp, msg_id) != enable)
         {
-            /* oppress message if it's class is
+            /* suppress message if its class is
              * marked as to be ignored */
             D(fprintf(stderr, DHL "ignore msg#%ld: ignore whole class (%06lx)\n",
                       msg_id_unmasked, msg_class));
@@ -419,7 +421,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                 );
 
         /* process nested files */
-        if (hp->CB_message_ref)
+        if (hp->CB_message_ref && hp->nested_errors)
         {
             DLNODE *nd = dll_first(hp->inpf_stack);
 
@@ -557,37 +559,3 @@ VOID hsc_msg_nouri(HSCPRC * hp, STRPTR filename, STRPTR uriname, STRPTR note)
     }
 }
 
-/*
- * show up enforcer hit
- */
-VOID enforcerHit(VOID)
-{
-#ifndef AMIGA
-    fputs("WORD-WRITE to  00000000        data=0000       PC: 0325B854\n"
-          "USP:  034735C8 SR: 0004 SW: 0729  (U0)(-)(-)  TCB: 03349A28\n"
-        "Name: \"Shell Process\"  CLI: \"hsc\"  Hunk 0000 Offset 00000074\n"
-          "\n"
-          "LONG-READ from AAAA4444                        PC: 0325B858\n"
-          "USP:  034735C8 SR: 0015 SW: 0749  (U0)(F)(-)  TCB: 03349A28\n"
-        "Name: \"Shell Process\"  CLI: \"hsc\"  Hunk 0000 Offset 00000078\n"
-          "\n"
-          "BYTE-WRITE to  00000101        data=11         PC: 0325B862\n"
-          "USP:  034735C8 SR: 0010 SW: 0711  (U0)(F)(D)  TCB: 03349A28\n"
-        "Name: \"Shell Process\"  CLI: \"hsc\"  Hunk 0000 Offset 00000082\n"
-          "\n"
-          "LONG-WRITE to  00000102        data=00000000   PC: 0325B86A\n"
-          "USP:  034735C8 SR: 0014 SW: 0709  (U0)(-)(D)  TCB: 03349A28\n"
-        "Name: \"Shell Process\"  CLI: \"hsc\"  Hunk 0000 Offset 0000008A\n"
-          "\n"
-          "Alert !! Alert 35000000     TCB: 03349A28     USP: 034735C4\n"
-          "Data: 00000000 DDDD1111 DDDD2222 DDDD3333 0325B802 DDDD5555 DDDD6666 35000000\n"
-          "Addr: AAAA0000 AAAA1111 AAAA2222 AAAA3333 AAAA4444 0325B802 00200810 --------\n"
-          "Stck: 0325B878 00000000 00FA06D6 00010000 0334A40C 03F46630 00AC4C20 00000000\n",
-          stderr);
-    /* crash machine by making fun of writing bullshit into function code
-     * (it must have been a complete idiot who designed a language which
-     * allows code like the one you can read below) */
-    strcpy((STRPTR) hsc_message, "die for oil, sucker");
-    exit(RC_FAIL);              /* just for the case we are still there.. */
-#endif
-}

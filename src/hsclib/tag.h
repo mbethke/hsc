@@ -79,6 +79,7 @@ typedef struct hsctag
       BOOL(*c_handle) (struct hsc_process * hp, struct hsctag * tag);
     /* callback for end-tag */
     DLLIST *attr;               /* list of attributes */
+    DLLIST *style;              /* list of CSS style attributes */
     EXPSTR *op_text;            /* macro text (open/close) */
     EXPSTR *cl_text;
     STRPTR mbi;                 /* string that tells inside which
@@ -111,8 +112,8 @@ HSCTAG;
 #define HT_ONLYONCE     (1<<3)  /* tag required at most once in document */
 #define HT_SPECIAL      (1<<4)  /* do not evaluate attributes, call handler */
 #define HT_OBSOLETE     (1<<5)  /* tag is already obsolete */
-#define HT_JERK         (1<<6)  /* netscape externsion & co. */
-#define HT_AUTOCLOSE    (1<<7)  /* ignore closing tags (<P> and <LI>) */
+#define HT_JERK         (1<<6)  /* netscape extension & co. */
+#define HT_AUTOCLOSE    (1<<7)  /* ignore closing tags (e.g. <p>, <li>) */
 #define HT_NOBP         (1<<8)  /* TODO: warning if <P> before tag */
 #define HT_NOAP         (1<<9)  /* TODO: -"- after tag */
 #define HT_MACRO        (1<<10) /* macro tag */
@@ -122,6 +123,8 @@ HSCTAG;
 #define HT_UNKNOWN      (1<<14) /* unknown tag (temporary created) */
 #define HT_RECOMMENDED  (1<<15) /* tag recommended to appear in document */
 #define HT_CONTENT      (1<<16) /* auto-enabled for content macros */
+#define HT_EMPTY        (1<<17) /* EMPTY SGML content model (must be <foo/> or
+                                   <foo /> in XHTML) e.g. <br>, <hr> */
 
 #define HT_KEEP_QUOTES (1<<30)  /* keep quotes for all attributes;
                                  * * auto-enable for all macro tags  */
@@ -139,6 +142,8 @@ HSCTAG;
 #define TO_MBI_SHT         "MBI"
 #define TO_NAW_STR         "NOT_ALLOWED_WITHIN"
 #define TO_NAW_SHT         "NAW"
+#define TO_EMPTY_STR       "EMPTY"
+#define TO_EMPTY_SHT       "E"
 #define TO_AUTOCLOSE_STR   "AUTOCLOSE"
 #define TO_AUTOCLOSE_SHT   "AC"
 #define TO_ONLYONCE_STR    "ONLYONCE"

@@ -150,7 +150,7 @@ int fprintf_prginfo(FILE * stream)
                        pi_revision);
     err += fprintf(stream, " (%s-%s-%s)\n",     /* date */
                    pi_dt_day, pi_dt_month, pi_dt_year);
-    err += fprintf(stream, "(C) %s. %s\n",      /* copyright */
+    err += fprintf(stream, "(C) %s.\n%s\n",      /* copyright */
                    pi_authname, pi_copystat);
 
     return (err);

@@ -202,13 +202,9 @@ static void del_uglymem(UGLYMEM * umem)
 
     /* unlink from list */
     if (prev)
-    {
-	prev->next = umem->next;
-    }
+       prev->next = umem->next;
     else
-    {
-	first = umem->next;
-    }
+       first = umem->next;
 
     /* check for damaged wall */
     if (!ugly_walldamaged(umem))

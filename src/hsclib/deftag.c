@@ -45,76 +45,76 @@
  */
 HSCTAG *def_tag_name(HSCPRC * hp, BOOL * start_tag)
 {
-    STRPTR nw = NULL;
-    HSCTAG *tag = NULL;
-    DLLIST *taglist = hp->deftag;
+   STRPTR nw = NULL;
+   HSCTAG *tag = NULL;
+   DLLIST *taglist = hp->deftag;
 
-    /* get tag name */
-    nw = infget_tagid(hp);
+   /* get tag name */
+   nw = infget_tagid(hp);
 
-    /* create new tag */
-    if (nw)
-    {
-        *start_tag = (BOOL) (strcmp(nw, "/"));
-        if (!(*start_tag))
-        {
-            /* add closing tag */
-            nw = infget_tagid(hp);
-            if (nw)
-            {
-                tag = find_strtag(taglist, nw);
-                if (tag)
-                {
-                    if ((tag->option & HT_CLOSE)
-                        ||
-                        (tag->option & HT_CONTENT))
-                    {
-                        /* tried to redefine end tag */
-                        tag = NULL;
-                        hsc_message(hp, MSG_REDEFINE_ENDTAG,
-                                    "redefined %c", nw);
-                    }
-                    else
-                    {
-                        /* mark macro as a container */
-                        tag->option |= HT_CLOSE;
-                    }
-                }
-                else
-                {
-                    /* tried to define end tag without previous start tag */
-                    tag = NULL;
-                    hsc_message(hp, MSG_DEFTAG_NO_OPEN,
-                                "no start tag for %c", nw);
-                }
-            }                   /* err_eof already called in infget_tagid() */
-        }
-        else
-        {
+   /* create new tag */
+   if (nw)
+   {
+      *start_tag = (BOOL) (strcmp(nw, "/"));
+      if (!(*start_tag))
+      {
+         /* add closing tag */
+         nw = infget_tagid(hp);
+         if (nw)
+         {
             tag = find_strtag(taglist, nw);
             if (tag)
             {
-                /* find tag-node in list to delete it
-                 * NOTE: this is rather stupid, 'cause the list
-                 * has to be searched twice this way; but who cares? */
-                DLNODE *nd = find_dlnode(hp->deftag->first,
-                                         (APTR) nw, cmp_strtag);
-
-                /* new tag/macro replaces old tag/macro */
-                tag->occured = FALSE;
-
-                hsc_message(hp, MSG_REDEFINE_TAG, "redefined %T", tag);
-
-                del_dlnode(hp->deftag, nd);
-
+               if ((tag->option & HT_CLOSE)
+                     ||
+                     (tag->option & HT_CONTENT))
+               {
+                  /* tried to redefine end tag */
+                  tag = NULL;
+                  hsc_message(hp, MSG_REDEFINE_ENDTAG,
+                        "redefined %c", nw);
+               }
+               else
+               {
+                  /* mark macro as a container */
+                  tag->option |= HT_CLOSE;
+               }
             }
+            else
+            {
+               /* tried to define end tag without previous start tag */
+               tag = NULL;
+               hsc_message(hp, MSG_DEFTAG_NO_OPEN,
+                     "no start tag for %c", nw);
+            }
+         }                   /* err_eof already called in infget_tagid() */
+      }
+      else
+      {
+         tag = find_strtag(taglist, nw);
+         if (tag)
+         {
+            /* find tag-node in list to delete it
+             * NOTE: this is rather stupid, 'cause the list
+             * has to be searched twice this way; but who cares? */
+            DLNODE *nd = find_dlnode(hp->deftag->first,
+                  (APTR) nw, cmp_strtag);
 
-            /* create a new opening tag */
-            tag = app_tag(taglist, nw);
-        }
-    }                           /* err_eof already called in infget_tagid() */
+            /* new tag/macro replaces old tag/macro */
+            tag->occured = FALSE;
 
-    return (tag);
+            hsc_message(hp, MSG_REDEFINE_TAG, "redefined %T", tag);
+
+            del_dlnode(hp->deftag, nd);
+
+         }
+
+         /* create a new opening tag */
+         tag = app_tag(taglist, nw);
+      }
+   }                           /* err_eof already called in infget_tagid() */
+
+   return (tag);
 }
 
 /*
@@ -131,18 +131,18 @@ HSCTAG *def_tag_name(HSCPRC * hp, BOOL * start_tag)
  * result: TRUE, if tag's option value updated
  */
 static BOOL check_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag,
-                             STRPTR id, STRPTR sid, ULONG value)
+      STRPTR id, STRPTR sid, ULONG value)
 {
-    BOOL found = FALSE;
+   BOOL found = FALSE;
 
-    if (!((upstrcmp(option, id)) && (upstrcmp(option, sid))))
-    {
-        DDT(fprintf(stderr, DHL "  option %s\n", id));
-        tag->option |= value;
-        found = TRUE;
-    }
+   if (!((upstrcmp(option, id)) && (upstrcmp(option, sid))))
+   {
+      DDT(fprintf(stderr, DHL "  option %s\n", id));
+      tag->option |= value;
+      found = TRUE;
+   }
 
-    return (found);
+   return (found);
 
 }
 
@@ -152,69 +152,90 @@ static BOOL check_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag,
  * allowed abbrevations:
  *
  * c  CLASS:string
+ * d  DIR:enum("ltr|rtl")
  * h  HREF:uri
  * i  ID:id
- * k  CLEAR:enum("left|right|all|*")
- * l  LANG:string
+ * k  CLEAR:enum("left|right|all|none")
+ * l  LANG:enum(...)
  * m  MD:string
  * s  SRC:URI
- * w  NOWRAP:bool
+ * t  TITLE:string
+ * y  STYLE:string
  */
 static HSCATTR *def_lazy_attr(HSCPRC * hp, HSCTAG * tag,
-                              STRPTR attrname, BYTE attrtype)
+      STRPTR attrname, BYTE attrtype, ULONG flags)
 {
-    HSCATTR *newattr = app_var(tag->attr, attrname);
-    DDA(fprintf(stderr, DHL "new attr: `%s'\n", attrname));
-    newattr->vartype = attrtype;
-    return (newattr);
+   HSCATTR *newattr = app_var(tag->attr, attrname);
+   DDA(fprintf(stderr, DHL "new attr: `%s'\n", attrname));
+   newattr->vartype = attrtype;
+   newattr->varflag = flags;
+   return (newattr);
 }
 
 static BOOL parse_lazy_option(HSCPRC * hp, HSCTAG * tag, STRPTR lazy)
 {
-    BOOL ok = TRUE;
+   BOOL ok = TRUE;
+   HSCATTR *attr;
 
-    while (lazy[0])
-    {
-        switch (lazy[0])
-        {
-        case 'c':
-            def_lazy_attr(hp, tag, "CLASS", VT_STRING);
+   while (lazy[0])
+   {
+      switch (lazy[0])
+      {
+         case 'c':
+            def_lazy_attr(hp, tag, "CLASS", VT_STRING, 0);
             break;
-        case 'h':
-            def_lazy_attr(hp, tag, "HREF", VT_URI);
+         case 'd':
+            attr = def_lazy_attr(hp, tag, "DIR", VT_ENUM, 0);
+            attr->enumstr = strclone("ltr|rtl");
             break;
-        case 'i':
-            def_lazy_attr(hp, tag, "ID", VT_ID);
+         case 'h':
+            def_lazy_attr(hp, tag, "HREF", VT_URI, 0);
             break;
-        case 'k':
-            {
-                HSCATTR *clear_attr =
-                def_lazy_attr(hp, tag, "CLEAR", VT_ENUM);
-                clear_attr->enumstr = strclone("left|right|all|*");
-            }
+         case 'i':
+            def_lazy_attr(hp, tag, "ID", VT_ID, 0);
             break;
-        case 'l':
-            def_lazy_attr(hp, tag, "LANG", VT_STRING);
+         case 'k':
+            attr = def_lazy_attr(hp, tag, "CLEAR", VT_ENUM, 0);
+            attr->enumstr = strclone("left|right|all|none");
             break;
-        case 'm':
-            def_lazy_attr(hp, tag, "MD", VT_STRING);
+         case 'l':
+            def_lazy_attr(hp, tag, "LANG", VT_STRING, 0);
             break;
-        case 's':
-            def_lazy_attr(hp, tag, "SRC", VT_URI);
+         case 'm':
+            /* what's this supposed to be? -mb */
+            def_lazy_attr(hp, tag, "MD", VT_STRING, 0);
             break;
-        case 'w':
-            def_lazy_attr(hp, tag, "NOWRAP", VT_BOOL);
+         case 's':
+            def_lazy_attr(hp, tag, "SRC", VT_URI, 0);
             break;
-        default:
+         case 't':
+            def_lazy_attr(hp, tag, "TITLE", VT_STRING, 0);
+            break;
+         case 'v':
+            /* bulk declaration for all %events in HTML4 */
+            def_lazy_attr(hp, tag, "ONCLICK", VT_STRING, 0);
+            def_lazy_attr(hp, tag, "ONDBLCLICK", VT_STRING, 0);
+            def_lazy_attr(hp, tag, "ONMOUSEDOWN", VT_STRING, 0);
+            def_lazy_attr(hp, tag, "ONMOUSEUP", VT_STRING, 0);
+            def_lazy_attr(hp, tag, "ONMOUSEOVER", VT_STRING, 0);
+            def_lazy_attr(hp, tag, "ONMOUSEMOVE", VT_STRING, 0);
+            def_lazy_attr(hp, tag, "ONMOUSEOUT", VT_STRING, 0);
+            def_lazy_attr(hp, tag, "ONKEYDOWN", VT_STRING, 0);
+            def_lazy_attr(hp, tag, "ONKEYUP", VT_STRING, 0);
+            break;
+         case 'y':
+            def_lazy_attr(hp, tag, "STYLE", VT_STRING, 0);
+            break;
+         default:
             hsc_message(hp, MSG_UNKN_TAG_OPTION,
-                        "unknown tag modifier %q (arg %q)",
-                        "LAZY", ch2str(lazy[0]));
+                  "unknown tag modifier %q (arg %q)",
+                  "LAZY", ch2str(lazy[0]));
             break;
-        }
-        lazy++;
-    }
+      }
+      lazy++;
+   }
 
-    return (ok);
+   return (ok);
 }
 
 /*
@@ -231,81 +252,100 @@ static BOOL parse_lazy_option(HSCPRC * hp, HSCTAG * tag, STRPTR lazy)
  */
 static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
 {
-    BOOL ok = FALSE;
-    HSCATTR *attr = new_hscattr(PREFIX_TMPATTR "mbi.naw");
+   BOOL ok = FALSE;
+   HSCATTR *attr = new_hscattr(PREFIX_TMPATTR "mbi.naw");
 
-    attr->vartype = VT_STRING;
+   attr->vartype = VT_STRING;
 
-    if (!(upstrcmp(option, TO_MBI_STR)
-          && upstrcmp(option, TO_MBI_SHT)))
-    {                           /* must be inside */
-        if (parse_eq(hp))
-        {
-            STRPTR strmbi = eval_expression(hp, attr, NULL);
+   if (!(upstrcmp(option, TO_MBI_STR)
+            && upstrcmp(option, TO_MBI_SHT)))
+   {                           /* must be inside */
+      if (parse_eq(hp))
+      {
+         STRPTR strmbi = eval_expression(hp, attr, NULL);
 
-            if (strmbi)
-            {
-                tag->mbi = strclone(strmbi);
-                DDT(fprintf(stderr, DHL "  mbi = `%s'\n", tag->mbi));
-                ok = TRUE;
-            }
-        }
-    }
-    else if (!(upstrcmp(option, TO_NAW_STR)
-               && upstrcmp(option, TO_NAW_SHT)))
-    {                           /* not allowed with */
-        if (parse_eq(hp))
-        {
-            STRPTR strnaw = eval_expression(hp, attr, NULL);
+         if (strmbi)
+         {
+            tag->mbi = strclone(strmbi);
+            DDT(fprintf(stderr, DHL "  mbi = `%s'\n", tag->mbi));
+            ok = TRUE;
+         }
+      }
+   }
+   else if (!(upstrcmp(option, TO_NAW_STR)
+            && upstrcmp(option, TO_NAW_SHT)))
+   {                           /* not allowed with */
+      if (parse_eq(hp))
+      {
+         STRPTR strnaw = eval_expression(hp, attr, NULL);
 
-            if (strnaw)
-            {
-                tag->naw = strclone(strnaw);
-                DDT(fprintf(stderr, DHL "  mbi = `%s'\n", tag->naw));
-                ok = TRUE;
-            }
-        }
-    }
-    else if (!(upstrcmp(option, TO_LAZY_STR)
-               && upstrcmp(option, TO_LAZY_SHT)))
-    {                           /* lazy standard attribs */
-        if (parse_eq(hp))
-        {
-            STRPTR strlazy = eval_expression(hp, attr, NULL);
+         if (strnaw)
+         {
+            tag->naw = strclone(strnaw);
+            DDT(fprintf(stderr, DHL "  mbi = `%s'\n", tag->naw));
+            ok = TRUE;
+         }
+      }
+   }
+   else if (!(upstrcmp(option, TO_LAZY_STR)
+            && upstrcmp(option, TO_LAZY_SHT)))
+   {                           /* lazy standard attribs */
+      if (parse_eq(hp))
+      {
+         STRPTR strlazy = eval_expression(hp, attr, NULL);
 
-            if (strlazy)
-            {
-                DDT(fprintf(stderr, DHL "  lazy= `%s'\n", strlazy));
-                ok = parse_lazy_option(hp, tag, strlazy);
-            }
-        }
-    }
-    else
-    {
-        ok |= check_tag_option(hp, option, tag, TO_CLOSE_STR, TO_CLOSE_SHT, HT_CLOSE);
+         if (strlazy)
+         {
+            DDT(fprintf(stderr, DHL "  lazy= `%s'\n", strlazy));
+            ok = parse_lazy_option(hp, tag, strlazy);
+         }
+      }
+   }
+   else
+   {
+      ok |= check_tag_option(hp, option, tag, TO_CLOSE_STR, TO_CLOSE_SHT,
+            HT_CLOSE);
 
-        /* now check for all the other stuff */
-        ok |= check_tag_option(hp, option, tag, TO_SPECIAL_STR, TO_SPECIAL_SHT, HT_SPECIAL);
-        ok |= check_tag_option(hp, option, tag, TO_JERK_STR, TO_JERK_SHT, HT_JERK);
-        ok |= check_tag_option(hp, option, tag, TO_AUTOCLOSE_STR, TO_AUTOCLOSE_SHT, HT_AUTOCLOSE);
-        ok |= check_tag_option(hp, option, tag, TO_OBSOLETE_STR, TO_OBSOLETE_SHT, HT_OBSOLETE);
-        ok |= check_tag_option(hp, option, tag, TO_ONLYONCE_STR, TO_ONLYONCE_SHT, HT_ONLYONCE);
-        ok |= check_tag_option(hp, option, tag, TO_REQUIRED_STR, TO_REQUIRED_SHT, HT_REQUIRED);
-        ok |= check_tag_option(hp, option, tag, TO_RECOMMENDED_STR, TO_RECOMMENDED_SHT, HT_RECOMMENDED);
-        ok |= check_tag_option(hp, option, tag, TO_SKIPLF_STR, TO_SKIPLF_SHT, HT_SKIPLF);
-        ok |= check_tag_option(hp, option, tag, TO_WHTSPC_STR, TO_WHTSPC_SHT, HT_WHTSPC);
+      /* now check for all the other stuff */
+      ok |= check_tag_option(hp, option, tag,
+            TO_SPECIAL_STR, TO_SPECIAL_SHT, HT_SPECIAL);
+      ok |= check_tag_option(hp, option, tag,
+            TO_JERK_STR, TO_JERK_SHT, HT_JERK);
+      ok |= check_tag_option(hp, option, tag,
+            TO_AUTOCLOSE_STR, TO_AUTOCLOSE_SHT, HT_AUTOCLOSE);
+      ok |= check_tag_option(hp, option, tag,
+            TO_EMPTY_STR, TO_EMPTY_SHT, HT_EMPTY);
+      ok |= check_tag_option(hp, option, tag,
+            TO_OBSOLETE_STR, TO_OBSOLETE_SHT, HT_OBSOLETE);
+      ok |= check_tag_option(hp, option, tag,
+            TO_ONLYONCE_STR, TO_ONLYONCE_SHT, HT_ONLYONCE);
+      ok |= check_tag_option(hp, option, tag,
+            TO_REQUIRED_STR, TO_REQUIRED_SHT, HT_REQUIRED);
+      ok |= check_tag_option(hp, option, tag,
+            TO_RECOMMENDED_STR, TO_RECOMMENDED_SHT, HT_RECOMMENDED);
+      ok |= check_tag_option(hp, option, tag,
+            TO_SKIPLF_STR, TO_SKIPLF_SHT, HT_SKIPLF);
+      ok |= check_tag_option(hp, option, tag,
+            TO_WHTSPC_STR, TO_WHTSPC_SHT, HT_WHTSPC);
 
-        if (!ok)
-        {
-            hsc_message(hp, MSG_UNKN_TAG_OPTION,
-                        "unknown tag modifer %q", option);
-        }
-    }
+      /* in XHTML mode, HT_EMPTY excludes HT_CLOSE */
+      if((tag->option & HT_EMPTY) && hp->xhtml) {
+         DDT(if(tag->option & HT_CLOSE)
+               fprintf(stderr, DHL "  EMPTY set, disabling CLOSE\n");)
+            tag->option &= ~HT_CLOSE;
+      }
 
-    /* remove temp. attribute */
-    del_hscattr(attr);
+      if (!ok)
+      {
+         hsc_message(hp, MSG_UNKN_TAG_OPTION,
+               "unknown tag modifer %q", option);
+      }
+   }
 
-    return (ok);
+   /* remove temp. attribute */
+   del_hscattr(attr);
+
+   return (ok);
 }
 
 /*
@@ -313,37 +353,37 @@ static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
  */
 static BOOL parse_tag_var(HSCPRC * hp, HSCTAG * tag)
 {
-    BOOL ok = FALSE;
-    HSCATTR *var = NULL;
+   BOOL ok = FALSE;
+   HSCATTR *var = NULL;
 
-    /* define new attribute */
-    var = define_var(hp, tag->attr, VF_CONST | VF_GLOBAL);
+   /* define new attribute */
+   var = define_var(hp, tag->attr, VF_CONST | VF_GLOBAL);
 
-    /* set several values of tag structure, if attribute has
-     * some special flags set
-     */
-    if (var)
-    {
-        /* attribute is uri that tells the size */
-        if (var->varflag & VF_GETSIZE)
-            tag->uri_size = var;
+   /* set several values of tag structure, if attribute has
+    * some special flags set
+    */
+   if (var)
+   {
+      /* attribute is uri that tells the size */
+      if (var->varflag & VF_GETSIZE)
+         tag->uri_size = var;
 
-        /* attribute is uri that tells if the tag should be stripped */
-        if (var->varflag & VF_STRIPEXT)
-            tag->uri_stripext = var;
+      /* attribute is uri that tells if the tag should be stripped */
+      if (var->varflag & VF_STRIPEXT)
+         tag->uri_stripext = var;
 
-        /* set attribute flag to keep quotes */
-        if (tag->option & HT_KEEP_QUOTES)
-            var->varflag |= VF_KEEP_QUOTES;
+      /* set attribute flag to keep quotes */
+      if (tag->option & HT_KEEP_QUOTES)
+         var->varflag |= VF_KEEP_QUOTES;
 
-        /* set macro attribute flag for macro tags */
-        if (tag->option & HT_MACRO)
-            var->varflag |= VF_MACRO;
+      /* set macro attribute flag for macro tags */
+      if (tag->option & HT_MACRO)
+         var->varflag |= VF_MACRO;
 
-        ok = TRUE;
-    }
+      ok = TRUE;
+   }
 
-    return (ok);
+   return (ok);
 }
 
 /*
@@ -352,78 +392,78 @@ static BOOL parse_tag_var(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
 {
-    BOOL ok = FALSE;
-    STRPTR nw;
-    INFILE *inpf = hp->inpf;
+   BOOL ok = FALSE;
+   STRPTR nw;
+   INFILE *inpf = hp->inpf;
 
-    if (tag)
-    {
-        ok = TRUE;
+   if (tag)
+   {
+      ok = TRUE;
 
-        /* read args */
-        nw = infgetw(inpf);
+      /* read args */
+      nw = infgetw(inpf);
 
-        /*
-         * set tag options
-         */
-        while (nw && (!strcmp(nw, "/")))
-        {
+      /*
+       * set tag options
+       */
+      while (nw && (!strcmp(nw, "/")))
+      {
+         nw = infgetw(inpf);
+         if (nw)
+         {
+            ok &= parse_tag_option(hp, nw, tag);
             nw = infgetw(inpf);
+         }
+      }
+
+      /* auto-set HT_KEEP_QUOTES */
+      if (!strncmp(tag->name, HSC_TAGID, strlen(HSC_TAGID)))
+      {
+         tag->option |= HT_KEEP_QUOTES;
+      }
+
+      /*
+       * set tag attributes
+       */
+      while (nw && (strcmp(nw, ">")))
+      {
+         if (strcmp(nw, "["))
+         {
+            /* define classic attribute */
+            inungetcw(inpf);
+            ok &= parse_tag_var(hp, tag);
+         }
+         else
+         {
+            /* insert attribute list */
+            STRPTR name = infget_tagid(hp);
             if (nw)
             {
-                ok &= parse_tag_option(hp, nw, tag);
-                nw = infgetw(inpf);
+               HSCTAG *lazy = find_strtag(hp->deflazy, name);
+               if (lazy)
+               {
+                  copy_local_varlist(tag->attr, lazy->attr, MCI_GLOBAL);
+               }
+               else
+               {
+                  hsc_message(hp, MSG_UNKN_LAZY, "unknown %l", name);
+               }
             }
-        }
+            parse_wd(hp, "]");
+         }
+         nw = infgetw(inpf);
 
-        /* auto-set HT_KEEP_QUOTES */
-        if (!strncmp(tag->name, HSC_TAGID, strlen(HSC_TAGID)))
-        {
-            tag->option |= HT_KEEP_QUOTES;
-        }
+      }
 
-        /*
-         * set tag attributes
-         */
-        while (nw && (strcmp(nw, ">")))
-        {
-            if (strcmp(nw, "["))
-            {
-                /* define classic attribute */
-                inungetcw(inpf);
-                ok &= parse_tag_var(hp, tag);
-            }
-            else
-            {
-                /* insert attribute list */
-                STRPTR name = infget_tagid(hp);
-                if (nw)
-                {
-                    HSCTAG *lazy = find_strtag(hp->deflazy, name);
-                    if (lazy)
-                    {
-                        copy_local_varlist(tag->attr, lazy->attr, MCI_GLOBAL);
-                    }
-                    else
-                    {
-                        hsc_message(hp, MSG_UNKN_LAZY, "unknown %l", name);
-                    }
-                }
-                parse_wd(hp, "]");
-            }
-            nw = infgetw(inpf);
+      /* check for ">" at end */
+      if (nw)
+      {
+         inungetcw(inpf);
+         ok = parse_gt(hp);
+      }
+   }
 
-        }
-
-        /* check for ">" at end */
-        if (nw)
-        {
-            inungetcw(inpf);
-            ok = parse_gt(hp);
-        }
-    }
-
-    return (ok);
+   return (ok);
 }
 
 /*
@@ -434,263 +474,286 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
  */
 static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR tagname, BOOL tag_unknown, BOOL is_macro_tag)
 {
-    HSCATTR *attr = find_varname(varlist, varname);
-    INFILE *inpf = hp->inpf;
-    STRPTR arg = NULL;
-    BOOL ok = FALSE;
-    BOOL inheritage_failed = FALSE;     /* flag: set, if "?=" failed */
-    STRPTR nw;
-    HSCATTR skipvar;            /* dummy-attribute to skip unknown */
-    EXPSTR *attr_str = init_estr(40);   /* string for attribute name */
-    EXPSTR *val_str = init_estr(40);    /* string for "=" and value */
+   HSCATTR *attr = find_varname(varlist, varname);
+   INFILE *inpf = hp->inpf;
+   STRPTR arg = NULL;
+   BOOL ok = FALSE;
+   BOOL inheritage_failed = FALSE;     /* flag: set, if "?=" failed */
+   STRPTR nw;
+   HSCATTR skipvar;            /* dummy-attribute to skip unknown */
+   EXPSTR *attr_str = init_estr(40);   /* string for attribute name */
+   EXPSTR *val_str = init_estr(40);    /* string for "=" and value */
 
-    DAV(fprintf(stderr, DHL "   set attr %s\n", varname));
+   DAV(fprintf(stderr, DHL "   set attr %s\n", varname));
 
-    /* append attribute name to attr_str */
-    if (hp->compact)
-    {
-        app_estr(attr_str, compactWs(hp, infgetcws(inpf)));
-    }
-    else
-    {
-        app_estr(attr_str, infgetcws(inpf));
-    }
-    app_estr(attr_str, infgetcw(inpf));
+   /* don't process pseudo-attribute "/" in XHTML mode */
+   if(!strcmp(varname,"/")) return TRUE;
 
-    if (!attr)
-    {
-        /* attribute not found: assign to dummy-attribute */
-        attr = &skipvar;
-        attr->name = varname;
-        attr->deftext = NULL;
-        attr->text = NULL;
-        attr->enumstr = NULL;
-        attr->vartype = VT_STRING;
-        attr->varflag = 0;
+   /* append attribute name to attr_str */
+   if (hp->compact)
+   {
+      app_estr(attr_str, compactWs(hp, infgetcws(inpf)));
+   }
+   else
+   {
+      app_estr(attr_str, infgetcws(inpf));
+   }
+   app_estr(attr_str, infgetcw(inpf));
 
-        /* launch message about unknown attribute
-         *
-         * if the whole tag is unknown, no message is launched;
-         * if it is a normal tag, this causes a warning
-         * if it is a macro tag, it causes an error */
-        if (!tag_unknown)
-        {
-            if (is_macro_tag)
-            {
-                hsc_msg_unkn_attr_macro(hp, varname, tagname);
-            }
-            else
-            {
-                hsc_msg_unkn_attr_tag(hp, varname, tagname);
-            }
-        }
-    }
+   /* lowercase attribute name if requested */
+   if(hp->lctags) {
+      lowstr(estr2str(attr_str));
+   }
 
-    /* get argument */
-    nw = infgetw(inpf);
-    if (nw)
-        if (!strcmp(nw, "="))
-        {
-            /* append "=" to log */
-            if (!hp->compact)
-            {
-                app_estr(val_str, infgetcws(inpf));
-            }
-            app_estr(val_str, infgetcw(inpf));
+   if (!attr)
+   {
+      /* attribute not found: assign to dummy-attribute */
+      attr = &skipvar;
+      attr->name = varname;
+      attr->deftext = NULL;
+      attr->text = NULL;
+      attr->enumstr = NULL;
+      attr->vartype = VT_STRING;
+      attr->varflag = 0;
 
-            /* parse expression */
-            arg = eval_expression(hp, attr, NULL);
+      /* launch message about unknown attribute
+       *
+       * if the whole tag is unknown, no message is launched;
+       * if it is a normal tag, this causes a warning
+       * if it is a macro tag, it causes an error */
+      if (!tag_unknown)
+      {
+         if (is_macro_tag)
+         {
+            hsc_msg_unkn_attr_macro(hp, varname, tagname);
+         }
+         else
+         {
+            hsc_msg_unkn_attr_tag(hp, varname, tagname);
+         }
+      }
+   }
+
+   /* get argument */
+   nw = infgetw(inpf);
+   if (nw) {
+      if (!strcmp(nw, "="))
+      {
+         /* append "=" to log - always strips WS b/w attribute and value */
+         /*
+         if (!hp->compact)
+         {
+            app_estr(val_str, infgetcws(inpf));
+         }
+         */
+         app_estr(val_str, infgetcw(inpf));
+
+         /* parse expression */
+         arg = eval_expression(hp, attr, NULL);
+
+         /* append value to log */
+         if (attr->quote != VQ_NO_QUOTE) app_estrch(val_str, attr->quote);
+         if (get_vartext(attr))
+         {
+            app_estr(val_str, get_vartext(attr));
+         }
+         if (attr->quote != VQ_NO_QUOTE) app_estrch(val_str, attr->quote);
+ 
+
+         if (arg)
+         {
+            DAV(fprintf(stderr, DHL "  `%s'\n", arg));
+            ok = TRUE;
+         }
+      } else if (!strcmp(nw, "?")) {
+         /* process "?="-assignment */
+         if (!hp->compact)
+         {
+            app_estr(val_str, infgetcws(inpf));
+         }
+         if (parse_eq(hp))
+         {
+            app_estr(val_str, "=");
+
+            arg = eval_conditional_assignment(hp, attr);
 
             /* append value to log */
             if (attr->quote != VQ_NO_QUOTE)
             {
-                app_estrch(val_str, attr->quote);
+               app_estrch(val_str, attr->quote);
             }
             if (get_vartext(attr))
             {
-                app_estr(val_str, get_vartext(attr));
+               app_estr(val_str, get_vartext(attr));
             }
             if (attr->quote != VQ_NO_QUOTE)
             {
-                app_estrch(val_str, attr->quote);
+               app_estrch(val_str, attr->quote);
             }
-
             if (arg)
             {
-                DAV(fprintf(stderr, DHL "  `%s'\n", arg));
-                ok = TRUE;
-            }
-        }
-        else if (!strcmp(nw, "?"))
-        {
-            /* process "?="-assignment */
-            if (!hp->compact)
-            {
-                app_estr(val_str, infgetcws(inpf));
-            }
-            if (parse_eq(hp))
-            {
-                app_estr(val_str, "=");
-
-                arg = eval_conditional_assignment(hp, attr);
-
-                /* append value to log */
-                if (attr->quote != VQ_NO_QUOTE)
-                {
-                    app_estrch(val_str, attr->quote);
-                }
-                if (get_vartext(attr))
-                {
-                    app_estr(val_str, get_vartext(attr));
-                }
-                if (attr->quote != VQ_NO_QUOTE)
-                {
-                    app_estrch(val_str, attr->quote);
-                }
-                if (arg)
-                {
-                    DAV(fprintf(stderr, DHL "  inherited `%s'\n", arg));
-                }
-                else
-                {
-                    DAV(fprintf(stderr, DHL "  inheritage failed\n"));
-                    inheritage_failed = TRUE;
-                }
-                ok = TRUE;
-            }
-        }
-        else
-        {
-            /* handle boolean attribute */
-            arg = NULL;
-            inungetcwws(inpf);
-            if (attr == &skipvar)
-            {
-                attr->vartype = VT_BOOL;
+               DAV(fprintf(stderr, DHL "  inherited `%s'\n", arg));
+            } else {
+               DAV(fprintf(stderr, DHL "  inheritage failed\n"));
+               inheritage_failed = TRUE;
             }
             ok = TRUE;
-        }
-    else
-    {
-        hsc_msg_eof(hp, "read attribute value");
-    }
+         }
+      } else {
+         /* handle boolean attribute */
+         arg = NULL;
+         inungetcwws(inpf);
+         if (attr == &skipvar)
+         {
+            attr->vartype = VT_BOOL;
+         }
+         ok = TRUE;
+      }
+   } else {
+      hsc_msg_eof(hp, "read attribute value");
+   }
 
-    if (ok)
-        if (arg)
-        {
-            if (attr->vartype == VT_BOOL)
-            {
-                /* set boolean attribute depending on expression */
-                set_varbool(attr, get_varbool(attr));
+   if (ok) {
+      if (arg)
+      {
+         if (attr->vartype == VT_BOOL)
+         {
+            /* set boolean attribute depending on expression */
+            set_varbool(attr, get_varbool(attr));
 
-                /* if the expression returned FALSE, remove
-                 * the boolean  switch from tag-call
-                 */
-                if (!get_varbool(attr))
-                    clr_estr(attr_str);
-            }
-            else if (!inheritage_failed)
-            {
-                /* append value to attribute string */
-                estrcat(attr_str, val_str);
-            }
-        }
-        else if (inheritage_failed)
-        {
-            /* if attribute to inherit from was empty,
-             * remove the attribute from tag-call
+            /* if the expression returned FALSE, remove
+             * the boolean  switch from tag-call
              */
-            clr_estr(attr_str);
-        }
-        else
-        {
-            /* no value has been passed to the attribute */
-            if (attr->vartype == VT_BOOL)
-            {
-                /* for boolean attributes, this is legal,
-                 * and enables the attribute
-                 */
-                set_varbool(attr, TRUE);
-            }
-            else if (!tag_unknown)
-            {
-                /* for non-boolean attributes, display
-                 * error message
-                 */
-                hsc_message(hp, MSG_NOARG_ATTR,
-                            "missing value for %A", attr);
-            }
-        }
+            if (!get_varbool(attr))
+               clr_estr(attr_str);
+         }
+         else if (!inheritage_failed)
+         {
+            /* append value to attribute string */
+            estrcat(attr_str, val_str);
+         }
+      }
+      else if (inheritage_failed)
+      {
+         /* if attribute to inherit from was empty,
+          * remove the attribute from tag-call
+          */
+         clr_estr(attr_str);
+      }
+      else
+      {
+         /* no value has been passed to the attribute */
+         if (attr->vartype == VT_BOOL)
+         {
+            /* for boolean attributes, this is legal,
+             * and enables the attribute
+             * but: see below for XHTML normalization!
+             */
+            set_varbool(attr, TRUE);
+         }
+         else if (!tag_unknown)
+         {
+            /* for non-boolean attributes, display
+             * error message
+             */
+            hsc_message(hp, MSG_NOARG_ATTR,
+                  "missing value for %A", attr);
+         }
+      }
+   }
 
-    /* cleanup pseudo-attr */
-    if (attr == &skipvar)
-    {
-        clr_vartext(attr);
-    }
+   /* for XHTML, normalize boolean attributes */
+   if(hp->xhtml && (VT_BOOL == attr->vartype)) {
+      char *s,*t;
+      /* clone attribute string */ 
+      s = t = strclone(estr2str(attr_str));
+      /* skip leading blanks */
+      while((' ' ==*t) || ('\t' == *t)) t++;
+      /* turn attr into attr="attr" (screw single quotes!) */
+      app_estr(attr_str,"=\"");
+      app_estr(attr_str,t);
+      app_estr(attr_str,"\"");
+      ufreestr(s);
+   } else if(hp->lctags && (VT_ENUM == attr->vartype)) {
+      /* lowercase entire attribute + value for ENUM attributes if req. */
+      lowstr(estr2str(attr_str));
+   }
+   
 
-    /* append & cleanup attribute and value string */
-    app_estr(hp->tag_attr_str, estr2str(attr_str));
-    del_estr(attr_str);
-    del_estr(val_str);
+   /* warn on obsolete attribute */
+   if(attr->varflag & VF_OBSOLETE) {
+      hsc_message(hp,MSG_ATTR_OBSOLETE,"%A is obsolete",attr);
+   }
 
-    return (ok);
+   /* cleanup pseudo-attr */
+   if (attr == &skipvar)
+   {
+      clr_vartext(attr);
+   }
+
+   /* append & cleanup attribute and value string */
+   app_estr(hp->tag_attr_str, estr2str(attr_str));
+   del_estr(attr_str);
+   del_estr(val_str);
+
+   return (ok);
 }
 
 /*
  * set_tag_defaults
  *
- * append attributes which do not have been set by user but contain
- * an default value to the hp->tag_attr_str
+ * append attributes which have not been set by user but contain
+ * a default value to the hp->tag_attr_str
  */
 static VOID set_tag_defaults(HSCPRC * hp, HSCTAG * tag)
 {
-    DLNODE *nd = dll_first(tag->attr);
+   DLNODE *nd = dll_first(tag->attr);
 
-    while (nd)
-    {
-        HSCATTR *attr = (HSCATTR *) dln_data(nd);
-        STRPTR value = get_vartext(attr);
-        STRPTR defval = get_vardeftext(attr);
+   while (nd)
+   {
+      HSCATTR *attr = (HSCATTR *) dln_data(nd);
+      STRPTR value = get_vartext(attr);
+      STRPTR defval = get_vardeftext(attr);
 
-        if (!value && defval)
-        {
-            /* there is no current value, but an default value:
-             * set value with default, */
-            set_vartext(attr, defval);
+      if (!value && defval)
+      {
+         /* there is no current value, but a default value:
+          * set value with default, */
+         set_vartext(attr, defval);
 
-            /* append attribute name to tag_attr_str */
-            app_estr(hp->tag_attr_str, " ");
-            app_estr(hp->tag_attr_str, attr->name);
+         /* append attribute name to tag_attr_str */
+         app_estr(hp->tag_attr_str, " ");
+         app_estr(hp->tag_attr_str, attr->name);
 
-            DAV(fprintf(stderr, DHL "  `%s:%s' defaults to `%s'\n",
-                        tag->name, attr->name, defval));
+         DAV(fprintf(stderr, DHL "  `%s:%s' defaults to `%s'\n",
+                  tag->name, attr->name, defval));
 
-            /* if it is a non-bool attrib, also append value */
-            if (attr->vartype != VT_BOOL)
+         /* if it is a non-bool attrib, also append value */
+         if (attr->vartype != VT_BOOL)
+         {
+            app_estr(hp->tag_attr_str, "=");
+
+            /* decide which quote to use for default value */
+            attr->quote = DOUBLE_QUOTE;
+            choose_quote(hp, attr);
+
+            /* append quote */
+            if (attr->quote != VQ_NO_QUOTE)
             {
-                app_estr(hp->tag_attr_str, "=");
-
-                /* decide which quote to use for default value */
-                attr->quote = DOUBLE_QUOTE;
-                choose_quote(hp, attr);
-
-                /* append quote */
-                if (attr->quote != VQ_NO_QUOTE)
-                {
-                    app_estrch(hp->tag_attr_str, attr->quote);
-                }
-                /* append value */
-                app_estr(hp->tag_attr_str, attr->name);
-                /* append quote */
-                if (attr->quote != VQ_NO_QUOTE)
-                {
-                    app_estrch(hp->tag_attr_str, attr->quote);
-                }
+               app_estrch(hp->tag_attr_str, attr->quote);
             }
-        }
+            /* append value */
+            app_estr(hp->tag_attr_str, attr->name);
+            /* append quote */
+            if (attr->quote != VQ_NO_QUOTE)
+            {
+               app_estrch(hp->tag_attr_str, attr->quote);
+            }
+         }
+      }
 
-        nd = dln_next(nd);
-    }
+      nd = dln_next(nd);
+   }
 
 }
 
@@ -701,88 +764,97 @@ static VOID set_tag_defaults(HSCPRC * hp, HSCTAG * tag)
  */
 ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
 {
-    INFILE *inpf = hp->inpf;
-    BOOL ok = FALSE;
-    DLLIST *varlist;
-    ULONG result_tci = get_mci(hp);     /* resulting tag_call_id */
-    STRPTR nw = infgetw(inpf);
+   INFILE *inpf = hp->inpf;
+   BOOL ok = FALSE;
+   DLLIST *varlist;
+   ULONG result_tci = get_mci(hp);     /* resulting tag_call_id */
+   STRPTR nw = infgetw(inpf);
 
-    /* evaluate which varlist to use */
-    varlist = tag->attr;
+   /* evaluate which varlist to use */
+   varlist = tag->attr;
 
-    /* clear string that logs all attributes passed to tag */
-    clr_estr(hp->tag_attr_str);
+   /* clear string that logs all attributes passed to tag */
+   clr_estr(hp->tag_attr_str);
 
-    /* read args */
-    do
-    {
-        if (!nw)
-        {
-            hsc_msg_eof(hp, "read attributes");
-        }
-        else
-        {
-            /*
-             * process next attribute
-             */
-            if (!strcmp(nw, ">"))
+   /* read args */
+   do
+   {
+      if (!nw)
+      {
+         hsc_msg_eof(hp, "read attributes");
+      }
+      else
+      {
+         /*
+          * process next attribute
+          */
+         if (!strcmp(nw, ">"))
+         {
+            nw = NULL;
+            ok = TRUE;
+         }
+         else
+         {
+            /* if in XHTML compatibility mode, ensure there is no
+               attribute after the closing slash */
+            if(hp->xhtml && (tag->option & HT_EMPTY) && !hp->xhtml_emptytag) {
+               hsc_message(hp, MSG_ATTR_AFTER_SLASH,
+                     "%a after closing slash in empty tag",
+                     nw);
+            }
+            /* process attribute */
+            if (NULL != (nw = check_attrname(hp, nw, FALSE)))
             {
-                nw = NULL;
-                ok = TRUE;
+               BOOL tag_unknown = (BOOL)(tag->option & HT_UNKNOWN);
+               BOOL is_macro_tag = (BOOL)(tag->option & HT_MACRO);
+
+               set_tag_arg(hp, varlist, nw, tag->name,
+                     tag_unknown, is_macro_tag);
             }
             else
             {
-                /* process attribute */
-                if (check_attrname(hp, nw))
-                {
-                    BOOL tag_unknown = tag->option & HT_UNKNOWN;
-                    BOOL is_macro_tag = tag->option & HT_MACRO;
-
-                    set_tag_arg(hp, varlist, nw, tag->name,
-                                tag_unknown, is_macro_tag);
-                }
-                else
-                {
-                    /* append empty value */
+               /* append empty value */
 #if 0
-                    app_estr(hp->tag_attr_str, "\"\"");
-                    skip_until_eot(hp, NULL);
+               app_estr(hp->tag_attr_str, "\"\"");
+               skip_until_eot(hp, NULL);
+               nw = NULL;
 #endif
-                    nw = NULL;
-                }
-
-                /* read next attribute */
-                if (nw)
-                    nw = infgetw(inpf);
             }
-        }
-    }
-    while (nw);
 
-    /* for all attributes with defaults, but no value,
-     * append it to the tag call */
-    set_tag_defaults(hp, tag);
+            /* read next attribute */
+            if (nw)
+               nw = infgetw(inpf);
+         }
+      }
+   }
+   while (nw);
 
-    /* unset scope */
-    unget_mci(hp);
+   /* for all attributes with defaults, but no value,
+    * append it to the tag call */
+   set_tag_defaults(hp, tag);
 
-    /* set all undefined bool. attr to FALSE */
-    clr_varlist_bool(varlist);
+   /* unset scope */
+   unget_mci(hp);
 
-    /* check for required attributes */
-    if (ok)
-    {
-        ok = check_varlist(hp, varlist);
-        if (!ok)
-        {
-            inungetcw(inpf);
-        }
-    }
+   /* set all undefined bool. attr to FALSE */
+   clr_varlist_bool(varlist);
 
-    if (!ok)
-    {
-        result_tci = MCI_ERROR;
-    }
+   /* check for required attributes */
+   if (ok)
+   {
+      ok = check_varlist(hp, varlist);
+      if (!ok)
+      {
+         inungetcw(inpf);
+      }
+   }
 
-    return (result_tci);
+   if (!ok)
+   {
+      result_tci = MCI_ERROR;
+   }
+
+   return (result_tci);
 }
+
+/* vi: set ts=4: */

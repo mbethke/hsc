@@ -40,6 +40,7 @@ extern BOOL hsc_parse_source(HSCPRC * hp);
 extern BOOL hsc_parse_end(HSCPRC * hp);
 extern BOOL hsc_parse_end_id(HSCPRC * hp);
 
+extern void hp_enable_output(HSCPRC * hp, STRPTR cause);
 extern DLNODE *find_end_tag_node(HSCPRC *hp, STRPTR tagname);
 extern HSCTAG *find_end_tag(HSCPRC *hp, STRPTR tagname);
 extern HSCTAG *find_end_container_macro(HSCPRC *hp);

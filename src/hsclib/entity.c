@@ -116,20 +116,20 @@ int cmp_strent(APTR cmpstr, APTR entdata)
     if (entdata)
         entstr = ((HSCENT *) entdata)->name;
 
-    if (entstr)
+    if (entstr) {
         if (!strcmp(cmpstr, entstr))
-            return (-1);
+            return -1;
         else
-            return (0);
-    else
-        return (0);
+            return 0;
+    }
+    return 0;
 }
 
 /*
  * cmp_nument
  *
- * compares a entity-string with the numeric
- * data of a HSCENT-entry
+ * compares an entity-string with the numeric
+ * data of an HSCENT-entry
  */
 int cmp_nument(APTR cmpstr, APTR entdata)
 {
@@ -145,8 +145,8 @@ int cmp_nument(APTR cmpstr, APTR entdata)
 /*
  * cmp_rplcent
  *
- * compares a entity-string with the replace-item
- * of a HSCENT-entry
+ * compares an entity-string with the replace-item
+ * of an HSCENT-entry
  */
 int cmp_rplcent(APTR cmpstr, APTR entdata)
 {
@@ -155,13 +155,13 @@ int cmp_rplcent(APTR cmpstr, APTR entdata)
     if (entdata)
         entstr = ((HSCENT *) entdata)->replace;
 
-    if (entstr)
+    if (entstr) {
         if (!strcmp(cmpstr, entstr))
-            return (-1);
+            return -1;
         else
-            return (0);
-    else
-        return (0);
+            return 0;
+    }
+    return 0;
 }
 
 /*

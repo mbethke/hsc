@@ -190,6 +190,7 @@ int cmp_select_stack_node(APTR cmp_data, APTR lst_data)
 }
 
 /* ss_push: add a new value to the if-stack */
+#if 0
 static VOID ss_push(HSCPRC * hp, STRPTR value)
 {
     app_dlnode(hp->select_stack, new_select_stack_node(value));
@@ -316,6 +317,7 @@ static if_t get_condition(HSCPRC * hp)
     }
     return (cond);
 }
+#endif
 
 /*
  * skip_until_conditional

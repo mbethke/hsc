@@ -62,15 +62,7 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
     }
 
     if (inpf)                   /* file opened? */
-    {                  
-#if (defined MSDOS) /* HSC_YOUR */
-        /* check input > 32K */
-        if (estrlen(inpf->lnbuf) > (32*1024))
-        {
-            fprintf(stderr, "** input file too huge\n");
-            exit(RC_FAIL);
-        }
-#endif
+    {
         /* push current input file on input-file-stack */
         if (hp->inpf)
         {
@@ -188,7 +180,8 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
     }
 
     /* check for stdin to use as input-file */
-    if (!strcmp(filename, FILENAME_STDIN))
+    if (!(strcmp(filename, FILENAME_STDIN1) &&
+          strcmp(filename, FILENAME_STDIN2)))
         filename = NULL;
 
     /* open & read input file */
@@ -209,7 +202,7 @@ BOOL hsc_base_include_file(HSCPRC * hp, STRPTR filename, ULONG optn, INFILEPOS *
             if (optn & IH_IS_SOURCE)
             {
                 if (!filename)
-                    filename = FILENAME_STDIN;
+                    filename = FILENAME_STDIN1;
                 D(fprintf(stderr, DHL "INCLUDE source: `%s'\n", filename));
                 hsc_project_set_source(hp->project, filename);
                 /*reallocstr(&(hp->document->sourcename), filename); */
@@ -315,6 +308,12 @@ BOOL hsc_include_file(HSCPRC * hp, STRPTR filename, ULONG optn)
     BOOL ok = FALSE;
     EXPSTR *real_filename = init_estr(64);
 
+    if(NULL == filename)
+    {
+       fprintf(stderr,"hsc_include_file(): NULL/empty filename!\n");
+       return ok;
+    }
+    
     /* scan include directories */
     find_includefile(hp, real_filename, filename);
 

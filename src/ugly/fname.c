@@ -355,17 +355,10 @@ BOOL link_envfname(EXPSTR * dest, STRPTR envname, STRPTR dir, STRPTR fn)
  */
 static size_t adjust_prefix_length(size_t prefix_length)
 {
-#ifdef MSDOS
-    if (prefix_length > MAX_FNAME - 4)
-    {
-        prefix_length = MAX_FNAME - 4;
-    }
-#else
     if (prefix_length > MAX_FNAME - 8)
     {
         prefix_length = MAX_FNAME - 8;
     }
-#endif
 
     return (prefix_length);
 }
@@ -392,7 +385,7 @@ STRPTR tmpnamstr(STRPTR suggested_prefix)
     /* add address of buffer to prefix */
     if (MAX_FNAME > 8)
     {
-        sprintf(&(buf[strlen(buf)]), "%p", tmpnamstr);
+        sprintf(&(buf[strlen(buf)]), "%p", (void*)tmpnamstr);
     }
 
     prefix_length = strlen(buf);
@@ -526,7 +519,7 @@ BOOL optimize_fname(STRPTR *target_name, STRPTR source_name)
 #if defined AMIGA
 #define PARENT_DIRECTORY_BEGIN  "/"
 #define PARENT_DIRECTORY_INSIDE "//"
-#elif defined BEOS || defined NEXTSTEP || defined RISCOS || defined UNIX
+#elif defined BEOS || defined NEXTSTEP || defined RISCOS || defined UNIX || defined WINNT
 #define PARENT_DIRECTORY_BEGIN  "../"
 #define PARENT_DIRECTORY_INSIDE "/../"
 #else
@@ -613,7 +606,7 @@ BOOL optimize_fname(STRPTR *target_name, STRPTR source_name)
         PRINT_FILENAME("strip device");
     }
 
-#elif defined BEOS || defined NEXTSTEP || defined RISCOS || defined UNIX
+#elif defined BEOS || defined NEXTSTEP || defined RISCOS || defined UNIX || defined WINNT
     if (filename_fun_start[0] == '/')
     {
         STRPTR next_directory = strchr(filename_fun_start+1, '/');

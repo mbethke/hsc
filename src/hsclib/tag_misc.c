@@ -53,7 +53,7 @@ BOOL handle_base(HSCPRC * hp, HSCTAG * tag)
         hp->docbase_set = TRUE;
     }
 
-    return (TRUE);
+    return TRUE;
 }
 
 /*
@@ -65,19 +65,7 @@ BOOL handle_blink(HSCPRC * hp, HSCTAG * tag)
 {
     hsc_message(hp, MSG_BLINK_SUX, "%t sucks", "BLINK");
 
-    return (TRUE);
-}
-
-/*
- * handle_blink: tag handle for <BLINK>
- *
- * just tell the user that frames are disgusting
- */
-BOOL handle_frame(HSCPRC * hp, HSCTAG * tag)
-{
-    hsc_message(hp, MSG_FRAME_SUX, "frames are disgusting");
-
-    return (TRUE);
+    return TRUE;
 }
 
 /*
@@ -110,8 +98,7 @@ BOOL handle_heading(HSCPRC * hp, HSCTAG * tag)
     }
 
     hp->prev_heading_num = num;
-
-    return (TRUE);
+    return TRUE;
 }
 
 /*
@@ -122,7 +109,7 @@ BOOL handle_heading(HSCPRC * hp, HSCTAG * tag)
 BOOL handle_img(HSCPRC * hp, HSCTAG * tag)
 {
     /* ...and I'm happy when it rains */
-    return (TRUE);
+    return TRUE;
 }
 
 /*
@@ -134,8 +121,7 @@ BOOL handle_img(HSCPRC * hp, HSCTAG * tag)
 BOOL handle_pre(HSCPRC * hp, HSCTAG * tag)
 {
     hp->inside_pre = TRUE;
-
-    return (TRUE);
+    return TRUE;
 }
 
 /*
@@ -146,8 +132,7 @@ BOOL handle_pre(HSCPRC * hp, HSCTAG * tag)
 BOOL handle_end_pre(HSCPRC * hp, HSCTAG * tag)
 {
     hp->inside_pre = FALSE;
-
-    return (TRUE);
+    return TRUE;
 }
 
 /*
@@ -160,11 +145,8 @@ BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
     EXPSTR *content = hp->tag_attr_str;
 
     /* do not maintain content, if comment should be stripped
-     * lateron anyway */
-    if (hp->strip_cmt)
-    {
-        content = NULL;
-    }
+     * later on anyway */
+    if (hp->strip_cmt) content = NULL;
 
     /* skip data */
     skip_sgml_special(hp, content);
@@ -175,6 +157,5 @@ BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
         hsc_msg_stripped_tag(hp, tag, "sgml-comment");
         not_stripped = FALSE;
     }
-
-    return (not_stripped);
+    return not_stripped;
 }

@@ -262,13 +262,10 @@ DLNODE *find_attrnode(DLLIST * varlist, STRPTR name)
  */
 HSCATTR *find_varname(DLLIST * varlist, STRPTR name)
 {
-    DLNODE *nd = find_dlnode(varlist->first, (APTR) name, cmp_varname);
-    HSCATTR *var = NULL;
+   DLNODE *nd = find_dlnode(varlist->first, (APTR) name, cmp_varname);
 
-    if (nd)
-        var = (HSCATTR *) nd->data;
-
-    return (var);
+   if (nd) return (HSCATTR *) nd->data;
+   return NULL;
 }
 
 /*
@@ -289,22 +286,17 @@ HSCATTR *find_varname(DLLIST * varlist, STRPTR name)
  */
 STRPTR set_vartext(HSCATTR * var, STRPTR newtext)
 {
-    if (!var)
-    {
-        panic("NULL attribute detected");
-    }
+   if (!var) panic("NULL attribute detected");
 
-    if (newtext != var->text)
-    {
-        ufreestr(var->text);
-        var->text = NULL;
-        if (newtext)
-        {
-            var->text = strclone(newtext);
-        }
-    }
-
-    return (var->text);
+   if (newtext != var->text)
+   {
+      ufreestr(var->text);
+      if (newtext)
+         var->text = strclone(newtext);
+      else
+         var->text = NULL;
+   }
+   return (var->text);
 }
 
 /*
@@ -433,12 +425,7 @@ STRPTR get_vartext_byname(DLLIST * varlist, STRPTR name)
  */
 STRPTR get_vartext(HSCATTR * var)
 {
-    STRPTR text = NULL;
-
-    if (var)
-        text = var->text;
-
-    return (text);
+   return (var == NULL) ? NULL : var->text;
 }
 
 /*

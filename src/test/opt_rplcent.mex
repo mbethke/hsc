@@ -1,7 +1,0 @@
-test/simple.hsc (7,7): Note 46: replaced `ü' by `&uuml;'
-test/simple.hsc (7,9): Note 46: replaced `ß' by `&szlig;'
-test/simple.hsc (7,29): Note 46: replaced `ö' by `&ouml;'
-test/simple.hsc (7,40): Note 46: replaced `Ü' by `&Uuml;'
-test/simple.hsc (7,43): Note 46: replaced `ä' by `&auml;'
-test/simple.hsc (7,46): Note 46: replaced `ä' by `&auml;'
-test/simple.hsc (9,34): Note 46: replaced `ü' by `&uuml;'

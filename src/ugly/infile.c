@@ -891,58 +891,75 @@ STRPTR infgetall(INFILE * inpf)
  */
 STRPTR infgetw(INFILE * inpf)
 {
-    /* TODO: handle expstr errors */
+   /* TODO: handle expstr errors */
+   int ch = EOF;
+   BOOL wordread = FALSE;
+   STRPTR thisword = NULL;
+   BOOL ok = TRUE;
+
+   /* set function for normal chars */
+   BOOL(*isnc) (int ch) = inpf->is_nc;
+   if (isnc == NULL)
+      isnc = default_normch;
+
+   /* skip all white spaces */
+   infskip_ws(inpf);
+
+   ok = clr_estr(inpf->wordbuf);
+
+   /*
+    * read word until non-normal char is reached
+    */
+   if (!infeof(inpf)) {
+      ch = infgetc(inpf);
+
+      if (((*isnc) (ch))) {
+         do {
+            ok &= app_estrch(inpf->wordbuf, ch);
+            ch = ugly_infgetc(inpf);
+            /* todo: set out-of-mem-flag */
+         } while ((ch != EOF) && ok && ((*isnc) (ch)));
+         wordread = TRUE;
+         if (ch != EOF)
+            inungetc(ch, inpf);
+      } else {
+         ok &= app_estrch(inpf->wordbuf, ch);
+      }
+      thisword = estr2str(inpf->wordbuf);
+   }
+   return thisword;
+}
+
+/*
+ * infreadtoeol
+ *
+ * read until CR/LF or EOF and return string
+ */
+STRPTR infreadtoeol(INFILE * inpf)
+{
     int ch = EOF;
-    BOOL wordread = FALSE;
-    STRPTR thisword = NULL;
-    BOOL ok = TRUE;
-
-    /* set function for normal chars */
-    BOOL(*isnc) (int ch) = inpf->is_nc;
-    if (isnc == NULL)
-        isnc = default_normch;
-
-    /* skip all white spaces */
-    infskip_ws(inpf);
+    BOOL ok;
 
     ok = clr_estr(inpf->wordbuf);
-
-    /*
-     * read word until non-normal char is reached
-     */
     if (!infeof(inpf))
     {
-        ch = infgetc(inpf);
-
-        if (((*isnc) (ch)))
+        /* read all chars until CR appears */
+        do
         {
-            do
-            {
+            ch = ugly_infgetc(inpf);
+            if((ch != '\r') && (ch != '\n'))
                 ok &= app_estrch(inpf->wordbuf, ch);
-                ch = ugly_infgetc(inpf);
-                wordread = TRUE;
-                /* todo: set out-of-mem-flag */
-            }
-            while ((ch != EOF) && ok && ((*isnc) (ch)));
-        }
-        else
+        } while (ok && (ch > 0) && (ch != 0x0a));
+
+        /* read LF */
+        if (ch == 0x0a)
         {
-            ok &= app_estrch(inpf->wordbuf, ch);
+            ch = ugly_infgetc(inpf);
+            if (ch != 0x0d)
+                inungetc(ch, inpf);
         }
-
-        if ((ch != EOF) && (wordread))
-        {
-            inungetc(ch, inpf);
-        }
-
-        thisword = estr2str(inpf->wordbuf);
     }
-    else
-    {
-        thisword = NULL;
-    }
-
-    return thisword;
+    return strclone(estr2str(inpf->wordbuf));
 }
 
 /*

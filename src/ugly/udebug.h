@@ -35,7 +35,7 @@
  * DEBUG_UGLY_MEMORY=2 display every call to umalloc/ufree
  */
 #define DEBUG_UGLY_ARG    0
-#define DEBUG_UGLY_EXPSTR 1
+#define DEBUG_UGLY_EXPSTR 0
 #define DEBUG_UGLY_INFILE 0
 #define DEBUG_UGLY_MEMORY 1
 #define DEBUG_UGLY_TIME   1

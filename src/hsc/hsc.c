@@ -279,6 +279,8 @@ int hsc_main(HSCPRC ** hpVar, int argc, char *argv[])
             if (ok && init_hp)
             {
                 ok = (init_callback(hp)         /* assign callbacks */
+                      && hsc_init_tagsNattr(hp)
+                      && user_defines_ok(hp)
                       && hsc_init_hscprc(hp, prefsfilename)     /* init hsc-process */
                       && hsc_init_project(hp, prjfilename));    /* read project */
             }
@@ -287,7 +289,6 @@ int hsc_main(HSCPRC ** hpVar, int argc, char *argv[])
              * process user defines and files, write output
              */
             if (ok
-                && user_defines_ok(hp)  /* process user defines */
                 && include_ok(hp)       /* read include files (macros) */
                 && hsc_include_file(hp, inpfname,
                                     IH_PARSE_END | IH_IS_SOURCE

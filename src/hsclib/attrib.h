@@ -52,6 +52,7 @@
 #define VF_STRIPEXT     (1<<4)  /* URI: strip tag, if external */
 #define VF_GETSIZE      (1<<5)  /* URI: get WIDTH & HEIGHT from here */
 #define VF_RECOMMENDED  (1<<6)  /* attribute is recommended to appear */
+#define VF_OBSOLETE     (1<<7)  /* attribute is obsolete/deprecated */
 
 #define VF_KEEP_QUOTES  (1<<28) /* keep quotes untouched */
 #define VF_GLOBAL       (1<<29) /* attribute is global: <$DEFINE> */
@@ -67,7 +68,7 @@
  * This produces shit when the uri is parsed the second time
  * (eg absolute uri is converted again)
  *
- * Therefor, uris are only parsed, if the VF_TAG-flag is
+ * Therefore, uris are only parsed, if the VF_TAG-flag is
  * enabled. By default, VF_TAG is disabled and can only be
  * enabled when copying local macro attribute to the global
  * attribute list. (see "copy_local_varlist()" in "attrib.c")
@@ -85,10 +86,12 @@
 #define VF_REQUIRED_SHT    "R"
 #define VF_STRIPEXT_STR    "STRIPEXT"      /* strip tag, if URI is external */
 #define VF_STRIPEXT_SHT    "X"
-#define VF_GETSIZE_STR     "GETSIZE"       /* follow URI to get WIDTH & HEIGHT */
+#define VF_GETSIZE_STR     "GETSIZE"      /* follow URI to get WIDTH & HEIGHT */
 #define VF_GETSIZE_SHT     "Z"
-#define VF_RECOMMENDED_STR "RECOMMENDED"       /* follow URI to get WIDTH & HEIGHT */
+#define VF_RECOMMENDED_STR "RECOMMENDED"   /* attribute is recommended */
 #define VF_RECOMMENDED_SHT "RCMD"
+#define VF_OBSOLETE_STR    "OBSOLETE"      /* attribute is obsolete */
+#define VF_OBSOLETE_SHT    "O"
 
 /* prefix for temporary attributes */
 #define PREFIX_HSCATTR "HSC."
@@ -106,7 +109,7 @@
 #define MCI_APPCTAG 0xfffffffe  /* used by app_ctag(); see "tag.c" */
 
 /* attribute structure */
-typedef struct hscvar
+typedef struct hscattr
 {
     STRPTR name;                /* macro id */
     STRPTR deftext;             /* deftext text */
@@ -120,6 +123,12 @@ typedef struct hscvar
 HSCATTR;
 
 #define HSCVAR HSCATTR          /* TODO: remove */
+
+/* a CSS element */
+typedef struct hscstyle {
+   STRPTR name;
+   STRPTR value;
+} HSCSTYLE;
 
 /*
  * global funcs

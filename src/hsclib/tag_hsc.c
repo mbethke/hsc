@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001 Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,9 +72,9 @@ BOOL handle_hsc_include(HSCPRC * hp, HSCTAG * tag);
  */
 BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag)
 {
-    skip_hsc_comment(hp, NULL);
+   skip_hsc_comment(hp, NULL);
 
-    return (FALSE);
+   return (FALSE);
 }
 
 /*
@@ -85,23 +86,28 @@ BOOL handle_hsc_comment(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag)
 {
-    EXPSTR *content = init_estr(256);
-    if (skip_hsc_verbatim(hp, content))
-    {
-        /* remove "|>" from content */
-        STRPTR strend = estr2str(content) + estrlen(content);
-        while (strend[0] != '|')
-        {
-            strend--;
-        }
-        strend[0] = 0;
+   EXPSTR *content = init_estr(256);
+   if (skip_hsc_verbatim(hp, content))
+   {
+      /* remove "|>" from content */
+      STRPTR strend = estr2str(content) + estrlen(content);
+      while (strend[0] != '|')
+      {
+         strend--;
+      }
+      strend[0] = 0;
 
-        /* output content */
-        hsc_output_text(hp, "", estr2str(content));
-    }
-    del_estr(content);
+      /* output content */
+      if (content && content->es_data && hp->suppress_output)
+      {
+         hp_enable_output(hp, "some text");
+      }
 
-    return (FALSE);
+      hsc_output_text(hp, "", estr2str(content));
+   }
+   del_estr(content);
+
+   return (FALSE);
 }
 
 /*
@@ -113,23 +119,23 @@ BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_insert_expression(HSCPRC * hp, HSCTAG * tag)
 {
-    HSCATTR *dest = new_hscattr(PREFIX_TMPATTR "insert.expression");
-    STRPTR value = NULL;
+   HSCATTR *dest = new_hscattr(PREFIX_TMPATTR "insert.expression");
+   STRPTR value = NULL;
 
-    /* prepare dummy attribute */
-    dest->vartype = VT_STRING;
+   /* prepare dummy attribute */
+   dest->vartype = VT_STRING;
 
-    /* compute expression */
-    value = eval_expression(hp, dest, ")");
-    if (value)
-    {
-        parse_gt(hp);
-        hsc_include_string(hp, SPECIAL_FILE_ID "insert expression", value,
-                           IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
-    }
-    del_hscattr(dest);
+   /* compute expression */
+   value = eval_expression(hp, dest, ")");
+   if (value)
+   {
+      parse_gt(hp);
+      hsc_include_string(hp, SPECIAL_FILE_ID "insert expression", value,
+            IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
+   }
+   del_hscattr(dest);
 
-    return (FALSE);
+   return (FALSE);
 }
 
 /*
@@ -139,43 +145,43 @@ BOOL handle_hsc_insert_expression(HSCPRC * hp, HSCTAG * tag)
  */
 
 static VOID do_include(HSCPRC * hp, STRPTR filename,
-                       BOOL nostatus, BOOL temporary, BOOL source, BOOL pre,
-                       LONG indent, LONG tabsize)
+      BOOL nostatus, BOOL temporary, BOOL source, BOOL pre,
+      LONG indent, LONG tabsize)
 {
-    EXPSTR *fname = init_estr(0);
-    ULONG optn = 0;
+   EXPSTR *fname = init_estr(0);
+   ULONG optn = 0;
 
-    /* compute options */
-    if (!temporary)
-        optn |= IH_IS_INCLUDE;
+   /* compute options */
+   if (!temporary)
+      optn |= IH_IS_INCLUDE;
 
-    if (!nostatus)
-        optn |= IH_NO_STATUS;
+   if (!nostatus)
+      optn |= IH_NO_STATUS;
 
-    if (source)
-        optn |= IH_PARSE_SOURCE;
+   if (source)
+      optn |= IH_PARSE_SOURCE;
 
-    /* compute filename (convert from URI if neccessary) */
-    conv_uri2path(fname, filename, hp->weenix);
+   /* compute filename (convert from URI if neccessary) */
+   conv_uri2path(fname, filename, hp->weenix);
 
-    /* insert leading <PRE> */
-    if (pre)
-    {
-        hsc_include_string(hp, SPECIAL_FILE_ID "include <PRE>", "<PRE>",
-                           IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
-    }
-    /* include main file */
-    if (fname)
-        hsc_include_file(hp, estr2str(fname), optn);
+   /* insert leading <PRE> */
+   if (pre)
+   {
+      hsc_include_string(hp, SPECIAL_FILE_ID "include <PRE>", "<PRE>",
+            IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
+   }
+   /* include main file */
+   if (fname)
+      hsc_include_file(hp, estr2str(fname), optn);
 
-    /* insert tailing </PRE> */
-    if (pre)
-    {
-        hsc_include_string(hp, SPECIAL_FILE_ID "include </PRE>", "</PRE>\n",
-                           IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
-    }
+   /* insert tailing </PRE> */
+   if (pre)
+   {
+      hsc_include_string(hp, SPECIAL_FILE_ID "include </PRE>", "</PRE>\n",
+            IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
+   }
 
-    del_estr(fname);
+   del_estr(fname);
 }
 
 /*
@@ -185,17 +191,17 @@ static VOID do_include(HSCPRC * hp, STRPTR filename,
  */
 BOOL handle_hsc_include(HSCPRC * hp, HSCTAG * tag)
 {
-    STRPTR fname_arg = get_vartext_byname(tag->attr, "FILE");
-    LONG indent = get_varnum_byname(tag->attr, "INDENT");
-    LONG tabsize = get_varnum_byname(tag->attr, "TABSIZE");
-    BOOL source = get_varbool_byname(tag->attr, "SOURCE");
-    BOOL pre = get_varbool_byname(tag->attr, "PRE");
-    BOOL temporary = get_varbool_byname(tag->attr, "TEMPORARY");
+   STRPTR fname_arg = get_vartext_byname(tag->attr, "FILE");
+   LONG indent = get_varnum_byname(tag->attr, "INDENT");
+   LONG tabsize = get_varnum_byname(tag->attr, "TABSIZE");
+   BOOL source = get_varbool_byname(tag->attr, "SOURCE");
+   BOOL pre = get_varbool_byname(tag->attr, "PRE");
+   BOOL temporary = get_varbool_byname(tag->attr, "TEMPORARY");
 
-    do_include(hp, fname_arg, FALSE /*nostatus */ , temporary,
-               source, pre, indent, tabsize);
+   do_include(hp, fname_arg, FALSE /*nostatus */ , temporary,
+         source, pre, indent, tabsize);
 
-    return (FALSE);
+   return (FALSE);
 }
 
 /*
@@ -211,31 +217,31 @@ BOOL handle_hsc_include(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_message(HSCPRC * hp, HSCTAG * tag)
 {
-    STRPTR msg_text = get_vartext_byname(tag->attr, "TEXT");
-    STRPTR msg_class = get_vartext_byname(tag->attr, "CLASS");
+   STRPTR msg_text = get_vartext_byname(tag->attr, "TEXT");
+   STRPTR msg_class = get_vartext_byname(tag->attr, "CLASS");
 
-    if (msg_text)
-    {
-        ULONG msgid = (MSG_USER_MESSAGE & MASK_MESSAGE);
+   if (msg_text)
+   {
+      ULONG msgid = (MSG_USER_MESSAGE & MASK_MESSAGE);
 
-        /* compute message id */
-        if (!upstrcmp(msg_class, "WARNING"))
-            msgid |= MSG_WARN;
-        else if (!upstrcmp(msg_class, "ERROR"))
-            msgid |= MSG_ERROR;
-        else if (!upstrcmp(msg_class, "FATAL"))
-            msgid |= MSG_FATAL;
-        else
-        {
-            D(if (upstrcmp(msg_class, "NOTE"))
-              panic("illegal user message class")
-                );
-        }
+      /* compute message id */
+      if (!upstrcmp(msg_class, "WARNING"))
+         msgid |= MSG_WARN;
+      else if (!upstrcmp(msg_class, "ERROR"))
+         msgid |= MSG_ERROR;
+      else if (!upstrcmp(msg_class, "FATAL"))
+         msgid |= MSG_FATAL;
+      else
+      {
+         D(if (upstrcmp(msg_class, "NOTE"))
+               panic("illegal user message class")
+          );
+      }
 
-        /* display message */
-        hsc_message(hp, msgid, "user message: %s", msg_text);
-    }
-    return (FALSE);
+      /* display message */
+      hsc_message(hp, msgid, "user message: %s", msg_text);
+   }
+   return (FALSE);
 }
 
 /*
@@ -256,209 +262,212 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
 #else
 #define TMP_PREFIX "hsc"
 #endif
-    STRPTR cmd = get_vartext_byname(tag->attr, "COMMAND");
-    HSCATTR *file_attr = find_varname(tag->attr, "FILE");
-    HSCATTR *remove_attr = find_varname(tag->attr, "REMOVE");
-    HSCATTR *result_attr = find_varname(hp->defattr, RESULT_ATTR);
+   STRPTR cmd = get_vartext_byname(tag->attr, "COMMAND");
+   HSCATTR *file_attr = find_varname(tag->attr, "FILE");
+   HSCATTR *remove_attr = find_varname(tag->attr, "REMOVE");
+   HSCATTR *result_attr = find_varname(hp->defattr, RESULT_ATTR);
 
-    if (cmd && file_attr && result_attr && remove_attr)
-    {
-        int result = 0;
-        BOOL remove_file = FALSE;
-        BOOL read_file = FALSE;
-        STRPTR remove_str = get_vartext(remove_attr);
-        EXPSTR *msg = init_estr(0);
-        EXPSTR *cmdstr = init_estr(32);
+   if (cmd && file_attr && result_attr && remove_attr)
+   {
+      int result = 0;
+      BOOL remove_file = FALSE;
+      BOOL read_file = FALSE;
+      STRPTR remove_str = get_vartext(remove_attr);
+      EXPSTR *msg = init_estr(0);
+      EXPSTR *cmdstr = init_estr(32);
 
-        /* additional attributes */
-        HSCATTR *temp_attr = find_varname(tag->attr, "TEMPORARY");
-        HSCATTR *include_attr = find_varname(tag->attr, "INCLUDE");
-        HSCATTR *attribute_attr = find_varname(tag->attr, "ATTRIBUTE");
-        STRPTR attribute_name = NULL;
-        BOOL temporary = get_varbool(temp_attr);
-        BOOL include = get_varbool(include_attr);
-        BOOL pre = get_varbool_byname(tag->attr, "PRE");
-        BOOL source = get_varbool_byname(tag->attr, "SOURCE");
-        LONG indent = get_varnum_byname(tag->attr, "INDENT");
-        LONG tabsize = get_varnum_byname(tag->attr, "TABSIZE");
+      /* additional attributes */
+      HSCATTR *temp_attr = find_varname(tag->attr, "TEMPORARY");
+      HSCATTR *include_attr = find_varname(tag->attr, "INCLUDE");
+      HSCATTR *attribute_attr = find_varname(tag->attr, "ATTRIBUTE");
+      STRPTR attribute_name = NULL;
+      BOOL temporary = get_varbool(temp_attr);
+      BOOL include = get_varbool(include_attr);
+      BOOL pre = get_varbool_byname(tag->attr, "PRE");
+      BOOL source = get_varbool_byname(tag->attr, "SOURCE");
+      LONG indent = get_varnum_byname(tag->attr, "INDENT");
+      LONG tabsize = get_varnum_byname(tag->attr, "TABSIZE");
 
-        INFILE *outfile = NULL;
-        STRPTR filename = get_vartext(file_attr);
-        BOOL usetmpfile = FALSE;
-        ULONG old_msg_count = hp->msg_count;
+      INFILE *outfile = NULL;
+      STRPTR filename = get_vartext(file_attr);
+      BOOL usetmpfile = FALSE;
+      ULONG old_msg_count = hp->msg_count;
 
-        /* check, if file should be read after execution */
-        if (attribute_attr)
-            attribute_name = get_vartext(attribute_attr);
-        if (attribute_name || include)
-            read_file = TRUE;
+      /* check, if file should be read after execution */
+      if (attribute_attr)
+         attribute_name = get_vartext(attribute_attr);
+      if (attribute_name || include)
+         read_file = TRUE;
 
-        /* check, if output should be redirected to temp. file */
-        if (!filename && read_file)
-        {
-            usetmpfile = TRUE;
-            set_vartext(file_attr, tmpnamstr(TMP_PREFIX));
-            set_varbool(temp_attr, TRUE);
-            filename = get_vartext(file_attr);
-            D(fprintf(stderr, DHL "  use temp-file `%s'\n", filename));
-        }
-        else
-        {
-            D(fprintf(stderr, DHL "  use file `%s'\n", filename));
-        }
+      /* check, if output should be redirected to temp. file */
+      if (!filename && read_file)
+      {
+         usetmpfile = TRUE;
+         set_vartext(file_attr, tmpnamstr(TMP_PREFIX));
+         set_varbool(temp_attr, TRUE);
+         filename = get_vartext(file_attr);
+         D(fprintf(stderr, DHL "  use temp-file `%s'\n", filename));
+      }
+      else
+      {
+         D(fprintf(stderr, DHL "  use file `%s'\n", filename));
+      }
 
-        /* check, if output-file should be removed */
-        if (remove_str)
-        {
-            if (!upstrcmp(remove_str, "ON"))
-            {
-                remove_file = TRUE;
-                temporary = TRUE;
-                D(fprintf(stderr, DHL "  auto-temporary (remove=ON)\n"));
+      /* check, if output-file should be removed */
+      if (remove_str)
+      {
+         if (!upstrcmp(remove_str, "ON"))
+         {
+            remove_file = TRUE;
+            temporary = TRUE;
+            D(fprintf(stderr, DHL "  auto-temporary (remove=ON)\n"));
+         } else {
+            if (!upstrcmp(remove_str, "AUTO")) {
+               if (hp->msg_count == old_msg_count)
+               {
+                  remove_file = temporary;
+                  D(if (!remove_file)
+                        fprintf(stderr, DHL "  no auto-remove (temp)\n"));
+               }
+               else
+               {
+                  D(fprintf(stderr, DHL "  no auto-remove (count)\n"));
+               }
             }
-            else if (!upstrcmp(remove_str, "AUTO"))
-                if (hp->msg_count == old_msg_count)
-                {
-                    remove_file = temporary;
-                    D(if (!remove_file)
-                      fprintf(stderr, DHL "  no auto-remove (temp)\n"));
-                }
-                else
-                {
-                    D(fprintf(stderr, DHL "  no auto-remove (count)\n"));
-                }
-        }
+         }
+      }
 
-        /* status message */
-        app_estr(msg, "execute: ");
-        app_estr(msg, cmd);
-        hsc_status_misc(hp, estr2str(msg));
+      /* status message */
+      app_estr(msg, "execute: ");
+      app_estr(msg, cmd);
+      hsc_status_misc(hp, estr2str(msg));
 
-        /* create command string */
-        set_estr(cmdstr, cmd);
-        if (usetmpfile)
-        {
+      /* create command string */
+      set_estr(cmdstr, cmd);
+      if (usetmpfile)
+      {
 #ifdef RISCOS
-            app_estr(cmdstr, " { > ");
-            app_estr(cmdstr, filename);
-            app_estr(cmdstr, " }");
+         app_estr(cmdstr, " { > ");
+         app_estr(cmdstr, filename);
+         app_estr(cmdstr, " }");
 #else
-            app_estr(cmdstr, " >");
-            app_estr(cmdstr, filename);
+         app_estr(cmdstr, " >");
+         app_estr(cmdstr, filename);
 #endif
-        }
+      }
 
-        D(fprintf(stderr, DHL "  command=`%s'\n", estr2str(cmdstr)));
+      D(fprintf(stderr, DHL "  command=`%s'\n", estr2str(cmdstr)));
 
-        /* call command */
-        result = system(estr2str(cmdstr));
+      /* call command */
+      result = system(estr2str(cmdstr));
 
-        /* check for non-zero-result */
-        if (result)
-        {
-            hsc_message(hp, MSG_SYSTEM_RETURN,
-                        "shell-command returned %d", result);
-        }
+      /* check for non-zero-result */
+      if (result)
+      {
+         hsc_message(hp, MSG_SYSTEM_RETURN,
+               "shell-command returned %d", result);
+      }
 
-        /* read output to HSC.STDOUT */
-        if (read_file)
-        {
+      /* read output to HSC.STDOUT */
+      if (read_file)
+      {
+         errno = 0;
+         outfile = infopen(filename, 512);
+         if (outfile)
+         {
+            /* read to attribute */
+            if (attribute_name)
+            {
+               HSCATTR *output_attr =
+                  find_varname(hp->defattr, attribute_name);
+
+               D(fprintf(stderr, DHL "  ATTRIB exec-output to `%s'\n",
+                        attribute_name));
+
+               if (output_attr)
+               {
+                  set_vartext(output_attr, infgetall(outfile));
+               }
+               else
+               {
+                  hsc_msg_unkn_attr_ref(hp, attribute_name);
+               }
+            }
+            infclose(outfile);
+
+            /* include output */
+            if (include)
+            {
+               /*handle_hsc_include(hp, tag); */
+               BOOL nostatus = usetmpfile;
+               D(fprintf(stderr, DHL "  INCLUDE exec-output\n"));
+               do_include(hp, get_vartext(file_attr), nostatus,
+                     temporary, source, pre, indent, tabsize);
+            }
+         }
+         else
+         {
+            /* couldn't open exec-output file for input */
+            hsc_msg_noinput(hp, filename);
+         }
+
+         /* check, if output-file should be removed */
+         remove_file = FALSE;
+         if (remove_str)
+         {
+            if (!upstrcmp(remove_str, "ON"))
+               remove_file = TRUE;
+            if (!upstrcmp(remove_str, "AUTO")) {
+               if (hp->msg_count == old_msg_count)
+               {
+                  remove_file = temporary;
+                  D(if (!remove_file)
+                        fprintf(stderr, DHL "  no auto-remove (temp)\n"));
+               }
+               else
+               {
+                  D(fprintf(stderr, DHL "  no auto-remove (count)\n"));
+               }
+            }
+         }
+
+         /* remove output file */
+         if (remove_file)
+         {
+            D(fprintf(stderr, DHL "  remove `%s'\n", filename));
             errno = 0;
-            outfile = infopen(filename, 512);
-            if (outfile)
+            remove(filename);
+            if (errno)
             {
-                /* read to attribute */
-                if (attribute_name)
-                {
-                    HSCATTR *output_attr =
-                    find_varname(hp->defattr, attribute_name);
-
-                    D(fprintf(stderr, DHL "  ATTRIB exec-output to `%s'\n",
-                              attribute_name));
-
-                    if (output_attr)
-                    {
-                        set_vartext(output_attr, infgetall(outfile));
-                    }
-                    else
-                    {
-                        hsc_msg_unkn_attr_ref(hp, attribute_name);
-                    }
-                }
-                infclose(outfile);
-
-                /* include output */
-                if (include)
-                {
-                    /*handle_hsc_include(hp, tag); */
-                    BOOL nostatus = usetmpfile;
-                    D(fprintf(stderr, DHL "  INCLUDE exec-output\n"));
-                    do_include(hp, get_vartext(file_attr), nostatus,
-                               temporary, source, pre, indent, tabsize);
-                }
+               hsc_message(hp, MSG_REMOVE_FAILED,
+                     "error removing file `%s': %s",
+                     filename, strerror(errno));
+               errno = 0;
             }
-            else
-            {
-                /* couldn't open exec-output file for input */
-                hsc_msg_noinput(hp, filename);
-            }
+         }
+      }
+      else
+      {
+         D(fprintf(stderr, DHL "  don't read exec-output\n"));
+      }
 
-            /* check, if output-file should be removed */
-            remove_file = FALSE;
-            if (remove_str)
-            {
-                if (!upstrcmp(remove_str, "ON"))
-                    remove_file = TRUE;
-                if (!upstrcmp(remove_str, "AUTO"))
-                    if (hp->msg_count == old_msg_count)
-                    {
-                        remove_file = temporary;
-                        D(if (!remove_file)
-                          fprintf(stderr, DHL "  no auto-remove (temp)\n"));
-                    }
-                    else
-                    {
-                        D(fprintf(stderr, DHL "  no auto-remove (count)\n"));
-                    }
-            }
+      /* update result-attribute */
+      if (result_attr)
+      {
+         set_vartext(result_attr, long2str((LONG) result));
+      }
+      else
+      {
+         D(panic("no result-attribute"));
+      }
 
-            /* remove output file */
-            if (remove_file)
-            {
-                D(fprintf(stderr, DHL "  remove `%s'\n", filename));
-                errno = 0;
-                remove(filename);
-                if (errno)
-                {
-                    hsc_message(hp, MSG_REMOVE_FAILED,
-                                "error removing file `%s': %s",
-                                filename, strerror(errno));
-                    errno = 0;
-                }
-            }
-        }
-        else
-        {
-            D(fprintf(stderr, DHL "  don't read exec-output\n"));
-        }
+      del_estr(cmdstr);
+      del_estr(msg);
+   }
+   else
+      panic("attribute missing");
 
-        /* update result-attribute */
-        if (result_attr)
-        {
-            set_vartext(result_attr, long2str((LONG) result));
-        }
-        else
-        {
-            D(panic("no result-attribute"));
-        }
-
-        del_estr(cmdstr);
-        del_estr(msg);
-    }
-    else
-        panic("attribute missing");
-
-    return (FALSE);
+   return (FALSE);
 }
 
 /*
@@ -470,41 +479,41 @@ BOOL handle_hsc_exec(HSCPRC * hp, HSCTAG * tag)
 /*
  * handle_hsc_export
  *
- * execute shell command
+ * write string to file
  */
 BOOL handle_hsc_export(HSCPRC * hp, HSCTAG * tag)
 {
-    STRPTR filename = get_vartext_byname(tag->attr, "FILE");
-    STRPTR data = get_vartext_byname(tag->attr, "DATA");
-    BOOL append = get_varbool_byname(tag->attr, "APPEND");
+   STRPTR filename = get_vartext_byname(tag->attr, "FILE");
+   STRPTR data = get_vartext_byname(tag->attr, "DATA");
+   BOOL append = get_varbool_byname(tag->attr, "APPEND");
 
-    if (filename && data)
-    {
-        FILE *outfile = NULL;
-        STRPTR writemode = "w";
+   if (filename && data)
+   {
+      FILE *outfile = NULL;
+      STRPTR writemode = "w";
 
-        if (append)
-            writemode = "a";
+      if (append)
+         writemode = "a";
 
-        errno = 0;
-        outfile = fopen(filename, writemode);
-        if (outfile)
-        {
-            fwrite(data, sizeof(char), strlen(data), outfile);
-            fclose(outfile);
-        }
+      errno = 0;
+      outfile = fopen(filename, writemode);
+      if (outfile)
+      {
+         fwrite(data, sizeof(char), strlen(data), outfile);
+         fclose(outfile);
+      }
 
-        if (errno)
-        {
-            hsc_message(hp, MSG_IOERROR, "error opening/writting %q: %s",
-                        filename, strerror(errno));
-        }
-    }
-    else
-    {
-        panic("attribute missing");
-    }
-    return (FALSE);
+      if (errno)
+      {
+         hsc_message(hp, MSG_IOERROR, "error opening/writing %q: %s",
+               filename, strerror(errno));
+      }
+   }
+   else
+   {
+      panic("attribute missing");
+   }
+   return (FALSE);
 }
 
 /*
@@ -520,38 +529,38 @@ BOOL handle_hsc_export(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_time(HSCPRC * hp, HSCTAG * tag)
 {
-    STRPTR timefmt = get_vartext_byname(tag->attr, "FORMAT");
-    EXPSTR *timebuf = init_estr(TIMEBUF_INC);
-    BOOL strftrc = 0;           /* result of strftime() */
-    size_t i;                   /* loop var */
+   STRPTR timefmt = get_vartext_byname(tag->attr, "FORMAT");
+   EXPSTR *timebuf = init_estr(TIMEBUF_INC);
+   BOOL strftrc = 0;           /* result of strftime() */
+   size_t i;                   /* loop var */
 
-    /* set default time format */
-    if (!timefmt)
-        timefmt = "%d-%b-%Y, %H:%M";
+   /* set default time format */
+   if (!timefmt)
+      timefmt = "%d-%b-%Y, %H:%M";
 
-    while (!(hp->fatal) && !strftrc)
-    {
-        /* expand timebuffer */
-        for (i = 0; i < TIMEBUF_INC; i++)
-            app_estrch(timebuf, '.');
+   while (!(hp->fatal) && !strftrc)
+   {
+      /* expand timebuffer */
+      for (i = 0; i < TIMEBUF_INC; i++)
+         app_estrch(timebuf, '.');
 
-        D(fprintf(stderr, DHL "  timebuf: inc+%d\n", TIMEBUF_INC));
+      D(fprintf(stderr, DHL "  timebuf: inc+%d\n", TIMEBUF_INC));
 
-        /* output time */
-        strftrc = strftime(estr2str(timebuf), estrlen(timebuf),
-                           timefmt, localtime(&(hp->start_time)));
-    }
-    if (strftrc)
-    {
-        INFILEPOS *base = new_infilepos(hp->inpf);
-        hsc_base_include_string(hp, SPECIAL_FILE_ID "insert time",
-                                estr2str(timebuf),
-                                IH_PARSE_HSC | IH_NO_STATUS, base);
-        del_infilepos(base);
-    }
-    del_estr(timebuf);
+      /* output time */
+      strftrc = strftime(estr2str(timebuf), estrlen(timebuf),
+            timefmt, localtime(&(hp->start_time)));
+   }
+   if (strftrc)
+   {
+      INFILEPOS *base = new_infilepos(hp->inpf);
+      hsc_base_include_string(hp, SPECIAL_FILE_ID "insert time",
+            estr2str(timebuf),
+            IH_PARSE_HSC | IH_NO_STATUS, base);
+      del_infilepos(base);
+   }
+   del_estr(timebuf);
 
-    return (FALSE);
+   return (FALSE);
 }
 
 /*
@@ -561,42 +570,44 @@ BOOL handle_hsc_time(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_text(HSCPRC * hp, HSCTAG * tag)
 {
-    STRPTR text = get_vartext_byname(tag->attr, "TEXT");
+   STRPTR text = get_vartext_byname(tag->attr, "TEXT");
 
-    /* include text */
-    INFILEPOS *base = new_infilepos(hp->inpf);
-    hsc_base_include_string(hp, SPECIAL_FILE_ID "insert TEXT", text,
-                            IH_PARSE_HSC | IH_NO_STATUS, base);
-    del_infilepos(base);
+   /* include text */
+   INFILEPOS *base = new_infilepos(hp->inpf);
+   hsc_base_include_string(hp, SPECIAL_FILE_ID "insert TEXT", text,
+         IH_PARSE_HSC | IH_NO_STATUS, base);
+   del_infilepos(base);
 
-    return (FALSE);
-}                               /*
-                                 * hsc_insert
-                                 *
-                                 * main insert handle
-                                 */
+   return (FALSE);
+}
+
+/*
+ * hsc_insert
+ *
+ * main insert handle
+ */
 BOOL handle_hsc_insert(HSCPRC * hp, HSCTAG * tag)
 {
-    BOOL insert_text = FALSE;
-    BOOL insert_time = get_varbool_byname(tag->attr, HSC_TIME_STR);
+   BOOL insert_text = FALSE;
+   BOOL insert_time = get_varbool_byname(tag->attr, HSC_TIME_STR);
 
-    if (get_vartext_byname(tag->attr, HSC_TEXT_STR))
-        insert_text = TRUE;
+   if (get_vartext_byname(tag->attr, HSC_TEXT_STR))
+      insert_text = TRUE;
 
-    if (insert_text)
-        handle_hsc_text(hp, tag);
-    else if (insert_time)
-        handle_hsc_time(hp, tag);
-    else
-    {
+   if (insert_text)
+      handle_hsc_text(hp, tag);
+   else if (insert_time)
+      handle_hsc_time(hp, tag);
+   else
+   {
 
-        /* unknown option for $insert */
-        hsc_message(hp, MSG_MISS_REQ_ATTR,
-                    "required attribute for %t missing", HSC_INSERT_STR);
-    }                           /* clear attributes */
-    clr_varlist(tag->attr);
+      /* unknown option for $insert */
+      hsc_message(hp, MSG_MISS_REQ_ATTR,
+            "required attribute for %t missing", HSC_INSERT_STR);
+   }                           /* clear attributes */
+   clr_varlist(tag->attr);
 
-    return (FALSE);
+   return (FALSE);
 }
 
 /*
@@ -606,13 +617,13 @@ BOOL handle_hsc_insert(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_deftag(HSCPRC * hp, HSCTAG * tag)
 {
-    BOOL ok = FALSE;
-    BOOL open_tag = FALSE;
+   BOOL ok = FALSE;
+   BOOL open_tag = FALSE;
 
-    tag = def_tag_name(hp, &open_tag);
-    ok = (tag && def_tag_args(hp, tag));
+   tag = def_tag_name(hp, &open_tag);
+   ok = (tag && def_tag_args(hp, tag));
 
-    return (FALSE);
+   return (FALSE);
 }
 
 /*
@@ -622,49 +633,45 @@ BOOL handle_hsc_deftag(HSCPRC * hp, HSCTAG * tag)
  */
 static VOID msg_illg_defent(HSCPRC * hp, STRPTR msg)
 {
-    hsc_message(hp, MSG_ILLG_DEFENT,
-                "illegal entity definition (%s)", msg);
+   hsc_message(hp, MSG_ILLG_DEFENT,
+         "illegal entity definition (%s)", msg);
 }
 BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag)
 {
-    STRPTR name = get_vartext_byname(tag->attr, "NAME");
-    STRPTR rplc = get_vartext_byname(tag->attr, "RPLC");
-    STRPTR nums = get_vartext_byname(tag->attr, "NUM");
-    LONG num = 0;
+   STRPTR name = get_vartext_byname(tag->attr, "NAME");
+   STRPTR rplc = get_vartext_byname(tag->attr, "RPLC");
+   STRPTR nums = get_vartext_byname(tag->attr, "NUM");
+   LONG num = 0;
 
-    if (nums)
-    {
-        if (str2long(nums, &num))
-            if (strlen(rplc) == 1)
-                if ((num >= 160) && (num <= 255))
-                {
-                    DLNODE *nd = NULL;
+   if (nums) {
+      if (str2long(nums, &num)) {
+         if (strlen(rplc) == 1) {
+            if ((num >= 160) && (num <= 255)) {
+               DLNODE *nd = NULL;
 
-                    nd = find_dlnode(
-                                hp->defent->first, (APTR) name, cmp_strent);
-                    if (nd)
-                        msg_illg_defent(hp, "duplicate entity");
-                    else
-                    {
-                        nd = find_dlnode(
-                                 hp->defent->first, (APTR) num, cmp_nument);
-                        if (nd)
-                            msg_illg_defent(hp, "duplicate NUM");
-                    }
-                    if (!nd)
-                        add_ent(hp->defent, name, rplc, num);
-                }
-                else
-                    msg_illg_defent(hp, "illegal range for NUM");
-            else
-                msg_illg_defent(hp, "RPLC not a single character");
-        else
-            msg_illg_defent(hp, "illegal value for NUM");
-    }
-    else
-        msg_illg_defent(hp, "RPLC and/or NUM missing");
+               nd = find_dlnode(
+                     hp->defent->first, (APTR) name, cmp_strent);
+               if (nd)
+                  msg_illg_defent(hp, "duplicate entity");
+               else
+               {
+                  nd = find_dlnode(
+                        hp->defent->first, (APTR) num, cmp_nument);
+                  if (nd)
+                     msg_illg_defent(hp, "duplicate NUM");
+               }
+               if (!nd)
+                  add_ent(hp->defent, name, rplc, num);
+            } else
+               msg_illg_defent(hp, "illegal range for NUM");
+         } else
+            msg_illg_defent(hp, "RPLC not a single character");
+      } else
+         msg_illg_defent(hp, "illegal value for NUM");
+   } else
+      msg_illg_defent(hp, "RPLC and/or NUM missing");
 
-    return (FALSE);
+   return (FALSE);
 }
 
 /*
@@ -674,16 +681,16 @@ BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_deficon(HSCPRC * hp, HSCTAG * tag)
 {
-    STRPTR name = get_vartext_byname(tag->attr, "NAME");
-    DLNODE *nd = NULL;
+   STRPTR name = get_vartext_byname(tag->attr, "NAME");
+   DLNODE *nd = NULL;
 
-    nd = find_dlnode(hp->defent->first, (APTR) name, cmp_strent);
-    if (nd)
-        msg_illg_defent(hp, "duplicate entity");
-    else
-        add_ent(hp->defent, name, NULL, ICON_ENTITY);
+   nd = find_dlnode(hp->defent->first, (APTR) name, cmp_strent);
+   if (nd)
+      msg_illg_defent(hp, "duplicate entity");
+   else
+      add_ent(hp->defent, name, NULL, ICON_ENTITY);
 
-    return (FALSE);
+   return (FALSE);
 }
 /*
  *-------------------------------------
@@ -692,16 +699,16 @@ BOOL handle_hsc_deficon(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag)
 {
-    HSCVAR *attr = define_attr_by_hp(hp, NULL, 0);
-    if (attr)
-    {
-        DDA(prt_varlist(hp->defattr, "attributes after $DEFINE"));
+   HSCVAR *attr = define_attr_by_hp(hp, NULL, 0);
+   if (attr)
+   {
+      DDA(prt_varlist(hp->defattr, "attributes after $DEFINE"));
 
-        /* check for closing ">" */
-        parse_gt(hp);
-    }
+      /* check for closing ">" */
+      parse_gt(hp);
+   }
 
-    return (FALSE);
+   return (FALSE);
 }
 
 /*
@@ -711,42 +718,42 @@ BOOL handle_hsc_define(HSCPRC * hp, HSCTAG * tag)
  */
 static HSCTAG *def_lazy_name(HSCPRC *hp)
 {
-    STRPTR nw = NULL;
-    HSCTAG *lazy = NULL;
-    DLLIST *lazy_list = hp->deflazy;
+   STRPTR nw = NULL;
+   HSCTAG *lazy = NULL;
+   DLLIST *lazy_list = hp->deflazy;
 
-    /* get lazy name */
-    nw = infget_tagid(hp);
+   /* get lazy name */
+   nw = infget_tagid(hp);
 
-    /* create new lazy */
-    if (nw)
-    {
-        lazy = find_strtag(lazy_list, nw);
-        if (lazy)
-        {
-            hsc_message(hp, MSG_REDEFINE_LAZY, "redefined lazy ", lazy);
-        }
-        else
-        {
-            /* create a new opening lazy */
-            lazy = app_tag(lazy_list, nw);
-        }
-    }                           /* err_eof already called in infget_tagid() */
+   /* create new lazy */
+   if (nw)
+   {
+      lazy = find_strtag(lazy_list, nw);
+      if (lazy)
+      {
+         hsc_message(hp, MSG_REDEFINE_LAZY, "redefined lazy ", lazy);
+      }
+      else
+      {
+         /* create a new opening lazy */
+         lazy = app_tag(lazy_list, nw);
+      }
+   }                           /* err_eof already called in infget_tagid() */
 
-    return (lazy);
+   return (lazy);
 }
 
 
 BOOL handle_hsc_lazy(HSCPRC * hp, HSCTAG * tag)
 {
-    BOOL ok = FALSE;
-    HSCTAG *lazy = def_lazy_name(hp);
-    if (lazy)
-    {
-        ok = def_tag_args(hp, lazy);
-    }
+   BOOL ok = FALSE;
+   HSCTAG *lazy = def_lazy_name(hp);
+   if (lazy)
+   {
+      ok = def_tag_args(hp, lazy);
+   }
 
-    return (FALSE);
+   return (FALSE);
 }
 
 
@@ -757,32 +764,32 @@ BOOL handle_hsc_lazy(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_depend(HSCPRC * hp, HSCTAG * tag)
 {
-    STRPTR filename = get_vartext_byname(tag->attr, "ON");
-    BOOL file = get_varbool_byname(tag->attr, "FILE");
+   STRPTR filename = get_vartext_byname(tag->attr, "ON");
+   BOOL file = get_varbool_byname(tag->attr, "FILE");
 
-    if (filename)
-    {
-        EXPSTR *dest_fname = init_estr(64);
+   if (filename)
+   {
+      EXPSTR *dest_fname = init_estr(64);
 
-        /* convert URI to local filename */
-        if (!file)
-        {
-            conv_hscuri2file(hp, dest_fname, filename);
-            filename = estr2str(dest_fname);
-        }
+      /* convert URI to local filename */
+      if (!file)
+      {
+         conv_hscuri2file(hp, dest_fname, filename);
+         filename = estr2str(dest_fname);
+      }
 
-        /* add dependency */
-        D(fprintf(stderr, DHL "  add dependency `%s'\n", filename));
-        app_include(hp->project->document, filename);
+      /* add dependency */
+      D(fprintf(stderr, DHL "  add dependency `%s'\n", filename));
+      app_include(hp->project->document, filename);
 
-        del_estr(dest_fname);
-    }
-    else
-    {
-        panic("attribute missing");
-    }
+      del_estr(dest_fname);
+   }
+   else
+   {
+      panic("attribute missing");
+   }
 
-    return (FALSE);
+   return (FALSE);
 }
 
 /*
@@ -796,76 +803,88 @@ BOOL handle_hsc_depend(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
 {
-    INFILE *inpf = hp->inpf;
-    STRPTR varname = infgetw(inpf);
-    HSCVAR *attr = NULL;
-    BOOL ok = FALSE;
+   INFILE *inpf = hp->inpf;
+   STRPTR varname = infgetw(inpf);
+   HSCVAR *attr = NULL;
+   BOOL ok = FALSE;
 
-    if (varname)
-    {
-        /* create temporary dummy attribute that is
-         * used to store the value, if attribute
-         * passed is a constant
-         */
-        HSCVAR *dummy = new_hscattr(PREFIX_TMPATTR "let");
+   if (varname)
+   {
+      /* create temporary dummy attribute that is
+       * used to store the value, if attribute
+       * passed is a constant
+       */
+      HSCVAR *dummy = new_hscattr(PREFIX_TMPATTR "let");
 
-        /* find attribute */
-        attr = find_varname(hp->defattr, varname);
-        if (attr)
-        {
-            STRPTR eq_sign = infgetw(inpf);
+      if('{' == varname[0]) {
+         varname = eval_expression(hp,dummy,"}");
+      }
+      /* find attribute */
+      attr = find_varname(hp->defattr, varname);
+      if (attr)
+      {
+         STRPTR eq_sign = infgetw(inpf);
 
-            if (attr->varflag & VF_CONST)
+         if (attr->varflag & VF_CONST)
+         {
+            /* tried to set constant */
+            hsc_message(hp, MSG_ATTR_CONST,
+                  "attempt to modify constant %A", attr);
+
+            /* assign destination to dummy attribute */
+            attr = dummy;
+            dummy->vartype = attr->vartype;
+            dummy->varflag = attr->varflag;
+         }
+
+         /* check if a "=" comes next */
+         if (eq_sign)
+         {
+            if (!strcmp(eq_sign, "="))
             {
-                /* tried to set constant */
-                hsc_message(hp, MSG_ATTR_CONST,
-                            "attempt to modify constant %A", attr);
-
-                /* assign destination to dummy attribute */
-                attr = dummy;
-                dummy->vartype = attr->vartype;
-                dummy->varflag = attr->varflag;
+               STRPTR brace = infgetw(inpf);
+               if(!strcmp(brace,"{")) {
+                  /* assigning from a symbolic reference */
+                  brace = eval_expression(hp, attr, "}");
+                  inungets(brace,inpf);
+                  eval_attrref(hp,attr);
+               } else {
+                  /* normal assignment */
+                  inungets(brace,inpf);
+                  eval_expression(hp, attr, NULL);
+               }
+            }
+            else if (!strcmp(eq_sign, "?"))
+            {
+               /* conditional assignment */
+               if (parse_eq(hp))
+               {
+                  eval_conditional_assignment(hp, attr);
+               }
+            }
+            else
+            {
+               /* N->clear or reset attribute to default value */
+               clr_vartext(attr);
+               /* write previous word back (should be ">") */
+               inungetcw(inpf);
             }
 
-            /* check if a "=" comes next */
-            if (eq_sign)
-            {
-                if (!strcmp(eq_sign, "="))
-                {
-                    /* normal assignment */
-                    eval_expression(hp, attr, NULL);
-                }
-                else if (!strcmp(eq_sign, "?"))
-                {
-                    /* conditional assignment */
-                    if (parse_eq(hp))
-                    {
-                        eval_conditional_assignment(hp, attr);
-                    }
-                }
-                else
-                {
-                    /* N->clear or reset attribute to default value */
-                    clr_vartext(attr);
-                    /* write previous word back (should be ">") */
-                    inungetcw(inpf);
-                }
+            DDA(prt_varlist(hp->defattr, "attributes after $LET"));
+         }
+         /* check for closing ">" */
+         ok = parse_gt(hp);
+      }
+      else
+      {
+         hsc_msg_unkn_attr_ref(hp, varname);
+      }
 
-                DDA(prt_varlist(hp->defattr, "attributes after $LET"));
-            }
-            /* check for closing ">" */
-            ok = parse_gt(hp);
-        }
-        else
-        {
-            hsc_msg_unkn_attr_ref(hp, varname);
-        }
+      /* remove dummy attribute */
+      del_hscattr(dummy);
 
-        /* remove dummy attribute */
-        del_hscattr(dummy);
-
-    }
-    return (FALSE);
+   }
+   return (FALSE);
 }
 
 /*
@@ -875,48 +894,48 @@ BOOL handle_hsc_let(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
 {
-    BOOL pre = get_varbool_byname(tag->attr, "PRE");
-    BOOL ok = TRUE;
-    EXPSTR *source_content = init_estr(ES_STEP_SOURCE);
-    INFILEPOS *base = new_infilepos(hp->inpf);
+   BOOL pre = get_varbool_byname(tag->attr, "PRE");
+   BOOL ok = TRUE;
+   EXPSTR *source_content = init_estr(ES_STEP_SOURCE);
+   INFILEPOS *base = new_infilepos(hp->inpf);
 
-    /* avoid nesting of <PRE> */
-    if (hp->inside_pre)
-    {
-        pre = FALSE;            /* TODO: lauch warning */
-    }
+   /* avoid nesting of <PRE> */
+   if (hp->inside_pre)
+   {
+      pre = FALSE;            /* TODO: lauch warning */
+   }
 
-    /* insert leading <PRE> */
-    if (pre)
-    {
-        hsc_include_string(hp, SPECIAL_FILE_ID "insert <PRE>", "<PRE>",
-                           IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
-    }
+   /* insert leading <PRE> */
+   if (pre)
+   {
+      hsc_include_string(hp, SPECIAL_FILE_ID "insert <PRE>", "<PRE>",
+            IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
+   }
 
-    /* read source text (until </$source> found) */
-    ok = skip_until_tag(hp, source_content, NULL, NULL, HSC_SOURCE_STR,
-                        SKUT_NO_CONTENT_TAGFOUND | SKUT_NO_ANALYSE_TAGS);
+   /* read source text (until </$source> found) */
+   ok = skip_until_tag(hp, source_content, NULL, NULL, HSC_SOURCE_STR,
+         SKUT_NO_CONTENT_TAGFOUND | SKUT_NO_ANALYSE_TAGS);
 
-    /* include source */
-    if (ok)
-    {
-        /* include pseudo-file */
-        hsc_base_include_string(hp, SPECIAL_FILE_ID "source",
-                                estr2str(source_content),
-                                IH_PARSE_SOURCE | IH_NO_STATUS, base);
+   /* include source */
+   if (ok)
+   {
+      /* include pseudo-file */
+      hsc_base_include_string(hp, SPECIAL_FILE_ID "source",
+            estr2str(source_content),
+            IH_PARSE_SOURCE | IH_NO_STATUS, base);
 
-        /* insert tailing </PRE> */
-        if (pre)
-        {
-            hsc_include_string(hp, SPECIAL_FILE_ID "insert </PRE>",
-                               "</PRE>\n",
-                               IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
-        }
-    }
-    del_infilepos(base);
-    del_estr(source_content);
+      /* insert tailing </PRE> */
+      if (pre)
+      {
+         hsc_include_string(hp, SPECIAL_FILE_ID "insert </PRE>",
+               "</PRE>\n",
+               IH_PARSE_HSC | IH_NO_STATUS | IH_POS_PARENT);
+      }
+   }
+   del_infilepos(base);
+   del_estr(source_content);
 
-    return (FALSE);
+   return (FALSE);
 }
 
 /*
@@ -926,40 +945,40 @@ BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_hsc_stripws(HSCPRC * hp, HSCTAG * tag)
 {
-    STRPTR strip_type = get_vartext_byname(tag->attr, "TYPE");
-    BOOL strip_prev = FALSE;
-    BOOL strip_succ = FALSE;
+   STRPTR strip_type = get_vartext_byname(tag->attr, "TYPE");
+   BOOL strip_prev = FALSE;
+   BOOL strip_succ = FALSE;
 
-    /* determine what to strip */
-    if (!upstrcmp(strip_type, STRIPWS_BOTH))
-    {
-        strip_prev = TRUE;
-        strip_succ = TRUE;
-    }
-    else if (!upstrcmp(strip_type, STRIPWS_PREV))
-    {
-        strip_prev = TRUE;
-    }
-    else if (!upstrcmp(strip_type, STRIPWS_SUCC))
-    {
-        strip_succ = TRUE;
-    }
-    else if (!upstrcmp(strip_type, STRIPWS_NONE))
-    {
-        /* nufin, use defaults */
-    }
+   /* determine what to strip */
+   if (!upstrcmp(strip_type, STRIPWS_BOTH))
+   {
+      strip_prev = TRUE;
+      strip_succ = TRUE;
+   }
+   else if (!upstrcmp(strip_type, STRIPWS_PREV))
+   {
+      strip_prev = TRUE;
+   }
+   else if (!upstrcmp(strip_type, STRIPWS_SUCC))
+   {
+      strip_succ = TRUE;
+   }
+   else if (!upstrcmp(strip_type, STRIPWS_NONE))
+   {
+      /* nufin, use defaults */
+   }
 
-    /* now strip it */
-    if (strip_prev)
-    {
-        clr_estr(hp->whtspc);
-    }
+   /* now strip it */
+   if (strip_prev)
+   {
+      clr_estr(hp->whtspc);
+   }
 
-    if (strip_succ)
-    {
-        hsc_output_text(hp, NULL, NULL);        /* flush current white spaces */
-        hp->strip_next_whtspc = TRUE;
-    }
+   if (strip_succ)
+   {
+      hsc_output_text(hp, NULL, NULL);        /* flush current white spaces */
+      hp->strip_next_whtspc = TRUE;
+   }
 
-    return (FALSE);
+   return (FALSE);
 }

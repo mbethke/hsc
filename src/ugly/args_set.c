@@ -264,7 +264,7 @@ static VOID find_nxt_nokeywd(ARGLIST * al)
 
             ai = (struct arginfo *) nd->data;
 
-            is_keywd = ai->ai_flags & ARG_KEYWORD;
+            is_keywd = (BOOL)(ai->ai_flags & ARG_KEYWORD);
             multiple_nokeywd =
                 (ai->ai_flags & ARG_MULTIPLE)
                 && !is_keywd;
@@ -727,11 +727,6 @@ BOOL set_args_argv(int argc, char *argv[], ARGLIST * al)
 
         DA(fprintf(stderr, DUA "  arg: `%s'\n", argv[argidx]));
 
-#if 0                           /* TODO:remove */
-        /* this line compensates a bug in sas/c 6.51 optimizer */
-        strncpy(sas_c_is_buggy, argv[argidx], 20);
-#endif
-
         if (ainode)
         {
             found_ai = (struct arginfo *) ainode->data;
@@ -740,19 +735,12 @@ BOOL set_args_argv(int argc, char *argv[], ARGLIST * al)
         else
         {
             find_nxt_nokeywd(al);
-            if (al->al_nokeywd)
-            {
-                argidx += set_arg_value(al->al_nokeywd, argv[argidx], arg2, FALSE);
-            }
-            else
-            {
+            if (al->al_nokeywd) {
+                argidx += set_arg_value(al->al_nokeywd,argv[argidx],arg2,FALSE);
+            } else {
                 set_argerr(ASE_UNKNOWN_KEYWORD, argv[argidx]);
-#if 0
-                DA(fprintf(stderr, DUA "  unknown keyword\n"));
-#endif
             }
         }
-
         argidx++;
     }                           /* while */
 

@@ -89,6 +89,7 @@ HSCTAG *new_hsctag(STRPTR newid)
         newtag->op_text = NULL;
         newtag->cl_text = NULL;
         newtag->attr = init_dllist(del_hscattr);
+        newtag->style = init_dllist(NULL); /* TODO: write constructor/destructor pair */
         newtag->mbi = NULL;
         newtag->naw = NULL;
         newtag->uri_size = NULL;
@@ -190,13 +191,12 @@ int cmp_strtag(APTR cmpstr, APTR tagdata)
     if (tagdata)
         tagstr = ((HSCTAG *) tagdata)->name;
 
-    if (tagstr)
+    if (tagstr) {
         if (!upstrcmp(cmpstr, tagstr))
-            return (-1);
+            return -1;
         else
-            return (0);
-    else
-        return (0);
+            return 0;
+    } else return 0;
 }
 
 /*

@@ -70,12 +70,7 @@ VOID conv_path2uri(EXPSTR * dest, STRPTR path)
         }
     }
 
-#elif defined RISCOS
-    /* simply copy path */
-    set_estr(dest, path);
-
-#elif defined MSDOS             /* dos1 */
-#elif (defined NEXTSTEP) || (defined BEOS) || (defined UNIX)
+#elif (defined NEXTSTEP) || (defined BEOS) || (defined UNIX) || (defined WINNT) || (defined RISCOS)
     /* simply copy path */
     set_estr(dest, path);
 #else
@@ -128,12 +123,7 @@ VOID conv_uri2path(EXPSTR * dest, STRPTR uri, BOOL weenix)
             uri++;
         }
     }
-
-#elif defined RISCOS
-    set_estr(dest, uri);
-
-#elif defined MSDOS             /* dos2 */
-#elif (defined NEXTSTEP) || (defined BEOS) || (defined UNIX)
+#elif (defined NEXTSTEP) || (defined BEOS) || (defined UNIX) || (defined WINNT) || defined(RISCOS)
     set_estr(dest, uri);
 #else
 #error "system not supported: conv_uri2path"
@@ -158,16 +148,14 @@ URIKIND uri_kind(STRPTR uri)
             STRPTR colon_pos = strchr(uri, ':');
             STRPTR slash_pos = strchr(uri, '/');
 
-            if (colon_pos)
-                if (slash_pos)
+            if (colon_pos) {
+                if (slash_pos) {
                     if (colon_pos < slash_pos)
                         kind = URI_ext;
                     else
                         kind = URI_rel;
-                else
-                    kind = URI_ext;
-            else
-                kind = URI_rel;
+                } else kind = URI_ext;
+            } else kind = URI_rel;
         }
     }
     return (kind);
@@ -217,94 +205,88 @@ VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_fname, S
             kind = URI_ext;
         }
 
-        /* evaluate kind of URI */
         if (kind == URI_abs)
         {
-            uri++;              /* skip ":" */
-        }
+           uri += strlen(ABSURI_ID);  /* skip ":" */
+           /*
+            * parse absolute uri
+            */
+           D(fprintf(stderr, DHL "exists `%s' [abs]\n", uri));
+           
+           /* check if local uri exists */
+           estrcpy(dest_fname, hp->destdir);
+           if('\0' != uri[0]) {
+              EXPSTR *dest_relfname = init_estr(32);
 
-        if (kind == URI_abs)
-        {
-            /*
-             * parse absolute uri
-             */
-            D(fprintf(stderr, DHL "exists `%s' [abs]\n", uri));
+              conv_uri2path(dest_relfname, uri, hp->weenix);
+              estrcat(dest_fname, dest_relfname);
+              del_estr(dest_relfname);
+           }
 
-            /* check if local uri exists */
-            {
-                EXPSTR *dest_relfname = init_estr(32);
-                conv_uri2path(dest_relfname, uri, hp->weenix);
+           D(fprintf(stderr, DHL "  -> file `%s'\n",
+                    estr2str(dest_fname)));
 
-                estrcpy(dest_fname, hp->destdir);
-                estrcat(dest_fname, dest_relfname);
+           /* create path of destination file */
+           estrcpy(dest_uri, hp->reldir);
+           app_estr(dest_uri, uri);
 
-                del_estr(dest_relfname);
-            }
+           get_relfname(rel_path, uri, estr2str(hp->reldir));
+           D(fprintf(stderr, DHL "  -> rel. path `%s' (`%s')\n",
+                    estr2str(rel_path),
+                    estr2str(hp->reldir)));
 
-            D(fprintf(stderr, DHL "  -> file `%s'\n",
-                      estr2str(dest_fname)));
+           /* debug */
+           D(fprintf(stderr, DHL "  -> real path `%s'\n", uri));
 
-            /* create path of destination file */
-            estrcpy(dest_uri, hp->reldir);
-            app_estr(dest_uri, uri);
-
-            get_relfname(rel_path, uri, estr2str(hp->reldir));
-            D(fprintf(stderr, DHL "  -> rel. path `%s' (`%s')\n",
-                      estr2str(rel_path),
-                      estr2str(hp->reldir)));
-
-            /* debug */
-            D(fprintf(stderr, DHL "  -> real path `%s'\n", uri));
-
-            /* convert (filesystem depending) path to uri */
-            conv_path2uri(dest_uri, estr2str(rel_path));
+           /* convert (filesystem depending) path to uri */
+           conv_path2uri(dest_uri, estr2str(rel_path));
         }
         else if (kind == URI_rel)
         {
-            /*
-             * parse relative uri
-             */
-            EXPSTR *uri_path = init_estr(32);
+           /*
+            * parse relative uri
+            */
+           EXPSTR *uri_path = init_estr(32);
 
-            /* debug */
-            D(fprintf(stderr, DHL "exists `%s' [rel]\n", uri));
+           /* debug */
+           D(fprintf(stderr, DHL "exists `%s' [rel]\n", uri));
 
-            /* create local filename */
-            conv_uri2path(uri_path, uri, hp->weenix);
-            estrcat(dest_fname, hp->destdir);
-            estrcat(dest_fname, hp->reldir);
-            estrcat(dest_fname, uri_path);
+           /* create local filename */
+           conv_uri2path(uri_path, uri, hp->weenix);
+           estrcat(dest_fname, hp->destdir);
+           estrcat(dest_fname, hp->reldir);
+           estrcat(dest_fname, uri_path);
 
-            /* create uri (only copy path) */
-            set_estr(dest_uri, uri);
+           /* create uri (only copy path) */
+           set_estr(dest_uri, uri);
 
-            del_estr(uri_path);
+           del_estr(uri_path);
         }
         else
         {
-            set_estr(dest_uri, uri);
-            set_estr(dest_fname, "");
+           set_estr(dest_uri, uri);
+           set_estr(dest_fname, "");
         }
     }
 
     /* If there is a filename, optimize it */
     if (estrlen(dest_fname) > 0)
     {
-        STRPTR optimized_name = NULL;
-        optimize_fname(&optimized_name, estr2str(dest_fname));
-        set_estr(dest_fname, optimized_name);
-        ufree(optimized_name);
+       STRPTR optimized_name = NULL;
+       optimize_fname(&optimized_name, estr2str(dest_fname));
+       set_estr(dest_fname, optimized_name);
+       ufree(optimized_name);
     }
 
     /* debug */
     D(
-         {
-         fprintf(stderr, DHL "  -> real file `%s'\n",
-                 estr2str(dest_fname));
-         fprintf(stderr, DHL "  -> real uri  `%s'\n",
-                 estr2str(dest_uri));
-         }
-    );
+          {
+          fprintf(stderr, DHL "  -> real file `%s'\n",
+             estr2str(dest_fname));
+          fprintf(stderr, DHL "  -> real uri  `%s'\n",
+             estr2str(dest_uri));
+          }
+     );
 
     /* free resources */
     del_estr(rel_path);
@@ -312,9 +294,9 @@ VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_fname, S
 
 VOID conv_hscuri2file(HSCPRC * hp, EXPSTR * dest_fname, STRPTR uri)
 {
-    EXPSTR *dest_uri = init_estr(64);
-    conv_hscuri2fileNuri(hp, dest_uri, dest_fname, uri);
-    del_estr(dest_uri);
+   EXPSTR *dest_uri = init_estr(64);
+   conv_hscuri2fileNuri(hp, dest_uri, dest_fname, uri);
+   del_estr(dest_uri);
 }
 
 /*
@@ -328,189 +310,148 @@ VOID conv_hscuri2file(HSCPRC * hp, EXPSTR * dest_fname, STRPTR uri)
  */
 VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
 {
-    /* sample URI could be:
-     * http://www.host.at:80/file.html#name
-     */
-    STRPTR protocol = NULL;     /* "http://" */
-    STRPTR host = NULL;         /* "www.sepp.at" */
-    STRPTR port = NULL;         /* ":80" */
-    STRPTR path = NULL;         /* "file.html" */
-    STRPTR name = NULL;         /* stuff after "#" */
-    STRPTR cgiargs = NULL;      /* stuff after "?"  */
+   /* sample URI could be:
+    * http://www.host.at:80/file.html#name
+    */
+   STRPTR protocol = NULL;     /* "http://" */
+   STRPTR host = NULL;         /* "www.sepp.at" */
+   STRPTR port = NULL;         /* ":80" */
+   STRPTR path = NULL;         /* "file.html" */
+   STRPTR name = NULL;         /* stuff after "#" */
+   STRPTR cgiargs = NULL;      /* stuff after "?"  */
 
-    clr_estr(dest_uri);
+   clr_estr(dest_uri);
 
-    if (uri)
-    {
-        /* check for valid uri */
-        URIKIND kind = uri_kind(uri);
-        if ((kind == URI_ext) ||
+   if (uri) {
+      /* check for valid uri */
+      URIKIND kind = uri_kind(uri);
+      if ((kind == URI_ext) ||
             ((kind == URI_relserv) && !(estrlen(hp->server_dir))))
-        {
-            if (kind == URI_ext)
-            {
-                /*
-                 * check global uri
-                 */
-                if (!protocol)
-                {
-                    protocol = "";
-                }
-                if (!host)
-                {
-                    host = "";
-                }
-                if (!port)
-                {
-                    port = "";
-                }
-
-                /*
-                 * TODO: parse global uris
-                 */
-            }
-            else if (kind == URI_relserv)
-            {
-                hsc_message(hp, MSG_SERVER_URI, "server relative URI to %q", uri);
-            }
-            else
-            {
-                panic("what kind of uri now?");
-            }
-
-            set_estr(dest_uri, uri);
-        }
-        else
-        {
+      {
+         if (kind == URI_ext) {
             /*
-             * check local uri
+             * check global uri
              */
+            if (!protocol) protocol = "";
+            if (!host) host = "";
+            if (!port) port = "";
 
-            /* destination file name that's existence is checked if
-             * chkuri is enabled */
-            EXPSTR *dest_fname = init_estr(32);
-            STRPTR noabsuri = uri;
+            /*
+             * TODO: parse global uris
+             */
+         } else if (kind == URI_relserv) {
+            hsc_message(hp, MSG_SERVER_URI, "server relative URI to %q", uri);
+         } else {
+            panic("what kind of uri now?");
+         }
+         set_estr(dest_uri, uri);
+      } else {
+         /*
+          * check local uri
+          */
 
-            /* evaluate kind of URI */
-            if (kind == URI_abs)
-            {
-                noabsuri++;     /* skip ":" */
-            }
+         /* destination file name that's existence is checked if
+          * chkuri is enabled */
+         EXPSTR *dest_fname = init_estr(32);
+         STRPTR noabsuri = uri;
 
-            /* extract path and #name or ?args */
-            if (noabsuri[0] == '#')
-            {
-                path = NULL;
-                name = noabsuri + 1;    /* skip '#' for "#id" */
-            }
-            else
-            {
-                path = uri;
-                name = strchr(uri, '#');
-                if (name)
-                {
-                    /* blank out '#' */
-                    name[0] = '\0';
-                    name++;
-                }
-                else
-                {
+         /* evaluate kind of URI */
+         if (kind == URI_abs)
+            noabsuri += strlen(ABSURI_ID);     /* skip ":" */
+
+         /* extract path and #name or ?args */
+         if (noabsuri[0] == '#') {
+            path = NULL;
+            name = noabsuri + 1;    /* skip '#' for "#id" */
+         } else {
+            path = uri;
+            name = strchr(uri, '#');
+            if (name) {
+               /* blank out '#' */
+               name[0] = '\0';
+               name++;
+            } else {
 #if 1
-                    cgiargs = NULL;
+               cgiargs = NULL;
 #else
-                    cgiargs = strchr(uri, '?');     /* TODO: conformant? */
+               cgiargs = strchr(uri, '?');     /* TODO: conformant? */
 #endif
-                    if (cgiargs)
-                    {
-                        /* blank out '?' */
-                        cgiargs[0] = '\0';
-                        cgiargs += 1;
-                    }
-                }
+               if (cgiargs) {
+                  /* blank out '?' */
+                  cgiargs[0] = '\0';
+                  cgiargs += 1;
+               }
             }
+         }
 
-            if (path)
+         if (path) {
+            FILE *exist = NULL;
+
+            /*
+             * check existence of local uri
+             */
+            conv_hscuri2fileNuri(hp, dest_uri, dest_fname, path);
+
+            if (hp->chkuri
+                  && !(hsc_get_msg_ignore(hp, MSG_NO_URIPATH)))
             {
-                FILE *exist = NULL;
+               exist = fopen(estr2str(dest_fname), "r");
+               if (!exist) {
+                  hsc_msg_nouri(hp, estr2str(dest_fname), uri, NULL);
+               } else {
+                  fclose(exist);
 
-                /*
-                 * check existence of local uri
-                 */
-                conv_hscuri2fileNuri(hp, dest_uri, dest_fname, path);
+                  /* check id */
+                  if (hp->chkid && name) {
+                     STRPTR doc_fname = estr2str(dest_fname);
 
-                if (hp->chkuri
-                    && !(hsc_get_msg_ignore(hp, MSG_NO_URIPATH)))
-                {
-                    exist = fopen(estr2str(dest_fname), "r");
-                    if (!exist)
-                    {
-                        hsc_msg_nouri(hp, estr2str(dest_fname), uri, NULL);
-                    }
-                    else
-                    {
-                        fclose(exist);
-
-                        /* check id */
-                        if (hp->chkid && name)
+                     if (!fnamecmp(hp->project->document->docname, doc_fname)) {
+                        /* filename references current document */
+                        add_local_idref(hp, name);
+                     } else {
+                        /* filename reference other document;
+                         * lookup project-data */
+                        switch (check_document_id(hp->project,
+                                 doc_fname, name))
                         {
-                            STRPTR doc_fname = estr2str(dest_fname);
+                           case ERR_CDI_OK:
+                              D(fprintf(stderr, DHL "  id ok\n"));
+                              break;
+                           case ERR_CDI_NoID:
+                              hsc_msg_unknown_id(hp, NULL, name);
+                              break;
+                           case ERR_CDI_NoDocumentEntry:
+                              hsc_message(hp, MSG_NO_DOCENTRY,
+                                    "no entry for document %q "
+                                    "in project data to check %i",
+                                    estr2str(dest_fname),
+                                    name);
+                              break;
+                           default:
+                              panic("unknown returncode");
+                              break;
+                        }
+                     }   /* if fnamecmp */
+                  }       /* if hp->chkid */
+               }           /* if exists */
+            }               /* if hp->chkuri */
+         } else {
+            /* check existence ID referencing into current file */
+            if (hp->chkid && name)
+               add_local_idref(hp, name);
+         }
 
-                            if (!fnamecmp(hp->project->document->docname,
-                                          doc_fname))
-                            {
-                                /* filename references current document */
-                                add_local_idref(hp, name);
-                            }
-                            else
-                            {
-                                /* filename reference other document;
-                                 * lookup project-data */
-                                switch (check_document_id(hp->project,
-                                                          doc_fname, name))
-                                {
-                                case ERR_CDI_OK:
-                                    D(fprintf(stderr, DHL "  id ok\n"));
-                                    break;
-                                case ERR_CDI_NoID:
-                                    hsc_msg_unknown_id(hp, NULL, name);
-                                    break;
-                                case ERR_CDI_NoDocumentEntry:
-                                    hsc_message(hp, MSG_NO_DOCENTRY,
-                                                "no entry for document %q "
-                                              "in project data to check %i",
-                                                estr2str(dest_fname),
-                                                name);
-                                    break;
-                                default:
-                                    panic("unknown returncode");
-                                    break;
-                                }
-                            }   /* if fnamecmp */
-                        }       /* if hp->chkid */
-                    }           /* if exists */
-                }               /* if hp->chkuri */
-            }
-            else
-            {
-                /* check existence ID referencing into current file */
-                if (hp->chkid && name)
-                    add_local_idref(hp, name);
-            }
+         /* add #name or ?args part */
+         if (name) {
+            app_estrch(dest_uri, '#');
+            app_estr(dest_uri, name);
+         } else if (cgiargs) {
+            app_estrch(dest_uri, '?');
+            app_estr(dest_uri, cgiargs);
+         }
 
-            /* add #name or ?args part */
-            if (name)
-            {
-                app_estrch(dest_uri, '#');
-                app_estr(dest_uri, name);
-            }
-            else if (cgiargs)
-            {
-                app_estrch(dest_uri, '?');
-                app_estr(dest_uri, cgiargs);
-            }
-
-            /* free resources */
-            del_estr(dest_fname);
-        }                       /* else (rsrc) */
-    }                           /* if (uri) */
+         /* free resources */
+         del_estr(dest_fname);
+      }                       /* else (rsrc) */
+   }                           /* if (uri) */
 }
