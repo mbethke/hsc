@@ -49,7 +49,7 @@
  * next message number
  *=========================
  */
-#define MAX_MSGID (91-1)
+#define MAX_MSGID (92-1)
 
 /*
  * obsolete numbers:
@@ -141,6 +141,8 @@
 #define MSG_ATTR_OBSOLETE      (MSG_WARN + 87)  /* attribute is obsolete */
 #define MSG_ATTR_AFTER_SLASH   (MSG_ERROR+ 89)  /* attribute after closing slash
                                                    in XHTML mode */
+#define MSG_INVALID_STYLE      (MSG_WARN + 90)  /* sytax error in CSS definition */
+#define MSG_STYLE_REDEFINED    (MSG_WARN + 91)  /* CSS property redefined */
 
 /*
  * messages from tag handles

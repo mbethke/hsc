@@ -318,13 +318,9 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...)
                 case 'j':
                     /* append jerk/prostitute */
                     if (hp->prostitute)
-                    {
                         app_estr(hp->curr_msg, "prostitutes");
-                    }
                     else
-                    {
                         app_estr(hp->curr_msg, "jerks");
-                    }
                     break;
 
                 case 'L':

@@ -67,7 +67,7 @@ static VOID message_rplc(HSCPRC * hp, STRPTR what, STRPTR by)
 /*
  * check_mbinaw
  *
- * check if tag occures in allowed context with other tags
+ * check if tag occurs in allowed context with other tags
  */
 static BOOL check_mbinaw(HSCPRC * hp, HSCTAG * tag)
 {
@@ -76,7 +76,7 @@ static BOOL check_mbinaw(HSCPRC * hp, HSCTAG * tag)
    /* check for tags that must be called before */
    if (tag->mbi)
    {
-      DLNODE *nd = hp->container_stack->first;
+      DLNODE *nd = hp->container_stack->last;
       LONG found = 0;
 
       while (nd && !found)
@@ -84,8 +84,8 @@ static BOOL check_mbinaw(HSCPRC * hp, HSCTAG * tag)
          HSCTAG *ctag = (HSCTAG *) nd->data;
 
          found = strenum(ctag->name, tag->mbi, '|', STEN_NOCASE);
-         nd = nd->next;
-
+         if(hp->xhtml) break;    /* stricter /MBI in XHTML mode! */
+         nd = nd->prev;
       }
 
       if (!found)
@@ -398,9 +398,7 @@ BOOL hsc_parse_tag(HSCPRC * hp)
           */
          open_tag = TRUE;
          if (!hp->suppress_output)
-         {
             D(fprintf(stderr, "%s>\n", nxtwd));
-         }
 
          /* search for tag in list */
          nd = find_dlnode(taglist->first, (APTR) nxtwd, cmp_strtag);
@@ -413,9 +411,6 @@ BOOL hsc_parse_tag(HSCPRC * hp)
          } else {
             tag = (HSCTAG *) nd->data;
          }
-
-         /* set global flag if tag is /EMPTY */
-         hp->xhtml_emptytag = (BOOL)(tag->option & HT_EMPTY);
 
          /* set handle-function */
          hnd = tag->o_handle;
@@ -471,13 +466,9 @@ BOOL hsc_parse_tag(HSCPRC * hp)
             {
                /* set ">" in string that contains closing text */
                if(!hp->compact)
-               {
                   set_estr(hp->tag_close_str, infgetcws(inpf));
-               }
                else
-               {
                   clr_estr(hp->tag_close_str);
-               }
                app_estr(hp->tag_close_str, infgetcw(inpf));
 
                /* check for succeeding white-space */
@@ -791,12 +782,10 @@ BOOL hsc_parse_amp(HSCPRC * hp)
    INFILE *inpf = hp->inpf;
    EXPSTR *amp_str = init_estr(0);
 
-   if (!hp->fatal)
-   {
+   if (!hp->fatal) {
       BOOL rplc = hp->smart_ent;      /* TRUE, if "&" should be replaced */
 
-      if (rplc)
-      {
+      if (rplc) {
          /*
           * test if char before and
           * after "&" is white-space
@@ -805,21 +794,17 @@ BOOL hsc_parse_amp(HSCPRC * hp)
 
          inungetc(ch, inpf);
 
-         if (!(hsc_whtspc(ch)) || !(estrlen(hp->whtspc)))
-         {
+         if (!(hsc_whtspc(ch)) || !(estrlen(hp->whtspc))) {
             /* no, it is not */
             rplc = FALSE;
          }
       }
 
-      if (rplc)
-      {
+      if (rplc) {
          /* replace ampersand */
          message_rplc(hp, "&", "&amp;");
          set_estr(amp_str, "&amp;");
-      }
-      else
-      {
+      } else {
          /*
           * get entity-id, test for unknown entity
           */
@@ -835,37 +820,27 @@ BOOL hsc_parse_amp(HSCPRC * hp)
 
          /* check for illegal white-space */
          if (strlen(infgetcws(inpf)))
-         {
             hsc_msg_illg_whtspc(hp);
-         }
 
-         if (nxtwd == NULL)
-         {
+         if (nxtwd == NULL) {
             hsc_msg_eof(hp, "missing entity");
-         }
-         else if (!strcmp(nxtwd, "\\"))
-         {
+         } else if (!strcmp(nxtwd, "\\")) {
             /* flush white spaces */
             clr_estr(hp->whtspc);
             clr_estr(amp_str);
             infskip_ws(inpf);
-         }
-         else if (!strcmp(nxtwd, "/"))
-         {
+         } else if (!strcmp(nxtwd, "/")) {
             /* replace white spaces by a single blank */
             set_estr(hp->whtspc, " ");
             clr_estr(amp_str);
             infskip_ws(inpf);
-         }
-         else
-         {
+         } else {
             hp_enable_output(hp, "entity");
 
             /* append (illegal anyway) white space */
             app_estr(amp_str, infgetcws(inpf));
 
-            if (!strcmp(nxtwd, "#"))
-            {
+            if (!strcmp(nxtwd, "#")) {
                /*
                 * process numeric entity
                 */
@@ -880,19 +855,14 @@ BOOL hsc_parse_amp(HSCPRC * hp)
 
                /* check for illegal white-space */
                if (strlen(infgetcws(inpf)))
-               {
                   hsc_msg_illg_whtspc(hp);
-               }
 
                /* find out wheter it is an decimal or a hexadecimal
                 * entity and set base according to it */
-               if (toupper(nxtwd[0]) == 'X')
-               {
+               if (toupper(nxtwd[0]) == 'X') {
                   base = 16;      /* hexadecimal */
                   digit_start = nxtwd + 1;
-               }
-               else
-               {
+               } else {
                   base = 10;      /* decimal */
                   digit_start = nxtwd;
                }
@@ -900,17 +870,14 @@ BOOL hsc_parse_amp(HSCPRC * hp)
                /* try to convert entity to number */
                errno = 0;
                strtoul(digit_start, NULL, base);
-               if (errno)
-               {
+               if (errno) {
                   hsc_message(hp, MSG_ILLG_NUM,   /* illegal numeric entity */
                         "illegal numeric value %n for entity", nxtwd);
                }
 
                /* append entity specifier */
                app_estr(amp_str, nxtwd);
-            }
-            else
-            {
+            } else {
                /*
                 * process text entity
                 */
@@ -919,47 +886,38 @@ BOOL hsc_parse_amp(HSCPRC * hp)
                /* search for entity in list */
                nd = find_dlnode(hp->defent->first, (APTR) nxtwd, cmp_strent);
 
-               if (hp->jens && (nd == NULL))
-               {
-                  /* asume that entity is an attribute,
-                   * try to find it and append it's value
+               if (hp->jens && (nd == NULL)) {
+                  /* assume that entity is an attribute,
+                   * try to find it and append its value
                    */
                   attr = find_varname(hp->defattr, nxtwd);
-                  if (attr)
-                  {
+                  if (attr) {
                      set_estr(amp_str, get_vartext(attr));
                      app_entity = FALSE;
                   }
                }
 
-               if ((nd == NULL) && (attr == NULL))
-               {
+               if ((nd == NULL) && (attr == NULL)) {
                   hsc_message(hp, MSG_UNKN_ENTITY,
                         "unknown %e", nxtwd);
-               }
-               else
-               {
+               } else {
                   /* check for icon-entity and warn about */
                   /* portability problem */
                   HSCENT *entity = dln_data(nd);
 
                   if (entity->numeric == ICON_ENTITY) {
-                     if (estrlen(hp->iconbase))
-                     {
+                     if (estrlen(hp->iconbase)) {
                         replace_icon(hp, nxtwd);
                         set_estr(amp_str, "");
                         app_entity = FALSE;
-                     }
-                     else
-                     {
+                     } else {
                         hsc_message(hp, MSG_ICON_ENTITY,
                               "icon %e found", nxtwd);
                      }
                   }
                }
 
-               if (app_entity)
-               {
+               if (app_entity) {
                   /* append entity specifier */
                   app_estr(amp_str, nxtwd);
                }
@@ -967,29 +925,20 @@ BOOL hsc_parse_amp(HSCPRC * hp)
 
             /* check for closing ';' */
             nxtwd = infgetw(inpf);
-            if (nxtwd)
-            {
-               if (!strcmp(nxtwd, ";"))
-               {
+            if (nxtwd) {
+               if (!strcmp(nxtwd, ";")) {
                   if (strlen(infgetcws(inpf)))
-                  {
                      hsc_msg_illg_whtspc(hp);
-                  }
 
-                  if (app_entity)
-                  {
+                  if (app_entity) {
                      app_estr(amp_str, infgetcws(inpf));
                      app_estr(amp_str, infgetcw(inpf));
                   }
-               }
-               else
-               {
+               } else {
                   hsc_message(hp, MSG_EXPT_SEMIC, "%q expected after entity", ";");
                   inungetcwws(inpf);
                }
-            }
-            else
-            {
+            } else {
                hsc_msg_eof(hp, "expected \";\") for entity");
             }
          }
@@ -997,12 +946,9 @@ BOOL hsc_parse_amp(HSCPRC * hp)
 
       /* output whole entity */
       if (estrlen(amp_str))
-      {
          hsc_output_text(hp, "", estr2str(amp_str));
-      }
 
       del_estr(amp_str);
-
    }
 
    return (BOOL) (!hp->fatal);

@@ -37,7 +37,7 @@
 #define IH_UPDATE_PRJ   (1<<6)  /* update project file */
 #define IH_POS_PARENT   (1<<7)  /* use position of next file on stack
                                  *   for messages */
-#define IH_IS_INCLUDE   (1<<8)  /* included vai <$include>
+#define IH_IS_INCLUDE   (1<<8)  /* included via <$include>
                                  *   (should be stored in project-file */
 #define IH_IS_SOURCE    (1<<9)  /* this is the main source-file
                                  *   (should be stored in project-file */

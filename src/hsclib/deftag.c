@@ -492,11 +492,10 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
    if(!strcmp(varname,"/")) return TRUE;
 
    /* append attribute name to attr_str */
-   if (hp->compact) {
-      app_estr(attr_str, compactWs(hp, infgetcws(inpf)));
-   } else {
+   if (hp->compact)
+      app_estr(attr_str, " ");
+   else
       app_estr(attr_str, infgetcws(inpf));
-   }
    app_estr(attr_str, infgetcw(inpf));
 
    /* lowercase attribute name if requested */
@@ -533,52 +532,43 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
    if (nw) {
       if (!strcmp(nw, "=")) {
          /* append "=" to log - always strips WS b/w attribute and value */
-         app_estr(val_str, infgetcw(inpf));
+         if(!is_styleattr) app_estr(val_str, infgetcw(inpf));
 
          /* parse expression */
          arg = eval_expression(hp, attr, NULL);
 
          /* append value to log */
-         if (attr->quote != VQ_NO_QUOTE) app_estrch(val_str, attr->quote);
-         if (get_vartext(attr))
-         {
+         if(!is_styleattr && (attr->quote != VQ_NO_QUOTE))
+            app_estrch(val_str, attr->quote);
+         if(get_vartext(attr))
             app_estr(val_str, get_vartext(attr));
-         }
-         if (attr->quote != VQ_NO_QUOTE) app_estrch(val_str, attr->quote);
+         if (!is_styleattr && (attr->quote != VQ_NO_QUOTE))
+            app_estrch(val_str, attr->quote);
  
 
-         if (arg)
-         {
+         if (arg) {
             DAV(fprintf(stderr, DHL "  `%s'\n", arg));
             ok = TRUE;
          }
       } else if (!strcmp(nw, "?")) {
          /* process "?="-assignment */
          if (!hp->compact)
-         {
             app_estr(val_str, infgetcws(inpf));
-         }
-         if (parse_eq(hp))
-         {
-            app_estr(val_str, "=");
+         if (parse_eq(hp)) {
+            if(!is_styleattr)
+               app_estr(val_str, "=");
 
             arg = eval_conditional_assignment(hp, attr);
 
             /* append value to log */
-            if (attr->quote != VQ_NO_QUOTE)
-            {
+            if(!is_styleattr && (attr->quote != VQ_NO_QUOTE))
                app_estrch(val_str, attr->quote);
-            }
             if (get_vartext(attr))
-            {
                app_estr(val_str, get_vartext(attr));
-            }
-            if (attr->quote != VQ_NO_QUOTE)
-            {
+            if (!is_styleattr && (attr->quote != VQ_NO_QUOTE))
                app_estrch(val_str, attr->quote);
-            }
-            if (arg)
-            {
+
+            if (arg) {
                DAV(fprintf(stderr, DHL "  inherited `%s'\n", arg));
             } else {
                DAV(fprintf(stderr, DHL "  inheritage failed\n"));
@@ -591,9 +581,7 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
          arg = NULL;
          inungetcwws(inpf);
          if (attr == &skipvar)
-         {
             attr->vartype = VT_BOOL;
-         }
          ok = TRUE;
       }
    } else {
@@ -601,10 +589,8 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
    }
 
    if (ok) {
-      if (arg)
-      {
-         if (attr->vartype == VT_BOOL)
-         {
+      if (arg) {
+         if (attr->vartype == VT_BOOL) {
             /* set boolean attribute depending on expression */
             set_varbool(attr, get_varbool(attr));
 
@@ -613,33 +599,24 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
              */
             if (!get_varbool(attr))
                clr_estr(attr_str);
-         }
-         else if (!inheritage_failed)
-         {
+         } else if (!inheritage_failed) {
             /* append value to attribute string */
             estrcat(attr_str, val_str);
          }
-      }
-      else if (inheritage_failed)
-      {
+      } else if (inheritage_failed) {
          /* if attribute to inherit from was empty,
           * remove the attribute from tag-call
           */
          clr_estr(attr_str);
-      }
-      else
-      {
+      } else {
          /* no value has been passed to the attribute */
-         if (attr->vartype == VT_BOOL)
-         {
+         if (attr->vartype == VT_BOOL) {
             /* for boolean attributes, this is legal,
              * and enables the attribute
              * but: see below for XHTML normalization!
              */
             set_varbool(attr, TRUE);
-         }
-         else if (!tag_unknown)
-         {
+         } else if (!tag_unknown) {
             /* for non-boolean attributes, display
              * error message
              */
@@ -674,20 +651,65 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
 
    /* cleanup pseudo-attr */
    if (attr == &skipvar)
-   {
       clr_vartext(attr);
-   }
 
    if(is_styleattr) {
-      fprintf(stderr,"##### STYLE: a='%s', v='%s'\n",
-            estr2str(attr_str),estr2str(val_str));
-   }
-   {
-      /* append & cleanup attribute and value string */
+      /* attr_str contains gibberish here, don't use it */
+      BOOL done = FALSE;
+      STRPTR cstyle, nstyle, value;
+
+      cstyle = estr2str(val_str);
+      do {
+         /* check if there is more than one property-value-pair in
+          * this string
+          */ 
+         if(NULL != (nstyle = strchr(cstyle,';'))) {
+            /* terminate string there */
+            *nstyle++ = '\0';
+            /* skip leading blanks of next style pair */
+            while(isspace(*nstyle)) ++nstyle;
+            /* if rest is empty, we're done anyway */
+            if('\0' == *nstyle)
+               done = TRUE;
+         } else {
+            done = TRUE;
+         }
+         value = strchr(cstyle,':');
+         if(NULL != value) {
+            /* separate property/value */
+            *value++ = '\0';
+            /* skip leading blanks on value */
+            while(isspace(*value)) ++value;
+            /* check whether both property and value are there */
+            if(strlen(cstyle) && strlen(value)) {
+               HSCSTYLE *styledef;
+               if(NULL != (styledef = find_stylename(hp->tag_styles,cstyle))) {
+                  hsc_message(hp, MSG_STYLE_REDEFINED,
+                        "CSS property %q redefined, previous value was %q",
+                        cstyle,styledef->value);
+                  ufreestr(styledef->value);
+                  styledef->value = strclone(value);
+               } else {
+                  styledef = new_styleattr(cstyle,value);
+                  app_dlnode(hp->tag_styles,styledef);
+               }
+            } else {
+               hsc_message(hp, MSG_INVALID_STYLE,
+                     "invalid CSS style definition `%s:%s'", cstyle,value);
+            }
+         } else {
+            hsc_message(hp, MSG_INVALID_STYLE,
+                  "invalid CSS style definition %q", cstyle);
+         }
+         /* continue with next style pair */
+         cstyle = nstyle;
+      } while(!done);
+   } else {
+      /* append attribute */
       app_estr(hp->tag_attr_str, estr2str(attr_str));
-      del_estr(attr_str);
-      del_estr(val_str);
    }
+   del_estr(attr_str);
+   del_estr(val_str);
    return (ok);
 }
 
@@ -814,6 +836,32 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
     * append it to the tag call */
    set_tag_defaults(hp, tag);
 
+   /* flush all CSS properties to a STYLE attribute */
+   if(NULL != hp->tag_styles->first) {
+      BOOL semicolon = FALSE;
+      STRPTR quote = (QMODE_SINGLE == hp->quotemode) ? "'" : "\"";
+      HSCSTYLE *stylend;
+      DLNODE *nd;
+
+      /* append attribute and quote */
+      app_estr(hp->tag_attr_str, hp->lctags ? " style=" : " STYLE=");
+      app_estr(hp->tag_attr_str, quote);
+      /* loop over all nodes in styles list */
+      while(NULL != (nd = hp->tag_styles->first)) {
+         stylend = (HSCSTYLE*)(nd->data);
+         /* if there is more than one pair, they have to be separated */
+         if(semicolon) app_estr(hp->tag_attr_str, "; ");
+         /* append <name>:<value> */
+         app_estr(hp->tag_attr_str, stylend->name);
+         app_estr(hp->tag_attr_str, ":");
+         app_estr(hp->tag_attr_str, stylend->value);
+         /* remove node from list */
+         del_dlnode(hp->tag_styles, nd);
+         semicolon = TRUE;
+      }
+      /* closing quote */
+      app_estr(hp->tag_attr_str, quote);
+   }
    /* unset scope */
    unget_mci(hp);
 
@@ -825,15 +873,11 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag)
    {
       ok = check_varlist(hp, varlist);
       if (!ok)
-      {
          inungetcw(inpf);
-      }
    }
 
    if (!ok)
-   {
       result_tci = MCI_ERROR;
-   }
 
    return (result_tci);
 }

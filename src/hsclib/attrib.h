@@ -101,12 +101,12 @@
 #define VQ_STR_QUOTE "\"'"
 
 /* "no quote" value for quote in HSCATTR */
-#define VQ_NO_QUOTE 0
+#define VQ_NO_QUOTE (0)
 
 /* error return value for set_macro_args() to set var->macro_id with */
-#define MCI_GLOBAL  0           /* indicate global attributes */
-#define MCI_ERROR   0xffffffff
-#define MCI_APPCTAG 0xfffffffe  /* used by app_ctag(); see "tag.c" */
+#define MCI_GLOBAL  (0)           /* indicate global attributes */
+#define MCI_ERROR   (0xffffffff)
+#define MCI_APPCTAG (0xfffffffe ) /* used by app_ctag(); see "tag.c" */
 
 /* attribute structure */
 typedef struct hscattr
@@ -137,12 +137,15 @@ typedef struct hscstyle {
 
 extern VOID prt_varlist(DLLIST * varlist, STRPTR title);
 
-extern HSCATTR *new_hscattr(STRPTR newname);
+extern HSCATTR *new_hscattr(CONSTRPTR newname);
 extern VOID del_hscattr(APTR data);
 extern HSCATTR *cpy_hscattr(HSCATTR * oldvar);
+extern HSCSTYLE *new_styleattr(CONSTRPTR name, CONSTRPTR value);
+extern VOID del_styleattr(APTR data);
 
 extern DLNODE *find_attrnode(DLLIST * varlist, STRPTR name);
 extern HSCATTR *find_varname(DLLIST * varlist, STRPTR name);
+extern HSCSTYLE *find_stylename(DLLIST *varlist, STRPTR name);
 extern HSCATTR *app_var(DLLIST * varlist, STRPTR newname);
 
 extern BOOL check_enumstr(HSCATTR * var, STRPTR value, INFILE * inpf);

@@ -68,6 +68,7 @@ VOID del_hscprc(HSCPRC * hp)
         del_dllist(hp->inpf_stack);
         del_dllist(hp->idrefs);
         del_dllist(hp->select_stack);
+        del_dllist(hp->tag_styles);
         del_strlist(hp->include_dirs);
 
         /* remove strings */
@@ -185,6 +186,7 @@ HSCPRC *new_hscprc(void)
         hp->project = NULL;
         hp->idrefs = init_dllist(del_idref);
         hp->select_stack = init_dllist(del_select_stack_node);
+        hp->tag_styles = init_dllist(del_styleattr);
         hp->include_dirs = init_strlist();
 
         /* init strings */

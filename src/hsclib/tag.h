@@ -79,7 +79,6 @@ typedef struct hsctag
       BOOL(*c_handle) (struct hsc_process * hp, struct hsctag * tag);
     /* callback for end-tag */
     DLLIST *attr;               /* list of attributes */
-    DLLIST *style;              /* list of CSS style attributes */
     EXPSTR *op_text;            /* macro text (open/close) */
     EXPSTR *cl_text;
     STRPTR mbi;                 /* string that tells inside which

@@ -195,6 +195,7 @@ struct hsc_process
     DLLIST *container_stack;    /* stack of container-tags currently open */
     DLLIST *content_stack;      /* stack of contents of container macros */
     DLLIST *include_dirs;       /* include directories */
+    DLLIST *tag_styles;         /* CSS styles used by current tag */
     HSCPRJ *project;            /* project data */
     DLLIST *idrefs;             /* list of references to local IDs */
     EXPSTR *destdir;            /* destination root directory */

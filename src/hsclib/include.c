@@ -65,9 +65,7 @@ static BOOL hsc_include(HSCPRC * hp, INFILE * inpf, ULONG optn, INFILEPOS * base
     {
         /* push current input file on input-file-stack */
         if (hp->inpf)
-        {
-            ins_dlnode(hp->inpf_stack, hp->inpf_stack->first, (APTR) hp->inpf);
-        }
+            add_dlnode(hp->inpf_stack, (APTR) hp->inpf);
 
         /* set new base position for input-file */
         /* (if called from a macro or after eg. <$source>) */

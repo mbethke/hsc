@@ -45,40 +45,40 @@
  */
 static VOID prt_var(FILE * stream, APTR data)
 {
-    HSCATTR *var = (HSCATTR *) data;
+   HSCATTR *var = (HSCATTR *) data;
 
-    if (var)
-    {
-        int varquote = var->quote;
-        if (varquote == VQ_NO_QUOTE)
-            varquote = '.';
+   if (var)
+   {
+      int varquote = var->quote;
+      if (varquote == VQ_NO_QUOTE)
+         varquote = '.';
 
-        /* name & type & macro_id */
-        fprintf(stream, "%s (type:%u,mci:%lu) ",
-                var->name, var->vartype, var->macro_id);
-        /* text value */
-        if (var->text)
-            fprintf(stream, "cur:%c%s%c",
-                    var->quote, var->text, varquote);
-        else
-            fprintf(stream, "<NULL>");
-        fprintf(stream, " ");
-        /* default text */
-        if (var->deftext)
-            fprintf(stream, "def:%c%s%c",
-                    var->quote, var->deftext, varquote);
-        else
-            fprintf(stream, "<NULL>");
-        fprintf(stream, "\n");
-    }
-    else
-        fprintf(stream, "<NULL>\n");
+      /* name & type & macro_id */
+      fprintf(stream, "%s (type:%u,mci:%lu) ",
+            var->name, var->vartype, var->macro_id);
+      /* text value */
+      if (var->text)
+         fprintf(stream, "cur:%c%s%c",
+               var->quote, var->text, varquote);
+      else
+         fprintf(stream, "<NULL>");
+      fprintf(stream, " ");
+      /* default text */
+      if (var->deftext)
+         fprintf(stream, "def:%c%s%c",
+               var->quote, var->deftext, varquote);
+      else
+         fprintf(stream, "<NULL>");
+      fprintf(stream, "\n");
+   }
+   else
+      fprintf(stream, "<NULL>\n");
 }
 
 VOID prt_varlist(DLLIST * varlist, STRPTR title)
 {
-    fprintf(stderr, DHL "%s\n", title);
-    fprintf_dllist(stderr, varlist, prt_var);
+   fprintf(stderr, DHL "%s\n", title);
+   fprintf_dllist(stderr, varlist, prt_var);
 }
 
 /*
@@ -94,25 +94,25 @@ VOID prt_varlist(DLLIST * varlist, STRPTR title)
  */
 VOID del_hscattr(APTR data)
 {
-    HSCATTR *var = (HSCATTR *) data;
+   HSCATTR *var = (HSCATTR *) data;
 
 #if DEBUG_ATTR
-    fprintf(stderr, DHL "   del_attr %s (mci=%d)\n",
-            var->name, var->macro_id);
+   fprintf(stderr, DHL "   del_attr %s (mci=%d)\n",
+         var->name, var->macro_id);
 #endif
 
-    /* release mem */
-    ufreestr(var->name);
-    ufreestr(var->deftext);
-    ufreestr(var->text);
-    ufreestr(var->enumstr);
+   /* release mem */
+   ufreestr(var->name);
+   ufreestr(var->deftext);
+   ufreestr(var->text);
+   ufreestr(var->enumstr);
 
-    var->macro_id = 0;
-    var->varflag = 0;
-    var->vartype = VT_NONE;
-    var->quote = EOF;
+   var->macro_id = 0;
+   var->varflag = 0;
+   var->vartype = VT_NONE;
+   var->quote = EOF;
 
-    ufree(var);
+   ufree(var);
 
 }
 
@@ -121,37 +121,37 @@ VOID del_hscattr(APTR data)
  *
  * alloc & init a new variable
  */
-HSCATTR *new_hscattr(STRPTR newname)
+HSCATTR *new_hscattr(CONSTRPTR newname)
 {
-    HSCATTR *newvar = (HSCATTR *) umalloc(sizeof(HSCATTR));
+   HSCATTR *newvar = (HSCATTR *) umalloc(sizeof(HSCATTR));
 
 #if DEBUG_ATTR
-    fprintf(stderr, DHL "   new_attr %s\n", newname);
+   fprintf(stderr, DHL "   new_attr %s\n", newname);
 #endif
 
-    if (newvar)
-    {
-        /* init new varument item */
-        newvar->vartype = VT_NONE;
-        newvar->name = strclone(newname);
-        newvar->deftext = NULL;
-        newvar->text = NULL;
-        newvar->enumstr = NULL;
-        newvar->macro_id = 0;
-        if (upstrncmp(newname, PREFIX_HSCATTR, strlen(PREFIX_HSCATTR)))
-            newvar->varflag = 0;
-        else
-            newvar->varflag = VF_KEEP_QUOTES;
-        newvar->quote = VQ_NO_QUOTE;
-    }
+   if (newvar)
+   {
+      /* init new varument item */
+      newvar->vartype = VT_NONE;
+      newvar->name = strclone(newname);
+      newvar->deftext = NULL;
+      newvar->text = NULL;
+      newvar->enumstr = NULL;
+      newvar->macro_id = 0;
+      if (upstrncmp(newname, PREFIX_HSCATTR, strlen(PREFIX_HSCATTR)))
+         newvar->varflag = 0;
+      else
+         newvar->varflag = VF_KEEP_QUOTES;
+      newvar->quote = VQ_NO_QUOTE;
+   }
 
-    if (!(newvar->name))
-    {
-        del_hscattr((APTR) newvar);
-        newvar = NULL;
-    }
+   if (!(newvar->name))
+   {
+      del_hscattr((APTR) newvar);
+      newvar = NULL;
+   }
 
-    return (newvar);
+   return (newvar);
 }
 
 /*
@@ -161,29 +161,29 @@ HSCATTR *new_hscattr(STRPTR newname)
  */
 HSCATTR *cpy_hscattr(HSCATTR * oldvar)
 {
-    HSCATTR *newvar = new_hscattr(oldvar->name);
+   HSCATTR *newvar = new_hscattr(oldvar->name);
 
-    if (newvar)
-    {
-        newvar->vartype = oldvar->vartype;
-        if (oldvar->deftext)
-            newvar->deftext = strclone(oldvar->deftext);
-        if (oldvar->text)
-            newvar->text = strclone(oldvar->text);
-        if (oldvar->enumstr)
-            newvar->enumstr = strclone(oldvar->enumstr);
-        newvar->macro_id = oldvar->macro_id;
-        newvar->varflag = oldvar->varflag;
-        newvar->quote = oldvar->quote;
-    }
+   if (newvar)
+   {
+      newvar->vartype = oldvar->vartype;
+      if (oldvar->deftext)
+         newvar->deftext = strclone(oldvar->deftext);
+      if (oldvar->text)
+         newvar->text = strclone(oldvar->text);
+      if (oldvar->enumstr)
+         newvar->enumstr = strclone(oldvar->enumstr);
+      newvar->macro_id = oldvar->macro_id;
+      newvar->varflag = oldvar->varflag;
+      newvar->quote = oldvar->quote;
+   }
 
-    if (!(newvar->name))
-    {
-        del_hscattr((APTR) newvar);
-        newvar = NULL;
-    }
+   if (!(newvar->name))
+   {
+      del_hscattr((APTR) newvar);
+      newvar = NULL;
+   }
 
-    return (newvar);
+   return (newvar);
 
 }
 
@@ -194,19 +194,56 @@ HSCATTR *cpy_hscattr(HSCATTR * oldvar)
  */
 HSCATTR *app_var(DLLIST * varlist, STRPTR newname)
 {
-    HSCATTR *var = new_hscattr(newname);
-    BOOL ok = FALSE;
+   HSCATTR *var = new_hscattr(newname);
+   BOOL ok = FALSE;
 
-    if (var)
-        ok = (ins_dlnode(varlist, varlist->first, (APTR) var) != NULL);
+   if (var)
+      ok = (add_dlnode(varlist, (APTR) var) != NULL);
 
-    if (!ok)
-    {
-        del_hscattr((APTR) var);
-        var = NULL;
-    }
+   if (!ok) {
+      del_hscattr((APTR) var);
+      var = NULL;
+   }
 
-    return (var);
+   return (var);
+}
+
+/*
+ * del_styleattr
+ *
+ * delete style element
+ */
+VOID del_styleattr(APTR data)
+{
+#if DEBUG_ATTR
+   fprintf(stderr, DHL "   del_styleattr %s (mci=%d)\n",
+         var->name, var->macro_id);
+#endif
+
+   ufreestr(((HSCSTYLE*)data)->name);
+   ufreestr(((HSCSTYLE*)data)->value);
+   ufree(data);
+}
+
+
+/*
+ * new_styleattr
+ *
+ * alloc & init a new style element
+ */
+HSCSTYLE *new_styleattr(CONSTRPTR name, CONSTRPTR value)
+{
+   HSCSTYLE *newvar = (HSCSTYLE*)umalloc(sizeof(HSCSTYLE));
+
+#if DEBUG_ATTR
+   fprintf(stderr, DHL "   new_styleattr\n");
+#endif
+
+   if(newvar) {
+      newvar->name  = strclone(name);
+      newvar->value = strclone(value);
+   }
+   return newvar;
 }
 
 /*
@@ -218,55 +255,53 @@ HSCATTR *app_var(DLLIST * varlist, STRPTR newname)
 /*
  * cmp_varname
  *
- * compares a var-name with the name
- * of a HSCATTR-entry
+ * compares a var-name with the name of a HSCATTR-entry
  */
-int cmp_varname(APTR cmpstr, APTR vardata)
-{
-    STRPTR varstr = NULL;
+static int cmp_varname(const APTR cmpstr, const APTR vardata) {
+   STRPTR varstr = NULL;
 
-    if (vardata)
-    {
-        varstr = ((HSCATTR *) vardata)->name;
-    }
+   if(vardata) varstr = ((HSCATTR*)vardata)->name;
+   if(varstr)
+      return upstrcmp((STRPTR)cmpstr, ((HSCATTR*)vardata)->name) ? 0 : -1;
+   return 0;
+}
 
-    if (varstr)
-    {
-        if (!upstrcmp((STRPTR) cmpstr, varstr))
-        {
-            return -1;
-        }
-        else
-        {
-            return 0;
-        }
-    }
-    else
-    {
-        return 0;
-    }
+/*
+ * cmp_stylename
+ *
+ * compares a string with a style element's name
+ */
+static int cmp_stylename(const APTR cmpstr, const APTR vardata) {
+   return upstrcmp((STRPTR)cmpstr, ((HSCSTYLE*)vardata)->name) ? 0 : -1;
 }
 
 /*
  * find_attrnode
  */
-DLNODE *find_attrnode(DLLIST * varlist, STRPTR name)
-{
-    DLNODE *nd = find_dlnode(varlist->first, (APTR) name, cmp_varname);
-
-    return (nd);
+DLNODE *find_attrnode(DLLIST * varlist, STRPTR name) {
+   return find_dlnode(varlist->first, (APTR) name, cmp_varname);
 }
 
 /*
  * find_varname
  */
-HSCATTR *find_varname(DLLIST * varlist, STRPTR name)
-{
+HSCATTR *find_varname(DLLIST * varlist, STRPTR name) {
    DLNODE *nd = find_dlnode(varlist->first, (APTR) name, cmp_varname);
 
-   if (nd) return (HSCATTR *) nd->data;
+   if(nd) return (HSCATTR*)nd->data;
    return NULL;
 }
+
+/*
+ * find_stylename
+ */
+HSCSTYLE *find_stylename(DLLIST *stylelist, STRPTR name) {
+   DLNODE *nd = find_dlnode(stylelist->first, (APTR) name, cmp_stylename);
+
+   if(nd) return (HSCSTYLE*)nd->data;
+   return NULL;
+}
+
 
 /*
  *-------------------------------------
@@ -311,12 +346,12 @@ STRPTR set_vartext(HSCATTR * var, STRPTR newtext)
  */
 BOOL set_varbool(HSCATTR * attr, BOOL value)
 {
-    if (value)
-        set_vartext(attr, attr->name);
-    else
-        set_vartext(attr, "");
+   if (value)
+      set_vartext(attr, attr->name);
+   else
+      set_vartext(attr, "");
 
-    return (value);
+   return (value);
 }
 
 /*
@@ -329,20 +364,20 @@ BOOL set_varbool(HSCATTR * attr, BOOL value)
  */
 BOOL clr_vartext(HSCATTR * var)
 {
-    BOOL ok = TRUE;
+   BOOL ok = TRUE;
 
-    if (var->deftext)
-    {
-        if (!(set_vartext(var, var->deftext)))
-            ok = FALSE;
-    }
-    else
-    {
-        ufreestr(var->text);
-        var->text = NULL;
-    }
+   if (var->deftext)
+   {
+      if (!(set_vartext(var, var->deftext)))
+         ok = FALSE;
+   }
+   else
+   {
+      ufreestr(var->text);
+      var->text = NULL;
+   }
 
-    return (ok);
+   return (ok);
 }
 
 /*
@@ -354,8 +389,8 @@ BOOL clr_vartext(HSCATTR * var)
  */
 VOID clr_attrdef(HSCATTR * attr)
 {
-    ufreestr(attr->deftext);
-    attr->deftext = NULL;
+   ufreestr(attr->deftext);
+   attr->deftext = NULL;
 }
 
 /*
@@ -367,16 +402,16 @@ VOID clr_attrdef(HSCATTR * attr)
  */
 BOOL clr_varlist(DLLIST * varlist)
 {
-    DLNODE *nd = varlist->first;
-    BOOL ok = TRUE;
+   DLNODE *nd = varlist->first;
+   BOOL ok = TRUE;
 
-    while (nd && ok)
-    {
-        ok &= clr_vartext((HSCATTR *) nd->data);
-        nd = nd->next;
-    }
+   while (nd && ok)
+   {
+      ok &= clr_vartext((HSCATTR *) nd->data);
+      nd = nd->next;
+   }
 
-    return (ok);
+   return (ok);
 }
 
 /*
@@ -389,18 +424,18 @@ BOOL clr_varlist(DLLIST * varlist)
  */
 VOID clr_varlist_bool(DLLIST * varlist)
 {
-    DLNODE *nd = varlist->first;
-    BOOL ok = TRUE;
+   DLNODE *nd = varlist->first;
+   BOOL ok = TRUE;
 
-    while (nd && ok)
-    {
-        HSCATTR *attr = (HSCATTR *) nd->data;
+   while (nd && ok)
+   {
+      HSCATTR *attr = (HSCATTR *) nd->data;
 
-        if ((attr->vartype == VT_BOOL) && !(attr->text))
-            set_varbool(attr, FALSE);
+      if ((attr->vartype == VT_BOOL) && !(attr->text))
+         set_varbool(attr, FALSE);
 
-        nd = nd->next;
-    }
+      nd = nd->next;
+   }
 }
 
 /*
@@ -410,13 +445,13 @@ VOID clr_varlist_bool(DLLIST * varlist)
  */
 STRPTR get_vartext_byname(DLLIST * varlist, STRPTR name)
 {
-    HSCATTR *var = find_varname(varlist, name);
-    STRPTR vartext = NULL;
+   HSCATTR *var = find_varname(varlist, name);
+   STRPTR vartext = NULL;
 
-    if (var)
-        vartext = var->text;
+   if (var)
+      vartext = var->text;
 
-    return (vartext);
+   return (vartext);
 }
 
 /*
@@ -433,11 +468,11 @@ STRPTR get_vartext(HSCATTR * var)
  */
 BOOL get_varbool(HSCATTR * attr)
 {
-    BOOL set = FALSE;
-    if (attr && (attr->text[0]))
-        set = TRUE;
+   BOOL set = FALSE;
+   if (attr && (attr->text[0]))
+      set = TRUE;
 
-    return (set);
+   return (set);
 }
 
 /*
@@ -445,9 +480,9 @@ BOOL get_varbool(HSCATTR * attr)
  */
 BOOL get_varbool_byname(DLLIST * varlist, STRPTR name)
 {
-    HSCATTR *var = find_varname(varlist, name);
+   HSCATTR *var = find_varname(varlist, name);
 
-    return (get_varbool(var));
+   return (get_varbool(var));
 }
 
 /*
@@ -455,11 +490,11 @@ BOOL get_varbool_byname(DLLIST * varlist, STRPTR name)
  */
 LONG get_varnum(HSCATTR * attr)
 {
-    LONG num = 0;
-    if (attr && (attr->text) && (attr->text[0]))
-        str2long(attr->text, &num);
+   LONG num = 0;
+   if (attr && (attr->text) && (attr->text[0]))
+      str2long(attr->text, &num);
 
-    return (num);
+   return (num);
 }
 
 /*
@@ -467,9 +502,9 @@ LONG get_varnum(HSCATTR * attr)
  */
 LONG get_varnum_byname(DLLIST * varlist, STRPTR name)
 {
-    HSCATTR *var = find_varname(varlist, name);
+   HSCATTR *var = find_varname(varlist, name);
 
-    return (get_varnum(var));
+   return (get_varnum(var));
 }
 
 /*
@@ -478,11 +513,11 @@ LONG get_varnum_byname(DLLIST * varlist, STRPTR name)
  */
 STRPTR get_vardeftext(HSCATTR * var)
 {
-    STRPTR deftext = NULL;
+   STRPTR deftext = NULL;
 
-    if (var)
-        deftext = var->deftext;
+   if (var)
+      deftext = var->deftext;
 
-    return (deftext);
+   return (deftext);
 }
 
