@@ -33,30 +33,11 @@
 /* include debugging defines */
 #include "udebug.h"
 
-/*
- * are you running a amiga?
- */
-
-#if 0 /* defined AMIGA */
-
-/*
- * on amiga system, just include system types
- */
-
+#ifdef __SASC  /* what the heck is the generic AmigaOS prepro symbol? */
 #include <exec/types.h>
-
-/*
- *
- * no amiga -> normal typedefs
- *
- */
-
 #else
 
-#ifndef APTR_TYPEDEF
-#define APTR_TYPEDEF
 typedef void *APTR;             /* 32-bit untyped pointer */
-#endif
 typedef long LONG;              /* signed 32-bit quantity */
 typedef unsigned long ULONG;    /* unsigned 32-bit quantity */
 typedef short WORD;             /* signed 16-bit quantity */
@@ -68,16 +49,7 @@ typedef char BYTE;              /* signed 8-bit quantity */
 #endif
 typedef unsigned char UBYTE;    /* unsigned 8-bit quantity */
 
-#if 1
 typedef char *STRPTR;           /* string pointer (NULL terminated) */
-#else
-/* old version causing problems with shitty compilers */
-#if defined(__cplusplus) || defined(RISCOS)
-typedef char *STRPTR;           /* string pointer (NULL terminated) */
-#else
-typedef unsigned char *STRPTR;  /* string pointer (NULL terminated) */
-#endif
-#endif
 
 /* Types with specific semantics */
 typedef void VOID;
@@ -110,23 +82,9 @@ typedef char TEXT;
  *
  */
 
-#if 1
 typedef const char *CONSTRPTR;         /* string constants */
 typedef char STRARR;   /* string array */
 typedef char CHAR;     /* single character */
-#else
-
-/* old version causing problems with shitty compilers */
-#ifndef RISCOS
-typedef const unsigned char *CONSTRPTR;         /* string constants */
-typedef unsigned char STRARR;   /* string array */
-typedef unsigned char CHAR;     /* single character */
-#else
-typedef const char *CONSTRPTR;         /* string constants */
-typedef char STRARR;   /* string array */
-typedef char CHAR;     /* single character */
-#endif
-#endif
 
 /*
  * UPTR as an generic pointer. C-math will not operate on UPTR.
