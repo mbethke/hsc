@@ -110,6 +110,7 @@ static STRPTR read_string(HSCPRJ * hp, BOOL len_format) {
     STRPTR dest = NULL;
     ULONG len;
 
+    /* if line is not in V2 format (inluding line length), just read to EOL */
     if(!len_format) {
       STRPTR s;
       s = infreadtoeol(hp->inpf);
@@ -306,7 +307,7 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf) {
                             document = new_document(docname);
                             app_dlnode(hp->documents, (APTR) document);
                             /* free mem allocated by read_string() */
-                            ufree(docname);
+                            freestr(docname);
                         }
                     } else if (!strcmp(cmd, LINE_SOURCE_STR)) {
                         /* assign SOURCE */
@@ -316,7 +317,7 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf) {
                                 reallocstr(&(document->sourcename),
                                            sourcename);
                                 /* free mem allocated by read_string() */
-                                ufree(sourcename);
+                                freestr(sourcename);
                             }
                         } else
                             hsc_msg_project_corrupt
@@ -329,7 +330,7 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf) {
                             if (titlename) {
                                 set_estr(document->title, titlename);
                                 /* free mem allocated by read_string() */
-                                ufree(titlename);
+                                freestr(titlename);
                             }
                         } else
                             hsc_msg_project_corrupt
@@ -344,7 +345,7 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf) {
                                 app_iddef(document, idname);
                                 iddef->caller = read_caller(hp,v2format);
                                 /* free mem allocated by read_string() */
-                                ufree(idname);
+                                freestr(idname);
                             }
                         } else
                             hsc_msg_project_corrupt
@@ -360,7 +361,7 @@ BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf) {
                                 app_include(document, incname);
                                 inc->caller = read_caller(hp,v2format);
                                 /* free mem allocated by read_string() */
-                                ufree(incname);
+                                freestr(incname);
                             }
                         } else
                             hsc_msg_project_corrupt
