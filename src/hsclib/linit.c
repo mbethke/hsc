@@ -178,100 +178,6 @@ static STRPTR find_prefs_fname(HSCPRC * hp, EXPSTR *cfgfn)
     return (prefs_fname);
 }
 
-#if 0
-/*
- * hsc_read_base_info
- *
- * try to open base-file and read where in memory
- * information about defined tags/attributes/entities
- * is located.
- *
- * result: dummy-hsc-process that only contains
- *   the information read from base-file
- *
- * see "LoadHscPrefs/LoadHscPrefs.c"
- */
-HSCPRC *hsc_read_base_info(VOID)
-{
-    HSCPRC *dummy_hp = NULL;
-
-#ifdef HSCBASE_FILE
-
-    FILE *inpf = fopen(HSCBASE_FILE, "r");
-    DLLIST *hp_deftag = NULL;
-    DLLIST *hp_defattr = NULL;
-    DLLIST *hp_defent = NULL;
-
-    if (inpf)
-    {
-        STRARR s[32];
-        APTR p = NULL;
-
-        while (fscanf(inpf, "%s %p\n", &(s[0]), &p) != EOF)
-        {
-            if (!strcmp("DEFTAG", s))
-            {
-                hp_deftag = (DLLIST *) p;
-                printf(DHL "deftag  %p\n", hp_deftag);
-            }
-            else if (!strcmp("DEFATTR", s))
-            {
-                hp_defattr = (DLLIST *) p;
-                printf(DHL "defattr %p\n", hp_defattr);
-            }
-            else if (!strcmp("DEFENT", s))
-            {
-                hp_defent = (DLLIST *) p;
-                printf(DHL "defent  %p\n", hp_defent);
-            }
-            else
-            {
-                printf(DHL "%s %p (unknown)\n", s, p);
-            }
-        }
-    }
-
-    fclose(inpf);
-
-    if (hp_deftag && hp_defattr && hp_defent)
-    {
-        /* assign information to dummy-process */
-        dummy_hp = new_hscprc();
-
-        del_dllist(dummy_hp->defattr);
-        del_dllist(dummy_hp->defent);
-        del_dllist(dummy_hp->deftag);
-
-        dummy_hp->deftag = hp_deftag;
-        dummy_hp->defattr = hp_defattr;
-        dummy_hp->defent = hp_defent;
-
-        /* assign new del_data-methodes */
-        dummy_hp->defattr->del_data = del_hscattr;
-        dummy_hp->defent->del_data = del_entity;
-        dummy_hp->deftag->del_data = del_hsctag;
-    }
-
-#endif
-    return (dummy_hp);
-}
-
-BOOL hsc_copy_base_info(HSCPRC * dest_hp, HSCPRC * dummy_hp)
-{
-    DLNODE *nd = dummy_hp->deftag->first;
-
-    /* copy defined tags */
-    while (nd)
-    {
-        HSCTAG *newtag = cpy_hsctag((HSCTAG *) nd->data);
-        app_dlnode(dest_hp->deftag, (APTR) newtag);
-        nd = nd->next;
-    }
-
-    return (TRUE);
-}
-#endif
-
 /*
  * hsc_read_prefs
  *
@@ -369,6 +275,7 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
     /* tags starting with HSC_TAGID */
         HSC_CONTENT_STR " /SKIPLF>",
         HSC_DEFENT_STR " /SKIPLF NAME:string/r RPLC:string NUM:num>",
+        HSC_DEFSTYLE_STR " /SKIPLF NAME:string/r VAL:string>",
         HSC_DEFICON_STR " /SKIPLF NAME:string/r>",
         HSC_DEFINE_STR " /SKIPLF /SPECIAL>",
         HSC_DEFTAG_STR " /SKIPLF /SPECIAL>",
@@ -444,6 +351,7 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
     {
         hsc_set_tagCB(hp, HSC_COMMENT_STR, handle_hsc_comment, NULL);
         hsc_set_tagCB(hp, HSC_CONTENT_STR, handle_hsc_content, NULL);
+        hsc_set_tagCB(hp, HSC_DEFSTYLE_STR, handle_hsc_defstyle, NULL);
         hsc_set_tagCB(hp, HSC_DEFENT_STR, handle_hsc_defent, NULL);
         hsc_set_tagCB(hp, HSC_DEFICON_STR, handle_hsc_deficon, NULL);
         hsc_set_tagCB(hp, HSC_DEFINE_STR, handle_hsc_define, NULL);
