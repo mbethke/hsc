@@ -28,6 +28,8 @@
 #ifndef HSCLIB_INC_BASE_H
 #define HSCLIB_INC_BASE_H
 
+#define NMEMBERS(s) (sizeof(s)/sizeof(s[0]))
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -42,6 +44,7 @@
 #include "ugly/umemory.h"
 #include "ugly/infile.h"
 #include "ugly/ustring.h"
+#include "ugly/ufile.h"
 
 #include "hsclib/msgid.h"
 
