@@ -30,6 +30,7 @@
 #include "hsclib/inc_base.h"
 
 #include "hsclib/uri.h"
+#include "hsclib/css.h"
 
 /* markers for JFIF/JPEG that contain
  * information about image dimension
@@ -390,21 +391,15 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
 
 #if DEBUG_SIZE
                 /* display whole image buffer */
-                if (hp->debug)
-                {
+                if (hp->debug) {
                     int i;
-                    for (i = 0; i < bytes_read; i++)
-                    {
+                    for (i = 0; i < (int)bytes_read; i++) {
 
                         fprintf(stderr, "%-2d: $%02x %-3d", i, buf[i], buf[i]);
                         if (buf[i] >= 32)
-                        {
                             fprintf(stderr, " '%c'\n", buf[i]);
-                        }
                         else
-                        {
                             fprintf(stderr, "\n");
-                        }
                     }
                 }
 #endif
