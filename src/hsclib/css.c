@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 2001-2003 Matthias Bethke
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,6 +95,7 @@ VOID del_styleattr(APTR data)
 BOOL add_styleattr(HSCPRC *hp, CONSTRPTR property, CONSTRPTR value) {
    HSCSTYLE *styledef;
 
+   /* check if CSS property is already defined for this tag */
    if(NULL != (styledef = find_stylename(hp->tag_styles,property))) {
       hsc_message(hp, MSG_STYLE_REDEFINED,
             "CSS property %q redefined, previous value was %q",
@@ -103,6 +104,24 @@ BOOL add_styleattr(HSCPRC *hp, CONSTRPTR property, CONSTRPTR value) {
       styledef->value = strclone(value);
       return FALSE;
    } else {
+      /* check if this is a valid property unless check was disabled */
+      if(hp->validate_css) {
+         if(NULL == (styledef = find_stylename(hp->defstyle,property))) {
+            /* this property is unknown */
+            hsc_message(hp, MSG_INVALID_STYLE,
+                  "unknown CSS property %q", property);
+         }else {
+            /* property is OK, so check value */
+            if((NULL != styledef->value) &&
+                  !strenum(value,styledef->value,'|',STEN_CASE)) {
+               /* defined property has non-empty value, but actual value was not
+                * found therein */
+               hsc_message(hp, MSG_INVALID_STYLE,
+                     "value %q invalid for CSS property %q", value, property);
+
+            }
+         }
+      }
       styledef = new_styleattr(property,value);
       app_dlnode(hp->tag_styles,styledef);
       return FALSE;
@@ -123,6 +142,6 @@ BOOL add_width_height_attrs(HSCPRC *hp, ULONG width, ULONG height) {
    rw = add_styleattr(hp,"width",buf);
    sprintf(buf,"%ldpx",height);
    rh = add_styleattr(hp,"height",buf);
-   return (rw && rh);
+   return (BOOL)(rw && rh);
 } 
 
