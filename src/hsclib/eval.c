@@ -344,8 +344,10 @@ BOOL ok=FALSE;
  * check_attrname
  *
  * check string for legal attribute name
+ * "dest" must be set to an HSC attribute initialized by new_hscattr() if and
+ * only if allow_expr==TRUE.
  */
-STRPTR check_attrname(HSCPRC * hp, STRPTR name, BOOL allow_expr)
+STRPTR check_attrname(HSCPRC * hp, HSCATTR *dest, STRPTR name, BOOL allow_expr)
 {
    STRPTR res = NULL;
 
@@ -355,11 +357,8 @@ STRPTR check_attrname(HSCPRC * hp, STRPTR name, BOOL allow_expr)
          hp->xhtml_emptytag = FALSE; /* only allow once */
          res = name;
    } else if(('{' == name[0]) && allow_expr) {
-      HSCATTR *dest = new_hscattr(PREFIX_TMPATTR "symbolic.ref");
       dest->vartype = VT_STRING;
       res = eval_expression(hp,dest,"}");
-      del_hscattr(dest);
-      /* TODO: returning freed memory??? */
    } else {
       hsc_message(hp, MSG_ILLG_ATTRNAME,
             "illegal attribute identifier %q%s",
@@ -374,16 +373,12 @@ STRPTR check_attrname(HSCPRC * hp, STRPTR name, BOOL allow_expr)
  * read next word and check it for a legal
  * attribute identifier
  */
-static STRPTR eval_attrname(HSCPRC * hp)
+static STRPTR eval_attrname(HSCPRC *hp, HSCATTR *tmpdest)
 {
    STRPTR result = NULL;
    STRPTR nw = infgetw(hp->inpf);
-   fprintf(stderr,"eval_attrname(): %p='%s'\n",nw,nw);
-   if(0 == strcmp(nw,"{")) {
-   } else if(0 == strcmp(nw,"(")) {
-   }
    if (nw) {
-      if (NULL != (nw = check_attrname(hp, nw, TRUE))) {
+      if (NULL != (nw = check_attrname(hp, tmpdest, nw, TRUE))) {
          result = nw;
       }
    } else {
@@ -592,7 +587,8 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
 {
    STRPTR eval_result = NULL;
    INFILE *inpf = hp->inpf;
-   STRPTR nw = eval_attrname(hp);
+   HSCATTR *eadest = new_hscattr(PREFIX_TMPATTR "eval_attrname");
+   STRPTR nw = eval_attrname(hp,eadest);
    HSCATTR *tmpdest = new_hscattr(PREFIX_TMPATTR "unary.operator");
 
    tmpdest->vartype = VT_STRING;
@@ -637,7 +633,7 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
       }
       else if (!upstrcmp(nw, "DEFINED"))
       {
-         nw = eval_attrname(hp);
+         nw = eval_attrname(hp,eadest);
          if (nw)
          {
             HSCATTR *attr = find_varname(hp->defattr, nw);
@@ -800,8 +796,7 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
       }
       else if (!upstrcmp(nw, "SET"))
       {
-
-         nw = eval_attrname(hp);
+         nw = eval_attrname(hp,eadest);
          if (nw)
          {
             HSCATTR *attr = find_varname(hp->defattr, nw);
@@ -865,6 +860,7 @@ static STRPTR try_eval_unary_op(HSCPRC * hp, HSCATTR * dest, BOOL * err)
    }
 
    del_hscattr(tmpdest);
+   del_hscattr(eadest);
 
    if (!nw)
       *err = TRUE;
@@ -1424,7 +1420,8 @@ STRPTR eval_string_expr_noquote(HSCPRC * hp, HSCATTR * dest)
 static STRPTR eval_attrref(HSCPRC * hp, HSCATTR * destattr)
 {
    STRPTR eval_result = NULL;
-   STRPTR nw = eval_attrname(hp);
+   HSCATTR *eadest = new_hscattr(PREFIX_TMPATTR "eval_attrname");
+   STRPTR nw = eval_attrname(hp,eadest);
 
    if (nw)
    {
@@ -1465,6 +1462,7 @@ static STRPTR eval_attrref(HSCPRC * hp, HSCATTR * destattr)
    if (eval_result)
       set_vartext(destattr, eval_result);
 
+   del_hscattr(eadest);
    return (eval_result);
 }
 
@@ -1824,7 +1822,9 @@ static STRPTR assign_conditional_attr(HSCPRC * hp, HSCATTR * dest, STRPTR source
 
    if (source_name)
    {
-      if (NULL != (source_name = check_attrname(hp, source_name, TRUE)))
+      HSCATTR *tmpdest = new_hscattr(PREFIX_TMPATTR "check_attrname");
+
+      if (NULL != (source_name = check_attrname(hp,tmpdest,source_name,TRUE)))
       {
          HSCATTR *attr = find_varname(hp->defattr, source_name);
 
