@@ -57,7 +57,6 @@ static BOOL arg_getsize = FALSE;
 static BOOL arg_rplc_ent = FALSE;
 static BOOL arg_rplc_quote = FALSE;
 static BOOL arg_smart_ent = FALSE;
-static BOOL arg_jens = FALSE;
 static BOOL arg_strip_cmt = FALSE;
 static BOOL arg_strip_badws = FALSE;
 static BOOL arg_strip_ext = FALSE;
@@ -70,9 +69,7 @@ static BOOL arg_xhtml = FALSE;
 static BOOL arg_nvcss = FALSE;
 static STRPTR arg_iconbase = NULL;
 static STRPTR arg_striptags = NULL;
-#if 0
-static LONG arg_entmode = EMODE_KEEP;
-#endif
+static LONG arg_entitymode = EMODE_KEEP;
 
 static HSCPRC *arg_hp = NULL;
 
@@ -364,8 +361,31 @@ static VOID set_source_attribs(HSCPRC * hp, STRPTR sourcepath, STRPTR sourcename
 /* set global attributes to query HSC options from source */
 static VOID set_global_attribs(HSCPRC * hp)
 {
+   STRPTR emode;
+
    if (hp->xhtml)
       app_estr(fileattr_str, "<$define HSC.OPTS.XHTML:bool/c=\"1\">\n");
+   app_estr(fileattr_str, "<$define HSC.OPTS.ENTITYMODE:string/c=\"");
+   switch(hp->entitymode) {
+      case EMODE_REPLACE :
+         emode = "replace";
+         break;
+      case EMODE_NUMERIC :
+         emode = "numeric";
+         break;
+      case EMODE_SYMBOLIC :
+         emode = "symbolic";
+         break;
+      case EMODE_UTF8 :
+         emode = "utf-8";
+         break;
+      case EMODE_KEEP :
+      default :
+         emode = "keep";
+         break;
+   }
+   app_estr(fileattr_str, emode);
+   app_estr(fileattr_str, "\">\n");
 }
 
 
@@ -510,8 +530,7 @@ BOOL user_defines_ok(HSCPRC * hp)
  *
  * result: TRUE, if all args ok
  */
-BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
-{
+BOOL args_ok(HSCPRC * hp, int argc, char *argv[]) {
     BOOL ok;                    /* return value */
     DLLIST *ignore_list = NULL; /* dummy */
     EXPSTR *destdir = init_estr(32);    /* destination dir */
@@ -573,10 +592,10 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
                      "QUOTESTYLE=QS/E/K", QMODE_ENUMSTR, &arg_quotemode,
                      "defines how quotes appear (" QMODE_ENUMSTR ")",
-#if 0
-                     "ENTITYSTYLE=ES/E/K", EMODE_ENUMSTR, &entmode,
-                     "defines how special chars. appear (" EMODE_ENUMSTR ")",
-#endif
+
+                     "ENTITYSTYLE=ES/E/K", EMODE_ENUMSTR, &arg_entitymode,
+                     "set character entity rendering (" EMODE_ENUMSTR ")",
+
                      "INCLUDEDIR=IDIR/K/M/$", arg_incdir_CB, &ignore_list,
                      "add include directory",
 
@@ -591,10 +610,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "replace special characters",
 
                      "RPLCQUOTE=RQ/S", &arg_rplc_quote,
-                     "replace quotes in text by `&quot;'",
-
-                     "JENS/S", &arg_jens,
-                     "don't try this at home",
+                     "replace quotes in text with `&quot;'",
 
                      "STRIPBADWS/S", &arg_strip_badws,
                      "strip bad whitespace",
@@ -625,10 +641,10 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "force all tags and attributes to lowercase",
                      
                      "XHTML/S", &arg_xhtml,
-                     "Use XHTML mode (implies: LCT QS=double)",
+                     "use XHTML mode (implies: LCT QS=double)",
 
                      "NOVALIDATECSS=NVCS/S", &arg_nvcss,
-                     "Don't validate CSS in STYLE attributes",
+                     "don't validate CSS in STYLE attributes",
 
                      "-DEBUG/S", &arg_debug,
                      "enable debugging output if enabled at compile-time",
@@ -644,8 +660,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     ok = (hsc_args != NULL);
 
     /* set & test args */
-    if (ok)
-    {
+    if (ok) {
         BOOL use_stdout = FALSE;    /* flag: use stdout as output-file */
         BOOL any_input_passed = FALSE;  /* flag: any input specified in args */
         STRPTR argfiles[] =
@@ -661,25 +676,19 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
         any_input_passed = (incfile && dll_first(incfile));
         ok &= (!arg_help && any_input_passed);
 
-        if (arg_license)
-        {
+        if (arg_license) {
             /* display license text */
             fprintf_prginfo(stderr);
             show_license();
             set_return_code(RC_WARN);
-        }
-        else if (!ok)
-        {
-            if (arg_help || !any_input_passed)
-            {
+        } else if (!ok) {
+            if (arg_help || !any_input_passed) {
                 /* display help, if HELP-switch set */
                 fprintf_prginfo(stderr);
                 fprintf_arghelp(stderr, hsc_args);
             }
             set_return_code(RC_WARN);
-        }
-        else
-        {
+        } else {
             BOOL fnsux = FALSE; /* flag: TRUE = can't evaluate out-filename */
 
             /* set debugging switch */
@@ -699,8 +708,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 
             /* compute name of input file */
             arg_inpfname = NULL;
-            if (dll_first(incfile))
-            {
+            if (dll_first(incfile)) {
                 /* use last FROM as input file */
                 arg_inpfname = dln_data(dll_last(incfile));
 
@@ -740,20 +748,17 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
              * outfilename stays NULL. this let open_output
              * open stdout as output-file
              */
-            if (arg_outfname)
-            {
+            if (arg_outfname) {
                 /* check, if last char of outputfilename is a
                  * directory separator; if so, use the filename
                  * as destination directory
                  */
-                if (arg_outfname)
-                {
+                if (arg_outfname) {
                     UBYTE lastch = 0;
 
 #ifdef AMIGA
                     /* treat `TO ""' and `TO=""' the same for AmigaOS */
-                    if (!strcmp(arg_outfname, "\"\""))
-                    {
+                    if (!strcmp(arg_outfname, "\"\"")) {
                         arg_outfname = "";
                         D(fprintf(stderr,
                          DHSC "AMIGA: use current dir, strange version\n"));
@@ -764,29 +769,23 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      * if it's a directory
                      */
                     if (strlen(arg_outfname))
-                    {
                         lastch = arg_outfname[strlen(arg_outfname) - 1];
-                    }
 
 #ifdef AMIGA
                     /* for Amiga, accept empty string for current dir */
-                    if (!lastch)
-                    {
+                    if (!lastch) {
                         lastch = (PATH_SEPARATOR[0]);
                         D(fprintf(stderr, DHSC "AMIGA: use current dir\n"));
                     }
 #endif
 
-                    if (strchr(PATH_SEPARATOR, lastch))
-                    {
+                    if (strchr(PATH_SEPARATOR, lastch)) {
                         /* use outfilename as destdir */
                         set_estr(destdir, arg_outfname);
                         arg_outfname = NULL;
                         D(fprintf(stderr, DHSC "output: use `%s' as destdir\n",
                                   estr2str(destdir)));
-                    }
-                    else if (arg_inpfname)
-                    {
+                    } else if (arg_inpfname) {
                         /* output-filename already specified */
                         /* separate it to destdir + reldir + name */
                         EXPSTR *kack_destdir = init_estr(0);
@@ -806,31 +805,24 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                         out_reldir = out_reldir
                             + (strlen(out_reldir) - strlen(inp_reldir));
 
-                        if (out_reldir[0])
-                        {
+                        if (out_reldir[0]) {
                             /* search for next dir-sparator backwards */
                             /* (this ones only needed for a smart error message) */
                             while ((out_reldir != ou2_reldir)
-                                 && (!strchr(PATH_SEPARATOR, out_reldir[0]))
-                                )
-                            {
+                                 && (!strchr(PATH_SEPARATOR, out_reldir[0]))) {
                                 out_reldir--;
                             }
 
                             if (out_reldir != ou2_reldir)
-                            {
                                 out_reldir++;
-                            }
                         }
                         D(fprintf(stderr, DHSC "corr_inp: `%s'\n"
                                   DHSC "corr_out: `%s'\n",
-                                  inp_reldir, out_reldir)
-                            );
+                                  inp_reldir, out_reldir));
 
                         /* check if correspondig relative in/out-dirs
                          * are equal */
-                        if (!fnamecmp(inp_reldir, out_reldir))
-                        {
+                        if (!fnamecmp(inp_reldir, out_reldir)) {
                             /* they match.. */
                             STRPTR tmp_name = NULL;     /* copy of kack_nam */
 
@@ -862,9 +854,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                             ufreestr(tmp_name);
 
                             arg_outfname = estr2str(kack_name);
-                        }
-                        else
-                        {
+                        } else {
                             /* unmatched corresponding dirs */
                             fprintf(stderr, "unmatched corresponding relative "
                                     "directories:\n  input  `%s'\n  output `%s'\n",
@@ -877,16 +867,13 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                         del_estr(kack_destdir);
                     }
                 }
-                if (arg_outfname)
-                {
+                if (arg_outfname) {
                     /* set outputfilename with value passed iwithin args */
                     outfilename = init_estr(32);
                     set_estr(outfilename, arg_outfname);
                     D(fprintf(stderr, DHSC "output: set to `%s'\n",
                               estr2str(outfilename)));
-                }
-                else
-                {
+                } else {
                     /* no outfilename given */
                     /* ->outfilename = destdir + inpfilename + ".html" */
 
@@ -902,16 +889,13 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                               arg_extension, estr2str(outfilename)));
                 }
 
-                if (fnsux)
-                {
+                if (fnsux) {
                     /* no way to find out output filename */
                     status_error("unable to evaluate output filename\n");
                     arg_outfname = NULL;
                     ok = FALSE;
                 }
-            }
-            else
-            {
+            } else {
                 D(fprintf(stderr, DHSC "output: use stdout\n"));
                 use_stdout = TRUE;
             }
@@ -920,64 +904,48 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                 set_return_code(RC_ERROR);
         }
 
-        if (ok)
-        {
+        if (ok) {
             /* set server dir */
             if (arg_server_dir)
-            {
                 hsc_set_server_dir(hp, arg_server_dir);
-            }
 
             /* set icon base */
             if (arg_iconbase)
-            {
                 hsc_set_iconbase(hp, arg_iconbase);
-            }
 
             /* check, if stdout should be used as output */
             if (!use_stdout)
-            {
                 hsc_set_filename_document(hp, estr2str(outfilename));
-            }
         }
 
         /* display argument error message */
-        if (!ok)
-        {
+        if (!ok) {
             /* NOTE: no strclone() is used on outfilename, if an
              * error already occured within set_args(). therefore,
              * you must not call ufreestr( outfilename ) */
             pargerr();
             arg_outfname = NULL;
             set_return_code(RC_ERROR);
-        }
-        else
-        {
+        } else {
             EXPSTR *tmp_fname = init_estr(32);  /* filename only part */
 
             fileattr_str = init_estr(64);
 
             /* set HSC.DOCUMENT */
             if (outfilename)
-            {
                 get_fname(tmp_fname, estr2str(outfilename));
-            }
             set_dest_attribs(hp, estr2str(destdir),
                                  estr2str(rel_destdir),
                                  estr2str(tmp_fname));
 
             /* set HSC.SOURCE */
             if (inpfilename)
-            {
                 get_fname(tmp_fname, estr2str(inpfilename));
-            }
             else
-            {
                 clr_estr(tmp_fname);
-            }
+
             set_source_attribs(hp, estr2str(rel_destdir),
                                estr2str(tmp_fname));
-
             D(
                  {
                  HSCMSG_ID i;
@@ -1028,14 +996,12 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
         /*
          * set flags of hsc-process
          */
-        if (ok)
-        {
+        if (ok) {
             hsc_set_chkid(hp, TRUE);
             hsc_set_chkuri(hp, TRUE);
             hsc_set_compact(hp, arg_compact);
             hsc_set_debug(hp, arg_debug);
             hsc_set_getsize(hp, arg_getsize);
-            hsc_set_jens(hp, arg_jens);
             hsc_set_rplc_ent(hp, arg_rplc_ent);
             hsc_set_rplc_quote(hp, arg_rplc_quote);
             hsc_set_smart_ent(hp, arg_smart_ent);
@@ -1044,10 +1010,12 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
             hsc_set_strip_ext(hp, arg_strip_ext);
             hsc_set_nested_errors(hp, !arg_nonesterr);
             hsc_set_lctags(hp, arg_lctags);
-            hsc_set_quote_mode(hp, arg_quotemode);
             hsc_set_strip_tags(hp, arg_striptags);
-            hsc_set_xhtml(hp, arg_xhtml);
+            /* TODO: make overriding XHTML defaults possible */
+            hsc_set_quote_mode(hp, arg_quotemode);
+            hsc_set_entity_mode(hp, arg_entitymode);
             hsc_set_vcss(hp, !arg_nvcss);
+            hsc_set_xhtml(hp, arg_xhtml);
 
             /* set message limits; 0 means use the value set by
              * init_hscprc(), which means infinite */
@@ -1060,8 +1028,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
             hsc_set_destdir(hp, estr2str(destdir));
             hsc_set_reldir(hp, estr2str(rel_destdir));
 
-            if (msg_browser != NULL)
-            {
+            if (msg_browser != NULL) {
                 STRPTR compilation_unit = estr2str(inpfilename);
 
                 if (compilation_unit == NULL)
@@ -1075,9 +1042,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
         }
         /* release mem used by args */
         free_args(hsc_args);
-    }
-    else
-    {
+    } else {
         D(
         /* only for developer */
              fprintf(stderr, "ArgDef error: %lu\n", prep_error_num);
@@ -1088,9 +1053,5 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
     del_estr(rel_destdir);
     del_estr(kack_name);
 
-#if 1
     return (ok);
-#else
-    return (FALSE);             /* for arg-debugging */
-#endif
 }
