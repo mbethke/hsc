@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +41,7 @@ extern LONG get_current_mci( HSCPRC *hp );
 
 /* attribute list manipulation */
 extern BOOL copy_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci);
+extern void move_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci);
 extern BOOL set_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci);
 extern VOID remove_local_varlist(DLLIST * varlist, ULONG mci);
 extern BOOL check_varlist(HSCPRC * hp, DLLIST * varlist);

@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -527,28 +528,25 @@ static HSCATTR *copy_local_var(DLLIST * destlist, HSCATTR * locvar, ULONG mci)
  *
  * add all local attributes of a macro to the global
  * attribute list.
+ * If this_mci_only is TRUE, only variables matching the macro ID given as <mci>
+ * will be copied. Otherwise, the whole list is copied and all variables'
+ * macro_id set to <mci>
  *
  */
 BOOL copy_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci)
 {
    BOOL ok = TRUE;
    
-   if (mci == MCI_ERROR)
-   {
-      panic("mci=MCI_ERROR");
-   }
-   else
-   {
+   if (MCI_ERROR != mci) {
       DLNODE *nd = varlist->first;
       HSCATTR *var;
       
-      while (nd && ok)
-      {
+      while (nd && ok) {
          var = copy_local_var(destlist, (HSCATTR *) (nd->data), mci);
          ok &= (BOOL) (var != NULL);
          nd = nd->next;
       }
-   }
+   } else panic("mci=MCI_ERROR");
    
    return (ok);
 }
@@ -564,16 +562,12 @@ static HSCATTR *set_local_var(DLLIST * destlist, HSCATTR * locvar, ULONG mci)
 {
    HSCATTR *var = find_varname(destlist, locvar->name);
    
-   if (var)
-   {
+   if (var) {
       var->macro_id = mci;
       var->vartype = locvar->vartype;
       set_vartext(var, locvar->text);
-   }
-   else
-   {
+   } else
       panic("set_local_var to UNKNOWN ATTR");
-   }
    
    return (var);
 }
@@ -589,22 +583,16 @@ BOOL set_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci)
 {
    BOOL ok = TRUE;
    
-   if (mci == MCI_ERROR)
-   {
-      panic("mci=MCI_ERROR");
-   }
-   else
-   {
+   if (MCI_ERROR != mci) {
       DLNODE *nd = varlist->first;
       HSCATTR *var;
       
-      while (nd && ok)
-      {
+      while (nd && ok) {
          var = set_local_var(destlist, (HSCATTR *) (nd->data), mci);
          ok &= (BOOL) (var != NULL);
          nd = nd->next;
       }
-   }
+   } else panic("mci=MCI_ERROR");
    
    return (ok);
 }
@@ -616,8 +604,7 @@ VOID remove_local_varlist(DLLIST * varlist, ULONG mci)
 {
    DLNODE *nd = varlist->first;
    
-   while (nd)
-   {
+   while (nd) {
       HSCATTR *var = (HSCATTR *) nd->data;    /* var data of node */
       DLNODE *nd_nxt = nd->next;      /* next node */
       
@@ -627,3 +614,23 @@ VOID remove_local_varlist(DLLIST * varlist, ULONG mci)
       nd = nd_nxt;
    }
 }
+
+/*
+ * move_local_varlist
+ * Moves variables with matching mci to another varlist
+ */
+void move_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci)
+{
+   if (MCI_ERROR != mci) {
+      DLNODE *nd = varlist->first;
+      
+      while (NULL != nd) {
+         if((((HSCATTR*)(nd->data))->macro_id) == mci) { 
+            move_dlnode(destlist,varlist,nd);
+         }
+         nd = dln_next(nd);
+      }
+   } else panic("mci=MCI_ERROR");
+}
+
+

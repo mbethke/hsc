@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -250,8 +251,7 @@ static BOOL parse_lazy_option(HSCPRC * hp, HSCTAG * tag, STRPTR lazy)
  * result: TRUE, if modifier could be handled
  * errors: return FALSE, output message
  */
-static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
-{
+static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag) {
    BOOL ok = FALSE;
    HSCATTR *attr = new_hscattr(PREFIX_TMPATTR "mbi.naw");
 
@@ -260,49 +260,39 @@ static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
    if (!(upstrcmp(option, TO_MBI_STR)
             && upstrcmp(option, TO_MBI_SHT)))
    {                           /* must be inside */
-      if (parse_eq(hp))
-      {
+      if (parse_eq(hp)) {
          STRPTR strmbi = eval_expression(hp, attr, NULL);
 
-         if (strmbi)
-         {
+         if (strmbi) {
             tag->mbi = strclone(strmbi);
             DDT(fprintf(stderr, DHL "  mbi = `%s'\n", tag->mbi));
             ok = TRUE;
          }
       }
-   }
-   else if (!(upstrcmp(option, TO_NAW_STR)
+   } else if (!(upstrcmp(option, TO_NAW_STR)
             && upstrcmp(option, TO_NAW_SHT)))
-   {                           /* not allowed with */
-      if (parse_eq(hp))
-      {
+   {                           /* not allowed within */
+      if (parse_eq(hp)) {
          STRPTR strnaw = eval_expression(hp, attr, NULL);
 
-         if (strnaw)
-         {
+         if (strnaw) {
             tag->naw = strclone(strnaw);
             DDT(fprintf(stderr, DHL "  mbi = `%s'\n", tag->naw));
             ok = TRUE;
          }
       }
-   }
-   else if (!(upstrcmp(option, TO_LAZY_STR)
+   } else if (!(upstrcmp(option, TO_LAZY_STR)
             && upstrcmp(option, TO_LAZY_SHT)))
    {                           /* lazy standard attribs */
-      if (parse_eq(hp))
-      {
+      if (parse_eq(hp)) {
          STRPTR strlazy = eval_expression(hp, attr, NULL);
 
-         if (strlazy)
-         {
+         if (strlazy) {
             DDT(fprintf(stderr, DHL "  lazy= `%s'\n", strlazy));
             ok = parse_lazy_option(hp, tag, strlazy);
          }
       }
-   }
-   else
-   {
+   } else {
       ok |= check_tag_option(hp, option, tag, TO_CLOSE_STR, TO_CLOSE_SHT,
             HT_CLOSE);
 
@@ -313,7 +303,7 @@ static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
             TO_JERK_STR, TO_JERK_SHT, HT_JERK);
       ok |= check_tag_option(hp, option, tag,
             TO_AUTOCLOSE_STR, TO_AUTOCLOSE_SHT,
-            hp->xhtml ? HT_CLOSE : HT_AUTOCLOSE);
+            (ULONG)(hp->xhtml ? HT_CLOSE : HT_AUTOCLOSE));
       ok |= check_tag_option(hp, option, tag,
             TO_EMPTY_STR, TO_EMPTY_SHT, HT_EMPTY);
       ok |= check_tag_option(hp, option, tag,
@@ -337,10 +327,8 @@ static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
       }
 
       if (!ok)
-      {
          hsc_message(hp, MSG_UNKN_TAG_OPTION,
                "unknown tag modifer %q", option);
-      }
    }
 
    /* remove temp. attribute */
@@ -352,8 +340,7 @@ static BOOL parse_tag_option(HSCPRC * hp, STRPTR option, HSCTAG * tag)
 /*
  * parse_tag_var
  */
-static BOOL parse_tag_var(HSCPRC * hp, HSCTAG * tag)
-{
+static BOOL parse_tag_var(HSCPRC * hp, HSCTAG * tag) {
    BOOL ok = FALSE;
    HSCATTR *var = NULL;
 
@@ -363,8 +350,7 @@ static BOOL parse_tag_var(HSCPRC * hp, HSCTAG * tag)
    /* set several values of tag structure, if attribute has
     * some special flags set
     */
-   if (var)
-   {
+   if (var) {
       /* attribute is uri that tells the size */
       if (var->varflag & VF_GETSIZE)
          tag->uri_size = var;
@@ -391,14 +377,12 @@ static BOOL parse_tag_var(HSCPRC * hp, HSCTAG * tag)
  * def_tag_args
  *
  */
-BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
-{
+BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag) {
    BOOL ok = FALSE;
    STRPTR nw;
    INFILE *inpf = hp->inpf;
 
-   if (tag)
-   {
+   if (tag) {
       ok = TRUE;
 
       /* read args */
@@ -407,11 +391,9 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
       /*
        * set tag options
        */
-      while (nw && (!strcmp(nw, "/")))
-      {
+      while (nw && (!strcmp(nw, "/"))) {
          nw = infgetw(inpf);
-         if (nw)
-         {
+         if (nw) {
             ok &= parse_tag_option(hp, nw, tag);
             nw = infgetw(inpf);
          }
@@ -419,36 +401,25 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
 
       /* auto-set HT_KEEP_QUOTES */
       if (!strncmp(tag->name, HSC_TAGID, strlen(HSC_TAGID)))
-      {
          tag->option |= HT_KEEP_QUOTES;
-      }
 
       /*
        * set tag attributes
        */
-      while (nw && (strcmp(nw, ">")))
-      {
-         if (strcmp(nw, "["))
-         {
+      while (nw && (strcmp(nw, ">"))) {
+         if (strcmp(nw, "[")) {
             /* define classic attribute */
             inungetcw(inpf);
             ok &= parse_tag_var(hp, tag);
-         }
-         else
-         {
+         } else {
             /* insert attribute list */
             STRPTR name = infget_tagid(hp);
-            if (nw)
-            {
+            if (nw) {
                HSCTAG *lazy = find_strtag(hp->deflazy, name);
                if (lazy)
-               {
                   copy_local_varlist(tag->attr, lazy->attr, MCI_GLOBAL);
-               }
                else
-               {
                   hsc_message(hp, MSG_UNKN_LAZY, "unknown %l", name);
-               }
             }
             parse_wd(hp, "]");
          }
@@ -457,8 +428,7 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
       }
 
       /* check for ">" at end */
-      if (nw)
-      {
+      if (nw) {
          inungetcw(inpf);
          ok = parse_gt(hp);
       }
@@ -473,8 +443,7 @@ BOOL def_tag_args(HSCPRC * hp, HSCTAG * tag)
  * parse & set one single tag argument
  *
  */
-static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR tagname, BOOL tag_unknown, BOOL is_macro_tag)
-{
+static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR tagname, BOOL tag_unknown, BOOL is_macro_tag) {
    HSCATTR *attr = find_varname(varlist, varname);
    INFILE *inpf = hp->inpf;
    STRPTR arg = NULL;
@@ -484,7 +453,7 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
    HSCATTR skipvar;            /* dummy-attribute to skip unknown */
    EXPSTR *attr_str = init_estr(40);   /* string for attribute name */
    EXPSTR *val_str = init_estr(40);    /* string for "=" and value */
-   BOOL is_styleattr = (0 == upstrcmp(varname,"STYLE"));
+   const BOOL is_styleattr = (0 == upstrcmp(varname,"STYLE"));
    
    DAV(fprintf(stderr, DHL "   set attr %s\n", varname));
 
@@ -496,12 +465,12 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
       app_estr(attr_str, " ");
    else
       app_estr(attr_str, infgetcws(inpf));
+
    app_estr(attr_str, infgetcw(inpf));
 
    /* lowercase attribute name if requested */
-   if(hp->lctags) {
+   if(hp->lctags)
       lowstr(estr2str(attr_str));
-   }
 
    if (!attr) {
       /* attribute not found: assign to dummy-attribute */
@@ -519,11 +488,10 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
        * if it is a normal tag, this causes a warning
        * if it is a macro tag, it causes an error */
       if (!tag_unknown) {
-         if (is_macro_tag) {
+         if (is_macro_tag)
             hsc_msg_unkn_attr_macro(hp, varname, tagname);
-         } else {
+         else
             hsc_msg_unkn_attr_tag(hp, varname, tagname);
-         }
       }
    }
 
@@ -584,9 +552,7 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
             attr->vartype = VT_BOOL;
          ok = TRUE;
       }
-   } else {
-      hsc_msg_eof(hp, "read attribute value");
-   }
+   } else hsc_msg_eof(hp, "read attribute value");
 
    if (ok) {
       if (arg) {
@@ -663,6 +629,7 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
       STRPTR cstyle, nstyle, value;
 
       cstyle = estr2str(val_str);
+      /* TODO: move this to css.c */
       do {
          /* check if there is more than one property-value-pair in
           * this string

@@ -45,6 +45,8 @@
 
 #include "ugly/fname.h"
 
+#include "hsclib/entities.c"
+
 #if DEBUG
 /*
  * debugging print functions
@@ -87,7 +89,7 @@ static VOID prt_tag(FILE * stream, APTR data)
         if (tag->option & HT_ONLYONCE)
             fprintf(stream, "/1");
         if (tag->option & HT_AUTOCLOSE)
-            fprintf(stream, "/sc");
+            fprintf(stream, "/ac");
         if (tag->option & HT_EMPTY)
             fprintf(stream, "/e");
         if (tag->option & HT_SPECIAL)
@@ -97,10 +99,8 @@ static VOID prt_tag(FILE * stream, APTR data)
     else
         fprintf(stream, " <NULL>");
 }
-#endif
 
 /* function to temporarily disable debuggin output */
-#if 1
 static BOOL dbg_old = FALSE;
 
 #define dbg_disable(hp) {dbg_old = hp->debug; hp->debug=FALSE;}
@@ -122,8 +122,7 @@ static BOOL dbg_old = FALSE;
  * result: full path & filename of prefs or NULL if not found
  *
  */
-static STRPTR find_prefs_fname(HSCPRC * hp, EXPSTR *cfgfn)
-{
+static STRPTR find_prefs_fname(HSCPRC * hp, EXPSTR *cfgfn) {
 #define ENV_HOME "HOME"
     STRPTR prefs_fname = NULL;
     STRPTR paths[] =            /* paths to search for config file */
@@ -136,25 +135,21 @@ static STRPTR find_prefs_fname(HSCPRC * hp, EXPSTR *cfgfn)
     EXPSTR *homepathstr = init_estr(32);        /* buffer to read $HOME */
 
     /* add "$HSCPATH/hsc.prefs" to files-to-be-checked */
-    if (link_envfname(hscpathstr, ENV_HSCPATH, NULL, NULL))
-    {
+    if (link_envfname(hscpathstr, ENV_HSCPATH, NULL, NULL)) {
         /* add envval to paths */
         paths[1] = estr2str(hscpathstr);
     }
 
     /* add "$HOME/lib/hsc.prefs" to files-to-be-checked */
-    if (link_envfname(homepathstr, ENV_HOME, "lib", NULL))
-    {
+    if (link_envfname(homepathstr, ENV_HOME, "lib", NULL)) {
         /* add envval to paths */
         paths[2] = estr2str(homepathstr);
     }
 
     /* try to open any prefs-file */
-    do
-    {                           /* loop: */
+    do {                           /* loop: */
         path = paths[path_ctr]; /*   get next path */
-        if (path)
-        {                       /*   is it the last one? */
+        if (path) {                       /*   is it the last one? */
             set_estr(cfgfn, path);        /*   N->generate filename */
             app_estr(cfgfn, CONFIG_FILE);
 
@@ -163,11 +158,9 @@ static STRPTR find_prefs_fname(HSCPRC * hp, EXPSTR *cfgfn)
             cfgf = fopen(estr2str(cfgfn), "r");   /*      try to open file */
         }
         path_ctr++;             /*   process next path */
-    }
-    while (path && (!cfgf));    /* until no path left or file opened */
+    } while (path && (!cfgf));    /* until no path left or file opened */
 
-    if (cfgf)
-    {
+    if (cfgf) {
         prefs_fname = estr2str(cfgfn);
         fclose(cfgf);
     }
@@ -184,20 +177,16 @@ static STRPTR find_prefs_fname(HSCPRC * hp, EXPSTR *cfgfn)
  * try to open (any) config file and read preferences
  * from it
  */
-BOOL hsc_read_prefs(HSCPRC * hp, STRPTR prefs_fname)
-{
+BOOL hsc_read_prefs(HSCPRC * hp, STRPTR prefs_fname) {
     BOOL ok = FALSE;
     EXPSTR *prefs_name_buffer = init_estr(32);
 
     /* find prefs file */
     if (!prefs_fname)
-    {
         prefs_fname = find_prefs_fname(hp, prefs_name_buffer);
-    }
 
     /* status message */
-    if (prefs_fname)
-    {
+    if (prefs_fname) {
         dbg_disable(hp);
 
         hsc_status_file_begin(hp, prefs_fname);
@@ -205,20 +194,15 @@ BOOL hsc_read_prefs(HSCPRC * hp, STRPTR prefs_fname)
                               IH_PARSE_HSC | IH_NO_STATUS);
         dbg_restore(hp);
 
-        if (ok)
-        {
+        if (ok) {
             EXPSTR *msg = init_estr(32);
             set_estr(msg, prefs_fname);
             app_estr(msg, ": preferences read");
             hsc_status_misc(hp, estr2str(msg));
             del_estr(msg);
         }
-    }
-    else
-    {
-        hsc_message(hp, MSG_NO_CONFIG,
-                    "can not open preferences file");
-    }
+    } else hsc_message(hp, MSG_NO_CONFIG,
+          "can not open preferences file");
 
     del_estr(prefs_name_buffer);
 
@@ -235,8 +219,7 @@ VOID hsc_set_tagCB(HSCPRC * hp, STRPTR name,
 {
     HSCTAG *tag = find_strtag(hp->deftag, name);
 
-    if (tag && !(tag->option & HT_NOHANDLE))
-    {
+    if (tag && !(tag->option & HT_NOHANDLE)) {
         /* set handles */
         DC(fprintf(stderr, DHL "add handles for <%s> (%p,%p)\n",
                    name, (void*)op_hnd, (void*)cl_hnd));
@@ -252,8 +235,7 @@ VOID hsc_set_tagCB(HSCPRC * hp, STRPTR name,
  *
  * NOTE: this ones tricky, but a bit perverted somehow
  */
-BOOL hsc_init_tagsNattr(HSCPRC * hp)
-{
+BOOL hsc_init_tagsNattr(HSCPRC * hp) {
 #define INCLUDE_ATTR " PRE:bool SOURCE:bool TEMPORARY:bool" \
                      " INDENT:num TABSIZE:num=\"4\" "
     BYTE i = 0;
@@ -318,27 +300,23 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
 
     /* define hsc-tags */
     i = 0;
-    while (!(hp->fatal) && hsc_prefs[i])
-    {
+    while (!(hp->fatal) && hsc_prefs[i]) {
         STRARR infname[20];
 
         sprintf(infname, SPECIAL_FILE_ID "init%3d", i);
         hp->inpf = infopen_str(infname, hsc_prefs[i], 60);
 
-        if (hp->inpf)
-        {
+        if (hp->inpf) {
             tag = def_tag_name(hp, &open_tag);
             ok = (tag && def_tag_args(hp, tag));
             infclose(hp->inpf);
         }
-
         i++;
     }
 
     /* init hsc-attributes */
     i = 0;
-    while (!(hp->fatal) && hsc_attribs[i])
-    {
+    while (!(hp->fatal) && hsc_attribs[i]) {
         define_attr_by_text(hp, hsc_attribs[i], hsc_attribs[i+1], 0);
         i+=2;
     }
@@ -347,8 +325,7 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
     set_vartext(find_varname(hp->defattr, LINEFEED_ATTR), "\n");
 
     /* assign tag-callbacks to hsc-tags */
-    if (ok)
-    {
+    if (ok) {
         hsc_set_tagCB(hp, HSC_COMMENT_STR, handle_hsc_comment, NULL);
         hsc_set_tagCB(hp, HSC_CONTENT_STR, handle_hsc_content, NULL);
         hsc_set_tagCB(hp, HSC_DEFSTYLE_STR, handle_hsc_defstyle, NULL);
@@ -387,17 +364,17 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
  * create basic entities (&amp;, &gt;, &lt;, &quot;)
  * (should be called BEFORE hsc_read_prefs())
  */
-BOOL hsc_init_basicEntities(HSCPRC * hp)
-{
-    BOOL ok = TRUE;
-
-    /* entities */
-    ok &= add_ent(hp->defent, "amp", NULL, 0);  /* & */
-    ok &= add_ent(hp->defent, "lt", NULL, 0);   /* < */
-    ok &= add_ent(hp->defent, "gt", NULL, 0);   /* > */
-    ok &= add_ent(hp->defent, "quot", NULL, 0);         /* q */
-
-    return (ok);
+#define NMEMBERS(s) (sizeof(s)/sizeof(s[0]))
+BOOL hsc_init_basicEntities(HSCPRC * hp) {
+   int i;
+   
+   for(i=0; i < NMEMBERS(HSCInternalEntities); ++i) {
+      add_ent(hp->defent,
+            HSCInternalEntities[i].name,
+            HSCInternalEntities[i].replace,
+            HSCInternalEntities[i].numeric);
+   }
+   return (TRUE);
 }
 
 /*
