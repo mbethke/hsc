@@ -33,7 +33,7 @@
 /* include debugging defines */
 #include "udebug.h"
 
-#ifdef __SASC  /* what the heck is the generic AmigaOS prepro symbol? */
+#ifdef AMIGA
 #include <exec/types.h>
 #else
 
