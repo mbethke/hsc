@@ -92,9 +92,9 @@ static VOID hsc_msg_img_corrupt(HSCPRC * hp, STRPTR cause)
 /*
  * try_set_attr
  *
- * if attribute exists and it's value is empty, set
+ * if attribute exists and its value is empty, set
  * new value and update tag-attribute-string; otherwise
- * kust compare the old and new value and warn if they
+ * just compare the old and new value and warn if they
  * differ
  */
 static VOID try_setattr(HSCPRC * hp, HSCVAR * attr, ULONG value)
@@ -148,68 +148,11 @@ static VOID try_setattr(HSCPRC * hp, HSCVAR * attr, ULONG value)
     }
 }
 
-/* 
- * merge_style_strings 
- *
- * Merges an existing STYLE attribute with a new string
- */
-EXPSTR *merge_style_strings(HSCPRC *hp, STRPTR addstyle) {
-   EXPSTR *nstyle = init_estr(32);
-   STRPTR s,p;
-   
-   s = estr2str(hp->tag_attr_str);
-   if(NULL == (p = upstrstr(s,"style="))) {
-      /* no STYLE attribute present yet */
-      app_estr(hp->tag_attr_str, " ");
-      app_estr(hp->tag_attr_str, hp->lctags ? "style=\"" : "STYLE=\"");
-      app_estr(hp->tag_attr_str, addstyle);
-      app_estr(hp->tag_attr_str, "\"");
-      set_estr(nstyle,addstyle);
-      return nstyle;
-   } else {
-      EXPSTR *nattr = init_estr(32);
-      STRPTR oldstyle = p+6;
-      char quote;
-      
-      /* copy all upto STYLE= */
-      set_estrn(nattr,s,p-s+6);
-      quote = *oldstyle;
-      if(('"' != quote) && ('\'' != quote))
-         quote = ' ';
-      else
-         app_estrch(nattr,quote);
-      /* copy quoted string, not including closing quote/blank */
-      while(*++oldstyle != quote) {
-         app_estrch(nstyle,*oldstyle);
-         app_estrch(nattr,*oldstyle);
-      }
-      /* append semicolon unless already present */
-      if(';' != oldstyle[-1]) {
-         app_estr(nstyle,";");
-         app_estr(nattr,";");
-      }
-      /* append style to merge in [+quote] */
-      app_estr(nstyle,addstyle);
-      app_estr(nattr,addstyle);
-
-      /* append rest of attributes to nattr */
-      app_estr(nattr,oldstyle);
-
-      /*
-      fprintf (stderr,"newstyle: '%s'\n",estr2str(nstyle));
-      fprintf (stderr,"newattr: '%s'\n",estr2str(nattr));
-      */
-      /* set new attribute string */
-      set_estr(hp->tag_attr_str,estr2str(nattr));
-      del_estr(nattr);
-      return nstyle;
-   }
-}
 
 /*
  * get_attr_size
  *
- * tries to get values for WIDTH and HEIGHT attributes
+ * tries to get values for WIDTH and HEIGHT attributes or CSS specification
  * from file; if possible, the corresponding attributes
  * for the tag passed will be set (or validated).
  *
@@ -493,14 +436,10 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
         /* set attribute values */
         if (height && width)
         {
-            HSCVAR *astyle=NULL, *awidth=NULL, *aheight=NULL;
+            HSCVAR *awidth=NULL, *aheight=NULL;
 
-            if(hp->xhtml) {
-               astyle = find_varname(tag->attr, "STYLE");
-            } else {
-               awidth = find_varname(tag->attr, "WIDTH");
-               aheight = find_varname(tag->attr, "HEIGHT");
-            }
+            awidth = find_varname(tag->attr, "WIDTH");
+            aheight = find_varname(tag->attr, "HEIGHT");
 
             /* status message telling about the dimension */
             app_estr(srcpath, ": ");
@@ -510,27 +449,15 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
             app_estr(srcpath, "x");
             app_estr(srcpath, long2str(height));
             if (progressive)
-            {
                 app_estr(srcpath, ", progressive");
-            }
             if (transparent)
-            {
                 app_estr(srcpath, ", transparent");
-            }
             hsc_status_misc(hp, estr2str(srcpath));
 
+            fprintf(stderr,"SIZE: %ld/%ld\n",width,height);
             if(hp->xhtml) {
                /* in XHTML mode, add to the STYLE attribute */
-               /* space for string: "width:XXXXXXXXXXpx;height:XXXXXXXXXXpx" */
-               char stylebuf[7+10+2+7+10+2+1];
-               EXPSTR *newstyle;
-
-               /* make new CSS style attributes */
-               sprintf(stylebuf,"width:%ldpx;height:%ldpx",width,height);
-               /* merge into potentially existing attribute */
-               newstyle = merge_style_strings(hp,stylebuf);
-               set_vartext(astyle,estr2str(newstyle));
-               del_estr(newstyle);
+               add_width_height_attrs(hp,width,height);
             } else {
                /* in regular HTML mode, set WIDTH/HEIGHT */
                try_setattr(hp, awidth, width);
