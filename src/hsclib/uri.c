@@ -33,6 +33,9 @@
 #include "hsclib/idref.h"
 #include "hscprj/project.h"
 #include "hsclib/uri.h"
+#ifdef UNIX
+#include "hsclib/tcpip.h"
+#endif
 
 #define PARENT_URI "../"        /* string for parent dir within URIs */
 
@@ -362,6 +365,8 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
    STRPTR path = NULL;         /* "file.html" */
    STRPTR name = NULL;         /* stuff after "#" */
    STRPTR cgiargs = NULL;      /* stuff after "?"  */
+   /* STRPTR p;
+    EXPSTR *tmp_uri = init_estr(32); */
 
    clr_estr(dest_uri);
 
@@ -369,8 +374,7 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
       /* check for valid uri */
       URIKIND kind = uri_kind(uri);
       if ((kind == URI_ext) ||
-            ((kind == URI_relserv) && !(estrlen(hp->server_dir))))
-      {
+            ((kind == URI_relserv) && !(estrlen(hp->server_dir)))) {
          if (kind == URI_ext) {
             /*
              * check global uri
@@ -380,8 +384,21 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
             if (!port) port = "";
 
             /*
+            p = uri;
+            while(*p && (':' != *p)) ++p;
+            if(':' == *++p)
+              if('/' == *++p)
+                if('/' == *++p) {
+                   while(*p && (':' != *p) && ('/' != *p)) ++p;
+                }
+              */
+
+            /*
              * TODO: parse global uris
              */
+#ifdef UNIX
+            if(hp->checkext) check_ext_uri(hp,uri);
+#endif
          } else if (kind == URI_relserv) {
             hsc_message(hp, MSG_SERVER_URI, "server relative URI to %q", uri);
          } else {
