@@ -29,6 +29,7 @@
 #define NOEXTERN_HSCLIB_URI_H
 
 #include "ugly/fname.h"
+#include "ugly/ufile.h"
 
 #include "hsclib/inc_base.h"
 #include "hsclib/idref.h"
@@ -163,134 +164,175 @@ URIKIND uri_kind(STRPTR uri)
 
 /*
  * convert uri to filename in destination-dir
+ *
+ * TODO: optimize or rewrite this mess
  */
 VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_fname, STRPTR uri)
 {
-    EXPSTR *rel_path = init_estr(32);   /* relative path */
-    URIKIND kind = uri_kind(uri);
+   EXPSTR *rel_path = init_estr(32);   /* relative path */
+   EXPSTR *turi = init_estr(32);   /* modifiable URI */
+   URIKIND kind = uri_kind(uri);
+   
+   clr_estr(dest_uri);
+   clr_estr(dest_fname);
 
-    clr_estr(dest_uri);
-    clr_estr(dest_fname);
+   D(fprintf(stderr, DHL "conv_hscuri2fileNuri('%s')\n",uri));
+   /* check for empty URI first */
+   if(0 == strlen(uri)) {
+      set_estr(dest_uri,uri);
+   } else {
+      if (kind == URI_relserv) {
+         /* skip "/" in URI */
+         STRPTR uri2 = uri + 1;
 
-    if (kind == URI_relserv)
-    {
-        /* skip "/" in URI */
-        STRPTR uri2 = uri + 1;
+         /* debug */
+         D(fprintf(stderr, DHL "exists `%s' [relserv]\n", uri));
 
-        /* debug */
-        D(fprintf(stderr, DHL "exists `%s' [relserv]\n", uri));
+         /* convert server relative URI to local filename
+          * by preceding server_dir */
+         conv_uri2path(rel_path, uri2, hp->weenix);
+         estrcpy(dest_fname, hp->server_dir);
+         estrcat(dest_fname, rel_path);
 
-        /* convert server relative URI to local filename
-         * by preceding server_dir */
-        conv_uri2path(rel_path, uri2, hp->weenix);
-        estrcpy(dest_fname, hp->server_dir);
-        estrcat(dest_fname, rel_path);
+         /* debug */
+         D(fprintf(stderr, DHL "  server-dir=`%s'\n", estr2str(hp->server_dir)));
+         D(fprintf(stderr, DHL "  rel. path =`%s'\n", estr2str(rel_path)));
 
-        /* debug */
-        D(fprintf(stderr, DHL "  server-dir=`%s'\n", estr2str(hp->server_dir)));
-        D(fprintf(stderr, DHL "  rel. path =`%s'\n", estr2str(rel_path)));
+         /* keep URI untouched */
+         set_estr(dest_uri, uri);
+      } else {
+         /* convert relative/project uris */
 
-        /* keep URI untouched */
-        set_estr(dest_uri, uri);
-    }
-    else
-    {
-        /* convert relative/project uris */
-
-        /* if a <BASE HREF="..."> was found before,
-         * treat all relative URIs as absolute
-         */
-        if (hp->docbase_set)
-        {
+         /* if a <BASE HREF="..."> was found before,
+          * treat all relative URIs as absolute
+          */
+         if (hp->docbase_set)
             kind = URI_ext;
-        }
 
-        if (kind == URI_abs)
-        {
-           uri += strlen(ABSURI_ID);  /* skip ":" */
-           /*
-            * parse absolute uri
-            */
-           D(fprintf(stderr, DHL "exists `%s' [abs]\n", uri));
-           
-           /* check if local uri exists */
-           estrcpy(dest_fname, hp->destdir);
-           if('\0' != uri[0]) {
-              EXPSTR *dest_relfname = init_estr(32);
+         if (kind == URI_abs) {
+            uri += strlen(ABSURI_ID);  /* skip ":" */
+            /*
+             * parse absolute uri
+             */
+            D(fprintf(stderr, DHL "exists `%s' [abs]\n", uri));
 
-              conv_uri2path(dest_relfname, uri, hp->weenix);
-              estrcat(dest_fname, dest_relfname);
-              del_estr(dest_relfname);
-           }
+            /* check if local uri exists */
+            estrcpy(dest_fname, hp->destdir);
+            if('\0' != uri[0]) {
+               EXPSTR *dest_relfname = init_estr(32);
 
-           D(fprintf(stderr, DHL "  -> file `%s'\n",
-                    estr2str(dest_fname)));
+               conv_uri2path(dest_relfname, uri, hp->weenix);
+               estrcat(dest_fname, dest_relfname);
+               del_estr(dest_relfname);
+            }
 
-           /* create path of destination file */
-           estrcpy(dest_uri, hp->reldir);
-           app_estr(dest_uri, uri);
+            D(fprintf(stderr, DHL "  -> file `%s'\n",
+                     estr2str(dest_fname)));
 
-           get_relfname(rel_path, uri, estr2str(hp->reldir));
-           D(fprintf(stderr, DHL "  -> rel. path `%s' (`%s')\n",
-                    estr2str(rel_path),
-                    estr2str(hp->reldir)));
+            /* create path of destination file */
+            estrcpy(dest_uri, hp->reldir);
+            app_estr(dest_uri, uri);
 
-           /* debug */
-           D(fprintf(stderr, DHL "  -> real path `%s'\n", uri));
+            /* dir correction, so path collapsing will always work */
+            set_estr(turi,uri);
+            if(FE_DIR == fgetentrytype(uri)) {
+               /* make sure there's a training slash */
+               if('/' != uri[strlen(uri) - 1])
+                  app_estr(turi,"/");
+            }
+            get_relfname(rel_path, estr2str(turi), estr2str(hp->reldir));
+            D(fprintf(stderr, DHL "  -> rel. path `%s' (`%s')\n",
+                     estr2str(rel_path),
+                     estr2str(hp->reldir)));
 
-           /* convert (filesystem depending) path to uri */
-           conv_path2uri(dest_uri, estr2str(rel_path));
-        }
-        else if (kind == URI_rel)
-        {
-           /*
-            * parse relative uri
-            */
-           EXPSTR *uri_path = init_estr(32);
+            /* handle special case of paths that reference the directory
+             * they are relative to */
+            if('\0' == estr2str(rel_path)[0]) {
+               set_estr(rel_path,".");
+               set_estr(dest_fname,".");
+            }
 
-           /* debug */
-           D(fprintf(stderr, DHL "exists `%s' [rel]\n", uri));
+            /* debug */
+            D(fprintf(stderr, DHL "  -> real path `%s'\n", uri));
 
-           /* create local filename */
-           conv_uri2path(uri_path, uri, hp->weenix);
-           estrcat(dest_fname, hp->destdir);
-           estrcat(dest_fname, hp->reldir);
-           estrcat(dest_fname, uri_path);
+            /* convert (filesystem depending) path to uri */
+            conv_path2uri(dest_uri, estr2str(rel_path));
+         } else if (kind == URI_rel) {
+            /*
+             * parse relative uri
+             */
+            EXPSTR *uri_path = init_estr(32);
+            EXPSTR *docdir = init_estr(32);
+            STRPTR optimized_name = NULL;
 
-           /* create uri (only copy path) */
-           set_estr(dest_uri, uri);
+            /* debug */
+            D(fprintf(stderr, DHL "exists `%s' [rel]\n", uri));
 
-           del_estr(uri_path);
-        }
-        else
-        {
-           set_estr(dest_uri, uri);
-           set_estr(dest_fname, "");
-        }
-    }
+            /* create local filename */
+            conv_uri2path(uri_path, uri, hp->weenix);
+            estrcat(dest_fname, hp->destdir);
+            estrcat(dest_fname, hp->reldir);
+            estrcat(dest_fname, uri_path);
 
-    /* If there is a filename, optimize it */
-    if (estrlen(dest_fname) > 0)
-    {
-       STRPTR optimized_name = NULL;
-       optimize_fname(&optimized_name, estr2str(dest_fname));
-       set_estr(dest_fname, optimized_name);
-       if(optimized_name)
-          ufree(optimized_name);
-    }
+            /* dir correction, so path collapsing will always work */
+            if(FE_DIR == fgetentrytype(estr2str(dest_fname))) {
+               /* make sure there's a training slash */
+               if('/' != estr2str(dest_fname)[strlen(estr2str(dest_fname)) - 1])
+                  app_estr(dest_fname,"/");
+            }
+            /* make document directory name */
+            estrcpy(docdir, hp->destdir);
+            estrcat(docdir, hp->reldir);
 
-    /* debug */
-    D(
-          {
-          fprintf(stderr, DHL "  -> real file `%s'\n",
-             estr2str(dest_fname));
-          fprintf(stderr, DHL "  -> real uri  `%s'\n",
-             estr2str(dest_uri));
-          }
-     );
+            /* optimize complete target URI */
+            optimize_fname(&optimized_name, estr2str(dest_fname));
+            if(optimized_name) {
+               /* dest_uri is relative to target dir */
+               get_relfname(dest_uri, optimized_name, estr2str(docdir));
+               if(0 == estrlen(dest_uri))
+                  set_estr(dest_uri, ".");
+               ufree(optimized_name);
+            } else {
+               /* something wrong with the optimization - just jopy URI */
+               set_estr(dest_uri,uri);
+            }
 
-    /* free resources */
-    del_estr(rel_path);
+            del_estr(docdir);
+            del_estr(uri_path);
+         } else {
+            set_estr(dest_uri, uri);
+            set_estr(dest_fname, "");
+         }
+      }
+
+      /* If there is a filename, optimize it */
+      if (estrlen(dest_fname) > 0) {
+         STRPTR optimized_name = NULL;
+         optimize_fname(&optimized_name, estr2str(dest_fname));
+         set_estr(dest_fname, optimized_name);
+         if(optimized_name)
+            ufree(optimized_name);
+         /* dir correction for the final URI */
+         if(FE_DIR == fgetentrytype(estr2str(dest_fname))) {
+            /* make sure there's a training slash */
+            if('/' != estr2str(dest_uri)[strlen(estr2str(dest_uri)) - 1])
+               app_estr(dest_uri,"/");
+         }
+      }
+
+      /* debug */
+      D(
+            {
+            fprintf(stderr, DHL "  -> real file `%s'\n",
+               estr2str(dest_fname));
+            fprintf(stderr, DHL "  -> real uri  `%s'\n",
+               estr2str(dest_uri));
+            }
+       );
+   } 
+   /* free resources */
+   del_estr(turi);
+   del_estr(rel_path);
 }
 
 VOID conv_hscuri2file(HSCPRC * hp, EXPSTR * dest_fname, STRPTR uri)
@@ -393,12 +435,13 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
              */
             conv_hscuri2fileNuri(hp, dest_uri, dest_fname, path);
 
-            if (hp->chkuri
-                  && !(hsc_get_msg_ignore(hp, MSG_NO_URIPATH)))
+            if (hp->chkuri && !(hsc_get_msg_ignore(hp, MSG_NO_URIPATH)))
             {
                exist = fopen(estr2str(dest_fname), "r");
                if (!exist) {
-                  hsc_msg_nouri(hp, estr2str(dest_fname), uri, NULL);
+                  /* URIs ":" and "" won't open correctly */
+                  if(('\0' != uri[0]) && (0 != strcmp(":",uri)))
+                     hsc_msg_nouri(hp, estr2str(dest_fname), uri, NULL);
                } else {
                   fclose(exist);
 
