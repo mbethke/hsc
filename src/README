@@ -1,50 +1,43 @@
 
-                    hsc source distribution
-                    =======================
+hsc source archive
+==================
 
 This archive contains the sources for hsc. They are distributed under
-GNU General Public License (for details, see file "GNU_GPL" in this
+GNU General Public License (for details, see file "COPYING" in this
 directory).
 
-To compile it, change the makefiles according to your system/compiler,
-and comment out sections not required by adding a "#" at the
-beginning of the specific lines.
+IMPORTANT: If you've compiled older versions of hsc before, remove 
+all files of the old sources before you continue.
+
+There are two makefiles:
+
+"Makefile.dodl" is designed to compile with CC under an Unix-esh 
+environment without any special options or debugging-features enabled.
+
+"Makefile", which uses conditionals for figuring out the compiler and
+environment, 
 
 At the moment, only AmigaOS and Unix are supported. For AmigaOS, you
-require SAS/C or gcc, for Unix, only gcc is supported; But as the
-makefile does not use any very special options of gcc, most cc-like
-compilers also should work after replacing "gcc" by eg "cc" (know
-to work with SGIs).
+require GCC or SAS/c, for Unix,  GCC and CC are supported.
 
-The makefiles support three compilation modes: "debug" for a
+This makefile supports three compilation modes: "debug" for a
 debugging version that includes all debugging information, supports
 a source-level memory-tracking and enables some additional output
 and plausibility checks. "norm" links only some debugging information,
 and "optim" strips all debugging information and creates an optimized
 executable; with some compilers, "optim" migth cause problems.
 
-Make sure that you compile the "ugly" files and the main files with
-the same mode.
+Normally, no warnings should show up, expect about ununsed functions
+and parameters. This is because some parameters and functions are
+only used by the debugging-version.
 
 Problems might occure, if your compiler does not support ANSI-C
-(as "cc" under SunOS on my university - Pfthuahuhahua!)
+(as "cc" under SunOS on my university - Pfthuahuhahua!), but I won't
+care about this.
 
-
-Change to the directory "ugly/" and compile the files there
-(This is my own personal function library - experimental stuff).
-
-After that, compile the other files using the makefile in the
-main-directory.
-
-Command sequence:
-
-    cd ugly
-    make      (or "smake" for SAS/C)
-    cd ..     (or "/" for AmigaOS without c-shell)
-    make
-
-If nothing went wrong, you now should have created a file called
-"hsc" which is the executable. Now follow the installation
-instructions of the documentation that came with the main-archive.
+If nothing went wrong, you now should have created two files called
+"hsc/hsc" and "hscdepp/hscdepp" which are the executables. Now follow
+the installation instructions of the documentation that came with the 
+main-archive.
 
 Thomas Aglassinger <agi@giga.or.at>

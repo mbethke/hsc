@@ -8,8 +8,6 @@
 #ifndef HSCLIB_ENTITY_H
 #define HSCLIB_ENTITY_H
 
-#include "hsclib/inc_base.h"
-
 /*
 ** defines
 */
@@ -22,6 +20,9 @@ typedef struct hscent {
     STRPTR replace; /* replace by (eg "ü" ) */
     LONG   numeric; /* numeric code of entity ( eg &#"123"; ) */
 } HSCENT;
+
+/* value for hscent.numeric to mark icon entities */
+#define ICON_ENTITY (-1)
 
 /*
 **

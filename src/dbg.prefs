@@ -1,18 +1,21 @@
 <$defent NAME="uuml" RPLC="ü" NUM="252">
+<$deficon NAME="mail">
+<$deficon NAME="back">
+
 <*********************>
 <*** HTML 1.0 tags ***>
 <*********************>
 <$deftag LI /AUTOCLOSE /MBI="ul|ol|dir|menu">
 <$deftag ! /SPECIAL>
-<$deftag A /CLOSE /NAW="A" /LAZY="i" HREF:uri NAME:id REL:string>
+<$deftag A /CLOSE /NAW="A" /LAZY="i" /WHTSPC HREF:uri NAME:id REL:string>
 <$deftag B /CLOSE>
 <$deftag BODY /CLOSE /ONLYONCE BGCOLOR:color>
 <$deftag BR>
 <$deftag CODE /CLOSE>
 <$deftag HTML /CLOSE /ONLYONCE>
 <$deftag HEAD /CLOSE /ONLYONCE>
-<$deftag H1 /CLOSE>
-<$deftag IMG SRC:uri/x/z ALT:string ALIGN:enum("top|bottom|middle") ISMAP:bool WIDTH:string HEIGHT:string>
+<$deftag H1 /CLOSE /WHTSPC>
+<$deftag IMG SRC:uri/x/z/r ALT:string ALIGN:enum("top|bottom|middle") ISMAP:bool WIDTH:string HEIGHT:string>
 <$deftag I /CLOSE>
 <$deftag P /AUTOCLOSE>
 <$deftag PRE /CLOSE>
@@ -21,4 +24,4 @@
 <$deftag UL /CLOSE>
 
 <** "Click here" syndrome **>
-<$define __CLICK_HERE__:string="click|here">
+<$define HSC.CLICK-HERE:string="click|here">

@@ -2,14 +2,14 @@
 
 #define VERSION		0
 #define REVISION	9
-#define BETA	7
-#define DATE	"15.5.96"
-#define VERS	"hsc 0.9 BETA 7"
-#define VSTRING	"hsc 0.9 BETA 7 (15.5.96)\r\n"
-#define VERSTAG	"\0$VER: hsc 0.9 BETA 7 (15.5.96)"
-#define TIME	"01:07:35"
+#define BETA	9
+#define DATE	"6.8.96"
+#define VERS	"hsc 0.9 BETA 9"
+#define VSTRING	"hsc 0.9 BETA 9 (6.8.96)\r\n"
+#define VERSTAG	"\0$VER: hsc 0.9 BETA 9 (6.8.96)"
+#define TIME	"00:00:33"
 #define PRGNAME	"hsc"
 #define BASENAME	"HSC"
-#define VSTR	"hsc 0.9 BETA 7 (15.5.96)"
+#define VSTR	"hsc 0.9 BETA 9 (6.8.96)"
 #define USER	"Thomas.Aglassinger"
 #define HOST	"giga.or.at"

@@ -1,9 +1,10 @@
 /*
-** hsc/args.h
-**
-** user argument handling for hsc
-*/
+ * hsc/args.h
+ *
+ * user argument handling for hsc
+ */
 
-extern BOOL args_ok( HSCPRC *hp, int argc, char *argv[] );
-extern BOOL user_defines_ok( HSCPRC *hp );
+extern BOOL args_ok(HSCPRC * hp, int argc, char *argv[]);
+extern BOOL user_defines_ok(HSCPRC * hp);
+extern VOID cleanup_hsc_args(VOID);
 

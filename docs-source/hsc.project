@@ -1,0 +1,254 @@
+HSC_PROJECT
+VERSION 2 
+# contains all project relevant data
+# maintained by hsc, DO NOT MODIFY!
+# updated: 09-Aug-1996 16:20:19
+DOCUMENT 1a /docs/project/hscdepp.html
+SOURCE 13 project/hscdepp.hsc
+TITLE 0 
+ID 4 HELP
+ID 4 file
+ID 7 prjfile
+ID 7 VERBOSE
+ID 8 NOBACKUP
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 1b /docs/project/makefile.html
+SOURCE 14 project/makefile.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 11 /docs/source.html
+SOURCE a source.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 12 /docs/distrib.html
+SOURCE b distrib.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 19 /docs/features/strip.html
+SOURCE 12 features/strip.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 1b /docs/features/spcattr.html
+SOURCE 14 features/spcattr.hsc
+TITLE 0 
+ID 6 anchor
+ID c documentattr
+ID b exec.result
+ID 2 lf
+ID a sourceattr
+ID 6 system
+ID 3 tmp
+ID a colornames
+ID 9 clickhere
+ID f format.filesize
+ID b format.time
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+INCLUDE 10 exmpl/anchor.hsc
+INCLUDE 10 exmpl/anchor.hsc
+DOCUMENT 1b /docs/features/rplcent.html
+SOURCE 14 features/rplcent.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 19 /docs/features/prefs.html
+SOURCE 12 features/prefs.hsc
+TITLE 0 
+ID 6 defent
+ID 7 deficon
+ID 6 deftag
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 16 /docs/features/if.html
+SOURCE f features/if.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 1b /docs/features/getsize.html
+SOURCE 14 features/getsize.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 1c /docs/features/checkuri.html
+SOURCE 15 features/checkuri.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 1b /docs/features/absuris.html
+SOURCE 14 features/absuris.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 12 /docs/require.html
+SOURCE b require.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 12 /docs/related.html
+SOURCE b related.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 14 /docs/questions.html
+SOURCE d questions.hsc
+TITLE 0 
+ID 7 unknown
+ID 6 ignore
+ID 3 uri
+ID 4 piss
+ID 4 jerk
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 12 /docs/install.html
+SOURCE b install.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 13 /docs/examples.html
+SOURCE c examples.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT f /docs/copy.html
+SOURCE 8 copy.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 10 /docs/about.html
+SOURCE 9 about.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 12 /docs/options.html
+SOURCE b options.hsc
+TITLE 0 
+ID 4 help
+ID 7 license
+ID 4 from
+ID 2 to
+ID 9 extension
+ID 7 msgfile
+ID 9 msgformat
+ID 7 prjfile
+ID 6 ignore
+ID 4 mode
+ID 6 status
+ID 9 striptags
+ID 8 iconbase
+ID 7 compact
+ID 6 -debug
+ID 7 getsize
+ID 7 rplcent
+ID 9 rplcquote
+ID 8 smartent
+ID c stripcomment
+ID d stripexternal
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 18 /docs/project/index.html
+SOURCE 11 project/index.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 17 /docs/project/make.html
+SOURCE 10 project/make.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 1a /docs/project/prjfile.html
+SOURCE 13 project/prjfile.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT f /docs/bugs.html
+SOURCE 8 bugs.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 17 /docs/macro/macros.html
+SOURCE 10 macro/macros.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+INCLUDE 10 exmpl/m_addr.hsc
+INCLUDE 10 exmpl/m_addr.hsc
+INCLUDE 10 exmpl/m_file.hsc
+INCLUDE 10 exmpl/m_next.hsc
+INCLUDE 10 exmpl/m_next.hsc
+DOCUMENT 15 /docs/macro/flag.html
+SOURCE e macro/flag.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 17 /docs/macro/attrib.html
+SOURCE 10 macro/attrib.hsc
+TITLE 0 
+ID 5 flags
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 1a /docs/features/syntax.html
+SOURCE 13 features/syntax.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 13 /docs/messages.html
+SOURCE c messages.hsc
+TITLE 0 
+ID 8 msg_note
+ID 9 msg_style
+ID 8 msg_port
+ID 8 msg_warn
+ID 7 msg_err
+ID 8 msg_ferr
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 11 /docs/future.html
+SOURCE a future.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 1f /docs/features/expressions.html
+SOURCE 18 features/expressions.hsc
+TITLE 0 
+ID 6 getenv
+ID b getfilesize
+ID 9 getgmtime
+ID 7 gettime
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 12 /docs/updates.html
+SOURCE b updates.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 10 /docs/index.html
+SOURCE 9 index.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+DOCUMENT 18 /docs/features/exec.html
+SOURCE 11 features/exec.hsc
+TITLE 0 
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc
+INCLUDE e exmpl/exec.hsc
+INCLUDE e exmpl/exec.hsc
+DOCUMENT 1b /docs/features/spctags.html
+SOURCE 14 features/spctags.hsc
+TITLE 0 
+ID 8 comments
+ID 2 if
+ID 7 include
+ID 6 define
+ID 3 let
+ID 5 macro
+ID 7 message
+ID a expression
+ID 9 dontparse
+INCLUDE d inc/macro.hsc
+INCLUDE f inc/webpage.hsc

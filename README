@@ -1,0 +1,52 @@
+
+hsc ( v0.9.9,  09-Aug-1996 )
+
+  This is a developer tool for html-projects.
+
+  It can be used on any html-file and creates a new html-file
+  as output. It's mainly intended to create and maintain larger
+  html-projects. As a CLI-only tool, it can be used with `make'.
+
+  hsc is *not* a tool to make html easier for beginners; It's a
+  tool to make html a bit less painful and braindamaged for
+  people who already know how to work with it.
+
+  Freeware, distributed under GNU GPL; Documentation in html.
+  ANSI-C source code available in a separate archive (look for
+  `hsc-source.lha')
+
+NEW FEATURES
+  o includes dependency generator for Makefiles
+  o supports function to get filesize
+
+FEATURES
+
+  o adds some special tags, for example to
+    o include files (also sources)
+    o execute shell commands during conversion
+    o reasonable way to add comments
+  o define macros
+  o conditionals (if/else)
+  o simple expressions can be passed as values to attributes
+    (like string concatenation, string comparison, import of
+    environment variables, local time or filesize)
+  o for local links, checks if file/id exists
+  o maintains a project-file to check existence of id's over
+    all files processed
+  o supports absolute URIs (relative to root-directory of project)
+  o replaces special characters by its entities
+  o evaluates attributes for image size
+  o strips comments and specified tags
+  o strips useless white-spaces and linefeeds
+  o replaces icon-entities by images
+  o performs a (small) syntax- and structure check
+  o easy to extend syntax-definition format
+
+AVAILABILITY
+
+  ftp://wuarchive.wustl.edu/pub/aminet/text/hyper/hsc.lha
+  http://www.giga.or.at/~agi/hsc/index.html
+
+AUTHOR
+
+  Thomas Aglassinger <agi@giga.or.at>

@@ -1,0 +1,64 @@
+                         Example Project
+                        -----------------
+
+This directory contains a small example project.
+
+The sources are collected in "source_hsc/" and should be converted to
+"object_html/". This will be the directory where the "browsable" data
+will be located.
+
+This text asumes that your current directory is
+"[hsc]/example/source_hsc/".
+
+Description of sources:
+-----------------------
+
+main.hsc              the project's intros page
+stupid.hsc            a simple page that can be reached from "main"
+macro.hsc             contains some macro definitions and is
+                      included into all files
+hugo/                 a subdirectory, where all information about
+                      Hugo is collected
+hugo/hugo.hsc         some information about Hugo
+hugo/hugo.gif         a picture of Hugo
+
+Setting up the object directory:
+--------------------------------
+
+For every directory in the source-dir, a corresponding directory
+with the same name has to be created. This can be done via
+
+    makedir /object_html/hugo                    ; AmigaOS
+    mkdir   ../object_html/hugo                  ; Unix
+
+As the picture is of no real use in the source-dir, you should move
+it to the object-dir:
+
+    rename hugo/hugo.gif /object_html/hugo/      ; AmigaOS
+    mv hugo/hugo.gif /object_html/hugo/          ; Unix
+
+Note that every file, that is not a hsc-source or include-file has
+to be located somewhere in the object-dir. This especially concerns
+pictures, sounds and everything else that is linked, but not a
+hsc-source.
+
+Starting the conversion:
+------------------------
+
+Now you are ready to start 'make':
+
+    make
+
+Of course, you need to have a 'make' command installed in your search
+path. For AmigaOS, search "aminet:dev/*" for fitting a program.
+
+After that, all html-objects in "object_html/" should be ready.
+
+Note that there does not exist a "macro.html", because the there was
+no rule for this in the makefile. There is no rule neccessary,
+because "macro.hsc" is never converted alone, but only included by
+the other files. Additionally, "macro.hsc" contains no readable text
+or tags.
+
+Take a look at the "makefile" to understand the basic concept of hsc.
+

@@ -19,7 +19,7 @@
 ** along with this program; if not, write to the Free Software
 ** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
-** updated:  9-Mar-1996
+** updated: 17-Mar-1996
 ** created:  8-Sep-1995
 **
 */
@@ -217,7 +217,7 @@ BOOL add_ent( DLLIST *entlist, STRPTR entid, STRPTR entreplace, LONG num )
             STRPTR rplc = entreplace;
             if ( !rplc )
                 rplc = "(empty)";
-            fprintf( stderr, DHL "defent: \"%s\" \"%s\" %d\n",
+            fprintf( stderr, DHL "defent: \"%s\" \"%s\" %ld\n",
                              entid, rplc, num );
 
         }

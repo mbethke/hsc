@@ -1,34 +1,40 @@
 <WEBPAGE chapter="hsc - Features - " title="Absolute URIs"
     PREV="checkuri.html"
-    NEXT="macros.html">
+    NEXT=":macro/macros.html">
 
-Sometimes, when your project starts to become rather complex,
-you create subdirectories for to structure the whole thing.<P>
+<P>Sometimes, when your project starts to become rather
+complex, you create subdirectories for to structure the
+whole thing. As example, I prefer to create a directory
+<CODE>image/</CODE>, where all images for buttons and logos
+are placed.</P>
 
-As example, I prefer to create a directory <CODE>image/</CODE>,
-where all images for buttons and logos are placed.<P>
+<P>Creating a link to an image from the main-directory is no
+problem, it's URI simply is <CODE>image/logo.gif</CODE>. But
+if your current page is somewhere deeper in your
+project-path, eg <CODE>people/hugo/hugo.html</CODE>, you
+need to refer to the same image using
+<CODE>../../image/logo.gif</CODE>. So you always have to
+know the directory-level of your current page.</P>
 
-Creating a link to an image from the main-directory is no
-problem, it's URI simply is <FILE>image/logo.gif</FILE>.<P>
-
-But if your current page is somewhere deeper in your project-path,
-eg <FILE>people/hugo/hugo.html</FILE>, you need to refer to the
-same image using <FILE>../../image/logo.gif</FILE>. So you always
-have to know the directory-level of your current page.<P>
-
-This is not only annoying: Inside a macro, you are not able to
-find out where the file calling the macro is located!<P>
-
-One solution would be to define a <TG>BASE="[path to main document]"</TG>.
+<P>One solution would be to define a <TG>BASE="<VAR>path to
+main document</VAR>"</TG>.
 But then, all your links have to be absolute. This is very annoying
-if you need to refer to files located in the same directory.<P>
+if you need to refer to files located in the same directory.</P>
 
-But, thanks to <hsc>, here's the solution to this problem: if you
-don't define a <TG>BASE</TG>-URI, all links relative links are
+<P>But, thanks to <hsc>, here's the solution to this problem: if you
+don't define a <TG>BASE</TG>-URI, all relative links are
 processed as usual. Only if the URI starts with a colon (":"), it
-refers to a file relative to the main-path of your project.<P>
+refers to a file relative to the main-path of your project.</P>
 
-<* TODO: example *>
+<P>For example, an <TG>IMG SRC=":image/back.gif"
+ALT="back"</TG> will always refer to the same image,
+regardless wheter this tag is called from a file called
+<FILE>welcome.hsc</FILE> or
+<FILE>people/hugo/hugo.hsc</FILE>. The difference can only
+be recognised in the html-objects: for the first case, an
+<TG>IMG SRC="image/back.gif" ALT="back"</TG> will be
+created. For the second one, it will be <TG>IMG
+SRC="../../image/back.gif" ALT="back"</TG>.</P>
 
 </WEBPAGE>
 

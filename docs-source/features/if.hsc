@@ -1,61 +1,119 @@
-<WEBPAGE chapter="hsc - Features - " title="Conditional conversion"
-    PREV="macros.html"
-    NEXT="macros.html">
+<WEBPAGE chapter="hsc - Features - " title="Conditionals"
+    PREV=":macro/macros.html"
+    NEXT=":macro/macros.html">
 
 <H2>Syntax</H2>
 
-Conditional conversion looks like that:
+Conditionals looks like that:
 
 <PRE>
-<CODE>&lt;$IF</CODE> <I>expression</I><CODE>&gt;</CODE>
+<CODE>&lt;$if COND=</CODE><I><A HREF="expressions.html">expression</A></I><CODE>&gt;</CODE>
 
-  <I>...if part...</I>
+  <I>code to be processed if condition fullfilled</I>
 
-[
-<CODE>&lt;$ELSE&gt;</CODE>
+<CODE>&lt;$elseif COND=</CODE><I><A HREF="expressions.html">expression</A></I><CODE>&gt;</CODE>
 
-  <I>...optional else part...</I>
+  <I>(optional) code to be processed if alternative condition fullfilled</I>
 
-]
+<CODE>&lt;$else&gt;</CODE>
 
-<CODE>&lt;/$IF&gt;</CODE>
+  <I>(optional) code to be processed if none of previous conditions matched</I>
+
+<CODE>&lt;/$if&gt;</CODE>
 </PRE>
 
-<H2>Expressions</H2>
+<P>Both <TG>$if</TG> and <TG>$elseif</TG> require a boolean attribute 
+<CODE>COND</CODE>; <CODE>false</CODE> is repesented by an empty string,
+<CODE>true</CODE> by any non-empty string. Normaly, you will like to
+set <CODE>COND</CODE> using
+<A HREF="expressions.html">expressions</A>.</P>
 
-Possible expressions are:
+<H2>Some simple examples</H2>
 
-<DL>
-<DT><STRONG>NOT</STRONG> <I>expression</I>
-    <DD>becomes true, if <I>expression</I> is false
-<DT><STRONG>SET</STRONG> "<CODE>&lt;</CODE>" <I>attribute</I> "<CODE>&gt;</CODE>"
-    <DD>becomes true, if a value for <I>attribute</I> was set (passed to a macro)
-<DT>"<STRONG>&lt;</STRONG>" <STRONG><I>bool. attribute</I></STRONG> "<STRONG>&gt;</STRONG>"
-    <DD>becomes value of boolean attribute
-</DL>
+Now let's see how this works in practice:
 
-<H2>Example</H2>
+<$SOURCE PRE>
+    <$if COND=(NAME="sepp")>
+       You must be sepp!
+    </$if>
+</$SOURCE>
 
-A good example for the usage of conditional conversion inside a macro is
-the <TG>WEBPAGE</TG> macro used to create the documentation for <hsc>.<P>
+<P>This one inserts the text "<CODE>You must be sepp!</CODE>", if the attribute
+<CODE>NAME</CODE> has the value "<CODE>sepp</CODE>". Note that the 
+"<CODE>=</CODE>"-operator performs a case-insensitive string-comparison,
+so setting <CODE>NAME="SEPP"</CODE> would lead to the same result.</P>
 
-It also shows how to create a navigation bar with optional references to
-a next and previous page.
+Now let's extend this:
 
+<$SOURCE PRE>
+    <$if COND=(NAME="sepp")>
+       You must be sepp!
+    <$else>
+       I don't know you.
+    </$if>
+</$SOURCE>
+
+<P>Setting <CODE>NAME="sepp"</CODE> will create the same text as above. Any
+other value for <CODE>NAME</CODE> will insert 
+"<CODE>I don't know you.</CODE>".</P>
+
+<H2>Nesting conditionals</H2>
+
+<P>Nesting them is also possible, of course:</P>
+
+<$SOURCE PRE>
+    <$if COND=(NAME="sepp")>
+       You must be sepp!
+       <$if COND=(HOME="austria")>
+           Hollareiduliö! An Austrian!
+       <$else>
+           <(HOME)> is a strange country.
+       </$if>
+    <$else>
+       A strange guy from a strange place.
+    </$if>
+</$SOURCE>
+
+
+<H2>Conditionals and macros</H2>
+
+<P>You can not compare <hsc>'s <TG>$if</TG> to primitive and clumsy 
+<CODE>#if</CODE> of the C-preprocessor. The main difference is that 
+you can use <TG>$if</TG> inside macros and that expressions are 
+recalculated for every new call of the macro.</P>
+
+<$SOURCE PRE>
+    <$macro TRY-A HREF:uri/r TITLE:string/r>
+    <$if COND=(Exists(HREF))>
+        <A HREF=(HREF)><(TITLE)></A> <* insert link to HREF *>
+    <$else>
+        <(TITLE)>                    <* insert plain title *>
+    </$if>
+    </$macro>
+</$SOURCE>
+
+<P>This one inserts a link to an URI specified with <CODE>HREF</CODE>, using
+<CODE>TITLE</CODE> as link text; but only, if the destination (local) URI
+can be accesed. If the required document is not available, only the plain
+text without a link will be inserted.</P>
+
+<P>The "<CODE>/r</CODE>" behind the declaration of the macro-attributes
+is short for "<CODE>/required</CODE>" and means that the macro needs both
+of these attributes to be set during the macro-call.</P>
+
+<P>For example, you can utilize this macro using</P>
+
+<$SOURCE PRE>
+    You should read the document about recent
+    <TRY-A HREF="../bugfixes.html" TITLE="bufixes">
+    if there are any.
+</$SOURCE>
+
+<P>This leads to the text</P>
 <PRE>
-<$include file="inc/webpage.inc" SOURCE>
+    You should read the document about recent bugfixes if there are any.
 </PRE>
+<P>with a anchor around the term "<CODE>bugfixes</CODE>" if the document
+"<FILE>../bugfixes.html</FILE>" exists.</P>
 
-<H2>Notes</H2>
-
-<TG>$IF ..</TG> is nestable.<P>
-
-You can't compare <hsc>'s <TG>$IF ..</TG> to the C-preprocessor's
-<CODE>#if</CODE>. The main difference is that you can use <TG>$IF ..</TG>
-inside macros and that the expressions are recalculated for every new
-call of the macro.
-
-<P>
 </WEBPAGE>
-
-

@@ -2,6 +2,134 @@
                    hsc version history
                    ===================
 
+Version 0.9.9,  9-Aug-1996
+ - fixed bug: option RPLCENT didn't work as expected
+   due to a strange behavior of GCC's isalpha(),
+   which declared eg `ü' as an alphanumeric char
+   (only AmigaOS; reported by Stefan Gybas)
+ - fixed bug: absolute URIs lead to wrong URIs, if
+   they exeeded two nested directories (reported by
+   Stefan Gybas)
+ - fixed some minor bugs that prevented you from
+   oppressing certain messages (reported by Armin
+   Obersteiner)
+ - fixed bug: for Amiga-version, there has been no
+   reasonable way to specify the current directory
+   as destination-dir; now you can use the usual
+   (strange) `TO ""'
+ - fixed bug: for required attributes missing, the
+   parser had some (minor) problems to recover and
+   skipped everything until the next `>'. In the
+   worst case, this could lead to an `unexpected
+   end-of-file'
+ - fixed a bug that lead to infinite loop when trying
+   to set the value of a numeric attribute (somehow
+   reported by Marcel Offermans)
+ - fixed some minor bugs
+ - renamed all special attributes; instead of eg
+   `__ANCHOR__' you now have to use `HSC.ANCHOR'
+ - improved some internal string-functions (speed
+   increase)
+ - improved creation of output-string: hsc doesn't
+   any more create on single (huge) output-string,
+   but maintains a list of strings which are 
+   concatenated to a file. This improves performance
+   for huge input-files and also fixes a problem
+   with the malloc()-function of libnix (unreasonable
+   high memory usage)
+ - improved handling for unknown tags; expressions
+   are now processed for their attributes, too.
+ - improved handling of Error 64 (illegal attribute
+   identifier); now the parser immediatly stops
+   processing attributes
+ - improved <$exec> to include output immediatly or
+   store it in an attribute
+ - improved CLI-option ICONBASE to replace an
+   asterisk ("*") by the name of the icon-entity
+ - added CLI-option RPLCQUOTE
+ - added CLI-option EXTENSION
+ - added attribute HSC.EXEC.RESULT
+ - added attribute HSC.FORMAT.FILESIZE
+ - added attribute HSC.LF
+ - added attribute HSC.FORMAT.TIME
+ - added function GetFileSize("filename")
+ - added functions GetTime() and GetGmTime()
+ - added loads of silly quotes to the docs
+ - added "grafflwerk"-drawer to archive
+ - added simple ARexx-Scripts to communicate with
+   ScMsg and AWeb
+ - now using dullest icons ever for the executables
+ - played around a bit with compiler-flags, resulting
+   in a smaller executable
+ - imcluded a 68020-compiled version for AmigaOS
+ - compiled with gcc 2.7.0 and libnix 1.1
+
+Version 0.9.8, 29-May-1996
+ (reads rather embarrasing this time)
+ - fixed hsc's most distressing bug (so far): when
+   setting `TO=dir/', for URI-checking, under certain
+   circumstances (better: nearly always), another `/'
+   has been appended to the destination path
+   (reported first by Jörg Plate)
+ - fixed bug that caused URIs to be checked in
+   source-path if `TO=xy' didn't end with `/' (which
+   specified a file explicitely)
+   (reported by Stefan Gybas)
+ - fixed bug: GETSIZE for transparent GIFs didn't set
+   correct size (reported by Neil Bothwick). Actually,
+   hsc couldn't handle GIF89a-extensions at all.
+ - fixed bug that could lead to wrong message position
+   when inserting expressions with `<(expr)>'; now,
+   only the position where the `)>' has appeard is
+   used
+ - fixed bug that lead to wrong message position for
+   messages launched during scan of string-constants
+   (always used start of string as position)
+ - fixed bug: URIs like `:../parent.html' are now
+   handled correctly
+ - fixed bug: `.' has been handled as word-delimiter
+ - fixed bug: for tags that had the /SKIPLF switch set,
+   immediately following white-spaces have been
+   stripped
+ - fixed bug: errors in CLI-args didn't set a proper
+   returncode; requesting help or license now sets
+   a warning-returncode
+ - fixed some minor bugs in check for inconsistencies
+   within <$DEFENT>
+ - fixed a minor bug that suppressed white-spaces
+   in tag-calls immediatly preceeding a linefeed
+ - fixed some typos and missing attribute in hsc.prefs
+   (reported by Marcel Offermans)
+ - added "location of previous call"-messages if a
+   message is launched during processing a marco or
+   an include-file
+ - added tag <$DEFICON> to define icon-entity
+ - added CLI-option ICONBASE to denote a base-uri
+   where icon images are located and replace all
+   icon-entities with <IMG>-tags
+ - added global attribute __COLOR_NAMES__ to declare
+   color constants to be used with attribute-type
+   `COLOR'
+ - added several global attributes to get path and
+   name of destination-uri/source-file: __DEST_PATH__,
+   __DEST_NAME_ and __DEST_URI__ respectively
+   __SOURCE_NAME__, __SOURCE_PATH and __SOURCE_FILE__
+   (as suggested by several people)
+ - added special attribute __ANCHOR__ to contain last
+   anchor referend to
+ - added messages #78 and  #79, which whine about
+   preceding/succeeding white-spaces on some
+   containers; I didn't count these style-lacks in
+   hsc's own docs.. (now fixed, of course)
+ - added support for server-relativ URIs (starting
+   with a `/'); they are now handled like external
+   URIs and can't be checked for existence
+ - added placeholder `%n' in MSGFORMAT for linefeed
+ - allowed tags to be redefined by macros
+ - added hsc-logo on mainpage of docs
+ - increased buffer for status messages to 160 chars
+ - compiled with gcc 2.7.0 and libnix 1.1
+
 Version 0.9.7, 15-May-1996
  - fixed a nasty bug that could cause enforcer-hits
    inside macros

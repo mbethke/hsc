@@ -19,11 +19,12 @@
 ** along with this program; if not, write to the Free Software
 ** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
-** updated: 13-Apr-1996
+** updated:  7-Jul-1996
 ** created:  3-Aug-1995
 */
 
 #include "hsclib/inc_tagcb.h"
+#include "hsclib/document.h"
 
 /*
 ** TODO: strip only HREF part, if a NAME is within <A>
@@ -36,7 +37,7 @@
 **
 ** handle tag <A>:
 ** - check for HREF or NAME set
-** - set new value of last_anchor
+** - update value for attribute __anchor__
 **
 ** TODO: handle NAME="xx"
 */
@@ -52,8 +53,18 @@ BOOL handle_anchor( HSCPRC *hp, HSCTAG *tag )
     if ( vname ) name = vname->text;
 
     /* tell parser that he is inside an anchor */
-    if ( href )
+    if ( href ) {
+
+        HSCATTR *anchor_attr = find_varname( hp->defattr, ANCHOR_ATTR );
+
+        if ( anchor_attr ) {
+            set_vartext( anchor_attr, href );
+        } else {
+            panic( "no anchor-attribute" );
+        }
+
         hp->inside_anchor = TRUE;
+    }
 
     /* check for both HREF and NAME missing */
     if ( (!href) && (!name) ) {

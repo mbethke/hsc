@@ -7,8 +7,8 @@
 #include <errno.h>
 #include <string.h>
 
-#include "types.h"
-#include "memory.h"
+#include "utypes.h"
+#include "umemory.h"
 #include "infile.h"
 
 #define GETSTRLEN 10

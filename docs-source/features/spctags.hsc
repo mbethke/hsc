@@ -1,26 +1,35 @@
 <WEBPAGE chapter="hsc - Features - " title="Special Tags"
     PREV=":distrib.html"
-    NEXT="syntax.html">
+    NEXT="syntax.html"
+    QTEXT=("What was said was never done<BR>"
+          +"Don't panic, it's not really worth your while")
+    QAUTHOR='Blur, "Bang"'>
 
-<B>hsc</B> adds some special tags, which can be quite useful for maintainers
-of big HTML-projects. If you use them right, they can save a lot of time
-and nerves.
+<P><hsc> adds several special tags to process macros, handle conditionals,
+include files and lots of other things.</P>
 
 <UL>
 <LI><A HREF="#comments"><TG>* <I>comment</I> *</TG></A> insert comments
-<LI><A HREF="#exec"><TG>$EXEC</TG></A> execute shell commands during conversion
-<LI><A HREF="if.html"><TG>$IF</TG> <TG>$ELSE</TG></A> conditional conversion
-<LI><A HREF="#include"><TG>$INCLUDE</TG></A> include a file
-<LI><A HREF="#insert"><TG>$INSERT</TG></A> insert several stuff
-<LI><A HREF="#let"><TG>$LET</TG></A> set global attributes
-<LI><A HREF=":macro/macros.html"><TG>$MACRO</TG></A> define macro-tags
+<LI><A HREF="prefs.html#defent"><TG>$defent</TG></A>, 
+    <A HREF="prefs.html#deficon"><TG>$deficon</TG></A>, 
+    <A HREF="prefs.html#deftag"><TG>$deftag</TG></A> 
+    define entities, icon-entities and tags
+<LI><A HREF="#define"><TG>$define</TG></A> define a new (global) attribute
+<LI><A HREF="exec.html"><TG>$exec</TG></A> execute shell-command
+<LI><A HREF="if.html"><TG>$if</TG>, <TG>$else</TG>, <TG>$elseif</TG></A> conditionals
+<LI><A HREF="#include"><TG>$include</TG></A> include a file
+<*<LI><A HREF="#insert"><TG>$insert</TG></A> insert several stuff*>
+<LI><A HREF="#let"><TG>$let</TG></A> set new attribute value
+<LI><A HREF=":macro/macros.html"><TG>$macro</TG></A> define macro-tags
+<LI><A HREF="#message"><TG>$message</TG></A> display user message
+<LI><A HREF="#expression"><TG>( <I>expression</I> )</TG></A> insert expression
 <LI><A HREF="#dontparse"><TG>|  <I>don't parse</I> |</TG></A> don't parse section
 </UL>
 
-<$MACRO SPCTAG NAME:string/r TITLE:string/r>
+<$macro SPCTAG NAME:string/r TITLE:string/r>
 <HR>
-<A NAME=<name>><H2><$INSERT TEXT=<title>></H2></A>
-</$MACRO>
+<H2><A NAME=(name)><(title)></A></H2>
+</$macro>
 
 <SPCTAG NAME="comments" TITLE="Comments">
     You can insert a comment with
@@ -33,7 +42,7 @@ and nerves.
 
     And you can comment out sections of html-source without any problems
     for the browser. This simply is possible because comments in the
-    HSC-source are not written to the HTML-object.<P>
+    hsc-source are not written to the html-object.<P>
 
     Of course, if you need the standard comments, you can use
     <BLOCKQUOTE>
@@ -41,191 +50,136 @@ and nerves.
     </BLOCKQUOTE>
     as usual.<P>
 
-<SPCTAG NAME="exec" TITLE="Execute shell command">
-
-    A shell command can be executed with
-    <BLOCKQUOTE>
-    <TG>$INCLUDE COMMAND="command"</TG>
-    </BLOCKQUOTE>
-
-    An example usage would be to insert a listing of a
-    directory:
-
-<$include FILE="exmpl/exec.inc" SOURCE PRE>
-
-    And the data created by this code sequence would look
-    like this:
-
-    <$include FILE="exmpl/exec.inc">
-
-    If the command's return code is not equal to zero, a
-    warning message will be displayed.
-
 <SPCTAG NAME="if" TITLE="Conditional conversion">
-    As there is a lot to tell about this feature, it has it's <A HREF="if.html">
-    own page</A>.
+    As there is a lot to tell about this feature, there exists a whole
+    <A HREF="if.html">section about <TG>$if</TG></A>.
 
 <SPCTAG NAME="include" TITLE="Include file">
     A <hsc>-file can be included to the text using
 
     <BLOCKQUOTE>
-    <TG>$INCLUDE FILE="filename" [SOURCE] [PRE]</TG>
+    <TG>$include FILE="filename" [SOURCE] [PRE] [TEMPORARY]</TG>
     </BLOCKQUOTE>
 
-    If you include a file this way, it is handled as an usual
+    <P>If you include a file this way, it is handled as an usual
     <hsc>-file. That means, all tags and special characters are
-    handled as before.<P>
+    handled as before.</P>
 
     To include a source file, eg a C- or HTML-source so that the
     tags are not interpreted but displayed, add the optional
     boolean attribute <CODE>SOURCE</CODE>.
 
     <BLOCKQUOTE>
-    <TG>$INCLUDE FILE="hugo.c" SOURCE</TG>
+    <TG>$include FILE="hugo.c" SOURCE</TG>
     </BLOCKQUOTE>
 
-    Now the basic special characters "&lt;", "&gt;" and "&amp;" are
+    <P>Now the basic special characters "&lt;", "&gt;" and "&amp;" are
     replaced by their entities.<P>
     Note that this does <STRONG>not</STRONG> include a <TG>PRE</TG>-tag
     to render the text as it exists with the same line breaks and
-    spaces.<P>
+    spaces.</P>
 
-    To get this done, you should use the optional boolean attribute
+    <P>To get this done, you should use the optional boolean attribute
     <CODE>PRE</CODE>. This inserts a <TG>PRE</TG> before the included
-    data and a <TG>/PRE</TG> afterwards.
+    data and a <TG>/PRE</TG> afterwards.</P>
 
+    <P>If you enable <CODE>TEMPORARY</CODE>, the file included will not
+    effect the dependencies for the current document. This is only
+    reasonable if you have the <KBD>PRJFILE</KBD> CLI-option set
+    and want to include a temporary file which might not exist
+    anymore when invokin <make> the next time.</P>
 
+    <P>You should consider to enable this attribute, if invoking <make>
+    returns something like<BR>
+    <SAMP>make: *** No rule to make target `hsc0x395bf7e0001.tmp', 
+          needed by `/html/hugo.html'.</SAMP>
+    </P>
+
+<*
 <SPCTAG NAME="insert" TITLE="Insert several stuff">
     You can insert several stuff using the tag
 
     <BLOCKQUOTE>
-    <TG>$INSERT what [options]</TG>
+    <TG>$insert what [options]</TG>
     </BLOCKQUOTE>
 
     <H3>Insert current date and time</H3>
         You can insert the current date and time simply by
-          <UBQ><TG>$INSERT TIME</TG></UBQ>
+          <UBQ><TG>$insert TIME</TG></UBQ>
         using a default format.<P>
 
         Optionally, you can pass a format-string, that discribes the time.
-        As <hsc> just calls the ANSI-C function <CODE>strftime()</CODE> to
-        perform that task, I've included an extract of the man-pages to this
-        function:
+        As <hsc> just calls the ANSI-C function
+        <A HREF="strftime.txt"><CODE>strftime()</CODE></A>
+        to perform that task, you can use the same format specifications.
 
-<PRE>
-        Each conversion specification is replaced by the characters as follows
-        which are then copied into the buffer.
-
-         %A    is replaced by the full weekday name.
-
-         %a    is replaced by the abbreviated weekday name, where the abbreviation
-              is the first three characters.
-
-         %B    is replaced by the full month name.
-
-         %b or h
-              is replaced by the abbreviated month name, where the abbreviation
-              is the first three characters.
-
-         %C    is equivalent to ``%a %b %e %H:%M:%S %Y'' (the format produced by
-              asctime(3).
-
-         %c    is equivalent to ``%m/%d/%y''.
-
-         %D    is replaced by the date in the format ```mm/dd/yy'''.
-
-         %d    is replaced by the day of the month as a decimal number (01­31).
-
-         %e    is replaced by the day of month as a decimal number (1­31); single
-              digits are preceded by a blank.
-
-         %H    is replaced by the hour (24­hour clock) as a decimal number
-              (00­23).
-
-         %I    is replaced by the hour (12­hour clock) as a decimal number
-              (01­12).
-
-         %j    is replaced by the day of the year as a decimal number (001­366).
-
-         %k    is replaced by the hour (24­hour clock) as a decimal number (0­23);
-
-              single digits are preceded by a blank.
-
-         %l    is replaced by the hour (12­hour clock) as a decimal number (1­12);
-              single digits are preceded by a blank.
-
-         %M    is replaced by the minute as a decimal number (00­59).
-
-         %m    is replaced by the month as a decimal number (01­12).
-
-         %n    is replaced by a newline.
-
-         %p    is replaced by either ``AM'' or ``PM'' as appropriate.
-
-         %R    is equivalent to ``%H:%M''
-
-         %r    is equivalent to ``%I:%M:%S %p''.
-
-         %t    is replaced by a tab.
-
-         %S    is replaced by the second as a decimal number (00­60).
-
-         %s    is replaced by the number of seconds since the Epoch, UCT (see
-              mktime(3)).
-
-         %T or X
-              is equivalent to ``%H:%M:%S''.
-
-         %U    is replaced by the week number of the year (Sunday as the first day
-              of the week) as a decimal number (00­53).
-
-         %W    is replaced by the week number of the year (Monday as the first day
-              of the week) as a decimal number (00­53).
-
-         %w    is replaced by the weekday (Sunday as the first day of the week) as
-              a decimal number (0­6).
-
-         %x    is equivalent to ``%m/%d/%y %H:%M:%S''.
-
-         %Y    is replaced by the year with century as a decimal number.
-
-         %y    is replaced by the year without century as a decimal number
-              (00­99).
-
-         %Z    is replaced by the time zone name.
-
-         %%
-            is replaced by `%'.
-</PRE>
         Example:<BR>
-          <UBQ><TG>$INSERT TIME FORMAT="%b %d  %y"</TG></UBQ>
+          <UBQ><TG>$insert TIME FORMAT="%b %d  %y"</TG></UBQ>
         inserts current date with the strange ANSI-C
         <CODE>__TIME__</CODE>-format.
 
     <H3>Insert text</H3>
         As an required argument, you must give a string
         that contains the text. Example:
-        <UBQ><TG>$INSERT TEXT="hugo was here!"</TG></UBQ>
+        <UBQ><TG>$insert TEXT="hugo was here!"</TG></UBQ>
         inserts the text "<CODE>hugo was here</CODE>". Of course, this does not
-        make much sense.<TG>$INSERT TEXT="..."</TG> is suggested to be used
+        make much sense.<TG>$insert TEXT="..."</TG> is suggested to be used
         with attribute values. Example:
-        <UBQ><TG>$INSERT TEXT=&lt;href&gt;</TG></UBQ>
+        <UBQ><TG>$insert TEXT=(href)</TG></UBQ>
         inserts the value of the macro-attribute <CODE>href</CODE>.
+*>
 
-<SPCTAG NAME="let" TITLE="Set attributes">
+<SPCTAG NAME="define" TITLE="Define attributes">
 
-    You can create a global attribute and pass a value to it via
+    You can create an attribute and pass a value to it via
 
     <BLOCKQUOTE>
-    <TG>$LET <I><A HREF=":macro/attrib.html">attribute</A></I></TG>
+    <TG>$define <I><A HREF=":macro/attrib.html">attribute</A></I></TG>
     </BLOCKQUOTE>
 
-    The new attribute is globaly and must have a value passed when
-    created.
+    <P>If you define an attribute via <TG>$define</TG> inside a macro, it is of
+    local existence only and is removed after processing the macro. You
+    can suppress this with using the attribute flag <CODE>/GLOBAL</CODE>: in
+    this case, the attribute exists until the end of conversion.</P>
+
+    <P>You can use the flag <CODE>/CONST</CODE> to make the attribute read-only.
+    That means it can't be overwritten by <TG>$let</TG></P>
+
+<SPCTAG NAME="let" TITLE="Set new attribute value">
+
+    You can update an attribute's value with
+
+    <BLOCKQUOTE>
+    <TG>$let <I><A HREF=":macro/attrib.html">attribute_name</A></I> =
+    <I>new_value</I></TG>
+    </BLOCKQUOTE>
+
+    Example:<BR>
+    <$source PRE>
+    <$define hugo:string="hugo">       <* create hugo and set to "hugo" *>
+    <$let hugo=(hugo+" ist doof.")>    <* update it to "hugo ist doof." *>
+    </$source>
 
 <SPCTAG NAME="macro" TITLE="Define macros">
-    I think, this feature needs an <A HREF=":macro/macros.html">
-    own page</A>...
+    As there is a lot to tell about this feature, there exists a whole
+    <A HREF=":macro/macros.html">section about macros</A>...
+
+<SPCTAG NAME="message" TITLE="User messages">
+    During conversion, you can invoke messages by yourself using
+    <$source PRE>
+    <$message TEXT="message text" [CLASS="class"]>
+    </$source>
+    For an example, look at <A HREF="exec.html"><TG>$exec</TG></A>.
+
+<SPCTAG NAME="expression" TITLE="Insert expression">
+
+    This tag is used to insert data of attributes and
+    <A HREF="expressions.html">expressions</A>. For example:
+
+    <$source PRE>
+    <$define hugo:string="hugo">       <* create hugo and set to "hugo" *>
+    <(hugo+" ist doof.")>              <* insert text "hugo ist doof." *>
+    </$source>
 
 <SPCTAG NAME="dontparse" TITLE="Don't parse section">
 
@@ -234,19 +188,6 @@ and nerves.
     can keep of <hsc> from parsing this section by surrounding it with
     <TG>| ... |</TG>. Of course, this is a dirty hide-out and should
     be used only for special cases.
-<*
-    <BLOCKQUOTE>
-    <TG>$LET <I><A HREF=":macro/attrib.html">attribute</A></I></TG>
-    </BLOCKQUOTE>*>
 
-<SPCTAG NAME="defent" TITLE="Define a new entity">
-<SPCTAG NAME="deftag" TITLE="Define a new tag">
-
-At the moment, these tags are undocumented. See <FILE>hsc.prefs</FILE> for
-a small description.<P>
-
-Usage of these tags only allowed inside <FILE>hsc.prefs</FILE>.
-
-<P>
-
+<BR>
 </WEBPAGE>

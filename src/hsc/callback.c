@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * updated: 15-May-1996
+ * updated: 26-Jul-1996
  * created: 17-Mar-1996
  *
  */
@@ -28,7 +28,7 @@
 #include "hsc/output.h"
 #include "hsc/status.h"
 
-#include "ugly/returncode.h"
+#include "ugly/returncd.h"
 
 #define NOEXTERN_HSC_CALLBACK_H
 #include "hsc/callback.h"
@@ -131,6 +131,9 @@ static VOID message(HSCPRC *hp,
                 case 'm':
                     app_estr( msgbuf, msg_text );
                     break;
+                case 'n':
+                    app_estrch( msgbuf, '\n' );
+                    break;
                 case 'x':
                     app_estr( msgbuf, long2str( x ) );
                     break;
@@ -167,13 +170,15 @@ static VOID message(HSCPRC *hp,
  * hsc-callback to display ref-message coming from parser
  */
 static VOID message_ref(HSCPRC *hp,
+     HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
      STRPTR fname, ULONG x, ULONG y,
      STRPTR msg_text)
 {
-    if ( !fname )
-        fname = estr2str( inpfilename );
-    fprintf( stderr, "%s (%ld,%ld): location of call\n",
-             fname, y, x );
+    if ( msg_text && msg_text[0] )
+        message( hp, msg_class, msg_id, fname, x, y, msg_text );
+    else
+        message( hp, msg_class, msg_id, fname, x, y,
+                 "(location of previous call)");
 }
 
 static VOID do_hsc_id( HSCPRC *hp, HSCATTR *attr, STRPTR id )
@@ -232,6 +237,7 @@ static VOID do_hsc_text( HSCPRC *hp, STRPTR whtspc, STRPTR text )
 BOOL init_callback( HSCPRC *hp )
 {
     /* status-messages */
+    hsc_set_status_file_begin( hp, status_file_begin );
     hsc_set_status_file_end( hp, status_file_end );
     hsc_set_status_line( hp, status_line );
     hsc_set_status_misc( hp, status_misc );

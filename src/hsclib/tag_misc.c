@@ -19,7 +19,7 @@
 ** along with this program; if not, write to the Free Software
 ** Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
-** updated: 12-Apr-1996
+** updated: 18-May-1996
 ** created: 30-Jul-1995
 */
 
@@ -67,6 +67,21 @@ BOOL handle_blink( HSCPRC *hp, HSCTAG *tag )
 
     return (TRUE);
 }
+
+
+
+/*
+** handle_blink: tag handle for <BLINK>
+**
+** just tell the user that frames are disgusting
+*/
+BOOL handle_frame( HSCPRC *hp, HSCTAG *tag )
+{
+    hsc_message( hp, MSG_FRAME_SUX, "frames are disgusting" );
+
+    return (TRUE);
+}
+
 
 /*
 ** handle_heading: tag handle for <H1>..<H6>

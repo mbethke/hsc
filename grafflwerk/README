@@ -1,0 +1,40 @@
+
+About `grafflwerk'
+==================
+
+This drawer contains some files and material that can be
+useful in combination with hsc. Do with it whatever you
+want, use at your own risk.
+
+The ARexx-scripts for ScMsg are a bit experimental
+because I don't like ScMsg and don't use these scripts
+myself.
+
+The Arexx-script for AWeb should be easy to change for
+other Browsers because it isn't very complex.
+
+Makefile
+--------
+This is an empty Makefile you can use as initial for new
+projects. Read the docs, section "Project Mangament" to
+find out how it is supposed to work.
+
+hScMsg.rexx
+-----------
+A ARexx-script that invokes hsc redirecting it's
+messages and sends messages outputed by hsc to ScMsg,
+which is part of the SAS/c-package. See the source-code
+for usage.
+
+SendAWeb.rexx
+-------------
+A ARexx-script that can be used to display an updated
+html-object in AWeb. Read the docs, section "project
+managment/makefiles/postprocessing" for details.
+
+SendScMsg.rexx
+--------------
+A ARexx-script that sends messages outputed by hsc to
+ScMsg, which is part of the SAS/c-package. See the
+source-code for usage.
+

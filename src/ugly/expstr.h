@@ -2,68 +2,70 @@
 #define UGLY_EXPSTR_H
 
 /*
-** ugly/expstr.h
-**
-** self-expanding string functions, header
-**
-** (W) by Tommy-Saftwörx in 1995
-**
-*/
+ * ugly/expstr.h
+ *
+ * self-expanding string functions, header
+ *
+ * (W) by Tommy-Saftwörx in 1995
+ *
+ */
 
 #include <stddef.h>
 
-#include "types.h"
+#include "utypes.h"
 
 #define EXPSTR_MEMSTEP 96
-#define ES_MIN_MEMSTEP 8 /* min. memory step for init( step_size ) */
+#define ES_MIN_MEMSTEP 8        /* min. memory step for init( step_size ) */
 
+#ifndef modaj
 #define modadj(x,by) ((by)*(((x)+(by))/(by)))
+#endif
 
-typedef struct {
-
-    STRPTR  es_data; /* ptr to string data */
-    size_t  es_len;  /* current len */
-    size_t  es_size; /* current size of mem allocated */
-    size_t  es_step; /* size of memory step */
-
-} EXPSTR;
+typedef struct
+{
+    STRPTR es_data;             /* ptr to string data */
+    size_t es_len;              /* current len */
+    size_t es_size;             /* current size of mem allocated */
+    size_t es_step;             /* size of memory step */
+}
+EXPSTR;
 
 /*
-** external prototypes
-*/
+ * external prototypes
+ */
 
 #ifndef NOEXTERN_UGLY_EXPSTR_H
 
-extern EXPSTR *ugly_dbg_init_estr( size_t step_size, STRPTR file, ULONG line );
-extern EXPSTR *ugly_init_estr( size_t step_size );
-extern void del_estr( EXPSTR *es );
+extern EXPSTR *ugly_dbg_init_estr(size_t step_size, STRPTR file, ULONG line);
+extern EXPSTR *ugly_init_estr(size_t step_size);
+extern void del_estr(EXPSTR * es);
 
-extern BOOL ugly_clr_estr( EXPSTR *es );
-extern BOOL ugly_dbg_clr_estr( EXPSTR *es, STRPTR file, ULONG line );
-extern BOOL set_estrn( EXPSTR *es, CONSTRPTR s, size_t n);
+extern BOOL ugly_clr_estr(EXPSTR * es);
+extern BOOL ugly_dbg_clr_estr(EXPSTR * es, STRPTR file, ULONG line);
+extern BOOL set_estrn(EXPSTR * es, CONSTRPTR s, size_t n);
 
-extern BOOL ugly_set_estr( EXPSTR *es, CONSTRPTR s );
-extern BOOL ugly_app_estrch( EXPSTR *es, int ch );
-extern BOOL ugly_app_estr( EXPSTR *es, CONSTRPTR s );
+extern BOOL ugly_set_estr(EXPSTR * es, CONSTRPTR s);
+extern BOOL ugly_app_estrch(EXPSTR * es, int ch);
+extern BOOL ugly_app_estr(EXPSTR * es, CONSTRPTR s);
 
-extern BOOL ugly_dbg_set_estr( EXPSTR *es, CONSTRPTR s, STRPTR file, ULONG line );
-extern BOOL ugly_dbg_app_estrch( EXPSTR *es, int ch, STRPTR file, ULONG line );
-extern BOOL ugly_dbg_app_estr( EXPSTR *es, CONSTRPTR s, STRPTR file, ULONG line );
+extern BOOL ugly_dbg_set_estr(EXPSTR * es, CONSTRPTR s, STRPTR file, ULONG line);
+extern BOOL ugly_dbg_app_estrch(EXPSTR * es, int ch, STRPTR file, ULONG line);
+extern BOOL ugly_dbg_app_estr(EXPSTR * es, CONSTRPTR s, STRPTR file, ULONG line);
 
-extern STRPTR estr2str( EXPSTR *es );
-extern BOOL   estrcpy( EXPSTR *dest, EXPSTR *src );
-extern BOOL   estrcat( EXPSTR *dest, EXPSTR *src );
-extern size_t estrlen( EXPSTR *es );
+extern STRPTR estr2str(EXPSTR * es);
+extern BOOL estrcpy(EXPSTR * dest, EXPSTR * src);
+extern BOOL estrcat(EXPSTR * dest, EXPSTR * src);
+extern size_t estrlen(EXPSTR * es);
 
-extern BOOL get_mid_estr( EXPSTR *dest, EXPSTR *src, size_t from, size_t num );
-extern BOOL get_right_estr( EXPSTR *dest, EXPSTR *src, size_t num );
-extern BOOL get_left_estr( EXPSTR *dest, EXPSTR *src, size_t num );
+extern BOOL get_mid_estr(EXPSTR * dest, EXPSTR * src, size_t from, size_t num);
+extern BOOL get_right_estr(EXPSTR * dest, EXPSTR * src, size_t num);
+extern BOOL get_left_estr(EXPSTR * dest, EXPSTR * src, size_t num);
 
-#endif  /* NOEXTERN_UGLY_EXPSTR_H */
+#endif /* NOEXTERN_UGLY_EXPSTR_H */
 
 /*
-** debugging prototypes
-*/
+ * debugging prototypes
+ */
 #if DEBUG_UGLY_EXPSTR
 
 /* full debugging */
@@ -86,5 +88,5 @@ extern BOOL get_left_estr( EXPSTR *dest, EXPSTR *src, size_t num );
 
 #endif
 
+#endif /* UGLY_EXPSTR_H */
 
-#endif  /* UGLY_EXPSTR_H */

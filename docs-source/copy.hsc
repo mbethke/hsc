@@ -1,19 +1,34 @@
 <WEBPAGE chapter="hsc - " title="Copyright"
-    PREV="errors.html"
-    NEXT="bugs.html" NOCOPY>
+    PREV="about.html"
+    NEXT="require.html" NOCOPY
+    QTEXT=("wos kosz mi waunst mas auschaun loﬂt<BR>"
+          +"bis auffi wosd brunzt<BR>"
+          +"leck mi do aum oasch sogd sie<BR>"
+          +"daun siagsd as umasunst")
+    QAUTHOR='Attwenger, "kosz"'>
 
-<hsc> is Freeware.<P>
+<H2>Freedom to distribute</H2>
 
-You may make and distribute verbatim copies of this archive if
-the contents are unchanged or the author has agreed to any changes made.<P>
+<P>This program is free software; you can redistribute it and/or modify
+it under the terms of the <A HREF="../COPYING">GNU General
+Public License</A> as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+</P>
 
-No guarantee of any kind is given that the program described in this
-document is 100% reliable. You are using this material on your own
-risk.<P>
+<P>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+</P>
 
-<STRONG>I hope this stuff helps you as it does me. If it
-trashes your HTML-sources or does any other damage to you or your computer I
-won't be held responsible for it in any case!</STRONG><P>
+<P>You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+</P>
+
+<H2>Freedom of price</H2>
+
+<P>..and you don't have to send me any money.</P>
 
 </WEBPAGE>
-

@@ -17,6 +17,7 @@ extern BOOL handle_sgml_comment( HSCPRC *hp, HSCTAG *tag );
 
 extern BOOL handle_base( HSCPRC *hp, HSCTAG *tag );
 extern BOOL handle_blink( HSCPRC *hp, HSCTAG *tag );
+extern BOOL handle_frame( HSCPRC *hp, HSCTAG *tag );
 extern BOOL handle_heading( HSCPRC *hp, HSCTAG *tag );
 extern BOOL handle_img( HSCPRC *hp, HSCTAG *tag );
 extern BOOL handle_pre( HSCPRC *hp, HSCTAG *tag );

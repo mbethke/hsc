@@ -1,0 +1,94 @@
+Hmpf... Grmbl... Wrcks...
+=========================
+
+This file is of no use for new users of hsc and just
+describes the in-combat-ibilities of this release to
+the previous one. For improvements and bugfixes,
+refer to "CHANGES".
+
+For those who want to compile hsc
+---------------------------------
+
+- Please read the "source/README" to avoid problems.
+
+- There is only one Makefile neccessary now.
+  "ugly/Makefile" is no more shipped with the archive.
+
+- The new Makefile uses some features of GNUmake, but
+  there is another "Makefile.dodl" which will be easier
+  to use for those who got stuck to CC and some
+  prehistoric wannabe-make
+
+- If you define OLDIFCOND when compiling hsc, it will be able
+  to handle both styles of <$if>, altought in a rather dirty
+  way. See also below.
+
+For users of hsc 0.9.9pr2
+-------------------------
+
+- The (undocument) option URISTYLE has been removed, it's
+  functionallity now works without it.
+
+- Some names for attributes have changed even since
+  hsc 0.9.9pr2.
+
+- The tagline hscdepp uses in Makefiles has changed.
+
+For users of hsc 0.9.8
+----------------------
+
+- The C-like names for most special attributes have been
+  renamed from `__xxx__' to `HSC.xxx'. As I hate everything
+  that reminds me to C, this really has been necessary.
+
+- The argument-sequence to specify include-files has
+  changed. Instead of
+
+    hsc file.hsc inc1.hsc inc2.hsc
+
+  you now have to use
+
+    hsc inc1.hsc inc2.hsc file.hsc
+
+  But before you are going to update your Makefiles, check 
+  the docs, section "Project Managment". You probably will 
+  want to use a new Makefile anyway.
+
+- Special tag <$insert> has become obsolete. At the moment,
+  it still is there, but you should use GETTIME() (see Docs:
+  "Expression") and <(...)> instead. It will be removed at 
+  all with one of the next releases.
+
+- <$if> now has become a `normal' html-like-tag with a single
+  attribute `COND' (short for `condition'). As this is a
+  really nasty change, the old syntax is still supported,
+  altough using a nasty hack.
+
+- If you insert temporary files using <$include>, problems
+  might occure if you also utilize the project-file and the
+  new `hscdepp'; there's a new attribute TEMPORARY for
+  <$insert> to avoid this, read to docs for details.
+
+- <$exec> has become more powerful; basically, old calls to
+  this tag should still work, but problems might occure if
+  you redirect the output. Read the docs for details.
+
+- Warning #51 has been removed. Quotes can now be replaced
+  using the CLI-option "RPLCQUOTE", this task is no more
+  performed by "SMARTENT".
+
+- CLI-option PIPEIN does no more exist, instead use
+  FROM=STDIN as filename. Note that STDIN is case-sensive
+  in this case, even for the AmigaOS-version.
+
+- hsc uses a new format for the project-file, but still can
+  read the old one. But older versions of hsc won't be able to
+  read the new one.
+
+- hsc now uses a new sequence of  directories trying to find
+  "hsc.prefs"; first, it will look at the current directory,
+  after that scan the value of HSCPREFS. Then, for AmigaOS:
+  "env:", "s:", for Unix: "/usr/local/lib/"; note that "~/"
+  is no more supported because this caused problems on some
+  systems (I don't know and even don't care why).
+

@@ -1,99 +1,170 @@
-##
-## makefile
-##
+#
+# Makefile for hsc-documentation
+#
 
-##
-## ddr - destination directory
-## opt - hsc options
-## inc - all files of the inc/ directory
-## hsc - shell command that envokes hsc
-##
-pdr = ../
-ddr = $(pdr)docs/
-opt = status destdir=$(ddr) checkuri smartent inc=inc/macro.hsc inc=inc/webpage.inc ign=46 ign=21
-inc = inc/macro.hsc inc/webpage.inc
-hsc = $(pdr)hsc
+#
+# DESTDIR  - destination directory (relative)
+# IGNORE   - messages to be ignored
+# PRJFILE  - project file
+# STDINC   - standard includes for all sources
+# HSCMISC  - miscellaneous flags and options
+# 
+# HSC      - shell command that invokes hsc
+# HSCFLAGS - hsc options
+#
+# HSCDEPP  - shell command that invokes hscdepp
+#
 
-all: $(ddr)about.html $(ddr)bugs.html $(ddr)copy.html $(ddr)distrib.html \
-	$(ddr)messages.html $(ddr)examples.html \
-	$(ddr)future.html $(ddr)install.html $(ddr)options.html $(ddr)questions.html \
-	$(ddr)related.html $(ddr)require.html \
-        $(ddr)features/spctags.html $(ddr)features/if.html \
-	$(ddr)features/absuris.html $(ddr)features/checkuri.html \
-	$(ddr)features/rplcent.html $(ddr)features/syntax.html \
-	$(ddr)macro/attrib.html $(ddr)macro/flag.html $(ddr)macro/macros.html \
-	$(ddr)index.html
+DESTDIR =/docs/
+IGNORE  =ign=46
+PRJFILE =hsc.project
+STDINC  =inc/macro.hsc inc/webpage.hsc
+HSCMISC	=rplcent getsize compact mode=pedantic #quotemode=double
 
-$(ddr)index.html: index.hsc $(inc)
-	$(hsc) index.hsc $(opt)
+HSC     =/hsc
+HSCFLAGS=$(HSCMISC) $(IGNORE) prjfile=$(PRJFILE) to=$(DESTDIR) $(STDINC)
 
-$(ddr)about.html: about.hsc $(inc)
-	$(hsc) about.hsc $(opt)
+HSCDEPP =/hscdepp
 
-$(ddr)bugs.html: bugs.hsc $(inc)
-	$(hsc) bugs.hsc $(opt)
+#
+# rule to update whole docs
+#
+all : all_hsc /index.html
 
-$(ddr)copy.html: copy.hsc $(inc)
-	$(hsc) copy.hsc $(opt)
+#
+# implicit rule for html-files
+#
+$(DESTDIR)%.html : %.hsc
+	$(HSC) $(HSCFLAGS) $< 
 
-$(ddr)distrib.html: distrib.hsc $(inc)
-	$(hsc) distrib.hsc $(opt)
+#
+# update dependencies
+#
+depend :
+	$(HSCDEPP) file=Makefile prjfile=$(PRJFILE) verbose
 
-$(ddr)messages.html: messages.hsc $(inc)
-	$(hsc) messages.hsc $(opt)
+#
+# add new file / change includes of existing file
+#
+# example: make NEW FILE=new.hsc "INCLUDE=inc/macro.hsc inc/sepp.hsc"
+#
+NEW :
+ifndef FILE
+	@echo *** pleaese specify variable FILE (and on your option INCLUDE)
+else
+	$(HSC) $(HSCFLAGS) $(INCLUDE) from=$(FILE) 
+endif
 
-$(ddr)examples.html: examples.hsc $(inc)
-	$(hsc) examples.hsc $(opt)
 
-$(ddr)future.html: future.hsc $(inc)
-	$(hsc) future.hsc $(opt)
+#
+# main page
+#
+/index.html : main_index.hsc
+	$(HSC) to=$@ $(HSCMISC) $<
 
-$(ddr)install.html: install.hsc $(inc)
-	$(hsc) install.hsc $(opt)
+# --- DO NOT MODIFY THIS LINE -- hsc-dependencies follow ---
 
-$(ddr)require.html: require.hsc $(inc)
-	$(hsc) require.hsc $(opt)
+# dependencies updated: Thursday 01-Aug-1996 01:42:53
 
-$(ddr)related.html: related.hsc $(inc)
-	$(hsc) related.hsc $(opt)
+all_hsc : /docs/features/spctags.html /docs/features/exec.html \
+    /docs/index.html /docs/updates.html /docs/features/expressions.html \
+    /docs/future.html /docs/messages.html /docs/features/syntax.html \
+    /docs/macro/attrib.html /docs/macro/flag.html /docs/macro/macros.html \
+    /docs/bugs.html /docs/project/prjfile.html /docs/project/makefile.html \
+    /docs/project/make.html /docs/project/hscdepp.html \
+    /docs/project/index.html /docs/options.html /docs/about.html \
+    /docs/copy.html /docs/examples.html /docs/install.html \
+    /docs/questions.html /docs/related.html /docs/require.html \
+    /docs/source.html /docs/features/absuris.html \
+    /docs/features/checkuri.html /docs/features/getsize.html \
+    /docs/features/if.html /docs/features/prefs.html \
+    /docs/features/rplcent.html /docs/features/spcattr.html \
+    /docs/features/strip.html /docs/distrib.html
 
-$(ddr)options.html: options.hsc $(inc)
-	$(hsc) options.hsc $(opt)
+/docs/features/spctags.html : features/spctags.hsc inc/macro.hsc \
+    inc/webpage.hsc
 
-$(ddr)questions.html: questions.hsc $(inc)
-	$(hsc) questions.hsc $(opt)
+/docs/features/exec.html : features/exec.hsc inc/macro.hsc inc/webpage.hsc \
+    exmpl/exec.hsc exmpl/exec.hsc
 
-##
-## features pages
-##
-$(ddr)features/spctags.html: features/spctags.hsc exmpl/exec.inc $(inc)
-	$(hsc) features/spctags.hsc $(opt)
+/docs/index.html : index.hsc inc/macro.hsc inc/webpage.hsc
 
-$(ddr)features/absuris.html: features/absuris.hsc $(inc)
-	$(hsc) features/absuris.hsc $(opt)
+/docs/updates.html : updates.hsc inc/macro.hsc inc/webpage.hsc
 
-$(ddr)features/checkuri.html: features/checkuri.hsc $(inc)
-	$(hsc) features/checkuri.hsc $(opt)
+/docs/features/expressions.html : features/expressions.hsc inc/macro.hsc \
+    inc/webpage.hsc
 
-$(ddr)features/if.html: features/if.hsc $(inc)
-	$(hsc) features/if.hsc $(opt)
+/docs/future.html : future.hsc inc/macro.hsc inc/webpage.hsc
 
-$(ddr)features/rplcent.html: features/rplcent.hsc $(inc)
-	$(hsc) features/rplcent.hsc $(opt)
+/docs/messages.html : messages.hsc inc/macro.hsc inc/webpage.hsc
 
-$(ddr)features/syntax.html: features/syntax.hsc $(inc)
-	$(hsc) features/syntax.hsc $(opt)
+/docs/features/syntax.html : features/syntax.hsc inc/macro.hsc \
+    inc/webpage.hsc
 
-##
-## macros
-##
-$(ddr)macro/attrib.html: macro/attrib.hsc $(inc)
-	$(hsc) macro/attrib.hsc $(opt)
+/docs/macro/attrib.html : macro/attrib.hsc inc/macro.hsc inc/webpage.hsc
 
-$(ddr)macro/flag.html: macro/flag.hsc $(inc)
-	$(hsc) macro/flag.hsc $(opt)
+/docs/macro/flag.html : macro/flag.hsc inc/macro.hsc inc/webpage.hsc
 
-$(ddr)macro/macros.html: macro/macros.hsc $(inc) \
-	  exmpl/m_addr.inc exmpl/m_file.inc exmpl/m_next.inc
-	$(hsc) macro/macros.hsc $(opt)
-## EOF
+/docs/macro/macros.html : macro/macros.hsc inc/macro.hsc inc/webpage.hsc \
+    exmpl/m_addr.hsc exmpl/m_addr.hsc exmpl/m_file.hsc exmpl/m_next.hsc \
+    exmpl/m_next.hsc
+
+/docs/bugs.html : bugs.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/project/prjfile.html : project/prjfile.hsc inc/macro.hsc \
+    inc/webpage.hsc
+
+/docs/project/makefile.html : project/makefile.hsc inc/macro.hsc \
+    inc/webpage.hsc
+
+/docs/project/make.html : project/make.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/project/hscdepp.html : project/hscdepp.hsc inc/macro.hsc \
+    inc/webpage.hsc
+
+/docs/project/index.html : project/index.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/options.html : options.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/about.html : about.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/copy.html : copy.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/examples.html : examples.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/install.html : install.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/questions.html : questions.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/related.html : related.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/require.html : require.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/source.html : source.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/features/absuris.html : features/absuris.hsc inc/macro.hsc \
+    inc/webpage.hsc
+
+/docs/features/checkuri.html : features/checkuri.hsc inc/macro.hsc \
+    inc/webpage.hsc
+
+/docs/features/getsize.html : features/getsize.hsc inc/macro.hsc \
+    inc/webpage.hsc
+
+/docs/features/if.html : features/if.hsc inc/macro.hsc inc/webpage.hsc
+
+/docs/features/prefs.html : features/prefs.hsc inc/macro.hsc \
+    inc/webpage.hsc
+
+/docs/features/rplcent.html : features/rplcent.hsc inc/macro.hsc \
+    inc/webpage.hsc
+
+/docs/features/spcattr.html : features/spcattr.hsc inc/macro.hsc \
+    inc/webpage.hsc exmpl/anchor.hsc exmpl/anchor.hsc
+
+/docs/features/strip.html : features/strip.hsc inc/macro.hsc \
+    inc/webpage.hsc
+
+/docs/distrib.html : distrib.hsc inc/macro.hsc inc/webpage.hsc
+
+# --- DO NOT MODIFY THIS LINE -- hsc-dependencies precede ---
