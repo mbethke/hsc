@@ -767,7 +767,7 @@ static BYTE eval_op(HSCPRC * hp) {
       else if (!strcmp(nw, OP_SUB_STR))      op = OP_SUB; /* subtraction operator */
       else if (!strcmp(nw, OP_MUL_STR))      op = OP_MUL; /* multiplication operator */
       else if (!strcmp(nw, OP_DIV_STR))      op = OP_DIV; /* division operator */
-      else if (!strcmp(nw, OP_MOD_STR))      op = OP_MOD; /* modulo operator */
+      else if (!upstrcmp(nw, OP_MOD_STR))    op = OP_MOD; /* modulo operator */
       else if (!upstrcmp(nw, OP_GT_STR))     op = OP_GT;  /* string greater-than */
       else if (!upstrcmp(nw, OP_LT_STR))     op = OP_LT;  /* string less-than */
       else if (!upstrcmp(nw, OP_LE_STR))    op = OP_LE; /* string less-or-equal */
