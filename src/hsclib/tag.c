@@ -54,6 +54,7 @@ void del_hsctag(APTR data)
     ufreestr(tag->mbi);
     ufreestr(tag->naw);
     del_dllist(tag->attr);
+    del_dllist(tag->style);
     del_infilepos(tag->start_fpos);
     del_infilepos(tag->end_fpos);
 
@@ -132,6 +133,7 @@ HSCTAG *cpy_hsctag(HSCTAG * oldtag)
         newtag->op_text = NULL;
         newtag->cl_text = NULL;
         newtag->attr = init_dllist(del_hscattr);
+        newtag->style = init_dllist(NULL); /* TODO: see new_hsctag() */
         newtag->mbi = strclone(oldtag->mbi);
         newtag->naw = strclone(oldtag->naw);
         newtag->uri_size = NULL;
