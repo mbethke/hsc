@@ -361,18 +361,18 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp) {
 /*
  * hsc_init_basicEntities
  *
- * create basic entities (&amp;, &gt;, &lt;, &quot;)
+ * create internal entities
  * (should be called BEFORE hsc_read_prefs())
  */
-#define NMEMBERS(s) (sizeof(s)/sizeof(s[0]))
 BOOL hsc_init_basicEntities(HSCPRC * hp) {
-   int i;
+   unsigned i;
    
    for(i=0; i < NMEMBERS(HSCInternalEntities); ++i) {
       add_ent(hp->defent,
             HSCInternalEntities[i].name,
-            HSCInternalEntities[i].replace,
-            HSCInternalEntities[i].numeric);
+            '\0',
+            HSCInternalEntities[i].numeric,
+            HSCInternalEntities[i].prefnum);
    }
    return (TRUE);
 }
