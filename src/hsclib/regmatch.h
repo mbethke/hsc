@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 2003 Matthias Bethke
+ * Copyright (C) 2004 Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,13 +25,24 @@
  * created:  01-Oct-2004
  */
 
-#include "hsclib/inc_base.h"
-#include "regex/regex.h"
+#ifndef HSC_REGMATCH_H
+#define HSC_REGMATCH_H
+
+#include "hsclib/hscprc.h"
+
+#define hscregfree(r) regfree(r)
+#define hscregfreeall(r) regfree(r); ufree(r)
 
 /* a simple check for match, compiling the pattern on the fly */
 extern BOOL hscregmatch(HSCPRC *hp, CONSTRPTR s, CONSTRPTR p, BOOL nocase);
 /* a simple check for match using a precompiled regexp */
 extern BOOL hscregmatch_pc(CONSTRPTR s, CONSTRPTR p, regex_t *re);
+/* precompile a pattern to an existing regex_t */
+extern BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR p, BOOL nocase, BOOL fastmap);
+/* precompile a pattern to a new regex_t */
+extern regex_t *hscregcomp(HSCPRC *hp, CONSTRPTR p, BOOL nocase, BOOL fastmap);
+
+#endif /* HSC_REGMATCH_H */
 
 /* $Id$*/
 /* vi: set ts=4: */
