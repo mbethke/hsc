@@ -31,24 +31,24 @@
 #include "ugly/utypes.h"
 
 /* masks for message classes */
-#define MASK_MESSAGE   0x0fff
-#define MASK_MSG_CLASS 0xf000
+#define MASK_MESSAGE   (0x0fff)
+#define MASK_MSG_CLASS (0xf000)
 
 /* message  classes */
-#define MSG_NOTE  0x00000       /* message */
-#define MSG_STYLE 0x01000       /* bad style */
-#define MSG_PORT  0x02000       /* portability prolem */
-#define MSG_WARN  0x03000       /* warning */
-#define MSG_ERROR 0x04000       /* error */
-#define MSG_FATAL 0x0f000       /* fatal error */
-#define MSG_NONE  0xff000       /* out of msg-array */
+#define MSG_NOTE  (0x00000)       /* message */
+#define MSG_STYLE (0x01000)       /* bad style */
+#define MSG_PORT  (0x02000)       /* portability prolem */
+#define MSG_WARN  (0x03000)       /* warning */
+#define MSG_ERROR (0x04000)       /* error */
+#define MSG_FATAL (0x0f000)       /* fatal error */
+#define MSG_NONE  (0xff000)       /* out of msg-array */
 
 /*
  *=========================
  * next message number
  *=========================
  */
-#define MAX_MSGID (96-1)
+#define MAX_MSGID (97-1)
 
 /*
  * obsolete numbers:
@@ -117,6 +117,7 @@
  */
 #define MSG_INVALID_STYLE      (MSG_WARN + 90)  /* sytax error in CSS definition */
 #define MSG_STYLE_REDEFINED    (MSG_WARN + 91)  /* CSS property redefined */
+#define MSG_ILLG_DEFSTYLE      (MSG_ERROR+ 96)  /* illegal format in <$defstyle> value */
 
 /*
  * messages within attributes
