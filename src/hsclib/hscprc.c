@@ -230,134 +230,105 @@ HSCPRC *new_hscprc(void)
 /*
  * get flags
  */
-BOOL hsc_get_chkid(HSCPRC * hp)
-{
+BOOL hsc_get_chkid(HSCPRC * hp) {
     return (hp->chkid);
 }
 
-BOOL hsc_get_chkuri(HSCPRC * hp)
-{
+BOOL hsc_get_chkuri(HSCPRC * hp) {
     return (hp->chkuri);
 }
 
-BOOL hsc_get_compact(HSCPRC * hp)
-{
+BOOL hsc_get_compact(HSCPRC * hp) {
     return (hp->compact);
 }
 
-BOOL hsc_get_debug(HSCPRC * hp)
-{
+BOOL hsc_get_debug(HSCPRC * hp) {
     return (hp->debug);
 }
 
-BOOL hsc_get_getsize(HSCPRC * hp)
-{
+BOOL hsc_get_getsize(HSCPRC * hp) {
     return (hp->getsize);
 }
 
-BOOL hsc_get_htmlonly(HSCPRC * hp)
-{
+BOOL hsc_get_htmlonly(HSCPRC * hp) {
     return (hp->htmlonly);
 }
 
-BOOL hsc_get_jens(HSCPRC * hp)
-{
-    return (hp->jens);
-}
-
-BOOL hsc_get_jerkvalues(HSCPRC * hp)
-{
+BOOL hsc_get_jerkvalues(HSCPRC * hp) {
     return (hp->jerkvalues);
 }
 
-BOOL hsc_get_rplc_ent(HSCPRC * hp)
-{
+BOOL hsc_get_rplc_ent(HSCPRC * hp) {
     return (hp->rplc_ent);
 }
 
-BOOL hsc_get_rplc_quote(HSCPRC * hp)
-{
+BOOL hsc_get_rplc_quote(HSCPRC * hp) {
     return (hp->rplc_quote);
 }
 
-BOOL hsc_get_smart_ent(HSCPRC * hp)
-{
+BOOL hsc_get_smart_ent(HSCPRC * hp) {
     return (hp->smart_ent);
 }
 
-BOOL hsc_get_strip_badws(HSCPRC * hp)
-{
+BOOL hsc_get_strip_badws(HSCPRC * hp) {
     return (hp->strip_badws);
 }
 
-BOOL hsc_get_strip_cmt(HSCPRC * hp)
-{
+BOOL hsc_get_strip_cmt(HSCPRC * hp) {
     return (hp->strip_cmt);
 }
 
-BOOL hsc_get_strip_ext(HSCPRC * hp)
-{
+BOOL hsc_get_strip_ext(HSCPRC * hp) {
     return (hp->strip_ext);
 }
 
-BOOL hsc_get_nested_errors(HSCPRC * hp)
-{
+BOOL hsc_get_nested_errors(HSCPRC * hp) {
     return (hp->nested_errors);
 }
 
-BOOL hsc_get_lctags(HSCPRC * hp)
-{
+BOOL hsc_get_lctags(HSCPRC * hp) {
     return (hp->lctags);
 }
 
-BOOL hsc_get_xhtml(HSCPRC * hp)
-{
+BOOL hsc_get_xhtml(HSCPRC * hp) {
     return (hp->xhtml);
 }
 
 /*
  * get internal flags
  */
-BOOL hsc_get_suppress_output(HSCPRC * hp)
-{
+BOOL hsc_get_suppress_output(HSCPRC * hp) {
     return (hp->suppress_output);
 }
 
-BOOL hsc_get_inside_pre(HSCPRC * hp)
-{
+BOOL hsc_get_inside_pre(HSCPRC * hp) {
     return (hp->inside_pre);
 }
 
-BOOL hsc_get_inside_anchor(HSCPRC * hp)
-{
+BOOL hsc_get_inside_anchor(HSCPRC * hp) {
     return (hp->inside_anchor);
 }
 
-BOOL hsc_get_fatal(HSCPRC * hp)
-{
+BOOL hsc_get_fatal(HSCPRC * hp) {
     return (hp->fatal);
 }
 
 /*
  * get values
  */
-STRPTR hsc_get_destdir(HSCPRC * hp)
-{
+STRPTR hsc_get_destdir(HSCPRC * hp) {
     return (estr2str(hp->destdir));
 }
 
-STRPTR hsc_get_reldir(HSCPRC * hp)
-{
+STRPTR hsc_get_reldir(HSCPRC * hp) {
     return (estr2str(hp->reldir));
 }
 
-STRPTR hsc_get_iconbase(HSCPRC * hp)
-{
+STRPTR hsc_get_iconbase(HSCPRC * hp) {
     return (estr2str(hp->iconbase));
 }
 
-STRPTR hsc_get_server_dir(HSCPRC * hp)
-{
+STRPTR hsc_get_server_dir(HSCPRC * hp) {
     return (estr2str(hp->server_dir));
 }
 
@@ -365,37 +336,32 @@ STRPTR hsc_get_server_dir(HSCPRC * hp)
 /*
  * get internal values
  */
-STRPTR hsc_get_click_here_str(HSCPRC * hp)
-{
+STRPTR hsc_get_click_here_str(HSCPRC * hp) {
     return (hp->click_here_str);
 }
 
-STRPTR hsc_get_file_name(HSCPRC * hp)
-{
+STRPTR hsc_get_file_name(HSCPRC * hp) {
     if (hp->inpf)
         return (infget_fname(hp->inpf));
     else
         return (NULL);
 }
 
-ULONG hsc_get_file_line(HSCPRC * hp)
-{
+ULONG hsc_get_file_line(HSCPRC * hp) {
     if (hp->inpf)
         return (infget_y(hp->inpf));
     else
         return (0);
 }
 
-ULONG hsc_get_file_column(HSCPRC * hp)
-{
+ULONG hsc_get_file_column(HSCPRC * hp) {
     if (hp->inpf)
         return (infget_x(hp->inpf));
     else
         return (0);
 }
 
-ULONG hsc_get_msg_count(HSCPRC * hp)
-{
+ULONG hsc_get_msg_count(HSCPRC * hp) {
     return (hp->msg_count);
 }
 
@@ -408,8 +374,7 @@ ULONG hsc_get_msg_count(HSCPRC * hp)
 /*
  * set values
  */
-BOOL hsc_set_destdir(HSCPRC * hp, STRPTR dir)
-{
+BOOL hsc_set_destdir(HSCPRC * hp, STRPTR dir) {
     set_estr(hp->destdir, dir);
     /* append "/" if neccessary */
     link_fname(hp->destdir, estr2str(hp->destdir), "");
@@ -418,172 +383,128 @@ BOOL hsc_set_destdir(HSCPRC * hp, STRPTR dir)
     return (TRUE);
 }
 
-BOOL hsc_set_reldir(HSCPRC * hp, STRPTR dir)
-{
-#if 0
-    set_estr(hp->reldir, dir);
-    /* append "/" if neccessary */
-    link_fname(hp->reldir, estr2str(hp->reldir), "");
-    D(fprintf(stderr, DHL "reldir =`%s'\n", estr2str(hp->reldir)));
-#endif
+BOOL hsc_set_reldir(HSCPRC * hp, STRPTR dir) {
     /* append "/" if neccessary */
     link_fname(hp->reldir, dir, "");
     D(fprintf(stderr, DHL "reldir =`%s'\n", estr2str(hp->reldir)));
-
     return (TRUE);
 }
 
-BOOL hsc_set_iconbase(HSCPRC * hp, STRPTR uri)
-{
+BOOL hsc_set_iconbase(HSCPRC * hp, STRPTR uri) {
     set_estr(hp->iconbase, uri);
-
     D(fprintf(stderr, DHL "iconbase=`%s'\n", estr2str(hp->iconbase)));
-
     return (TRUE);
 }
 
-BOOL hsc_set_server_dir(HSCPRC * hp, STRPTR dir)
-{
+BOOL hsc_set_server_dir(HSCPRC * hp, STRPTR dir) {
     set_estr(hp->server_dir, dir);
 
     /* if dir does not already end with a directory separator,
      * append if now */
-    if (!strchr(PATH_SEPARATOR, last_ch(dir)))
-    {
+    if (!strchr(PATH_SEPARATOR, last_ch(dir))) {
         app_estrch(hp->server_dir, PATH_SEPARATOR[0]);
     }
-
     D(fprintf(stderr, DHL "serverdir=`%s'\n", estr2str(hp->server_dir)));
-
     return (TRUE);
 }
 
-BOOL hsc_set_strip_tags(HSCPRC * hp, STRPTR taglist)
-{
+BOOL hsc_set_strip_tags(HSCPRC * hp, STRPTR taglist) {
     reallocstr(&(hp->strip_tags), taglist);
     return (TRUE);
 }
 
-BOOL hsc_set_filename_document(HSCPRC * hp, STRPTR filename)
-{
+BOOL hsc_set_filename_document(HSCPRC * hp, STRPTR filename) {
     BOOL ok = FALSE;
 
     D(fprintf(stderr, DHL "document=`%s'\n", filename));
     hp->filename_document = strclone(filename);
-
     return (ok);
 }
 
 /*
  * set flags
  */
-VOID hsc_set_chkid(HSCPRC * hp, BOOL new_chkid)
-{
+VOID hsc_set_chkid(HSCPRC * hp, BOOL new_chkid) {
     hp->chkid = new_chkid;
     D(fprintf(stderr, DHL "flag: chkid    =%d\n", new_chkid));
 }
 
-VOID hsc_set_chkuri(HSCPRC * hp, BOOL new_chkuri)
-{
+VOID hsc_set_chkuri(HSCPRC * hp, BOOL new_chkuri) {
     hp->chkuri = new_chkuri;
     D(fprintf(stderr, DHL "flag: chkuri   =%d\n", new_chkuri));
 }
 
-VOID hsc_set_compact(HSCPRC * hp, BOOL new_compact)
-{
+VOID hsc_set_compact(HSCPRC * hp, BOOL new_compact) {
     hp->compact = new_compact;
     D(fprintf(stderr, DHL "flag: compact  =%d\n", new_compact));
 }
 
-VOID hsc_set_debug(HSCPRC * hp, BOOL new_debug)
-{
+VOID hsc_set_debug(HSCPRC * hp, BOOL new_debug) {
     hp->debug = new_debug;
     D(fprintf(stderr, DHL "flag: debug    =%d\n", new_debug));
 }
 
-VOID hsc_set_getsize(HSCPRC * hp, BOOL new_getsize)
-{
+VOID hsc_set_getsize(HSCPRC * hp, BOOL new_getsize) {
     hp->getsize = new_getsize;
     D(fprintf(stderr, DHL "flag: getsize  =%d\n", new_getsize));
 }
 
-VOID hsc_set_htmlonly(HSCPRC * hp, BOOL new_htmlonly)
-{
-    hp->htmlonly = new_htmlonly;
-    D(fprintf(stderr, DHL "flag: htmlonly =%d\n", new_htmlonly));
-}
-
-VOID hsc_set_jens(HSCPRC * hp, BOOL new_jens)
-{
-    hp->jens = new_jens;
-    D(fprintf(stderr, DHL "flag: jens     =%d\n", new_jens));
-}
-
-VOID hsc_set_jerkvalues(HSCPRC * hp, BOOL new_jerkvalues)
-{
+VOID hsc_set_jerkvalues(HSCPRC * hp, BOOL new_jerkvalues) {
     hp->jerkvalues = new_jerkvalues;
     D(fprintf(stderr, DHL "flag: jerkval  =%d\n", new_jerkvalues));
 }
 
-VOID hsc_set_rplc_ent(HSCPRC * hp, BOOL new_rplc_ent)
-{
+VOID hsc_set_rplc_ent(HSCPRC * hp, BOOL new_rplc_ent) {
     hp->rplc_ent = new_rplc_ent;
     D(fprintf(stderr, DHL "flag: rplc_ent =%d\n", new_rplc_ent));
 }
 
-VOID hsc_set_rplc_quote(HSCPRC * hp, BOOL new_rplc_quote)
-{
+VOID hsc_set_rplc_quote(HSCPRC * hp, BOOL new_rplc_quote) {
     hp->rplc_quote = new_rplc_quote;
     D(fprintf(stderr, DHL "flag: rplc_quote =%d\n", new_rplc_quote));
 }
 
-VOID hsc_set_smart_ent(HSCPRC * hp, BOOL new_smart_ent)
-{
+VOID hsc_set_smart_ent(HSCPRC * hp, BOOL new_smart_ent) {
     hp->smart_ent = new_smart_ent;
     D(fprintf(stderr, DHL "flag: smart_ent=%d\n", new_smart_ent));
 }
 
-VOID hsc_set_strip_badws(HSCPRC * hp, BOOL new_strip_badws)
-{
+VOID hsc_set_strip_badws(HSCPRC * hp, BOOL new_strip_badws) {
     hp->strip_badws = new_strip_badws;
     D(fprintf(stderr, DHL "flag: strip_bws=%d\n", new_strip_badws));
 }
 
-VOID hsc_set_strip_cmt(HSCPRC * hp, BOOL new_strip_cmt)
-{
+VOID hsc_set_strip_cmt(HSCPRC * hp, BOOL new_strip_cmt) {
     hp->strip_cmt = new_strip_cmt;
     D(fprintf(stderr, DHL "flag: strip_cmt=%d\n", new_strip_cmt));
 }
 
-VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext)
-{
+VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext) {
     hp->strip_ext = new_strip_ext;
     D(fprintf(stderr, DHL "flag: strip_ext=%d\n", new_strip_ext));
 }
 
-VOID hsc_set_nested_errors(HSCPRC * hp, BOOL new_nested_errors)
-{
+VOID hsc_set_nested_errors(HSCPRC * hp, BOOL new_nested_errors) {
     hp->nested_errors = new_nested_errors;
     D(fprintf(stderr, DHL "flag: nested_errors=%d\n", new_nested_errors));
 }
 
-VOID hsc_set_lctags(HSCPRC * hp, BOOL new_lctags)
-{
+VOID hsc_set_lctags(HSCPRC * hp, BOOL new_lctags) {
     hp->lctags = new_lctags;
     D(fprintf(stderr, DHL "flag: lctags=%d\n", new_lctags));
 }
 
-VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml)
-{
-    if((hp->xhtml = new_xhtml))
+VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml) {
+    if((hp->xhtml = new_xhtml)) {
        hp->lctags = TRUE;            /* XHTML implies LOWERCASETAGS */
-       hp->quotemode = QMODE_DOUBLE; /* use double quotes by default */
-       hp->validate_css = TRUE;      /* CSS should be validated by default */
+       hp->quotemode = QMODE_DOUBLE; /* use double quotes */
+       hp->validate_css = TRUE;      /* CSS should be validated */
+       hp->entitymode = EMODE_UTF8;  /* output UTF-8 instead of ASCII entities */
+    }
     D(fprintf(stderr, DHL "flag: xhtml=%d\n", new_xhtml));
 }
 
-VOID hsc_set_vcss(HSCPRC * hp, BOOL new_vcss)
-{
+VOID hsc_set_vcss(HSCPRC * hp, BOOL new_vcss) {
     hp->validate_css = new_vcss;
     D(fprintf(stderr, DHL "flag: validatecss=%d\n", new_vcss));
 }
@@ -591,48 +512,40 @@ VOID hsc_set_vcss(HSCPRC * hp, BOOL new_vcss)
 /*
  * set values
  */
-VOID hsc_set_quote_mode(HSCPRC * hp, LONG new_mode)
-{
+VOID hsc_set_quote_mode(HSCPRC * hp, LONG new_mode) {
     hp->quotemode = new_mode;
     D(fprintf(stderr, DHL "quote_mode=%ld\n", new_mode));
 }
 
-VOID hsc_set_entity_mode(HSCPRC * hp, LONG new_mode)
-{
-    hp->entmode = new_mode;
+VOID hsc_set_entity_mode(HSCPRC * hp, LONG new_mode) {
+    hp->entitymode = new_mode;
     D(fprintf(stderr, DHL "entity_mode=%ld\n", new_mode));
 }
 
-VOID hsc_set_maximum_messages(HSCPRC * hp, LONG messages)
-{
+VOID hsc_set_maximum_messages(HSCPRC * hp, LONG messages) {
     hp->max_messages = messages;
 }
 
-VOID hsc_set_maximum_errors(HSCPRC * hp, LONG errors)
-{
+VOID hsc_set_maximum_errors(HSCPRC * hp, LONG errors) {
     hp->max_errors = errors;
 }
 
 /*
  * set call-backs
  */
-VOID hsc_set_status_file_begin(HSCPRC * hp, VOID(*status_file) (HSCPRC * hp, STRPTR filename))
-{
+VOID hsc_set_status_file_begin(HSCPRC * hp, VOID(*status_file) (HSCPRC * hp, STRPTR filename)) {
     hp->CB_status_file_begin = status_file;
 }
 
-VOID hsc_set_status_file_end(HSCPRC * hp, VOID(*status_file) (HSCPRC * hp))
-{
+VOID hsc_set_status_file_end(HSCPRC * hp, VOID(*status_file) (HSCPRC * hp)) {
     hp->CB_status_file_end = status_file;
 }
 
-VOID hsc_set_status_line(HSCPRC * hp, VOID(*status_line) (HSCPRC * hp))
-{
+VOID hsc_set_status_line(HSCPRC * hp, VOID(*status_line) (HSCPRC * hp)) {
     hp->CB_status_line = status_line;
 }
 
-VOID hsc_set_status_misc(HSCPRC * hp, VOID(*status_misc) (HSCPRC * hp, STRPTR s))
-{
+VOID hsc_set_status_misc(HSCPRC * hp, VOID(*status_misc) (HSCPRC * hp, STRPTR s)) {
     hp->CB_status_misc = status_misc;
 }
 
@@ -687,94 +600,64 @@ VOID hsc_set_id(HSCPRC * hp,
 /*
  * message methodes
  */
-BOOL hsc_set_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id, HSCIGN value)
-{
+BOOL hsc_set_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id, HSCIGN value) {
     BOOL set = FALSE;
 
     if ((msg_id & MASK_MESSAGE) <= MAX_MSGID)
         hp->msg_ignore[msg_id & MASK_MESSAGE] = value;
-
     return (set);
 }
 
-HSCIGN hsc_get_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id)
-{
+HSCIGN hsc_get_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id) {
     /* HSCMSG_ID max_msgid = MAX_MSGID; */
-    if ((msg_id & MASK_MESSAGE) <= MAX_MSGID)
-    {
-        return (hp->msg_ignore[msg_id & MASK_MESSAGE]);
-    }
-    else
-    {
-        return (FALSE);
-    }
+    return ((msg_id & MASK_MESSAGE) <= MAX_MSGID) ?
+        hp->msg_ignore[msg_id & MASK_MESSAGE] : FALSE;
 }
 
-BOOL hsc_set_msg_class(HSCPRC * hp, HSCMSG_ID msg_id, HSCMSG_CLASS msg_class)
-{
+BOOL hsc_set_msg_class(HSCPRC * hp, HSCMSG_ID msg_id, HSCMSG_CLASS msg_class) {
     BOOL set = FALSE;
 
     if ((msg_id & MASK_MESSAGE) <= MAX_MSGID)
-    {
         hp->msg_class[msg_id & MASK_MESSAGE] = msg_class;
-    }
-
     return (set);
 }
 
-HSCMSG_CLASS hsc_get_msg_class(HSCPRC * hp, HSCMSG_ID msg_id)
-{
+HSCMSG_CLASS hsc_get_msg_class(HSCPRC * hp, HSCMSG_ID msg_id) {
     HSCMSG_ID msg_id_unmasked = msg_id & MASK_MESSAGE;
-    if (msg_id_unmasked <= MAX_MSGID)
-    {
+    if (msg_id_unmasked <= MAX_MSGID) {
         HSCMSG_CLASS mchp = hp->msg_class[msg_id_unmasked];
         HSCMSG_CLASS mcid = msg_id & MASK_MSG_CLASS;
-
-        if (mcid > mchp)
-        {
-            return (mcid);
-        }
-        else
-        {
-            return (mchp);
-        }
+        return (mcid > mchp) ? mcid : mchp;
     }
-    else
-        return (MSG_NONE);
+    return (MSG_NONE);
 }
 
 /*
  * set message classes to be ignored
  */
-BOOL hsc_get_msg_ignore_notes(HSCPRC * hp)
-{
+BOOL hsc_get_msg_ignore_notes(HSCPRC * hp) {
     return hp->msg_ignore_notes;
 }
 
-BOOL hsc_get_msg_ignore_style(HSCPRC * hp)
-{
+BOOL hsc_get_msg_ignore_style(HSCPRC * hp) {
     return hp->msg_ignore_style;
 }
 
-BOOL hsc_get_msg_ignore_port(HSCPRC * hp)
-{
+BOOL hsc_get_msg_ignore_port(HSCPRC * hp) {
     return hp->msg_ignore_port;
 }
 
-BOOL hsc_set_msg_ignore_notes(HSCPRC * hp, BOOL value)
-{
+BOOL hsc_set_msg_ignore_notes(HSCPRC * hp, BOOL value) {
     hp->msg_ignore_notes = value;
     return (value);
 }
 
-BOOL hsc_set_msg_ignore_style(HSCPRC * hp, BOOL value)
-{
+BOOL hsc_set_msg_ignore_style(HSCPRC * hp, BOOL value) {
     hp->msg_ignore_style = value;
     return (value);
 }
 
-BOOL hsc_set_msg_ignore_port(HSCPRC * hp, BOOL value)
-{
+BOOL hsc_set_msg_ignore_port(HSCPRC * hp, BOOL value) {
     hp->msg_ignore_port = value;
     return (value);
 }
@@ -783,15 +666,13 @@ BOOL hsc_set_msg_ignore_port(HSCPRC * hp, BOOL value)
 /*
  * reset whole arrays for message-class/ignores
  */
-VOID hsc_clear_msg_ignore(HSCPRC * hp)
-{
+VOID hsc_clear_msg_ignore(HSCPRC * hp) {
     size_t i;
     for (i = 0; i <= MAX_MSGID; i++)
         hp->msg_ignore[i] = FALSE;
 }
 
-VOID hsc_reset_msg_class(HSCPRC * hp)
-{
+VOID hsc_reset_msg_class(HSCPRC * hp) {
     size_t i;
     for (i = 0; i <= MAX_MSGID; i++)
         hp->msg_class[i] = MSG_NONE;
@@ -800,13 +681,11 @@ VOID hsc_reset_msg_class(HSCPRC * hp)
 /*
  * methods for include-directories
  */
-BOOL hsc_add_include_directory(HSCPRC * hp, STRPTR dir)
-{
+BOOL hsc_add_include_directory(HSCPRC * hp, STRPTR dir) {
     return ((BOOL) (app_strnode(hp->include_dirs, dir) != NULL));
 }
 
-VOID hsc_clr_include_directory(HSCPRC * hp)
-{
+VOID hsc_clr_include_directory(HSCPRC * hp) {
     clr_strlist(hp->include_dirs);
 }
 
@@ -820,12 +699,10 @@ VOID hsc_clr_include_directory(HSCPRC * hp)
  * compactWs - reduce white space string to blank
  *             or linefeed
  */
-STRPTR compactWs(HSCPRC * hp, STRPTR ws)
-{
+STRPTR compactWs(HSCPRC * hp, STRPTR ws) {
     STRPTR newWs = "";
 
-    if (ws[0])
-    {
+    if (ws[0]) {
         /* any white spaces at all */
         STRPTR containsLF = strchr(ws, '\n');
         STRPTR containsCR = strchr(ws, '\r');
@@ -842,7 +719,6 @@ STRPTR compactWs(HSCPRC * hp, STRPTR ws)
               newWs = " ";
         }
     }
-
     return (newWs);
 }
 
@@ -856,50 +732,34 @@ STRPTR compactWs(HSCPRC * hp, STRPTR ws)
  *         text..other text
  * result: true, if text has been outputted
  */
-BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text)
-{
+BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text) {
     BOOL written = FALSE;
-    if ((hp)->CB_text && !((hp)->suppress_output))
-    {
+    if ((hp)->CB_text && !((hp)->suppress_output)) {
         /* add current white spaces to white space
          * buffer; if hp->compact is enabled, reduce
          * white spaces */
         if (wspc)
-        {
             app_estr(hp->whtspc, wspc);
-        }
         if (hp->compact && (!hp->inside_pre))
-        {
             /* reduce white spaces */
             wspc = compactWs(hp, estr2str(hp->whtspc));
-        }
         else
-        {
             wspc = estr2str(hp->whtspc);
-        }
 
         /* strip white spaces if requested */
-        if (hp->strip_next_whtspc)
-        {
+        if (hp->strip_next_whtspc) {
             D(fprintf(stderr, DHL "bad white spaces stripped\n"));
             hp->strip_next_whtspc = FALSE;
             wspc = "";
-        }
-        else if (hp->strip_next2_whtspc)
-        {
+        } else if (hp->strip_next2_whtspc) {
             hp->strip_next2_whtspc = FALSE;
             hp->strip_next_whtspc = TRUE;
-        }
-        else if ((hp->tag_next_whtspc)
-                 && strlen(wspc))
-        {
+        } else if ((hp->tag_next_whtspc) && strlen(wspc)) {
             hsc_message(hp, MSG_SUCC_WHTSPC,
                         "succeeding white-space for %T",
                         hp->tag_next_whtspc);
         }
-
         hp->tag_next_whtspc = NULL;
-
 
 #if DEBUG_HSCLIB_OUTPUT
         if (hp->debug)
@@ -909,26 +769,19 @@ BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text)
                 else
                     fprintf(stderr, DHL "ouput: `%s', `\\n'\n", wspc);
 #endif
-        if ((wspc && wspc[0]) || (text && text[0]))
-        {
+        if ((wspc && wspc[0]) || (text && text[0])) {
             /* convert NULL values to empty strings */
             if (!wspc)
-            {
                 wspc = "";
-            }
             if (!text)
-            {
                 text = "";
-            }
 
             /* output text */
             (*((hp)->CB_text)) ((hp), wspc, text);
             written = TRUE;
         }
-
         /* reset white space buffer */
         clr_estr(hp->whtspc);
-
     }
     return (written);
 }
@@ -936,12 +789,9 @@ BOOL hsc_output_text(HSCPRC * hp, STRPTR wspc, STRPTR text)
 /*
  * nomem-handler
  */
-BOOL hsc_standard_nomem_handler(size_t size)
-{
+BOOL hsc_standard_nomem_handler(size_t size) {
     fputs("\n*** out of memory\n\n", stderr);
-
     exit(RC_FAIL);
-
-    return (FALSE);             /* abort immediatly */
+    return (FALSE);             /* abort immediately */
 }
 
