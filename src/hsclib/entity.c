@@ -23,9 +23,6 @@
  *
  * entity structure, variables and functions ( "&xx;")
  *
- * updated: 13-Oct-1996
- * created:  8-Sep-1995
- *
  */
 
 #define NOEXTERN_HSCLIB_ENTITY_H
@@ -195,3 +192,5 @@ void add_ent(DLLIST * entlist, STRPTR entid, char entreplace, short num, BOOL pr
     }
 }
 
+/* $Id$ */
+/* vi: set ts=4: */

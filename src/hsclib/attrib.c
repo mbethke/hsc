@@ -23,9 +23,6 @@
  *
  * hsc-variable funcs for hsc
  *
- * updated: 25-May-1997
- * created:  2-Sep-1995
- *
  */
 
 #define NOEXTERN_HSCLIB_ATTRIBUTE_H
@@ -466,4 +463,6 @@ STRPTR get_vardeftext(HSCATTR * var)
 
    return (deftext);
 }
+
+/* $Id$ */
 

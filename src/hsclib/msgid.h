@@ -23,8 +23,6 @@
  *
  * defines for message-ids (warnings, errors,..)
  *
- * updated: 24-Mar-2003
- * created: 30-Jul-1995
  */
 
 #ifndef HSC_MSGID_H
@@ -204,4 +202,7 @@
 
 
 #endif
+
+/* $Id$ */
+/* vi: set ts=4: */
 

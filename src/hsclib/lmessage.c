@@ -23,9 +23,6 @@
  *
  * message functions for hsc
  *
- * updated: 10-Aug-1998
- * created: 10-Mar-1996
- *
  */
 
 #define NOEXTERN_HSCLIB_MESSAGE_H
@@ -521,3 +518,5 @@ VOID hsc_msg_nouri(HSCPRC * hp, STRPTR filename, STRPTR uriname, STRPTR note)
     }
 }
 
+/* $Id$ */
+/* vi: set ts=4: */

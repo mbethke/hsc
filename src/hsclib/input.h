@@ -46,3 +46,6 @@ extern BOOL parse_gt(HSCPRC * hp);
 
 #endif /* HSCLIB_INPUT_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

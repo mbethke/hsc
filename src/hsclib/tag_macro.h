@@ -34,3 +34,7 @@ extern BOOL handle_hsc_macro(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_content(HSCPRC * hp, HSCTAG * tag);
 
 #endif /* HSC_TAG_MACRO_H */
+
+/* $Id$ */
+/* vi: set ts=4: */
+

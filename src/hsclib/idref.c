@@ -22,9 +22,6 @@
  *
  * functions for id-references
  *
- * updated: 14-Oct-1996
- * created: 12-Apr-1995
- *
  */
 
 #include "hsclib/inc_base.h"
@@ -222,4 +219,7 @@ BOOL check_all_local_idref(HSCPRC * hp)
 
     return (ok);
 }
+
+/* $Id$ */
+/* vi: set ts=4: */
 

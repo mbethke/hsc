@@ -32,3 +32,7 @@
 #include "hsclib/skip.h"
 
 #endif /* HSCLIB_INC_TAGCB_H */
+
+/* $Id$ */
+/* vi: set ts=4: */
+

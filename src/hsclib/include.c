@@ -21,9 +21,6 @@
  * hsclib/include.c
  *
  * hsc include functions
- *
- * updated: 16-May-1997
- * created: 19-Feb-1996
  */
 
 #include <time.h>
@@ -314,3 +311,5 @@ BOOL hsc_include_string(HSCPRC * hp, STRPTR filename, STRPTR s, ULONG optn)
     return (hsc_base_include_string(hp, filename, s, optn, NULL));
 }
 
+/* $Id$ */
+/* vi: set ts=4: */

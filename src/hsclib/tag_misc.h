@@ -43,3 +43,7 @@ extern BOOL handle_pre(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_end_pre(HSCPRC * hp, HSCTAG * tag);
 
 #endif /* HSC_TAG_MISC_H */
+
+/* $Id$ */
+/* vi: set ts=4: */
+

@@ -40,3 +40,6 @@ extern BOOL postprocess_tagattr(HSCPRC * hp, HSCTAG *tag, BOOL open_tag);
 
 #endif /* HSCLIB_POSTEVAL_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

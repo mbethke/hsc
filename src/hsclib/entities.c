@@ -100,3 +100,6 @@ static struct HSCENTITY {
    {"ffllig",	64260,FALSE},	/* small ffl ligature */
    {"fjlig",	65533,FALSE} 	/* small fj ligature */
 };
+
+/* $Id$ */
+/* vi: set ts=4: */

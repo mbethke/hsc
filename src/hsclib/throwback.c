@@ -54,3 +54,5 @@ VOID hsc_throwback(HSCPRC * hp,
 
 #endif
 
+/* $Id$ */
+/* vi: set ts=4: */

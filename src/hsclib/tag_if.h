@@ -41,3 +41,6 @@ extern VOID del_select_stack_node(APTR data);
 
 #endif /* HSCLIB_TAG_IF_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

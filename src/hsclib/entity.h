@@ -66,5 +66,8 @@ extern HSCENT *app_entnode(DLLIST * entlist, STRPTR entid);
 extern void add_ent(DLLIST * entlist, STRPTR entid, char entreplace, short num, BOOL prefnum);
 
 #endif /* NOEXTERN_HSCLIB_ENTITY_H */
-
 #endif /* HSCLIB_ENTITY_H */
+
+/* $Id$ */
+/* vi: set ts=4: */
+

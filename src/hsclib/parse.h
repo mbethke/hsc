@@ -50,3 +50,7 @@ extern VOID remove_end_tag(HSCPRC * hp, HSCTAG * tag);
 
 #endif /* NOEXTERN_PARSE_H */
 #endif /* HSC_PARSE_H */
+
+/* $Id$ */
+/* vi: set ts=4: */
+

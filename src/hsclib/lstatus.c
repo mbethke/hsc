@@ -22,9 +22,6 @@
  *
  * status message functions for hsc
  *
- * updated:  7-Jul-1996
- * created: 30-Jul-1995
- *
  */
 
 #include "hsclib/inc_base.h"
@@ -52,4 +49,7 @@ VOID hsc_status_line(HSCPRC * hp)
     if (hp->CB_status_line)
         (*hp->CB_status_line) (hp);
 }
+
+/* $Id$ */
+/* vi: set ts=4: */
 

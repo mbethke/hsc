@@ -48,3 +48,6 @@ extern STRPTR eval_attrref(HSCPRC * hp, HSCATTR * destattr);
 
 #endif /* HSCLIB_EVAL_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

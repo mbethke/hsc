@@ -186,5 +186,7 @@ extern BOOL is_hsc_tag(HSCTAG * tag);
 extern BOOL is_macro_tag(HSCTAG * tag);
 
 #endif /* NOEXTERN_HSCLIB_TAG_H */
-
 #endif /* HSCLIB_TAG_H */
+
+/* $Id$ */
+/* vi: set ts=4: */

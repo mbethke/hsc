@@ -39,3 +39,6 @@ extern BOOL hsc_assign_tagCBs(HSCPRC * hp);
 #endif /* NOEXTERN_HSCLIB_LINIT_H */
 #endif /* HSCLIB_LINIT_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

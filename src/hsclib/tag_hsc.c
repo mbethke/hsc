@@ -23,9 +23,6 @@
  *
  * tag callbacks for "<$xx>" and related
  * (for macro callbacks, see "tag_macro.c")
- *
- * updated: 23-May-1998
- * created: 23-Jul-1995
  */
 
 #include "hsclib/inc_tagcb.h"
@@ -967,3 +964,6 @@ BOOL handle_hsc_stripws(HSCPRC * hp, HSCTAG * tag)
 
    return (FALSE);
 }
+
+/* $Id$ */
+/* vi: set ts=4: */

@@ -23,8 +23,6 @@
  *
  * hsc process functions
  *
- * updated:  9-Aug-1998
- * created: 11-Feb-1996
  */
 
 #define NOEXTERN_HSCLIB_HSCPRC
@@ -795,3 +793,5 @@ BOOL hsc_standard_nomem_handler(size_t size) {
     return (FALSE);             /* abort immediately */
 }
 
+/* $Id$ */
+/* vi: set ts=4: */

@@ -21,9 +21,6 @@
  * hsclib/tag_macro.c
  *
  * tag callbacks for "<$MACRO>" and "<macro>"
- *
- * updated: 16-Nov-1997
- * created:  5-Aug-1995
  */
 
 #include "hsclib/inc_tagcb.h"
@@ -474,3 +471,6 @@ BOOL handle_hsc_macro(HSCPRC * hp, HSCTAG * tag)
 
     return (FALSE);
 }
+
+/* $Id$ */
+/* vi: set ts=4: */

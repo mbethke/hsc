@@ -33,3 +33,7 @@ extern HSCTAG *def_tag_name(HSCPRC * hp, BOOL * open_tag);
 #endif /* NOEXTERN_HSCLIB_DEFTAG_H */
 
 #endif /* HSCLIB_DEFTAG_H */
+
+/* $Id$ */
+/* vi: set ts=4: */
+

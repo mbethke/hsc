@@ -1,5 +1,5 @@
 /*
- * This source code is part of hsc, a html-preprocessor,
+ * This source code is part of hsc, an html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,6 @@
  * functions to postprocess attributes
  * (remember IDs, references, etc)
  *
- * updated:  6-Sep-1995
- * created:  7-Jul-1995
  */
 
 #define NOEXTERN_HSCLIB_EVAL_H
@@ -40,27 +38,25 @@
 /*
  * postprocess_attributes
  *
- * This functions scans a tag's list of attributes for an URI-attributes
- * refering to an external URI. If it succeeds, and the hsc-process
+ * This function scans a tag's list of attributes for URI-attributes
+ * referring to an external URI. If it succeeds, and the hsc-process
  * has it's hp->strip_ext flag enabled, the function exits.
  *
  * Otherwise, it scans the attributes for new IDs and references
- * and updates the document-data if neccessary (but only for start-tags)
+ * and updates the document data if neccessary (but only for start tags)
  *
  * params:
- *   hp ....... hsc-process
- *   tag ... tag whichs attribute list chould be examined
- *   open_tag .. for end-tags, the document-data should not be
+ *   hp ........ hsc-process
+ *   tag ....... tag whose attribute list should be examined
+ *   open_tag .. for end tags, the document-data should not be
  *               updated again
  * result:
  *   TRUE, if tag should NOT be stripped
  */
-BOOL postprocess_tagattr(HSCPRC * hp, HSCTAG * tag, BOOL open_tag)
-{
+BOOL postprocess_tagattr(HSCPRC * hp, HSCTAG * tag, BOOL open_tag) {
     BOOL dontstrip = TRUE;
 
-    if (tag->attr)
-    {
+    if (tag->attr) {
 
         /*
          * find out, if list should be refused
@@ -73,22 +69,17 @@ BOOL postprocess_tagattr(HSCPRC * hp, HSCTAG * tag, BOOL open_tag)
         {
             D(fprintf(stderr, DHL "strip external\n"));
             dontstrip = FALSE;
-        }
-        else if (open_tag)
-        {
+        } else if (open_tag) {
             /*
              * search for new IDs and references
              */
             DLNODE *nd = dll_first(tag->attr);
-            while (nd)
-            {
+            while (nd) {
                 HSCATTR *attrib = (HSCATTR *) dln_data(nd);
                 STRPTR value = get_vartext(attrib);
 
-                if (value)
-                {
-                    if (attrib->vartype == VT_URI)
-                    {
+                if (value) {
+                    if (attrib->vartype == VT_URI) {
                         /* new reference */
                         INFILEPOS *fpos = new_infilepos(hp->inpf);
                         CALLER *newcaller = fpos2caller(fpos);
@@ -100,9 +91,7 @@ BOOL postprocess_tagattr(HSCPRC * hp, HSCTAG * tag, BOOL open_tag)
                         del_infilepos(fpos);
                         D(fprintf(stderr, DHL "new REFERENCE: `%s'\n", value));
 
-                    }
-                    else if (attrib->vartype == VT_ID)
-                    {
+                    } else if (attrib->vartype == VT_ID) {
                         /* new id defined */
                         D(fprintf(stderr, DHL "new ID: `%s'\n", value));
                         add_local_iddef(hp, value);
@@ -115,3 +104,6 @@ BOOL postprocess_tagattr(HSCPRC * hp, HSCTAG * tag, BOOL open_tag)
     return (dontstrip);
 }
 
+
+/* $Id$ */
+/* vi: set ts=4: */

@@ -22,7 +22,6 @@
  *
  * Support functions for Cascading Stylesheet values
  *
- * created: 23-Mar-2003
  */
 
 #ifndef HSC_CSS_H
@@ -36,3 +35,7 @@ extern BOOL add_width_height_attrs(HSCPRC *hp, ULONG width, ULONG height);
 #endif /* NOEXTERN_CSS_H */
 
 #endif /* HSC_CSS_H */
+
+/* $Id$ */
+/* vi: set ts=4: */
+

@@ -30,3 +30,7 @@
 extern BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag);
 
 #endif /* HSC_SIZE_H */
+
+/* $Id$ */
+/* vi: set ts=4: */
+

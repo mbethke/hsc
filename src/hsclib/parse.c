@@ -23,9 +23,6 @@
  *
  * parse file: handle for entities & tags
  *
- * updated:  4-Jul-2003
- * created:  1-Jul-1995
- *
  */
 
 #include <ctype.h>
@@ -1206,3 +1203,6 @@ BOOL hsc_parse_end_id(HSCPRC * hp)
 
    return (BOOL) (!hp->fatal);
 }
+
+/* $Id$ */
+/* vi: set ts=4: */

@@ -57,3 +57,6 @@ extern URIKIND uri_kind(STRPTR uri);
 
 #endif /* HSCLIB_URI_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

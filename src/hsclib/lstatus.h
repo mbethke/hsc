@@ -34,3 +34,6 @@ extern VOID hsc_status_line(HSCPRC * hp);
 
 #endif /* HSCLIB_LSTATUS_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

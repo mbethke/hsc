@@ -36,3 +36,6 @@
 
 #endif /* HSCLIB_HSCLIB_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

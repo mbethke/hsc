@@ -21,9 +21,6 @@
  * hsclib/tag_misc
  *
  * misc. tag-callbacks
- *
- * updated: 16-Dec-1997
- * created: 30-Jul-1995
  */
 
 #include "hsclib/inc_base.h"
@@ -149,3 +146,6 @@ BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
 
     return !stripped;
 }
+
+/* $Id$ */
+/* vi: set ts=4: */

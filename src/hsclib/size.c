@@ -22,9 +22,6 @@
  * hsclib/size.c
  *
  * evaluate values for WIDTH and HEIGHT from file
- *
- * updated: 23-Mar-2003
- * created:  7-Jan-1996
  */
 
 #include "hsclib/inc_base.h"
@@ -466,3 +463,6 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
     }
     return (TRUE);
 }
+
+/* $Id$ */
+/* vi: set ts=4: */

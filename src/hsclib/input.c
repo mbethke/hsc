@@ -21,9 +21,6 @@
  * hsclib/input.c
  *
  * basic functions for parsing input
- *
- * updated: 16-May-1997
- * created: 29-Jul-1995
  */
 
 #include <ctype.h>
@@ -236,4 +233,7 @@ BOOL parse_gt(HSCPRC * hp)
 {
     return (parse_wd(hp, ">"));
 }
+
+/* $Id$ */
+/* vi: set ts=4: */
 

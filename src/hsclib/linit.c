@@ -23,9 +23,6 @@
  *
  * functions to init & read preferences for a hsc-process
  *
- * updated: 08-May-2001
- * updated: 17-Dec-1997
- * created: 19-Feb-1996
  */
 
 #include "hsclib/inc_base.h"
@@ -465,4 +462,5 @@ BOOL hsc_init_hscprc(HSCPRC * hp, STRPTR prefs_fname)
     return (ok);
 }
 
-/* vi: set tabstop=4: */
+/* $Id$ */
+/* vi: set ts=4: */

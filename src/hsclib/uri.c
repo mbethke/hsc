@@ -22,9 +22,6 @@
  * uri.c
  *
  * functions for uri parsing of tag arguments
- *
- * updated: 23-Aug-1998
- * created: 16-Jul-1995
  */
 
 #define NOEXTERN_HSCLIB_URI_H
@@ -502,3 +499,6 @@ VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri)
       }                       /* else (rsrc) */
    }                           /* if (uri) */
 }
+
+/* $Id$ */
+/* vi: set ts=4: */

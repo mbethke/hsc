@@ -24,8 +24,6 @@
  * functions to define new attribute
  * and manipulate attribute lists
  *
- * updated: 31-May-1997
- * created:  6-Jan-1995
  */
 
 #define NOEXTERN_HSCLIB_DEFATTR
@@ -633,4 +631,4 @@ void move_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci)
    } else panic("mci=MCI_ERROR");
 }
 
-
+/* $Id$ */

@@ -23,8 +23,6 @@
  *
  * define new tag from input file
  *
- * updated: 11-Jan-1998
- * created: 13-Oct-1995
  */
 
 #include "hsclib/inc_base.h"
@@ -811,4 +809,5 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag) {
    return (result_tci);
 }
 
+/* $Id$ */
 /* vi: set ts=4: */

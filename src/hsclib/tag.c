@@ -22,9 +22,6 @@
  * hsclib/tag.c
  *
  * hsc-tag funcs for hsc
- *
- * updated: 25-Mar-1997
- * created:  8-Sep-1995
  */
 
 #define NOEXTERN_HSCLIB_TAG_H
@@ -255,4 +252,7 @@ BOOL is_macro_tag( HSCTAG *tag )
 {
     return((BOOL)(((tag->option) & HT_MACRO)>0));
 }
+
+/* $Id$ */
+/* vi: set ts=4: */
 

@@ -52,3 +52,6 @@ extern BOOL check_all_local_idref(HSCPRC * hp);
 
 #endif /* HSC_IDREF_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

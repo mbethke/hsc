@@ -438,3 +438,7 @@ extern BOOL hsc_standard_nomem_handler(size_t size);
 
 #endif /* NOEXTERN_HSC_HSCPRC */
 #endif /* HSC_HSCPRC_H */
+
+/* $Id$ */
+/* vi: set ts=4: */
+

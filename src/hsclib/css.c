@@ -22,7 +22,6 @@
  *
  * Support functions for Cascading Stylesheet values
  *
- * created: 23-Mar-2003
  */
 
 #include "hsclib/inc_base.h"
@@ -143,3 +142,4 @@ BOOL add_width_height_attrs(HSCPRC *hp, ULONG width, ULONG height) {
    return (BOOL)(rw && rh);
 } 
 
+/* $Id$ */

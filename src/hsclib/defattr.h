@@ -53,3 +53,7 @@ extern HSCATTR *define_attr_by_text(HSCPRC * hp, STRPTR attr_text, STRPTR defaul
 
 #endif /* NOEXTERN_HSCLIB_DEFATTR */
 #endif /* HSCLIB_DEFATTR_H */
+
+/* $Id$ */
+/* vi: set ts=4: */
+

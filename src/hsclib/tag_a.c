@@ -21,9 +21,6 @@
  *  hsclib/tag_a.c
  *
  *  tag-callback for "<A..>" (anchor)
- *
- *  updated: 16-Dec-1997
- *  created:  3-Aug-1995
  */
 
 #include "hsclib/inc_tagcb.h"
@@ -100,4 +97,7 @@ BOOL handle_canchor(HSCPRC * hp, HSCTAG * tag)
     return (TRUE);
 
 }
+
+/* $Id$ */
+/* vi: set ts=4: */
 

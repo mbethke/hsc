@@ -52,3 +52,6 @@ extern VOID enforcerHit(VOID);
 #endif /* NOEXTERN_HSCLIB_MESSAGE */
 #endif /* HSCLIB_MESSAGE_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

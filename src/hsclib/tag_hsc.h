@@ -55,3 +55,6 @@ extern BOOL handle_hsc_insert_expression(HSCPRC * hp, HSCTAG * tag);
 
 #endif /* HSCLIB_TAG_HSC_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

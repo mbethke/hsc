@@ -23,10 +23,6 @@
  *
  * attribute value evaluation functions
  *
- * updated: 19-Oct-2001
- * updated: 07-May-2001
- * updated: 14-Sep-1998
- * created: 11-Oct-1995
  */
 
 #define NOEXTERN_HSCLIB_EVAL_H
@@ -1857,3 +1853,6 @@ STRPTR eval_conditional_assignment(HSCPRC * hp, HSCATTR * dest)
 
    return (attr_val);
 }
+
+/* $Id$ */
+/* vi: set ts=4: */

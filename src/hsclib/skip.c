@@ -21,9 +21,6 @@
  * hsclib/skip.c
  *
  * functions for skipping several things
- *
- * updated: 27-Nov-1997
- * created:  8-Oct-1995
  */
 
 #define NOEXTERN_HSCLIB_SKIP_H
@@ -1034,3 +1031,6 @@ BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STRPTR tag
 
     return ((BOOL) (nw != NULL));
 }
+
+/* $Id$ */
+/* vi: set ts=4: */

@@ -24,3 +24,6 @@ VOID hsc_throwback(HSCPRC * hp,
                    STRPTR fname, ULONG x, ULONG y,
                    STRPTR msg_text);
 
+/* $Id$ */
+/* vi: set ts=4: */
+

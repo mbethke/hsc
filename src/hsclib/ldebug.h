@@ -156,3 +156,6 @@
 
 #endif /* HSCLIB_LDEBUG_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

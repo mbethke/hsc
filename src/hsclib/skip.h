@@ -71,3 +71,6 @@ extern BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STR
 
 #endif /* HSCLIB_SKIP_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+

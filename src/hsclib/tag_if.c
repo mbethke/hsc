@@ -21,9 +21,6 @@
  * hsclib/tag_if.c
  *
  * tag callbacks for <$if>,<$else> and <$elseif>
- *
- * updated: 24-Feb-1997
- * created:  7-Oct-1995
  */
 
 #include "hsclib/inc_tagcb.h"
@@ -477,3 +474,6 @@ BOOL handle_hsc_elseif(HSCPRC * hp, HSCTAG * tag)
 
     return (FALSE);
 }
+
+/* $Id$ */
+/* vi: set ts=4: */

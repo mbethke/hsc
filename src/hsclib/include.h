@@ -53,3 +53,6 @@ extern BOOL hsc_base_include_string(HSCPRC * hp, STRPTR filename, STRPTR s, ULON
 
 #endif /* HSCLIB_INCLUDE_H */
 
+/* $Id$ */
+/* vi: set ts=4: */
+
