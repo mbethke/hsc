@@ -77,13 +77,7 @@
 /*
  * modes for special characters/entity extraction
  */
-#define EMODE_KEEP     1        /* do not replace */
-#define EMODE_REPLACE  2        /* replace by prefered value */
-                   /* (depends wheter if a PREFNUM was used within $DEFENT) */
-#define EMODE_NUMERIC  3        /* always replace by numeric (&#123;) */
-#define EMODE_SYMBOLIC 4        /* always replace by symbolic (&uuml;) */
-
-#define EMODE_ENUMSTR "keep|replace|numeric|symbolic"
+#define EMODE_ENUMSTR "keep|replace|numeric|symbolic|utf-8"
 
 /*
  * special values for ignore
