@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -496,15 +497,11 @@ VOID hsc_msg_illg_whtspc(HSCPRC * hp)
 VOID hsc_msg_stripped_tag(HSCPRC * hp, HSCTAG * tag, STRPTR why)
 {
     if (why)
-    {
         hsc_message(hp, MSG_TAG_STRIPPED,
-                    "stripped tag %T (%s)", tag, why);
-    }
+                    "stripped %T (%s)", tag, why);
     else
-    {
         hsc_message(hp, MSG_TAG_STRIPPED,
-                    "stripped tag %T", tag);
-    }
+                    "stripped %T", tag);
 }
 
 VOID hsc_msg_unkn_attr_ref(HSCPRC * hp, STRPTR attr)

@@ -141,21 +141,11 @@ BOOL handle_end_pre(HSCPRC * hp, HSCTAG * tag)
  */
 BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
 {
-    BOOL not_stripped = TRUE;
+    BOOL stripped = FALSE;
     EXPSTR *content = hp->tag_attr_str;
 
-    /* do not maintain content, if comment should be stripped
-     * later on anyway */
-    if (hp->strip_cmt) content = NULL;
-
     /* skip data */
-    skip_sgml_special(hp, content);
+    skip_sgml_special(hp, content, &stripped);
 
-    /* check if comment should be stripped */
-    if (hp->strip_cmt)
-    {
-        hsc_msg_stripped_tag(hp, tag, "sgml-comment");
-        not_stripped = FALSE;
-    }
-    return not_stripped;
+    return !stripped;
 }

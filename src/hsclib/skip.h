@@ -61,7 +61,7 @@
 extern BOOL skip_next_lf(HSCPRC * hp);
 extern BOOL skip_hsc_comment(HSCPRC * hp, EXPSTR * content);
 extern BOOL skip_hsc_verbatim(HSCPRC * hp, EXPSTR * content);
-extern BOOL skip_sgml_special(HSCPRC * hp, EXPSTR * content);
+extern BOOL skip_sgml_special(HSCPRC * hp, EXPSTR * content, BOOL *stripped);
 
 extern BOOL skip_until_eot(HSCPRC * hp, EXPSTR * logstr);
 

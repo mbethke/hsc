@@ -413,6 +413,7 @@ BOOL skip_hsc_verbatim(HSCPRC * hp, EXPSTR * content)
  *  hp           hsc-process to work with
  *  content      string where to store skipped text; NULL, if text should
  *               not be stored (which is faster)
+ *  stripped     will be set to TRUE if comment was not stored
  * result:
  *  TRUE, if no fatal error occured
  */
@@ -424,26 +425,32 @@ static VOID msg_lf_in_comment(HSCPRC * hp)
                 "line feed inside sgml-comment");
 }
 
-BOOL skip_sgml_special(HSCPRC * hp, EXPSTR * content)
+BOOL skip_sgml_special(HSCPRC * hp, EXPSTR * content, BOOL *stripped)
 {
     INFILE *inpf = hp->inpf;
     int ch = infgetc(inpf);     /* read next char */
     int ch_prev = EOF;
     BOOL end = FALSE;           /* flag: end of comment reached? */
 
-    if (ch == '>')
-    {
+    if (ch == '>') {
         hsc_message(hp, MSG_ZERO_COMMENT, "empty sgml comment");
         end = TRUE;
-    }
-    else if (ch == '-')
-    {
+    } else if (ch == '-') {
         ch_prev = ch;
         ch = infgetc(inpf);
-        if (ch == '-')
-        {
+        if (ch == '-') {
             BOOL inside_comment = TRUE;
             BOOL warned_text = FALSE;
+            
+            /* don't keep contents if STRIPCOMMENT was set (but do keep stuff
+             * starting in "<!" but not "<!--") */
+            if(hp->strip_cmt) {
+               HSCTAG dummytag;
+               dummytag.name = "!-- ... --";
+               content = NULL;
+               *stripped = TRUE;
+               hsc_msg_stripped_tag(hp, &dummytag, "sgml-comment");
+            }
 
             DS(fprintf(stderr, DHLS "skip sgml comment\n"));
             APP_CONTENT_CH(ch_prev);
@@ -452,62 +459,41 @@ BOOL skip_sgml_special(HSCPRC * hp, EXPSTR * content)
             ch_prev = EOF;
             ch = infgetc(inpf);
 
-            while (!end && (ch != EOF))
-            {
+            while (!end && (ch != EOF)) {
                 /* append current char to content */
                 APP_CONTENT_CH(ch);
 
-                if ((ch == '-') && (ch_prev == '-'))
-                {
+                if ((ch == '-') && (ch_prev == '-')) {
                     inside_comment = !inside_comment;
                     warned_text = FALSE;
                     ch_prev = EOF;
-                }
-                else if (ch == '-')
-                {
+                } else if (ch == '-') {
                     ch_prev = '-';
-                }
-                else if (ch == '\r')
-                {
+                } else if (ch == '\r') {
                     ch_prev = '\r';
                     msg_lf_in_comment(hp);
-                }
-                else
-                {
-                    if (ch == '\n')
-                    {
+                } else {
+                    if (ch == '\n') {
                         if (ch_prev != '\r')
-                        {
                             msg_lf_in_comment(hp);
-                        }
                     }
 
                     ch_prev = EOF;
-                    if (ch == '>')
-                    {
+                    if (ch == '>') {
                         if (inside_comment)
-                        {
                             hsc_message(hp, MSG_GT_IN_COMMENT,
                                         "%q inside sgml-comment", ">");
-                        }
                         else
-                        {
                             end = TRUE;
-                        }
-                    }
-                    else
-                    {
+                    } else {
                         if (!inside_comment && !warned_text)
-                        {
                             hsc_message(hp, MSG_TEXT_IN_COMMENT,
                                         "text outside sgml-comment context");
-                        }
                         warned_text = TRUE;
                     }
                 }
 
-                if (!end)
-                {
+                if (!end) {
                     /* read next char */
                     ch = infgetc(inpf);
                 }
@@ -515,12 +501,8 @@ BOOL skip_sgml_special(HSCPRC * hp, EXPSTR * content)
 
             /* push back last char */
             if (!end && (ch != EOF))
-            {
                 inungetc(ch, inpf);
-            }
-        }
-        else
-        {
+        } else {
             /* push back chars read until yet */
             inungetc(ch, inpf);
             inungetc(ch_prev, inpf);
@@ -530,17 +512,13 @@ BOOL skip_sgml_special(HSCPRC * hp, EXPSTR * content)
     }
 
     /* skip other "!"-tags (SSI and that bullshit) */
-    if (!end)
-    {
+    if (!end) {
         DS(fprintf(stderr, DHLS "skip sgml special\n"));
 
         APP_CONTENT_CH(ch);
-
-        do
-        {
+        do {
             ch = infgetc(inpf);
-            if (ch != EOF)
-            {
+            if (ch != EOF) {
                 APP_CONTENT_CH(ch);
                 DS(
                       {
@@ -551,23 +529,16 @@ BOOL skip_sgml_special(HSCPRC * hp, EXPSTR * content)
                 );
 
                 if (ch == '>')
-                {
                     end = TRUE;
-                }
                 else
-                {
                     skip_expression(hp, content, ch);
-                }
             }
-        }
-        while ((ch != EOF) && !end);
+        } while ((ch != EOF) && !end);
     }
 
     /* handle unexpected end-of-file */
     if (ch == EOF)
-    {
         hsc_msg_eof(hp, "missing end of sgml special tag \"<!..>\"");
-    }
 
     return ((BOOL) ! (hp->fatal));
 }
@@ -855,269 +826,202 @@ BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STRPTR tag
 
     /* clear result-var tagfound, if passed */
     if (tagfound)
-    {
         clr_estr(tagfound);
-    }
 
     /* clear content on request */
     if (content && (option & SKUT_CLEAR_CONTENT))
-    {
         clr_estr(content);
-    }
 
-    do
-    {
+    do {
         /* get next word or tag-id */
-        if ((state != STATE_TAG)
-            && (state != STATE_ENDTAG))
-        {
+        if ((state != STATE_TAG) && (state != STATE_ENDTAG))
             nw = infgetw(inpf);
-        }
         else
-        {
             nw = infget_tagid(hp);
-        }
 
-        if (nw)
-        {
+        if (nw) {
 #if 0
             /* optional debugging stuff:
-             * display conent and tagstr on every change */
+             * display content and tagstr on every change */
             if (content && estrlen(content))
-            {
                 DS(fprintf(stderr, DHLS "  contnt=`%s'\n", estr2str(content)));
-            }
 
             if (estrlen(tagstr))
-            {
                 DS(fprintf(stderr, DHLS "  tagstr=`%s'\n", estr2str(tagstr)));
-            }
 #endif
 
-            switch (state)
-            {
+            switch (state) {
                 /* check if tag starts */
             case STATE_TEXT:
-                if (!strcmp(nw, "<"))
-                {
+                if (!strcmp(nw, "<")) {
                     /* add white spaces to content */
                     APP_CONTENT(infgetcws(inpf));
                     /* reset tag string with "<" */
                     set_estr(tagstr, nw);
 
                     state = STATE_TAG;
-                }
-                else
-                {
+                } else {
                     APP_CONTENT_CWWS(inpf);
                     if (estrlen(tagstr))
-                    {
                         clr_estr(tagstr);
-                    }
                 }
                 break;
 
                 /* check which tag it is and how to act */
             case STATE_TAG:
-                {
-                    if (!strcmp(nw, "<"))
-                    {
-                        /* this handles constructs like ``<</$source>''
-                         * correctly */
-                        APP_CONTENT_ESTR(tagstr);
+                if (!strcmp(nw, "<")) {
+                   /* this handles constructs like ``<</$source>''
+                    * correctly */
+                   APP_CONTENT_ESTR(tagstr);
 
-                        /* unget current "<" */
-                        inungetcwws(inpf);
+                   /* unget current "<" */
+                   inungetcwws(inpf);
 
-                        /* switch back to text-parsing */
-                        state = STATE_TEXT;
-                    }
-                    else
-                    {
-                        /* flag: attribs of tag should be skipped
-                         *   (and appended to tagstr) */
-                        BOOL skip_attribs = FALSE;
-                        /* flag: tagstr should be appended to content */
-                        BOOL append_tag = FALSE;
+                   /* switch back to text-parsing */
+                   state = STATE_TEXT;
+                } else {
+                   /* flag: attribs of tag should be skipped
+                    *   (and appended to tagstr) */
+                   BOOL skip_attribs = FALSE;
+                   /* flag: tagstr should be appended to content */
+                   BOOL append_tag = FALSE;
 
-                        app_estr(tagstr, infgetcws(inpf));
-                        app_estr(tagstr, infgetcw(inpf));
+                   app_estr(tagstr, infgetcws(inpf));
+                   app_estr(tagstr, infgetcw(inpf));
 
-                        /* check for end tag */
-                        if (!strcmp(nw, "/"))
-                        {
-                            state = STATE_ENDTAG;
-                        }
-                        else if (option & SKUT_NO_ANALYSE_TAGS)
-                        {
-                            /* abort tag scan */
-                            append_tag = TRUE;
-                        }
-                        /* check, if hsc-comment reached */
-                        else if (!upstrcmp(nw, HSC_COMMENT_STR))
-                        {
-                            DS(fprintf(stderr, DHLS "hsc-comment\n"));
-                            APP_CONTENT(estr2str(tagstr));
-                            skip_hsc_comment(hp, content);
-                            state = STATE_TEXT;
-                        }
-                        /* check, if hsc-verbatim reached */
-                        else if (!upstrcmp(nw, HSC_VERBATIM_STR))
-                        {
-                            DS(fprintf(stderr, DHLS "hsc-verbatim\n"));
-                            APP_CONTENT(estr2str(tagstr));
-                            skip_hsc_verbatim(hp, content);
-                            state = STATE_TEXT;
-                        }
-                        /* check, if hsc-source reached */
-                        else if (!upstrcmp(nw, HSC_SOURCE_STR))
-                        {
-                            DS(fprintf(stderr, DHLS "hsc-source\n"));
-                            APP_CONTENT(estr2str(tagstr));
-                            skip_tag_attribs(hp, content);
-                            skip_until_tag(hp, content, NULL, NULL,
-                                           HSC_SOURCE_STR,
-                                           SKUT_NO_ANALYSE_TAGS);
-                            state = STATE_TEXT;
-                        }
-                        /* check, if sgml-special-tag reached */
-                        else if (!strcmp(nw, "!"))
-                        {
-                            DS(fprintf(stderr, DHLS "sgml-special\n"));
-                            APP_CONTENT(estr2str(tagstr));
-                            skip_sgml_special(hp, content);
-                            state = STATE_TEXT;
-                        }
-                        else
-                        {
-                            HSCTAG *tag = find_strtag(hp->deftag, nw);
-                            DS(fprintf(stderr, DHLS "tag <%s>\n", nw));
+                   /* check for end tag */
+                   if (!strcmp(nw, "/"))
+                      state = STATE_ENDTAG;
+                   else if (option & SKUT_NO_ANALYSE_TAGS)
+                      /* abort tag scan */
+                      append_tag = TRUE;
+                   /* check, if hsc-comment reached */
+                   else if (!upstrcmp(nw, HSC_COMMENT_STR)) {
+                      DS(fprintf(stderr, DHLS "hsc-comment\n"));
+                      APP_CONTENT(estr2str(tagstr));
+                      skip_hsc_comment(hp, content);
+                      state = STATE_TEXT;
+                   } else if (!upstrcmp(nw, HSC_VERBATIM_STR)) {
+                      /* check, if hsc-verbatim reached */
+                      DS(fprintf(stderr, DHLS "hsc-verbatim\n"));
+                      APP_CONTENT(estr2str(tagstr));
+                      skip_hsc_verbatim(hp, content);
+                      state = STATE_TEXT;
+                   } else if (!upstrcmp(nw, HSC_SOURCE_STR)) {
+                      /* check, if hsc-source reached */
+                      DS(fprintf(stderr, DHLS "hsc-source\n"));
+                      APP_CONTENT(estr2str(tagstr));
+                      skip_tag_attribs(hp, content);
+                      skip_until_tag(hp, content, NULL, NULL,
+                            HSC_SOURCE_STR,
+                            SKUT_NO_ANALYSE_TAGS);
+                      state = STATE_TEXT;
+                   } else if (!strcmp(nw, "!")) {
+                      /* check, if sgml-special-tag reached */
+                      BOOL dummy_stripped;
+                      DS(fprintf(stderr, DHLS "sgml-special\n"));
+                      APP_CONTENT(estr2str(tagstr));
+                      skip_sgml_special(hp, content,&dummy_stripped);
+                      state = STATE_TEXT;
+                   } else {
+                      HSCTAG *tag = find_strtag(hp->deftag, nw);
+                      DS(fprintf(stderr, DHLS "tag <%s>\n", nw));
 
-                            /* check, if nesting-tag should be incr. */
-                            if (!upstrcmp(nw, tagnest))
-                            {
-                                DS(fprintf(stderr, DHLS "  nest-tag (%ld)\n", nesting));
-                                nesting++;
-                                skip_attribs = TRUE;
-                                append_tag = TRUE;
-                            }
-                            /* check, if stop-tag reached */
-                            else if (!nesting && tagstoplist
-                              && strenum(nw, tagstoplist, '|', STEN_NOCASE))
-                            {
-                                DS(fprintf(stderr, DHLS "  stop-tag <%s>\n", nw));
-                                if (tagfound)
-                                {
-                                    set_estr(tagfound, nw);
-                                }
-                                skip_attribs = TRUE;
-                                quit = TRUE;
-                            }
-                            /* ignore special tags, switch back to text;
-                             * TODO: this is ugly, eg a
-                             *     <$define sepp:string="<bla">
-                             * will cause trouble */
-                            else if (tag && (tag->option & HT_SPECIAL))
-                            {
-                                DS(fprintf(stderr, DHLS "  special tag; ignore\n"));
-                                state = STATE_TEXT;
-                                append_tag = TRUE;
-                            }
-                            /* for standard tags, just skip attributes */
-                            else
-                            {
-                                append_tag = TRUE;
-                                skip_attribs = TRUE;
-                            }
+                      /* check, if nesting-tag should be incr. */
+                      if (!upstrcmp(nw, tagnest)) {
+                         DS(fprintf(stderr, DHLS "  nest-tag (%ld)\n", nesting));
+                         nesting++;
+                         skip_attribs = TRUE;
+                         append_tag = TRUE;
+                      } else if (!nesting && tagstoplist
+                            && strenum(nw, tagstoplist, '|', STEN_NOCASE)) {
+                         /* check, if stop-tag reached */
+                         DS(fprintf(stderr, DHLS "  stop-tag <%s>\n", nw));
+                         if (tagfound)
+                            set_estr(tagfound, nw);
+                         skip_attribs = TRUE;
+                         quit = TRUE;
+                      } else if (tag && (tag->option & HT_SPECIAL)) {
+                         /* ignore special tags, switch back to text;
+                          * TODO: this is ugly, eg a
+                          *     <$define sepp:string="<bla">
+                          * will cause trouble */
+                         DS(fprintf(stderr, DHLS "  special tag; ignore\n"));
+                         state = STATE_TEXT;
+                         append_tag = TRUE;
+                      } else {
+                         /* for standard tags, just skip attributes */
+                         append_tag = TRUE;
+                         skip_attribs = TRUE;
+                      }
 
-                            /* skip tag attributes, if requested */
-                            if (skip_attribs)
-                            {
-                                skip_tag_attribs(hp, tagstr);
-                                state = STATE_TEXT;
-                            }
-                        }
+                      /* skip tag attributes, if requested */
+                      if (skip_attribs) {
+                         skip_tag_attribs(hp, tagstr);
+                         state = STATE_TEXT;
+                      }
+                   }
 
-                        /* append tag text to content, if requested */
-                        if (append_tag)
-                        {
-                            DS(fprintf(stderr, DHLS "  append `%s'\n",
-                                       estr2str(tagstr)));
-                            APP_CONTENT(estr2str(tagstr));
-                            state = STATE_TEXT;
-                        }
-                    }
-                    break;
+                   /* append tag text to content, if requested */
+                   if (append_tag) {
+                      DS(fprintf(stderr, DHLS "  append `%s'\n",
+                               estr2str(tagstr)));
+                      APP_CONTENT(estr2str(tagstr));
+                      state = STATE_TEXT;
+                   }
+                }
+                break;
+
+           case STATE_ENDTAG:
+                DS(fprintf(stderr, DHLS "end tag </%s>\n", nw));
+                app_estr(tagstr, infgetcws(inpf));
+                app_estr(tagstr, infgetcw(inpf));
+                if (!upstrcmp(nw, tagnest)) {
+                   if (nesting) {
+                      nesting--;
+                      DS(fprintf(stderr, DHLS "  nest-tag (%ld)\n", nesting));
+                   } else {
+                      DS(fprintf(stderr, DHLS "  nest-tag: ending\n"));
+                      quit = TRUE;
+                   }
                 }
 
-            case STATE_ENDTAG:
-                {
-                    DS(fprintf(stderr, DHLS "end tag </%s>\n", nw));
-                    app_estr(tagstr, infgetcws(inpf));
-                    app_estr(tagstr, infgetcw(inpf));
-                    if (!upstrcmp(nw, tagnest))
-                    {
-                        if (nesting)
-                        {
-                            nesting--;
-                            DS(fprintf(stderr, DHLS "  nest-tag (%ld)\n", nesting));
-                        }
-                        else
-                        {
-                            DS(fprintf(stderr, DHLS "  nest-tag: ending\n"));
-                            quit = TRUE;
-                        }
-                    }
-
-                    /* skip and check ">" */
-                    if (quit || !(option & SKUT_NO_ANALYSE_TAGS))
-                    {
-                        nw = infgetw(inpf);
-                        if (nw)
-                        {
-                            app_estr(tagstr, infgetcws(inpf));
-                            app_estr(tagstr, infgetcw(inpf));
-                            inungetcw(inpf);
-                        }
-                        parse_gt(hp);
-                    }
-
-                    /* append end tag text */
-                    if (!quit)
-                    {
-                        APP_CONTENT(estr2str(tagstr));
-                    }
-
-                    /* no attr for endtag */
-                    state = STATE_TEXT;
-
-                    break;
+                /* skip and check ">" */
+                if (quit || !(option & SKUT_NO_ANALYSE_TAGS)) {
+                   nw = infgetw(inpf);
+                   if (nw) {
+                      app_estr(tagstr, infgetcws(inpf));
+                      app_estr(tagstr, infgetcw(inpf));
+                      inungetcw(inpf);
+                   }
+                   parse_gt(hp);
                 }
+
+                /* append end tag text */
+                if (!quit)
+                   APP_CONTENT(estr2str(tagstr));
+
+                /* no attr for endtag */
+                state = STATE_TEXT;
+
+                break;
                 /* unhandled state */
             default:
-                panic("unhandled state");
+                panic("unhandled state in skip_until_tag()");
                 break;
             }
         }
-    }
-    while (nw && !quit && !(hp->fatal));
+    } while (nw && !quit && !(hp->fatal));
 
-    if (nw)
-    {
+    if (nw) {
         /* unget end tag */
         if (option & SKUT_NO_SKIP_TAGFOUND)
-        {
             inungets(estr2str(tagstr), inpf);
-        }
 
         /* add last tag to content */
         if (!(option & SKUT_NO_CONTENT_TAGFOUND))
-        {
             APP_CONTENT(estr2str(tagstr));
-        }
-    }
-    else
-    {
+    } else {
         /* unexpected end-of-file */
         set_estr(tagstr, "</");
         app_estr(tagstr, tagnest);

@@ -1,6 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
+ * Copyright (C) 2001-2003  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -243,13 +244,10 @@ HSCTAG *app_tag(DLLIST * taglist, STRPTR tagid)
 /* decides if a tag is a hsc-tag */
 BOOL is_hsc_tag(HSCTAG * tag)
 {
-    STRPTR name = tag->name;
-    BOOL it_is =
-    (!upstrcmp(name, HSC_COMMENT_STR))
-    || (!upstrcmp(name, HSC_VERBATIM_STR))
-    || (!upstrcmp(name, HSC_INSEXPR_STR))
-    || (!upstrncmp(((tag)->name), HSC_TAGID, strlen(HSC_TAGID)));
-    return (it_is);
+    return ((!upstrncmp(tag->name, HSC_TAGID, strlen(HSC_TAGID)))
+          || (!upstrcmp(tag->name, HSC_COMMENT_STR))
+          || (!upstrcmp(tag->name, HSC_VERBATIM_STR))
+          || (!upstrcmp(tag->name, HSC_INSEXPR_STR)));
 }
 
 /* decides if a tag is a macro-tag */

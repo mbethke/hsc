@@ -161,7 +161,7 @@ HSCTAG;
 #define TO_WHTSPC_STR      "WHTSPC"
 #define TO_WHTSPC_SHT      "W"
 
-/* TODO: think about this tag-options */
+/* TODO: think about this tag-option */
 #define TO_VERS_STR        "VERS"
 #define TO_VERS_SHT        "V"
 
