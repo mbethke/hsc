@@ -2,6 +2,26 @@
                    hsc version history
                    ===================
 
+Version 0.9.3,  20-Nov-1995 (internal release only)
+ - added special values for IGNORE
+ - added PRE option for <$INCLUDE>
+ - added <$SOURCE> to support inline sources
+ - added tag <$LET> to create/update attributes
+ - added tag <$MESSAGE> for user messages
+ - container usage of <P> and <LI> is now supported
+   (altough, in a quite clumsy way; see AUTOCLOSE)
+ - writes output only if no error occured
+ - improved handling of comments inside macros
+ - improved speed for reading macros
+ - fixed bug: values for attributes of a tag have not
+   been reset before processing it
+ - fixed bug within nested <$ELSE>
+ - fixed bug: <BASE> called handler for <Hx>
+ - fixed bug: trailing white spaces of a file have
+   not been processed
+ - buffer for <$INSERT TIME> automatically expands
+   to required size (before: limited to 40 chars)
+
 Version 0.9.2, 23-Oct-1995
  - improved docs
  - changed concept for absolute URIs: switch ABSURI

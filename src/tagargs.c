@@ -4,7 +4,7 @@
 **
 ** functions for parsing of tag arguments
 **
-** updated: 16-Oct-1995
+** updated: 30-Oct-1995
 ** created: 29-Jul-1995
 */
 
@@ -56,7 +56,14 @@ BOOL parse_wd( INFILE *inpf, STRPTR expstr )
 
     if ( expstr ) {
 
-        STRPTR nw    = infgetw( inpf );
+        STRPTR nw;
+
+        /* skip LFs */
+        do
+          nw = infgetw( inpf );
+        while ( nw && !strcmp( nw, "\n" ) );
+
+        /* check for expeted word */
         if ( !nw || upstrcmp( nw, expstr ) ) {
 
             message( MSG_UNEXPT_CH, inpf );

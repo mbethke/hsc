@@ -4,7 +4,7 @@
 ** ugly argument freeing functions
 ** sub-module for ugly/args.c
 **
-** updated:  1 Aug-1995
+** updated:  2-Nov-1995
 ** created:  3-Jul-1994
 **
 */
@@ -41,7 +41,7 @@ void del_arginfo( APTR data )
 
         /* type dependent cleanup */
         if ( arg->ai_type == ARG_ENUM )
-            ufree( arg->ai_misc1 );
+            ufree( arg->ai_misc1.ai_enum );
 
         /* cleanup entities */
         ufree( arg->ai_id );

@@ -3,7 +3,7 @@
 **
 ** error vars & funs for hsc
 **
-** updated: 16-Oct-1995
+** updated:  2-Nov-1995
 ** created:  9-Jul-1995
 **
 ** TODO: programable desription string to format error messages
@@ -19,6 +19,7 @@
 #include <errno.h>
 
 #include "ugly/types.h"
+#include "ugly/outfile.h"
 #include "ugly/string.h"
 
 #include "global.h"
@@ -45,6 +46,29 @@ BOOL display_message = FALSE;
 /* (modified by msg_prt() */
 int return_code = RC_OK;
 
+BOOL ignore_msg[ MAX_MSGID ]; /* flag: ignore message */
+BOOL error_msg[ MAX_MSGID ];  /* flag: treat message as error */
+
+/*
+**-------------------------------------
+** ignore warnings
+**-------------------------------------
+*/
+VOID clr_ignore_msg( VOID )
+{
+    LONG i;
+
+    for ( i=0; i<MAX_MSGID; i++ )
+        disable_ignore( i );
+}
+
+VOID clr_error_msg( VOID )
+{
+    LONG i;
+
+    for ( i=0; i<MAX_MSGID; i++ )
+        /*TODO: disbale_error( i )*/;
+}
 
 /*
 **-------------------------------------
@@ -316,24 +340,13 @@ int message( ULONG id, INFILE *f )
     /* oppress message if an fatal error occured before */
     display_message = ( !(fatal_error) );
 
-    if ( display_message
-         && ( (id & MASK_MSG_CLASS) < ERROR ) )
-    {
+    /* check if message is in ignore list */
+    if ( display_message && ignore( id ) ) {
 
-            /* check if message is in ignore list */
-            if ( ignore ) {
-            DLNODE *ign_nd =
-                find_dlnode( ignore->first, (APTR) id_masked, cmp_msg );
+        display_message = FALSE;
+        D( fprintf( stderr, "** oppressed message #%d (0x%x)\n",
+                            id_masked, id ) );
 
-            if ( ign_nd ) {
-
-                display_message = FALSE;
-                if ( debug )
-                    fprintf( stderr, "** oppressed message #%d (0x%x)\n",
-                                     id_masked, id );
-
-            }
-        }
     }
 
     if ( display_message ) {
@@ -401,11 +414,16 @@ VOID err_mem( INFILE *inpf )
     errlf();
 }
 
-VOID err_write( FILE *outf )
+VOID err_write( OUTFILE *outf )
 {
     message( MSG_WRITE_ERR, NULL );
-    errstr( "write error" );
+    errstr( "error writing to " );
+    errqstr( outfget_fname( outf ) );
+    errstr( ": " );
+    errstr( strerror( errno ) );
     errlf();
+
+    errno = NULL;
 }
 
 VOID err_longstr( INFILE *inpf )

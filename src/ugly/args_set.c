@@ -3,13 +3,12 @@
 **
 ** ugly set arguments handling functions
 **
-** updated: 30-Aug-1995
+** updated:  3-Nov-1995
 ** created:  3-Jul-1994
 **
 **===================================================================
 ** TODO:
 ** - support ARG_LONG_RANGE
-** - support ARG_ENUM
 ** - support ARG_INV_SWITCH (set switch value to FALSE if NOxxx found)
 **
 */
@@ -50,7 +49,7 @@ char argerrstr[ SIZE_ARGERRSTR ];
 ** local global vars
 */
 BOOL no_argerr,  any_argerr;           /* error flags for _set_args() */
-int  argidx = 1;                       /* index in _argv[] currently examing */
+int  argidx = -1;                      /* index in _argv[] currently examing */
 
 /*
 ** compare_arginfo
@@ -264,6 +263,9 @@ STRPTR strargerr( void )
         case ASE_INVALID_NUM:
             str = "invalid numeric argument"; break;
 
+        case ASE_INVALID_ENUM:
+            str = "invalid enumerator value"; break;
+
         case ASE_REQUIRED_MISS:
             str = "required argument missing"; break;
 
@@ -325,7 +327,7 @@ UBYTE set_arg_value( struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL keywd )
     /*   following), the param is taken from the next arg. */
     /*   otherwise, the arg is scanned for '=' and the     */
     /*   rest of the arg is taken as param                 */
-    if ( keywd ) {
+    if ( keywd && !( ai->ai_type == ARG_SWITCH ) ) {
 
         param = arg;
         while ( param[0] && ( param[0] != '=' ) )
@@ -335,6 +337,8 @@ UBYTE set_arg_value( struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL keywd )
         else {
             param    = arg2;
             arg2used = TRUE;
+            if ( !param )
+                set_argerr( ASE_REQUIRED_MISS, arg );
         }
 
     } else
@@ -346,7 +350,14 @@ UBYTE set_arg_value( struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL keywd )
     */
     if ( no_argerr ) {
 
-        if ( ai->ai_type == ARG_SWITCH )         /* switch */
+        if ( ai->ai_func ) {
+
+            /* call handle function with arg value */
+            arg_error_hfs  =  (*(ai->ai_func))( param );
+            if ( arg_error_hfs )
+                set_argerr( ASE_HANDLE_FUNC, param );
+
+        } else if ( ai->ai_type == ARG_SWITCH )         /* switch */
 
             *( (BOOL *) dest )  = TRUE;
 
@@ -382,6 +393,16 @@ UBYTE set_arg_value( struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL keywd )
                     else
                         aparam = (APTR) along; /* what a pervert! */
 
+                } else if ( ai->ai_type == ARG_ENUM ) {
+
+                    LONG aenum = strenum( param, ai->ai_misc1.ai_enum,
+                                          '|', STEN_NOCASE );
+
+                    if ( !aenum )
+                        set_argerr( ASE_INVALID_ENUM, arg );
+                    else
+                        aparam = (APTR) aenum; /* what a pervert! */
+
                 }
 #if 0
                 if ( !param )                              /* missing param */
@@ -413,29 +434,22 @@ UBYTE set_arg_value( struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL keywd )
 
                         if ( ai->ai_type == ARG_LONG )
                             *((LONG*) dest) = (LONG) aparam;
+                        else if ( ai->ai_type == ARG_ENUM )
+                            *((LONG*) dest) = (LONG) aparam;
                         else if ( ai->ai_type == ARG_TEXT )
                             *((STRPTR*) dest) = (STRPTR) aparam;
 
                     }
 
-                if ( arg2used )        /* set return value that arg2 */
-                    arg_incr = 1;      /* is skipped outside this func */
             }
         
         }
 
-    }
-
-    /*
-    ** call handle function with old arg value
-    */
-    if ( no_argerr && ( ai->ai_flags & ARG_HANDLEFUNC ) ) {
-
-        arg_error_hfs  =  (*(ai->ai_func))( param );
-        if ( arg_error_hfs )
-            set_argerr( ASE_HANDLE_FUNC, arg );
+       if ( arg2used )        /* set return value that arg2 */
+           arg_incr = 1;      /* is skipped outside this func */
 
     }
+
 
     return ( arg_incr );
 }

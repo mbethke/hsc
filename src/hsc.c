@@ -8,8 +8,6 @@
 /*
 ** TODO:
 ** - input.c
-** - options for attributes
-** - multiple attributes (eg FIG SHAPE)
 ** - check for comments inside $macro and $if
 ** - set error messages <$ERROR "..">
 ** - set configurable error string
@@ -52,11 +50,6 @@
 #include "error.h"
 #include "status.h"
 
-#ifdef AMIGA
-/* AMIGA version string */
-static STRPTR version_string = "$VER:hsc 0.9.2 (23.10.1995)";
-#endif
-
 /*
 **
 ** main function
@@ -67,7 +60,7 @@ int main( int argc, char *argv[] )
     BOOL ok = FALSE;
 
     /* set program information */
-    set_prginfo( "hsc", "Tommy-Saftwörx", 0, 9, 2,
+    set_prginfo( "hsc", "Tommy-Saftwörx", 0, 9, 3,
         "HTML Sucks Completely", "This is FreeWare." );
 
 #ifdef UMEM_TRACKING

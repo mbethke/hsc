@@ -3,7 +3,7 @@
 **
 ** global vars & funs for hsc
 **
-** updated: 15-Oct-1995
+** updated:  3-Nov-1995
 ** created:  8-Jul-1995
 */
 
@@ -26,10 +26,9 @@ STRPTR destdir     = NULL;             /* destination dir */
 STRPTR projdir     = NULL;             /* project main directory */
 
 ULONG   max_error = 20;                /* abort after too many errors */
-DLLIST *ignore  = NULL;                /* list of warning to ignore */
-DLLIST *werror  = NULL;                /* warnings that should be handled as errors */
 DLLIST *incfile = NULL;                /* list of files that should be
                                        /*   included before main file */
+LONG mode      = MODE_NORMAL;          /* mode for syntax check */
 BOOL chkuri    = FALSE;                /* check existence of local URIs */
 BOOL debug     = FALSE;                /* flag: debugging output */
 BOOL insanch   = FALSE;                /* flag: insert text of anchor */
@@ -45,7 +44,6 @@ BOOL verbose   = FALSE;                /* flag: verbose output */
 /*
 ** global vars
 */
-FILE *outfile = NULL;                  /* file var for output */
 time_t now;                            /* used to store current time */
                                        /*     (initialised in config.c) */
 

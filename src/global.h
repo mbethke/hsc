@@ -50,6 +50,30 @@
 #define MAX_PATHLEN  255               /* directory path & filename */
 #define MAX_URILEN   255               /* URIs */
 
+/*
+** modes for syntax check
+*/
+#define MODE_PEDANTIC_STR "pedantic"
+#define MODE_NORMAL_STR   "normal"
+#define MODE_RELAXED_STR  "relaxed"
+
+#define MODE_ENUMSTR  MODE_PEDANTIC_STR "|" \
+                      MODE_NORMAL_STR "|" \
+                      MODE_RELAXED_STR
+
+#define MODE_PEDANTIC 0
+#define MODE_NORMAL   1
+#define MODE_RELAXED  2
+
+
+/*
+** special values for ignore
+*/
+#define IGNORE_ALL_STR      "all"
+#define IGNORE_BADSTYLE_STR "badStyle"
+#define IGNORE_JERKS_STR    "jerks"
+#define IGNORE_NOTES_STR    "notes"
+
 
 /*
 ** char constants
@@ -78,10 +102,9 @@ extern STRPTR destdir;
 extern STRPTR projdir;
 
 extern ULONG max_error;
-extern DLLIST *ignore;
-extern DLLIST *ignore;
-extern DLLIST *werror;
 extern DLLIST *incfile;
+
+extern LONG mode;
 
 extern BOOL chkuri;
 extern BOOL debug;
@@ -96,7 +119,6 @@ extern BOOL statusmsg;
 extern BOOL verbose;
 
 
-extern FILE *outfile;
 extern time_t now;
 
 extern STRPTR destfname;

@@ -3,7 +3,7 @@
 **
 ** define new tag from iput file
 **
-** updated: 22-Oct-1995
+** updated: 27-Oct-1995
 ** created: 13-Oct-1995
 **
 */
@@ -48,6 +48,16 @@ LONG get_mci( VOID )
 
     return( tag_call_id );
 }
+
+/*
+** get_current_mci
+**
+*/
+LONG get_current_mci( VOID )
+{
+    return( tag_call_id );
+}
+
 
 /*
 **-------------------------------------
@@ -286,7 +296,7 @@ BOOL parse_tag_option( STRPTR option, HSCTAG *tag, INFILE *inpf )
         ok |= check_tag_option( option, tag, TO_JERK_STR, TO_JERK_SHT, HT_JERK );
         ok |= check_tag_option( option, tag, TO_NOCOPY_STR, TO_NOCOPY_SHT, HT_NOCOPY );
         ok |= check_tag_option( option, tag, TO_NOHANDLE_STR, TO_NOHANDLE_SHT, HT_NOHANDLE );
-        ok |= check_tag_option( option, tag, TO_NONESTING_STR, TO_NONESTING_SHT, HT_NONESTING );
+        ok |= check_tag_option( option, tag, TO_SMARTCLOSE_STR, TO_SMARTCLOSE_SHT, HT_SMARTCLOSE );
         ok |= check_tag_option( option, tag, TO_OBSOLETE_STR, TO_OBSOLETE_SHT, HT_OBSOLETE );
         ok |= check_tag_option( option, tag, TO_ONLYONCE_STR, TO_ONLYONCE_SHT, HT_ONLYONCE );
         ok |= check_tag_option( option, tag, TO_REQUIRED_STR, TO_REQUIRED_SHT, HT_REQUIRED );

@@ -3,7 +3,7 @@
 **
 ** defines for message-ids (warnings, errors,..)
 **
-** updated: 22-Oct-1995
+** updated:  6-Nov-1995
 ** created: 30-Jul-1995
 */
 
@@ -26,9 +26,12 @@
 
 /*
 **=========================
-** next message number: 62
+** next message number
 **=========================
-**
+*/
+#define MAX_MSGID (63-1)
+
+/*
 ** obsolete numbers:
 ** - none until now
 */
@@ -77,7 +80,7 @@
 ** messages within entities
 */
 #define MSG_UNKN_ENTITY        (WARN + 18)  /* unknown entity */
-#define MSG_EXPT_SEMIK         (ERROR+ 19)  /* ";" expected */
+#define MSG_EXPT_SEMIK         (WARN + 19)  /* ";" expected */
 #define MSG_RPLC_ENT           (MSG  + 46)  /* replaced entity */
 #define MSG_RPLC_SPCCHR        (MSG  + 52)  /* replaced special char */
 
@@ -108,7 +111,7 @@
 */
 #define MSG_EXPT_H1            (STYLE+ 28)  /* Hx: first heading H1 */
 #define MSG_ANCH_NO_NMHR       (ERROR+ 29)  /* A : no NAME or HREF */
-#define MSG_CL_MACR_ARG        (ERROR+ 46)  /* args for closing macro */
+#define MSG_CL_MACR_ARG        (ERROR+ 62)  /* args for closing macro */
 #define MSG_LF_IN_COMMENT      (WARN + 48)  /* LF within comment */
 #define MSG_GT_IN_COMMENT      (WARN + 49)  /* GT within comment */
 #define MSG_CMTEND_QUOTE       (WARN + 50)  /* SGML-comment ends in quotes */

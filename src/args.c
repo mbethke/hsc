@@ -3,7 +3,7 @@
 **
 ** user argument handling for hsc
 **
-** updated: 15-Oct-1995
+** updated:  6-Nov-1995
 ** created:  1-Jul-1995
 */
 
@@ -32,11 +32,120 @@
 #include "msgid.h"
 
 /*
-** TODO: OutExt: add extension (eg ".html") to outfilename
-** TODO: PipeIn: doesn't work cause outfilename is set before
-** TODO: use stdout as default
+** TODO: NoExt: do not set extension ".html" to outfilename
 */
 
+/*
+** arg_ignore
+**
+** argument handler for special values that are passed
+** to "IGNORE=.." several messages are set to be ignored
+** with the old messages left active
+*/
+STRPTR arg_ignore( STRPTR arg )
+{
+    STRPTR errmsg = NULL;
+
+    if ( !upstrcmp( arg, IGNORE_ALL_STR ) ) {              /* all */
+
+        /* ignore all non-error messages */
+        int i;
+
+        for ( i=0; i<MAX_MSGID; i++ )
+            enable_ignore( i );
+
+
+    } else if ( !upstrcmp( arg, IGNORE_BADSTYLE_STR ) ) {  /* bad style */
+
+        /* ignore bad style messages */
+        enable_ignore( MSG_WSPC_AROUND_TAG );
+        enable_ignore( MSG_WRONG_HEADING );
+        enable_ignore( MSG_CLICK_HERE );
+        enable_ignore( MSG_EXPT_H1 );
+
+    } else if ( !upstrcmp( arg, IGNORE_JERKS_STR ) ) {     /* jerks */
+
+        /* ignore jerk messages */
+        enable_ignore( MSG_TAG_JERK );
+        enable_ignore( MSG_RPLC_SPCCHR );
+
+    } else if ( !upstrcmp( arg, IGNORE_NOTES_STR ) ) {     /* notes */
+
+        /* ignore note messages */
+        enable_ignore( MSG_STRIPPED_TAG );
+        enable_ignore( MSG_RPLC_ENT );
+        enable_ignore( MSG_RPLC_SPCCHR );
+
+    } else {
+
+        /* ignore message # */
+        LONG ignnum;
+
+        if ( !str2long( arg, &ignnum ) )
+            errmsg = "illegal ignore";
+        else
+            enable_ignore( ignnum );
+
+    }
+
+    return( errmsg );
+}
+
+/*
+** arg_mode
+**
+** argument handler for values that are passed
+** to "MODE=..". this one resets all ignored
+** messages.
+*/
+STRPTR arg_mode( STRPTR arg )
+{
+    STRPTR errmsg = NULL;
+    size_t mode = strenum( arg, MODE_ENUMSTR, '|', STEN_NOCASE );
+
+    D( fprintf( stderr, "** args: mode=%s\n", arg ) );
+
+    if ( !mode )
+        errmsg = "unknown mode";
+    else if ( mode == MODE_PEDANTIC ) {          /* pedantic */
+
+        /* enable all messages */
+        int i;
+
+        for ( i=0; i<MAX_MSGID; i++ )
+            disable_ignore( i );
+
+    } else if ( mode == MODE_NORMAL ) {          /* normal */
+
+        /* ignore note messages */
+        clr_ignore_msg();
+        arg_ignore( IGNORE_NOTES_STR );
+        enable_ignore( MSG_MISS_REQTAG );
+
+    } else if ( mode == MODE_RELAXED ) {         /* relaxed */
+
+        arg_mode( MODE_NORMAL_STR );
+        arg_ignore( IGNORE_BADSTYLE_STR );
+        arg_ignore( IGNORE_JERKS_STR );
+        enable_ignore( MSG_TAG_OBSOLETE );
+        enable_ignore( MSG_TAG_TOO_OFTEN );
+        enable_ignore( MSG_CTAG_NESTING );
+        enable_ignore( MSG_EXPT_SEMIK );
+
+    } else {
+
+        /* ignore message # */
+        LONG ignnum;
+
+        if ( !str2long( arg, &ignnum ) )
+            errmsg = "illegal argument";
+        else
+            enable_ignore( ignnum );
+
+    }
+
+    return( errmsg );
+}
 /*
 ** args_ok
 **
@@ -48,9 +157,15 @@
 BOOL args_ok( int argc, char *argv[] )
 {
     BOOL   ok; /* return value */
-    STRPTR destdir_arg = NULL; /* temp vars for set_args() */
-    STRPTR projdir_arg = NULL;
-    struct arglist *hsc_args;
+    STRPTR destdir_arg  = NULL; /* temp vars for set_args() */
+    STRPTR projdir_arg  = NULL;
+    DLLIST *ignore_list = NULL; /* dummy */
+    struct arglist *hsc_args;   /* argument structure */
+
+    /* clear ignore/error message list */
+    clr_ignore_msg();
+    clr_error_msg();
+
 
     /* create arg-table */
     hsc_args = prepare_args( "HSC_ARGS",
@@ -64,13 +179,15 @@ BOOL args_ok( int argc, char *argv[] )
 
               /* numeric */
               "MaxErr/N/K"      , &max_error  , "max. number of errors (default:20)",
-              "Ignore=ign/N/K/M", &ignore     , "ignore message number",
+              "Ignore=ign/N/K/M/$", arg_ignore, &ignore_list, "ignore message number",
+              "Mode/E/K/$"        , arg_mode, MODE_ENUMSTR, &mode,
+                                                "mode for syntax check",
               /* switches */
               "CheckUri=cu/S"   , &chkuri     , "check existence of local URIs",
 #if 0
               "InsAnch=ia/S"    , &insanch    , "insert stripped URIs as text",
-              "PipeIn=pi/S"     , &pipe_in    , "read input file from stdin",
 #endif
+              "PipeIn=pi/S"     , &pipe_in    , "read input file from stdin",
               "RplcEnt=re/S"    , &rplc_ent   , "replace entities",
               "SmartEnt=sa/S"   , &smart_ent  , "replace special entities",
 #if 0
@@ -91,6 +208,9 @@ BOOL args_ok( int argc, char *argv[] )
               "FormFeed=FF/S"    , &ff, "perform formfeed",
 #endif
               NULL );
+
+    /* remove dummy list */
+    del_dllist( ignore_list );
 
     ok = ( hsc_args != NULL );
 
@@ -223,7 +343,18 @@ BOOL args_ok( int argc, char *argv[] )
             pargerr();
             outfilename = NULL;
 
-        }
+        } else D( {
+
+            int i;
+
+            fprintf( stderr, "IGNORE:" );
+            for ( i=0; i<MAX_MSGID; i++ )
+                if ( ignore(i) )
+                    fprintf( stderr, " %d", i );
+            fprintf( stderr, "\n" );
+
+        } );
+
 
         /* release mem used by args */
         free_args( hsc_args );

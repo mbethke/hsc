@@ -29,6 +29,7 @@
 #define DEBUG_DEFATTR 1 /* display defined attributes */
 #define DEBUG_DEFENT  0 /* display defined entities */
 #define DEBUG_DEFTAG  0 /* display defined tags */
+#define DEBUG_IF      1 /* display if/else */
 #define DEBUG_MACRO   1 /* display macro */
 
 #else
@@ -39,6 +40,7 @@
 #define DEBUG_DEFATTR 0 /* display defined attributes */
 #define DEBUG_DEFENT  0 /* display defined entities */
 #define DEBUG_DEFTAG  0 /* display defined tags */
+#define DEBUG_IF      0 /* display if/else */
 #define DEBUG_MACRO   0 /* display macro */
 
 #endif
@@ -75,17 +77,23 @@
 #define DDE(x) /* nufin */
 #endif
 
+#if DEBUG_DEFTAG
+#define DDT(x) if ( debug ) x
+#else
+#define DDT(x) /* nufin */
+#endif
+#if DEBUG_IF
+#define DIF(x) if ( debug ) x
+#else
+#define DIF(x) /* nufin */
+#endif
+
 #if DEBUG_MACRO
 #define DMC(x) if ( debug ) x
 #else
 #define DMC(x) /* nufin */
 #endif
 
-#if DEBUG_DEFTAG
-#define DDT(x) if ( debug ) x
-#else
-#define DDT(x) /* nufin */
-#endif
 
 
 #endif /* HSC_DEBUG_H */

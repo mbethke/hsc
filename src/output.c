@@ -3,7 +3,7 @@
 **
 ** output functions for hsc
 **
-** updated: 16-Oct-1995
+** updated: 31-Oct-1995
 ** created:  1-Jul-1995
 */
 
@@ -13,11 +13,15 @@
 
 
 #include "ugly/types.h"
+#include "ugly/outfile.h"
 #include "ugly/prginfo.h"
 
 #include "global.h"
 #include "error.h"
 #include "msgid.h"
+#include "status.h"
+
+OUTFILE *outfile = NULL;
 
 /*
 ** open_output:
@@ -31,34 +35,22 @@ BOOL open_output( void )
 {
     BOOL result; /* return value */
 
-    if ( outfilename ) {                                   /* output filename defined? */
+    outfile = outfopen( outfilename, 128 );      /* try to open output */
 
-        outfile = fopen( outfilename, "w" );               /* Y-> try to open it */
+    result = ( outfile != NULL );
 
-        result = ( outfile != NULL );
+    if ( !result ) {
 
-        if ( !result ) {
+        message( MSG_NO_OUTPUT, NULL );
+        errstr( "can not open " );
+        errqstr( outfilename );
+        errstr( " for output: " );
+        errstr( strerror( errno ) );
+        errlf();
 
-            message( MSG_NO_OUTPUT, NULL );
-            errstr( "can not open " );
-            errqstr( outfilename );
-            errstr( " for output: " );
-            errstr( strerror( errno ) );
-            errlf();
+    } else if ( verbose ) {
 
-        } else if ( debug ) {
-
-            fprintf( stderr, "\"%s\": opened as output file\n",  outfilename );
-
-        }
-
-    } else {                                               /* N-> set stdout as output file */
-
-        if ( debug )
-            fprintf( stderr, "opened stdout as output file\n" );
-
-        outfile = stdout;              /* redirect output to stdout */
-        result = TRUE;
+        fprintf( stderr, "output: \"%s\"\n",  outfget_fname( outfile ) );
 
     }
 
@@ -72,14 +64,18 @@ BOOL open_output( void )
 int outch( char ch )
 {
     int this_ch = EOF;
+
     if ( !fatal_error ) {
 
         if ( suppress_output )
             this_ch = ch;
         else
-            this_ch = fputc( ch, outfile );
-        if ( this_ch == EOF )
+            this_ch = outfputc( ch, outfile );
+        if ( this_ch == EOF ) {
+
              err_write( outfile );
+
+        }
    }
 
     return ( this_ch );
@@ -94,8 +90,13 @@ int outstr( CONSTRPTR str )
 
     if ( suppress_output )
         ch_written = strlen( str );
-    else
-        ch_written = fputs( str, outfile );
+    else {
+
+        ch_written = outfputs( str, outfile );
+        if ( ch_written == EOF )
+            err_write( outfile );
+
+    }
 
     return( ch_written );
 }
@@ -107,7 +108,27 @@ int outstr( CONSTRPTR str )
 */
 VOID close_output( VOID )
 {
-    if ( outfile && (outfile!=stdout) )
-        fclose( outfile );
+    if ( outfile ) {
+
+        if ( (return_code == RC_OK)
+             || (return_code == RC_WARN)
+             || debug )
+        {
+
+            status_msg( "Writting output" );
+            errno = 0;
+            outfclose( outfile );
+            if ( errno )
+                err_write( outfile );
+            status_clear();
+
+        } else {
+
+            status_msg( "No output written" );
+            status_lf();
+            outfclear( outfile );
+
+        }
+    }
 }
 

@@ -67,7 +67,6 @@ HSCTAG *new_hsctag( STRPTR newid )
         newtag->name        = upstr( strclone(newid) );        /* set id */
         newtag->option      = 0;
         newtag->vers        = 0;
-        newtag->nest_count  = 0;
         newtag->o_handle    = NULL;       /* no handle functions */
         newtag->c_handle    = NULL;
         newtag->occured     = FALSE;
@@ -107,7 +106,6 @@ void del_tag( APTR data )
     /* clear values */
     tag->option     = 0;
     tag->vers       = 0;
-    tag->nest_count = 0;
     tag->op_text    = NULL;
     tag->cl_text    = NULL;
     tag->attr       = NULL;
@@ -159,7 +157,7 @@ HSCTAG *find_strtag( DLLIST *taglist, STRPTR name )
     return ( tag );
 }
 
-
+#if 0
 /*
 **---------------------------
 ** find closing tag string
@@ -183,7 +181,7 @@ int cmp_strctg( APTR cmpstr, APTR tagstr )
     else
         return (0);
 }
-
+#endif
 
 /*
 **---------------------------
@@ -200,10 +198,14 @@ VOID remove_ctag( HSCTAG *tag, INFILE *inpf )
 
         /* closing tag not found on stack */
         /* ->unmatched closing tag without previous opening tag */
-        message( MSG_UNMA_CTAG, inpf );
-        errstr( "Unmatched closing tag " );
-        errctag( tag->name );
-        errlf();
+        if ( !( tag->option & HT_SMARTCLOSE ) ) {
+
+            message( MSG_UNMA_CTAG, inpf );
+            errstr( "Unmatched closing tag " );
+            errctag( tag->name );
+            errlf();
+
+        }
 
     } else {
 

@@ -3,7 +3,7 @@
 **
 ** ugly argument preparation functions
 **
-** updated:  9-Aug-1995
+** updated:  2-Nov-1995
 ** created:  3-Jul-1994
 **
 **===================================================================
@@ -155,8 +155,8 @@ struct arglist *prepare_args( STRPTR arglist_name, ... )
                     newarg->ai_id    = NULL;
                     newarg->ai_type  = 0;
                     newarg->ai_flags = 0;
-                    newarg->ai_misc1 = NULL;
-                    newarg->ai_misc2 = NULL;
+                    newarg->ai_misc1.ai_lolim = 0;
+                    newarg->ai_misc2.ai_uplim = 0;
                     newarg->ai_dest  = NULL;
                     newarg->ai_func  = NULL;
                     newarg->ai_help  = NULL;
@@ -252,30 +252,37 @@ struct arglist *prepare_args( STRPTR arglist_name, ... )
                     if ( no_preperr ) {
 
                         /*
-                        ** get handle function
+                        ** get additional arguments
                         */
-#if 0
-                        if ( new_flags || ARG_HANDLEFUNC ) {
+                        if ( new_flags & ARG_HANDLEFUNC ) {
 
-                            newarg->ai_func = va_arg( ap, (*STRPTR)(STRPTR) );
-
-                        }
+                            /*
+                            ** get handler function
+                            */
+#if 1
+                            APTR func_tmp = va_arg( ap, STRPTR );
+                            newarg->ai_func = (STRPTR (*) (STRPTR) ) func_tmp;
+#else
+                            /* tricky type-cast, 1-step-version, does */
+                            /* not work with several compilers */
+                            newarg->ai_func = va_arg( ap, STRPTR (*) (STRPTR) );
 #endif
-                        /*
-                        ** get range limits
-                        */
-                        if ( new_type == ARG_LONG_RANGE ) {
 
+                       }
+
+                       if ( new_type == ARG_LONG_RANGE ) {
+
+                            /*
+                            ** get range limits
+                            */
                             rnlolim = va_arg( ap, LONG );
                             rnhilim = va_arg( ap, LONG );
 
-                        }
+                        } else if ( new_type == ARG_ENUM ) {
 
-                        /*
-                        ** get enum string
-                        */
-                        if ( new_type == ARG_ENUM ) {
-
+                            /*
+                            ** get enum string
+                            */
                             enumstr = va_arg( ap, STRPTR );
 
                         }
@@ -296,15 +303,14 @@ struct arglist *prepare_args( STRPTR arglist_name, ... )
                             switch ( new_type ) {
 
                                 case ARG_ENUM:
-                                    newarg->ai_misc1 = ( APTR )
-                                        strclone( enumstr );
-                                    if ( !(newarg->ai_misc1) )
+                                    newarg->ai_misc1.ai_enum = strclone( enumstr );
+                                    if ( !(newarg->ai_misc1.ai_enum) )
                                         set_preperr( APE_NO_MEM, 0 );
                                     break;
 
                                 case ARG_LONG_RANGE:
-                                    newarg->ai_misc1 = ( APTR ) rnlolim;
-                                    newarg->ai_misc2 = ( APTR ) rnhilim;
+                                    newarg->ai_misc1.ai_lolim = rnlolim;
+                                    newarg->ai_misc2.ai_uplim = rnhilim;
                                     break;
 
                             }
@@ -375,6 +381,7 @@ struct arglist *prepare_args( STRPTR arglist_name, ... )
 
         /* free newlist */
         del_dllist( newlist );
+        ufree( new_arglist );
         newlist = NULL;
         new_arglist = NULL;
 

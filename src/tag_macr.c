@@ -3,7 +3,7 @@
 **
 ** tag handles for "<$MACRO>" and "<macro>"
 **
-** updated: 16-Oct-1995
+** updated:  1-Nov-1995
 ** created:  5-Aug-1995
 */
 
@@ -113,12 +113,10 @@ BOOL handle_macro( BOOL open_mac, INFILE *inpf, HSCTAG *macro )
     /* cleanup */
     if ( mci != MCI_ERROR )
         remove_local_varlist( vars, mci );  /* remove local vars */
-    clr_varlist( args );               /* clear macro vars */
-    del_estr( fname );                 /* release pseudo-filename */
+    del_estr( fname );                      /* release pseudo-filename */
 
     /* debugging message */
     DMC( fprintf( stderr, "**-ENDMACRO <%s>\n", macro->name ) );
-
 
     return ( ok );
 }
@@ -171,6 +169,7 @@ BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
 
         STRPTR nw        = NULL;     /* word read from input */
         BYTE   state     = MAST_TEXT;/* current state */
+        LONG   nesting   = 0;
 
         /* skip first LF if any */
         skip_lf( inpf );
@@ -223,37 +222,45 @@ BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
                         case MAST_LT:
                             if ( !strcmp( nw, "/" ) )
                                 state = MAST_SLASH;
-                            else
+                            else if ( !upstrcmp( nw, HSC_COMMENT_STR ) ) {
+
+                                state = MAST_COMT;
+
+                            } else {
+
+                                /* handle "<$MACRO" (open macro) */
+                                if ( !upstrcmp( nw, HSC_MACRO_STR ) )
+                                    nesting++; /* incr. macro nesting */
                                 state = MAST_TAG;
 
+                            }
                             break;
 
                         case MAST_SLASH:
                             if ( !upstrcmp( nw, HSC_MACRO_STR ) )
-                                state = MAST_CMACRO;
+
+                                /* handle "</$MACRO" (close macro) */
+                                if ( nesting )
+                                    nesting--;   /* decr. macro nesting */
+                                else
+                                    state = MAST_CMACRO; /* end of macro */
                             else
                                 state = MAST_TAG;
                             break;
 
                     }
 
-
                     if ( state == MAST_TEXT ) {
-                        /* add current white spaces & word to macstr */
+
+                        /* append current white spaces & word to macstr */
                         if ( !( app_estr( macstr, infgetcws( inpf ) )
                                 && app_estr( macstr, infgetcw( inpf ) )
                         ) )
                             err_mem( inpf );
 
-                    } else if ( state != MAST_TAG ) {
-
-                        /* add current white spaces & word to rmt_str */
-                        if ( !( app_estr( rmt_str, infgetcws( inpf ) )
-                                && app_estr( rmt_str, infgetcw( inpf ) )
-                        ) )
-                            err_mem( inpf );
-
-                    } else {
+                    } else if ( ( state == MAST_COMT )
+                                || ( state == MAST_TAG ) )
+                    {
 
                         /* append rmt_str to macstr, clear rmt_str,
                         ** append current word to macstr
@@ -265,11 +272,41 @@ BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
                         ) )
                             err_mem( inpf );
 
+                    } else {
+
+                        /* append current white spaces & word to macstr */
+                        if ( !( app_estr( rmt_str, infgetcws( inpf ) )
+                                && app_estr( rmt_str, infgetcw( inpf ) )
+                        ) )
+                            err_mem( inpf );
+
+                    }
+
+                    /*
+                    ** skip hsc comment
+                    */
+                    if ( state == MAST_COMT ) {
+
+                        BYTE cstate = CMST_TEXT; /* vars for eoc_reached() */
+                        LONG cnest  = 0;
+                        BOOL end    = FALSE;     /* end of comment reached? */
+
+                        while ( !end && !fatal_error ) {
+
+                            end = eoc_reached( inpf, &cstate, &cnest );
+                            if ( !( app_estr( macstr, infgetcws( inpf ) )
+                                    && app_estr( macstr, infgetcw( inpf ) )
+                            ) )
+                                err_mem( inpf );
+
+                        }
+
+                        state = MAST_TEXT; /* reset state after comment */
                     }
                 }
             } else {
 
-                err_eof( inpf, "expecting </" HSC_MACRO_STR ">" );
+                err_eof( inpf, "missing </" HSC_MACRO_STR ">" );
                 state = MAST_ERR;
 
             }
@@ -295,6 +332,7 @@ BOOL read_macro_text( HSCTAG *macro, INFILE *inpf, BOOL open_mac )
             if ( len && ( ms[len-1]=='\n' ) )
                 ms[len-1] = ' ';
 
+            DMC( fprintf( stderr, "** Macro text: \"%s\"\n", estr2str( macstr ) ) );
 
         }
 

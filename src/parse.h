@@ -33,9 +33,9 @@ extern BOOL parse_end( INFILE *inpf );
 
 extern BOOL include_ok( VOID );
 
-extern BOOL include_hsc( STRPTR filename, INFILE *inpf, FILE *outf, ULONG optn );
-extern BOOL include_hsc_file( STRPTR filename, FILE *outf, ULONG optn );
-extern BOOL include_hsc_string( STRPTR filename, STRPTR s, FILE *outf, ULONG optn );
+extern BOOL include_hsc( STRPTR filename, INFILE *inpf, OUTFILE *outf, ULONG optn );
+extern BOOL include_hsc_file( STRPTR filename, OUTFILE *outf, ULONG optn );
+extern BOOL include_hsc_string( STRPTR filename, STRPTR s, OUTFILE *outf, ULONG optn );
 
 #endif /* NOEXTERN_PARSE_H */
 #endif /* HSC_PARSE_H */

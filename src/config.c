@@ -3,7 +3,7 @@
 **
 ** config handling for hsc; reads "hscdef.cfg"
 **
-** updated: 19-Oct-1995
+** updated:  3-Nov-1995
 ** created: 12-Jul-1995
 */
 
@@ -94,8 +94,8 @@ void prt_tag( FILE *stream, APTR data )
             fprintf( stream, "/c" );
         if ( tag->option & HT_NOHANDLE )
             fprintf( stream, "/h" );
-        if ( tag->option & HT_NONESTING )
-            fprintf( stream, "/n" );
+        if ( tag->option & HT_SMARTCLOSE )
+            fprintf( stream, "/sc" );
         if ( tag->option & HT_IGNOREARGS )
             fprintf( stream, "/a" );
         if ( tag->vers )
@@ -114,7 +114,6 @@ void prt_tag( FILE *stream, APTR data )
 */
 BOOL read_config_file( void )
 {
-    /* TODO: #ifdef CONFIG_FILE */
     STRPTR  paths[]  =                 /* paths to search for config file */
        { CONFIG_PATH,                  /*    (defined in "global.h") */
          NULL, NULL };
@@ -203,18 +202,22 @@ BOOL read_hsctags( void )
 
     /* string to define hsc tags */
     STRPTR hsc_prefs[] = {
-        HSC_DEFENT_STR  " NOCOPY SKIPLF NAME:string/r RPLC:string>",
-        HSC_DEFTAG_STR  " NOCOPY SKIPLF IGNOREARGS>",
-        HSC_ELSE_STR    " NOCOPY SKIPLF>",
-        HSC_EXEC_STR    " NOCOPY SKIPLF COMMAND:string/r>",
-        HSC_IF_STR      " NOCOPY SKIPLF IGNOREARGS CLOSE>",
-        HSC_INSERT_STR  " NOCOPY TEXT:string TIME:bool FORMAT:string>",
-        HSC_INCLUDE_STR " NOCOPY SKIPLF SOURCE:bool FILE:string/r>",
-        HSC_LET_STR     " NOCOPY SKIPLF IGNOREARGS>",
-        HSC_MACRO_STR   " NOCOPY SKIPLF IGNOREARGS>",
+        HSC_COMMENT_STR  " NOCOPY SKIPLF IGNOREARGS>",
+        HSC_ONLYCOPY_STR " NOCOPY IGNOREARGS>",
+        HSC_DEFENT_STR   " NOCOPY SKIPLF NAME:string/r RPLC:string>",
+        HSC_DEFTAG_STR   " NOCOPY SKIPLF IGNOREARGS>",
+        HSC_ELSE_STR     " NOCOPY SKIPLF>",
+        HSC_EXEC_STR     " NOCOPY SKIPLF COMMAND:string/r>",
+        HSC_IF_STR       " NOCOPY SKIPLF IGNOREARGS CLOSE>",
+        HSC_INSERT_STR   " NOCOPY TEXT:string TIME:bool FORMAT:string>",
+        HSC_INCLUDE_STR  " NOCOPY SKIPLF FILE:string/r PRE:bool SOURCE:bool>",
+        HSC_LET_STR      " NOCOPY SKIPLF IGNOREARGS>",
+        HSC_MACRO_STR    " NOCOPY SKIPLF IGNOREARGS>",
+        HSC_SOURCE_STR   " NOCOPY SKIPLF PRE:bool>",
         NULL
     };
 
+#if 0
     /*
     ** NOTE: the tags <|> and <*> are NOT added with
     ** the other hsc-tags above simpy because they
@@ -236,6 +239,7 @@ BOOL read_hsctags( void )
         tag->o_handle = handle_hsc_onlycopy;
     } else
         err_mem( NULL );
+#endif
 
     /* define hsc-tags */
     while ( !fatal_error && hsc_prefs[i] ) {
@@ -270,6 +274,7 @@ BOOL read_hsctags( void )
         add_tag_handle( deftag, HSC_LET_STR     , handle_hsc_let     , NULL );
         add_tag_handle( deftag, HSC_MACRO_STR   , handle_hsc_macro   , NULL );
         add_tag_handle( deftag, HSC_ONLYCOPY_STR, handle_hsc_onlycopy, NULL );
+        add_tag_handle( deftag, HSC_SOURCE_STR  , handle_hsc_source  , NULL );
 
     }
 
@@ -288,7 +293,7 @@ BOOL config_tag_handles( void )
 
     add_tag_handle( deftag, "!"   , handle_sgml_comment, NULL );
     add_tag_handle( deftag, "A"   , handle_anchor, handle_canchor );
-    add_tag_handle( deftag, "BASE", handle_heading, NULL );
+    add_tag_handle( deftag, "BASE", handle_base, NULL );
     add_tag_handle( deftag, "H1"  , handle_heading, NULL );
     add_tag_handle( deftag, "H2"  , handle_heading, NULL );
     add_tag_handle( deftag, "H3"  , handle_heading, NULL );

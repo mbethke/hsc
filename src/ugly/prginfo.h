@@ -3,9 +3,6 @@
 **
 ** ugly program info functions, header file
 **
-** updated: 03-Jul-94
-** created: 03-Jul-94
-**
 */
 
 #ifndef UGLY_PRGINFO_H                     /* avoid include twice */
@@ -26,9 +23,16 @@
 **            never use _call_set_prginfo()!
 **
 */
+#ifdef AMIGA
+#define  set_prginfo( name, auth, ver, rev, rel, info, copy ) \
+    { call_set_prginfo( name, auth, ver, rev, rel,            \
+      __DATE__, __TIME__, info, copy );                       \
+      amiga_version = "$VER:" name " " #ver "." #rev "." #rel; }
+#else
 #define  set_prginfo( name, auth, ver, rev, rel, info, copy ) \
     call_set_prginfo( name, auth, ver, rev, rel,              \
     __DATE__, __TIME__, info, copy )
+#endif
 
 
 /*
@@ -41,6 +45,10 @@ extern void call_set_prginfo( STRPTR name, STRPTR auth, int ver, int rel, int re
     STRPTR rel_date, STRPTR rel_time, STRPTR infostr, STRPTR copystatus );
 extern int fprintf_prginfo( FILE *stream );
 
+#ifdef AMIGA
+/* system version string on amiga systems */
+extern STRPTR amiga_version;
+#endif
 
 #endif /* UGLY_PRGINFO_H */
 

@@ -9,9 +9,11 @@
 <$deftag CODE CLOSE>
 <$deftag HTML CLOSE ONLYONCE>
 <$deftag HEAD CLOSE ONLYONCE>
-<$deftag LI MBI="UL|OL">
+<$deftag H1 CLOSE>
+<$deftag LI SMARTCLOSE MBI="ul|ol|dir|menu">
 <$deftag IMG SRC:uri ALT:string ALIGN:enum(top|bottom|middle|*) ISMAP:bool>
 <$deftag I CLOSE>
+<$deftag P SMARTCLOSE>
 <$deftag TT CLOSE>
 <$deftag TITLE CLOSE ONLYONCE>
 <$deftag UL CLOSE>

@@ -11,13 +11,13 @@
 #**
 #** sas/c AMIGA
 #**
-sys  = DEF=AMIGA
-dest = t:
-norm = $(sys) DEF=UMEM_TRACKING DBG=SF OBJNAME=$(dest) DEF=DEBUG
-optim= $(sys) NODBG STRIPDEBUG SMALLCODE OPT OPTSIZE IGN=304
-link = sc LINK
-comp = sc
-ign  =
+#sys  = DEF=AMIGA
+#dest = t:
+#norm = $(sys) DEF=UMEM_TRACKING DBG=SF OBJNAME=$(dest) DEF=DEBUG
+#optim= $(sys) NODBG STRIPDEBUG SMALLCODE OPT OPTSIZE IGN=304
+#link = sc LINK
+#comp = sc
+#ign  =
 
 
 #**
@@ -29,32 +29,32 @@ ign  =
 #**
 #** gcc UNIX
 #**
-#dest =
-#sys  = -DUNIX
+dest =
+sys  = -DUNIX
 
 
 #**
 #** gcc (any system)
 #**
-#norm = $(sys) -DUMEM_TRACKING -ansi -ggdb
-#optim= $(sys) -ansi -O
-#comp = gcc -c
-#link = gcc -o $@
-#ign  =
+norm = $(sys) -DUMEM_TRACKING -ansi -g
+optim= $(sys) -ansi -O
+comp = cc -c
+link = cc -o $@
+ign  =
 
 #
 # compiler mode
 # (norm/optim)
 #
-mode = $(optim)
-#mode = $(norm)
+#mode = $(optim)
+mode = $(norm)
 
 #
 # copy symbol
 #
-copy1 = copy $(dest)hsc prog:hsc				# AMIGA
-copy2 = copy $(dest)hsc c:hsc
-copy3 = copy $(dest)hsc arc/hsc/hsc
+#copy1 = copy $(dest)hsc prog:hsc				# AMIGA
+#copy2 = copy $(dest)hsc c:hsc
+#copy3 = copy $(dest)hsc arc/hsc/hsc
 #copy1 = 							# UNIX
 #copy2 =
 #copy3 =
@@ -64,7 +64,8 @@ copy3 = copy $(dest)hsc arc/hsc/hsc
 #
 # ugly modules
 #
-ugly_mod= ugly/args.o ugly/dllist.o ugly/expstr.o ugly/fname.o ugly/infile.o ugly/memory.o ugly/prginfo.o ugly/string.o
+ugly_mod= ugly/args.o ugly/dllist.o ugly/expstr.o ugly/fname.o ugly/infile.o \
+	ugly/memory.o ugly/prginfo.o ugly/outfile.o ugly/string.o
 
 tag_handles = $(dest)tag_a.o $(dest)tag_hsc.o $(dest)tag_if.o $(dest)tag_macr.o $(dest)tag_misc.o
 

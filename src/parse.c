@@ -3,7 +3,7 @@
 **
 ** parse file: handle for entities & tags
 **
-** updated: 22-Oct-1995
+** updated: 26-Oct-1995
 ** created:  1-Jul-1995
 **
 */
@@ -156,7 +156,7 @@ BOOL check_mbinaw( HSCTAG *tag, INFILE *inpf )
 
             HSCTAG *ctag = (HSCTAG*) nd->data;
 
-            found = strenum( ctag->name, tag->mbi, '|', STEN_NOCASE );
+            found = strenum( ctag->name, tag->naw, '|', STEN_NOCASE );
             if ( found ) {
 
                 message( MSG_NAW, inpf );
@@ -377,7 +377,7 @@ BOOL parse_tag( INFILE *inpf)
                 if ( !parse_wd( inpf, ">" ) ) {
 
                     message( MSG_CL_MACR_ARG, inpf );
-                    errstr( "No attributes allowd for closing tags" );
+                    errstr( "No attributes allowed for closing tags" );
                     errlf();
 
                     skip_until_eot( inpf );
@@ -395,18 +395,15 @@ BOOL parse_tag( INFILE *inpf)
         /*
         ** processed for opening AND closing tag
         */
-#if 0
-        /* set attributes */
-        if ( tag && !(tag->option & HT_IGNOREARGS) )
-            tci = set_tag_args( tag, inpf, open_tag );
-        else if ( !hnd )
-            skip_until_eot( inpf );
-#endif
         write_tag = ( !(tag) || !(tag->option & HT_NOCOPY) );
 
         /* call handle if available */
         if ( hnd && !fatal_error )
             (*hnd)( inpf, tag );
+
+        /* clear attribute values of tag */
+        if ( tag )
+            clr_varlist( tag->attr );
 
         /* write whole tag out */
         if ( write_tag )
@@ -793,7 +790,7 @@ BOOL parse_end( INFILE *inpf )
 **
 ** result: TRUE, if all worked well, else FALSE
 */
-BOOL include_hsc( STRPTR filename, INFILE *inpf, FILE *outf, ULONG optn )
+BOOL include_hsc( STRPTR filename, INFILE *inpf, OUTFILE *outf, ULONG optn )
 {
 
     BOOL    ok;            /* result */
@@ -850,7 +847,7 @@ BOOL include_hsc( STRPTR filename, INFILE *inpf, FILE *outf, ULONG optn )
 **
 ** open input file and include it
 */
-BOOL include_hsc_file( STRPTR filename, FILE *outf, ULONG optn )
+BOOL include_hsc_file( STRPTR filename, OUTFILE *outf, ULONG optn )
 {
     INFILE *inpf;
     BOOL    ok;
@@ -878,7 +875,7 @@ BOOL include_hsc_file( STRPTR filename, FILE *outf, ULONG optn )
 **
 ** open input file and include it
 */
-BOOL include_hsc_string( STRPTR filename, STRPTR s, FILE *outf, ULONG optn )
+BOOL include_hsc_string( STRPTR filename, STRPTR s, OUTFILE *outf, ULONG optn )
 {
     INFILE *inpf;
     BOOL    ok;

@@ -3,7 +3,7 @@
 **
 ** cleanup function for hsc
 **
-** updated: 16-Oct-1995
+** updated:  3-Nov-1995
 ** created:  1-Jul-1995
 */
 
@@ -43,9 +43,7 @@ void cleanup( void )
     del_dllist( cltags );
     del_dllist( vars );
 
-    del_dllist( ignore );
     del_dllist( incfile );
-    del_dllist( werror );
 
     /* release expstrings */
     del_estr( IF_stack );

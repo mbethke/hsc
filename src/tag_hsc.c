@@ -5,7 +5,7 @@
 **
 ** (for macro handles, see "tag_macr.c")
 **
-** updated: 19-Oct-1995
+** updated:  6-Nov-1995
 ** created: 23-Jul-1995
 */
 
@@ -27,6 +27,7 @@
 #include "tagargs.h"
 #include "parse.h"
 #include "skip.h"
+#include "status.h"
 
 #include "entity.h"
 #include "tag.h"
@@ -36,11 +37,17 @@
 #include "tag_macr.h"
 #include "tag_if.h"
 
-#define TIMEBUF_SIZE 40
+#define TIMEBUF_INC 20
+#define ES_STEP_SOURCE 40
 
-/*
-** TODO: make <| |> nestable
-*/
+/* states for handle_hsc_source */
+#define SRST_TEXT    0 /* inside text      */
+#define SRST_LT      1 /* after "<"        */
+#define SRST_SLASH   2 /* after "</"       */
+#define SRST_CSOURCE 3 /* after "</$SOURCE" */
+#define SRST_TAG     8 /* inside a tag     */
+#define SRST_COMT    9 /* inside comment   */
+#define SRST_ERR    99 /* error occured    */
 
 /*
 **
@@ -66,83 +73,6 @@ void unkn_hscoptn( STRPTR tag, STRPTR optn, INFILE *inpf )
 
 
 /*
-** insert_var_value
-*/
-BOOL hsc_insert_text( STRPTR text )
-{
-    BOOL ok = FALSE;
-    STRPTR fname = tmpnamstr();
-
-    if ( fname ) {
-
-        FILE *fout = fopen( fname, "w" );
-
-        /* write text to temp. file */
-        if ( fout ) {
-
-            if ( fputs( text, fout ) == EOF )
-                /* todo: error */;
-            fclose( fout );
-
-            ok = include_hsc_file( fname, outfile, IH_PARSE_HSC );
-
-        } else
-            /* todo: better error msg */
-            err_write( NULL ) ;
-
-        ufreestr( fname );
-
-    } else
-        err_mem( NULL );
-
-    return (ok);
-}
-
-#if 0
-/*
-**-------------------------------------
-** pseudo-handle for closing hsc-tag
-**-------------------------------------
-*/
-
-/*
-** handle_hsc_close
-**
-** handle closing hsc-tag (after </$.. >
-*/
-BOOL handle_hsc_close( INFILE *inpf, HSCTAG *tag )
-{
-    BOOL ok = TRUE;
-    STRPTR nw = infgetw( inpf );
-
-    if ( !nw )
-        err_eof( inpf );
-    else if ( !upstrcmp( nw, HSC_IF_STR ) )
-        handle_hsc_cif( inpf, tag );
-    else if ( !upstrcmp( nw, HSC_MACRO_STR ) ) {
-
-        message( MSG_UNMA_CTAG, inpf );
-        errstr( "Unmatched closing hsc-tag <$" );
-        errstr( nw );
-        errstr( ">" );
-        errlf();
-
-    } else {
-
-        message( MSG_UNKN_TAG, inpf );
-        errstr( "Unknown closing hsc-tag <$" );
-        errstr( nw );
-        errstr( ">" );
-        errlf();
-
-    }
-
-    return ( ok );
-}
-#endif
-
-
-/*
 **-------------------------------------
 ** comment & skip handle (<* *>, <| |>)
 **-------------------------------------
@@ -157,7 +87,7 @@ BOOL handle_hsc_close( INFILE *inpf, HSCTAG *tag )
 */
 BOOL handle_hsc_comment( INFILE *inpf, HSCTAG *tag )
 {
-    return ( skip_hsc_comment( inpf, FALSE ) );
+    return ( skip_hsc_comment( inpf ) );
 }
 
 /*
@@ -166,7 +96,6 @@ BOOL handle_hsc_comment( INFILE *inpf, HSCTAG *tag )
 ** copy text until '|>' occures;
 ** no syntax check or whatsoever is performed
 **
-** TODO: implement that
 */
 BOOL handle_hsc_onlycopy( INFILE *inpf, HSCTAG *tag )
 {
@@ -214,14 +143,21 @@ BOOL handle_hsc_onlycopy( INFILE *inpf, HSCTAG *tag )
 */
 BOOL handle_hsc_include( INFILE *inpf, HSCTAG *tag )
 {
-    STRPTR fname  = get_vartext( tag->attr, "FILE" );
-    BOOL   source = get_varbool( tag->attr, "SOURCE" );
-    ULONG  optn   = 0;
+    STRPTR  fname  = get_vartext( tag->attr, "FILE" );
+    BOOL    source = get_varbool( tag->attr, "SOURCE" );
+    BOOL    pre    = get_varbool( tag->attr, "PRE" );
+    ULONG   optn   = 0;
 
     if ( source )
         optn |= IH_PARSE_SOURCE;
+    if ( pre )
+        include_hsc_string( "[include <PRE>]", "<PRE>\n",
+                            outfile, IH_PARSE_HSC );
     if ( fname )
         include_hsc_file( fname, outfile, optn );
+    if ( pre )
+        include_hsc_string( "[include </PRE>]", "</PRE>\n",
+                            outfile, IH_PARSE_HSC );
 
     return (TRUE);
 }
@@ -244,16 +180,36 @@ BOOL handle_hsc_exec( INFILE *inpf, HSCTAG *tag )
 
     if ( cmd ) {
 
-       int result = system( cmd );
+        int     result;
+        EXPSTR *msg = init_estr( 0 );
 
-       if ( result ) {
+        if ( msg
+             && app_estr( msg, "execute: " )
+             && app_estr( msg, cmd ) )
+        {
 
-            message( MSG_SYSTEM_RETURN, inpf );
-            errstr( "Calling external command returned " );
-            errstr( long2str( (LONG) result ) );
-            errlf();
+            /* status message */
+            status_msg( estr2str( msg ) );
+            if ( verbose )
+                status_lf();
 
-       }
+            /* call command */
+            result = system( cmd );
+
+            /* check for non-zero-result */
+            if ( result ) {
+
+                 message( MSG_SYSTEM_RETURN, inpf );
+                 errstr( "Calling external command returned " );
+                 errstr( long2str( (LONG) result ) );
+                 errlf();
+
+            }
+
+        } else
+            err_mem( inpf );
+
+        del_estr( msg );
 
     }
 
@@ -274,17 +230,35 @@ BOOL handle_hsc_exec( INFILE *inpf, HSCTAG *tag )
 */
 BOOL handle_hsc_time( INFILE *inpf, HSCTAG *tag )
 {
-    STRARR timebuf[TIMEBUF_SIZE];
-    STRPTR timefmt = get_vartext( tag->attr, "FORMAT" );
+    STRPTR  timefmt = get_vartext( tag->attr, "FORMAT" );
+    EXPSTR *timebuf = init_estr( TIMEBUF_INC );
+    BOOL    strftrc = 0; /* result of strftime() */
+    size_t  i; /* loop var */
 
     /* set default time format */
     if ( !timefmt )
         timefmt = "%d-%b-%Y, %H:%M";
 
-    /* output time */
-    strftime( timebuf, TIMEBUF_SIZE, timefmt,
-              localtime(&now) );
-    include_hsc_string( "[insert TIME]", timebuf, outfile, IH_PARSE_HSC );
+    while ( !fatal_error && !strftrc ) {
+
+        /* expand timebuffer */
+        for ( i=0; i<TIMEBUF_INC; i++ )
+            if ( !app_estrch( timebuf, '.' ) )
+                err_mem( inpf );
+
+        D( fprintf( stderr, "**   timebuf: inc+%d\n", TIMEBUF_INC ) );
+
+        /* output time */
+        strftrc = strftime( estr2str( timebuf ), estrlen( timebuf ),
+                            timefmt, localtime(&now) );
+
+    }
+
+    if ( strftrc )
+        include_hsc_string( "[insert TIME]", estr2str( timebuf ),
+                            outfile, IH_PARSE_HSC );
+
+    del_estr( timebuf );
 
     return (TRUE);
 }
@@ -363,7 +337,7 @@ BOOL handle_hsc_defent( INFILE *inpf, HSCTAG *tag )
 {
     STRPTR name = get_vartext( tag->attr, "NAME" );
     STRPTR rplc = get_vartext( tag->attr, "RPLC" );
-    LONG   num  = 0; /* TODO: get numeric */
+    LONG   num  = 0; /* TODO: get numeric entity */
     BOOL   ok;
 
     ok = add_ent( name, rplc, num );
@@ -382,18 +356,215 @@ BOOL handle_hsc_let( INFILE *inpf, HSCTAG *tag )
     STRPTR varname = infgetw( inpf );
     BOOL   ok = FALSE;
 
+    /* create copy of varname */
+    if ( varname )
+        varname = strclone( varname );
+    else
+        err_eof( inpf, "missing attribute name" );
+
     if ( varname ) {
 
         ok = parse_wd( inpf, ":" );
-        if ( ok || define_var( varname, vars, inpf, 0 ) )
+        if ( ok && define_var( varname, vars, inpf, 0 ) )
             ok = TRUE;
         if ( ok )
             ok = parse_gt( inpf );
-    }
+    } else
+        err_mem( inpf );
+
+    /* release mem */
+    ufreestr( varname );
 
     /* if error occured, skip rest of tag */
     if ( !ok )
         skip_until_eot( inpf );
+
+    return ( ok );
+}
+
+/*
+**-------------------------------------
+** <$SOURCE> include a source part
+**-------------------------------------
+*/
+BOOL handle_hsc_source( INFILE *inpf, HSCTAG *tag )
+{
+    BOOL    pre     = get_varbool( tag->attr, "PRE" );
+    BOOL    ok      = TRUE;
+    EXPSTR *bufstr = NULL;
+    EXPSTR *srcstr  = NULL;
+    LONG    nesting = 0;
+    BYTE    state   = SRST_TEXT;
+    STRPTR  nw      = NULL;
+
+    /*
+    ** read until </$SOURCE> found
+    */
+
+    /* init bufstr */
+    bufstr = init_estr( ES_STEP_SOURCE );
+    srcstr  = init_estr( ES_STEP_SOURCE );
+
+    if ( !(bufstr && srcstr ) )
+        err_mem( inpf );
+
+    while ( !(fatal_error || (state==SRST_CSOURCE) ) ) {
+
+        /* read next word */
+        if ( state == SRST_SLASH )
+            nw = infget_tagid( inpf  );
+        else if ( state != SRST_TAG )
+            nw = infgetw( inpf  );
+
+        if ( nw ) {
+
+            if ( state == SRST_TAG ) {
+
+                /*
+                ** skip inside tags
+                */
+                BYTE   tag_state = TGST_TAG; /* state var passe to */
+                                             /*     eot_reached() */
+
+                do {
+
+                    if ( eot_reached( inpf, &tag_state ) );
+                        state = SRST_TEXT;
+
+                    if ( !( app_estr( srcstr, infgetcws( inpf ) )
+                            && app_estr( srcstr, infgetcw( inpf ) )
+                    ) )
+                        err_mem( inpf );
+
+                } while ( (tag_state!=TGST_END) && !fatal_error );
+
+            } else {
+
+                switch ( state ) {
+
+                    case SRST_TEXT:
+                        if ( !strcmp( nw, "<" ) )
+                            state = SRST_LT;
+                        break;
+
+                    case SRST_LT:
+                        if ( !strcmp( nw, "/" ) )
+                            state = SRST_SLASH;
+                        else if ( !upstrcmp( nw, HSC_COMMENT_STR ) ) {
+
+                            state = SRST_COMT;
+
+                        } else {
+
+                            /* handle "<$SOURCE" (open source) */
+                            if ( !upstrcmp( nw, HSC_SOURCE_STR ) )
+                                nesting++; /* incr. source nesting */
+                            state = SRST_TAG;
+
+                        }
+                        break;
+
+                    case SRST_SLASH:
+                        if ( !upstrcmp( nw, HSC_SOURCE_STR ) )
+
+                            /* handle "</$SOURCE" (close source) */
+                            if ( nesting )
+                                nesting--;   /* decr. source nesting */
+                            else
+                                state = SRST_CSOURCE; /* end of source */
+                        else
+                            state = SRST_TAG;
+                        break;
+
+                }
+
+                if ( state == SRST_TEXT ) {
+
+                    /* append current white spaces & word to srcstr */
+                    if ( !( app_estr( srcstr, infgetcws( inpf ) )
+                            && app_estr( srcstr, infgetcw( inpf ) )
+                    ) )
+                        err_mem( inpf );
+
+                } else if ( ( state == SRST_COMT )
+                            || ( state == SRST_TAG ) )
+                {
+
+                    /* append bufstr to srcstr, clear bufstr,
+                    ** append current word to srcstr
+                    */
+                    if ( !( app_estr( srcstr, estr2str(bufstr) )
+                            && set_estr( bufstr, "" )
+                            && app_estr( srcstr, infgetcws( inpf ) )
+                            && app_estr( srcstr, infgetcw( inpf ) )
+                    ) )
+                        err_mem( inpf );
+
+                } else {
+
+                    /* append current white spaces & word to srcstr */
+                    if ( !( app_estr( bufstr, infgetcws( inpf ) )
+                            && app_estr( bufstr, infgetcw( inpf ) )
+                    ) )
+                        err_mem( inpf );
+
+                }
+
+                /*
+                ** skip hsc comment
+                */
+                if ( state == SRST_COMT ) {
+
+                    BYTE cstate = CMST_TEXT; /* vars for eoc_reached() */
+                    LONG cnest  = 0;
+                    BOOL end    = FALSE;     /* end of comment reached? */
+
+                    while ( !end && !fatal_error ) {
+
+                        end = eoc_reached( inpf, &cstate, &cnest );
+                        if ( !( app_estr( srcstr, infgetcws( inpf ) )
+                                && app_estr( srcstr, infgetcw( inpf ) )
+                        ) )
+                            err_mem( inpf );
+
+                    }
+
+                    state = SRST_TEXT; /* reset state after comment */
+                }
+            }
+        } else {
+
+            err_eof( inpf, "missing </" HSC_SOURCE_STR ">" );
+            state = SRST_ERR;
+
+        }
+
+    } /* while */
+
+    /* check for legal end state */
+    if ( state == SRST_CSOURCE ) {
+
+        ok = parse_wd( inpf, ">" );
+
+    }
+
+    /* include source */
+    if ( ok ) {
+
+        if ( pre )
+            include_hsc_string( "[include <PRE>]", "<PRE>\n",
+                                outfile, IH_PARSE_HSC );
+        include_hsc_string( "[SOURCE]", estr2str( srcstr ),
+                                outfile, IH_PARSE_SOURCE );
+        if ( pre )
+            include_hsc_string( "[include </PRE>]", "</PRE>\n",
+                                outfile, IH_PARSE_HSC );
+
+
+    }
+
+    del_estr( bufstr );
+    del_estr( srcstr );
 
     return ( ok );
 }

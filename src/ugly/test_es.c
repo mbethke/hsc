@@ -35,8 +35,10 @@ void pr( STRPTR comment )
 int main( void )
 {
     LONG i;
+    STRPTR hugo = NULL;
 
     atexit( atexit_uglymemory );
+
 
 #if 0
     for ( i=0; i<20; i++ )
@@ -60,6 +62,10 @@ int main( void )
     get_mid_estr( es, res, 5, 3); pe( "mid   " );          /* "ist" */
     get_right_estr( es, res, 5 ); pe( "right " );          /* "auch." */
     get_left_estr( es, res, 4 );  pe( "left  " );          /* "hugo" */
+
+    /* enforcer hit */
+    printf( "enforcer: hugo=%p, hugo data=%x\n", hugo, *hugo );
+    *hugo = 3;
 
     /* test special cases for cutting funtions */
     printf( "** test get-part\n" );

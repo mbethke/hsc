@@ -11,7 +11,7 @@ void main( void )
 
     hugo = (char *) malloc( 10 );
     hugo[16] = 11;
-    system( "munglist ONLY test SHOWHUNK" );
+/*    system( "munglist ONLY test SHOWHUNK" ); */
     free( hugo );
 
 }

@@ -15,7 +15,44 @@ void prt_ign( FILE *stream, APTR data )
     fprintf( stream, "%d\n", (LONG) data );
 }
 
+STRPTR set_ignore( STRPTR arg )
+{
+    printf( "set ignore: \"%s\"\n", arg );
 
+    return ( NULL );
+}
+
+/*
+** arg_ignore
+**
+** argument handler for special values that are passed
+** to "IGNORE=.." several messages are set to be ignored
+** with the old messages left active
+*/
+STRPTR arg_ignore( STRPTR arg )
+{
+    STRPTR errmsg = NULL;
+
+    printf( "ign : %s\n", arg );
+
+    return( errmsg );
+}
+
+/*
+** arg_mode
+**
+** argument handler for values that are passed
+** to "MODE=..". this one resets all ignored
+** messages.
+*/
+STRPTR arg_mode( STRPTR arg )
+{
+    STRPTR errmsg = NULL;
+
+    printf( "mode: %s\n", arg );
+
+    return( errmsg );
+}
 
 /*
 ** main (test)
@@ -33,6 +70,7 @@ int main( int argc, char *argv[] )
     BOOL   verb = 0;
     BOOL   flag = FALSE;
     DLLIST *ignore = NULL;
+    DLLIST *ignore_list = NULL; /* dummy */
 
     struct arglist *my_args;
 
@@ -46,6 +84,7 @@ int main( int argc, char *argv[] )
         "a short test program", "This is FreeWare!" );
 
     my_args = prepare_args( "MY_ARGS",
+#if 0
               "From"          , &fromfile, "input file",
               "To"            , &tofile, "output file (default: stdout)",
               "ErrFile=ef/T/K", &errfile, "error file (default: stderr)",
@@ -60,22 +99,22 @@ int main( int argc, char *argv[] )
               "Status=st/S"   , &flag       , "enable status message",
               "Verbose=v/S"   , &verb       , "enable verbose output",
               "-Debug/S"      , &flag       , "enable debugging output",
+#endif
               /* help */
-              "HELP=?/S"      , &help  , "display this text",
 
 #if 0
               "FROM", &fromfile, "input file",
               "TO", &tofile, "output file",
-              "IGNORE=IGN/N/K/M", &ignore, "ignore warning number",
               "Num/N"            , &num, "number of lines to convert",
 #endif
-#if 0
-              "HELP/S", &help, "display help",
+#if 1
+              "Ignore=ign/N/K/M/$", arg_ignore, &ignore_list, "ignore message number",
+              "Mode/E/K/$"        , arg_mode, "hugo|sepp|resi", &mode,
               "ERRFILE/K", &errfile, "error file",
               "VERBOSE/S", &verb, "verbose flag",
               "StartLine=SL/R/K" , 0, 2048, &line, NULL,
-              "SourceMode=SM/E/K", "ASC|BIN|HEX", &mode, NULL,
 #endif
+              "HELP=?/S"      , &help  , "display this text",
               NULL );
 
 

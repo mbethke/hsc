@@ -9,12 +9,12 @@
 **
 ** NOTE: contains also UGLY_VER and UGLY_REV
 **
-** Version 1.0.5, (W) by Tommy-Saftwörx 1994,95
+** Version 1.0.6, (W) by Tommy-Saftwörx 1994,95
 **
-** updated: 16-Oct-1995
+** updated: 31-Oct-1995
 ** created: 25-Jan-1994
 **
-** $VER: types.h 1.0.5 (16.10.1995)
+** $VER: types.h 1.0.6 (31.10.1995)
 **
 */
 
@@ -23,7 +23,7 @@
 ** are you running a amiga?
 */
 
-#ifdef AMIGA
+#if 0
 
 /*
 ** on amiga system, just include system types 

@@ -24,6 +24,7 @@
 */
 
 extern LONG get_mci( VOID );
+extern LONG get_current_mci( VOID );
 
 extern HSCTAG *def_tag_name( DLLIST *taglist, INFILE *inpf, BOOL *open_tag );
 extern BOOL def_tag_args( DLLIST *taglist, HSCTAG *tag, INFILE *inpf, BOOL *open_tag );

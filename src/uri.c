@@ -4,7 +4,7 @@
 **
 ** functions for uri parsing of tag arguments
 **
-** updated: 16-Oct-1995
+** updated: 28-Oct-1995
 ** created: 16-Jul-1995
 */
 
@@ -160,7 +160,10 @@ STRPTR conv_path2uri( STRPTR path )
 */
 STRPTR conv_uri2path( STRPTR uri )
 {
-    reluri[0] = '\0';               /* result for conv_path2uri() */
+    reluri[0] = '\0';                  /* result for conv_path2uri() */
+#ifdef MS_DOS
+    size_t i;                          /* loop var */
+#endif
 
     while ( !strncmp( uri, PARENT_URI, strlen( PARENT_URI ) ) ) {
 
@@ -169,8 +172,15 @@ STRPTR conv_uri2path( STRPTR uri )
 
     }
 
-    /* TODO: for MS-Dos, replace "/" by "\" */
     strcat( reluri, uri );
+
+
+#ifdef MS_DOS
+    /* for ms-dos, replace "/" by "\" */
+    for ( i=0; reluri[i]; i++ )
+        if ( reluri[i] == '/' )
+            reluri[i] = '\\' )
+#endif
 
     return ( reluri );
 }

@@ -31,6 +31,7 @@
 #define HSC_INSERT_STR   HSC_TAGID "INSERT"
 #define HSC_LET_STR      HSC_TAGID "LET"
 #define HSC_MACRO_STR    HSC_TAGID "MACRO"
+#define HSC_SOURCE_STR   HSC_TAGID "SOURCE"
 
 #define HSC_TEXT_STR     "TEXT"
 #define HSC_TIME_STR     "TIME"
@@ -47,7 +48,6 @@ typedef struct hsctag {
     DLLIST *attr;                      /* list of attributes */
     EXPSTR *op_text;                   /* macro text (open/close) */
     EXPSTR *cl_text;
-    ULONG  nest_count;                 /* nesting counter */
     STRPTR mbi;                        /* string that tells inside which */
                                        /*   tag this tag has to be */
                                        /*   e.g. for <LI>: "ul|ol|dir|menu" */
@@ -70,12 +70,12 @@ typedef struct hsctag {
 #define HT_IGNOREARGS  (1<<4)  /* all tag args are ignored */
 #define HT_OBSOLETE    (1<<5)  /* tag is already obsolete */
 #define HT_JERK        (1<<6)  /* netscape externsion & co. */
-#define HT_NONEST      (1<<7)  /* TODO: remove tag allows no nesting */
+#define HT_SMARTCLOSE  (1<<7)  /* ignore closing tags (<P> and <LI>) */
 #define HT_NOBP        (1<<8)  /* TODO: warning if <P> before tag */
 #define HT_NOAP        (1<<9)  /* TODO: -"- after tag */
 #define HT_MACRO       (1<<10) /* macro tag */
 #define HT_NOHANDLE    (1<<11) /* don't call tag handles */
-#define HT_NONESTING   (1<<12) /* not nestable (<A>) */
+#define HT_NONESTING   (1<<12) /* TODO: remove this */
 #define HT_SKIPLF      (1<<13) /* skip possible LF after tag */
 
 /* tag options that can be set via DEFTAG */
@@ -93,8 +93,8 @@ typedef struct hsctag {
 #define TO_NOCOPY_SHT      "NCP"
 #define TO_NOHANDLE_STR    "NOHANDLE"
 #define TO_NOHANDLE_SHT    "NHD"
-#define TO_NONESTING_STR   "NONESTING"
-#define TO_NONESTING_SHT   "NST"
+#define TO_SMARTCLOSE_STR  "SMARTCLOSE"
+#define TO_SMARTCLOSE_SHT  "SMC"
 #define TO_ONLYONCE_STR    "ONLYONCE"
 #define TO_ONLYONCE_SHT    "1"
 #define TO_OBSOLETE_STR    "OBSOLETE"
@@ -111,6 +111,11 @@ typedef struct hsctag {
 /* decides if a tag is a hsc-tag */
 #define is_hsc_tag( tag ) (!upstrncmp(((tag)->name),HSC_TAGID,strlen(HSC_TAGID)))
 
+/* decides if a tag is a macro-tag */
+#define is_macro_tag( tag ) ((tag)->option & HT_MACRO )
+
+/* find closing tag */
+#define find_ctag( name ) find_strtag( cltags, name )
 /*
 **
 ** extern references

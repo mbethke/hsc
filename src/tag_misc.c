@@ -109,8 +109,7 @@ BOOL handle_heading( INFILE *inpf, HSCTAG *tag )
 BOOL handle_sgml_comment( INFILE *inpf, HSCTAG *tag )
 {
     /*
-    ** TODO: - correct abort
-    **       - copy chars
+    ** TODO: - do not copy comments if requested
     */
     STRPTR nw = infgetw( inpf );
 

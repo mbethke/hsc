@@ -3,9 +3,9 @@
 **
 ** ugly program info functions
 **
-** Version 1.0.1, (W) by Tommy-Saftwörx in 1994
+** Version 1.0.2, (W) by Tommy-Saftwörx in 1994
 **
-** updated: 26-Sep-1995
+** updated:  2-Nov-1995
 ** created:  3-Jul-1994
 **
 ** $VER: prginfo.c 1.0.1 (26.9.1995)
@@ -26,6 +26,13 @@
 #include "types.h"
 
 #define SIZE_DATESTR 12
+
+
+#ifdef AMIGA
+/* system version string on amiga systems */
+STRPTR amiga_version = "";
+#endif
+
 /*
 ** local global vars
 */

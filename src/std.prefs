@@ -5,50 +5,8 @@
 **
 ** (W) by Tommy-Saftwörx in 1995
 **
-** updated: 16-Oct-1995
+** updated: 11-Nov-1995
 ** created:  8-Sep-1995
-**
-**----------------------------------------------------------------------------
-**
-** syntax to define a new tag:
-**
-**   <$DEFTAG {name} [{flag}] [{attribute}]>
-**
-**   name:
-**       name of the tag (eg "UL")
-**   flag:
-**       CLOSE     tag requires closing tag (<UL>)
-**       HANDLE    handle function is called if available
-**       JERK      tag is a netscape-extension (<NOBR>)
-**       OBSOLETE  tag is obsolete and should not be used anymore (<LISTING>)
-**       ONLYONCE  tag can appear at the most once (<HEAD>)
-**       REQUIRED  tag is required at least once per document (<HEAD>)
-**
-**   attribute: <name>":"<type>
-**
-**       name:
-**           name of attribute, consists of chars
-**                 ('A'..'Z', 'a'..'z', '0'..'9', '_')
-**       type:
-**           bool....boolean switch
-**           enum....enumerator type (example see <IMG ALIGN=..>)
-**           string..any text
-**           uri.....reference to another URI
-**
-**----------------------------------------------------------------------------
-**
-** syntax to define a new entity:
-**
-** <$DEFENT NAME={name} [RPLC={replace}]>
-**
-**   name   : name of entity, eg "Uuml"
-**   replace: special character that should be replaced
-**            if found, eg "Ü"
-**
-** NOTE: entities &amp; ("&"), &gt; (">"), &lt; ("<") and &quot; (quote)
-**       are defined by hsc.
-**
-**----------------------------------------------------------------------------
 *>
 
 <*********************>
@@ -61,6 +19,8 @@
 <$defent NAME="uuml"   RPLC="ü">
 <$defent NAME="Uuml"   RPLC="Ü">
 <$defent NAME="szlig"  RPLC="ß">
+<$defent NAME="#171"  RPLC="«">
+<$defent NAME="#187"  RPLC="»">
 <$defent NAME="copy">
 <$defent NAME="otilde">
 <$defent NAME="ntilde">
@@ -70,13 +30,13 @@
 <*** HTML 1.0 tags ***>
 <*********************>
 <$deftag ! IGNOREARGS><* do not edit *>
-<$deftag A CLOSE NOCOPY NONESTING HREF:uri NAME:string REL:string>
+<$deftag A CLOSE NOCOPY HREF:uri NAME:string REL:string NAW="A">
 <$deftag ADDRESS CLOSE>
 <$deftag B CLOSE>
 <$deftag BASE ONLYONCE HREF:uri>
 <$deftag BLOCKQUOTE CLOSE>
-<$deftag BODY CLOSE REQUIRED ONLYONCE>
-<$deftag BR>
+<$deftag BODY CLOSE REQUIRED ONLYONCE BGCOLOR:string/j TEXT:string/j LINK:string/j VLINK:string/j ALINK:string/j>
+<$deftag BR CLEAR:enum(left|right|all|*)/j><* note: CLEAR will become legal in 30 *>
 <$deftag CITE CLOSE>
 <$deftag CODE CLOSE>
 <$deftag DD>
@@ -85,23 +45,23 @@
 <$deftag EM CLOSE>
 <$deftag HTML CLOSE REQUIRED ONLYONCE>
 <$deftag HEAD CLOSE REQUIRED ONLYONCE>
-<$deftag IMG SRC:uri ALT:string ALIGN:enum(top|bottom|middle|*) ISMAP:bool>
-<$deftag H1 CLOSE>
-<$deftag H2 CLOSE>
-<$deftag H3 CLOSE>
-<$deftag H4 CLOSE>
-<$deftag H5 CLOSE>
-<$deftag H6 CLOSE>
-<$deftag HR>
+<$deftag H1 CLOSE NAW="h1|h2|h3|h4|h5|h6">
+<$deftag H2 CLOSE NAW="h1|h2|h3|h4|h5|h6">
+<$deftag H3 CLOSE NAW="h1|h2|h3|h4|h5|h6">
+<$deftag H4 CLOSE NAW="h1|h2|h3|h4|h5|h6">
+<$deftag H5 CLOSE NAW="h1|h2|h3|h4|h5|h6">
+<$deftag H6 CLOSE NAW="h1|h2|h3|h4|h5|h6">
+<$deftag HR SIZE:string/j WIDTH:string/j ALIGN:enum(left|right|center)/j NOSHADE:bool/j>
 <$deftag I CLOSE>
-<$deftag ISINDEX ACTION:string PROMPT:string>
+<$deftag IMG SRC:uri ALT:string ALIGN:enum(top|bottom|middle|left|right|texttop|absmiddle|baseline|absbottom) ISMAP:bool WIDTH:string/j HEIGHT:string/j BORDER:string/j HSPACE:string/j VSPACE:string/j LOWSRC:uri/j>
+<$deftag ISINDEX ACTION:string PROMPT:string/j>
 <$deftag KBD CLOSE>
-<$deftag LI IGNOREARGS>
+<$deftag LI SMARTCLOSE MBI="ul|ol|dir|menu" VALUE:string/j TYPE:string/j>
 <$deftag LINK HREF:uri TITLE:string REV:string REL:string URN:string METHODS:string>
 <$deftag NEXTID N:string>
-<$deftag P>
+<$deftag P SMARTCLOSE>
 <$deftag PRE CLOSE>
-<$deftag OL CLOSE COMPACT:bool>
+<$deftag OL CLOSE COMPACT:bool START:string/j TYPE:string/j>
 <$deftag SAMP CLOSE>
 <$deftag STRONG CLOSE>
 <$deftag TT CLOSE>
@@ -118,12 +78,12 @@
 ** define some attributes that are proposed for 3.0.
 *>
 <$deftag FORM CLOSE ACTION:string METHODE:enum(get|post) ENCTYPE:string SCRIPT:string>
-<$deftag INPUT TYPE:string NAME:string VALUE:string DISABLED:bool CHECKED:bool SRC:string MD:string MAXLENGTH:string ALIGN:enum(top|middle|bottom|left|right) ACCEPT:string><* clumsy *>
+<$deftag INPUT MBI="form" TYPE:string NAME:string VALUE:string DISABLED:bool CHECKED:bool SRC:string MD:string MAXLENGTH:string ALIGN:enum(top|middle|bottom|left|right) ACCEPT:string><* clumsy *>
 <$deftag MENU CLOSE COMPACT:bool>
 <$deftag META CONTENT:string/r HTTP-EQUIV:string NAME:string>
-<$deftag OPTION SELECTED:bool DISABLED:bool VALUE:string>
-<$deftag SELECT CLOSE NAME:string/r MULTIPLE:bool>
-<$deftag TEXTAREA CLOSE ALIGN:enum(top|bottom|middle|left|right) COLS:string NAME:string ROWS:string>
+<$deftag OPTION MBI="select" SELECTED:bool DISABLED:bool VALUE:string>
+<$deftag SELECT CLOSE MBI="form" NAME:string/r MULTIPLE:bool>
+<$deftag TEXTAREA MBI="form" CLOSE ALIGN:enum(top|bottom|middle|left|right) COLS:string NAME:string ROWS:string>
 
 <*********************>
 <*** OBSOLETE tags ***>
@@ -131,6 +91,10 @@
 <$deftag LISTING CLOSE OBSOLETE>
 <$deftag PLAINTEXT CLOSE OBSOLETE>
 <$deftag XMP CLOSE OBSOLETE>
+<$deftag HP0 CLOSE OBSOLETE><* highlight phrase *>
+<$deftag HP1 CLOSE OBSOLETE>
+<$deftag HP2 CLOSE OBSOLETE>
+<$deftag HP3 CLOSE OBSOLETE>
 
 <*****************>
 <*** JERK tags ***>

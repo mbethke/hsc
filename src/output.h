@@ -11,6 +11,9 @@
 
 #include "ugly/types.h"
 #include "ugly/infile.h"
+#include "ugly/outfile.h"
+
+extern OUTFILE *outfile;
 
 extern BOOL open_output( void );
 extern VOID close_output( VOID );

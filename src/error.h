@@ -12,8 +12,10 @@
 
 #include "ugly/types.h"
 #include "ugly/infile.h"
+#include "ugly/outfile.h"
 
 #include "global.h"
+#include "msgid.h"
 
 /* function called if invalid state didected */
 #define panic(text) call_panic(text,__FILE__,__LINE__)
@@ -31,10 +33,10 @@
 #else
 #ifdef UNIX
 
-#define RC_OK     0 /* TODO: insert standard unix rc's */
-#define RC_WARN   5
-#define RC_ERROR 10
-#define RC_FATAL 20
+#define RC_OK     0
+#define RC_WARN   0
+#define RC_ERROR  1
+#define RC_FATAL  2
 
 #else
 #error "system not supported: return codes"
@@ -42,11 +44,23 @@
 #endif /* UNIX */
 #endif /* AMIGA */
 
+/* enable/disable/get ignore flag of a specific message id */
+#define enable_ignore( ign )  if ( ((ign) & MASK_MESSAGE)<MAX_MSGID ) \
+                                  ignore_msg[(ign) & MASK_MESSAGE] = TRUE
+#define disable_ignore( ign ) if ( ((ign) & MASK_MESSAGE)<MAX_MSGID ) \
+                                  ignore_msg[(ign) & MASK_MESSAGE] = FALSE
+#define ignore( ign ) ignore_msg[(ign) & MASK_MESSAGE]
 
 /*
 ** global funcs
 */
 #ifndef NOEXTERN_HSC_ERROR
+
+extern BOOL ignore_msg[ MAX_MSGID ];
+extern BOOL error_msg[ MAX_MSGID ];
+
+extern VOID clr_ignore_msg( VOID );
+extern VOID clr_error_msg( VOID );
 
 extern int return_code;
 
@@ -71,7 +85,7 @@ extern VOID err_eof( INFILE *inpf, STRPTR descr );
 extern VOID err_eol( INFILE *inpf );
 extern VOID err_streol( INFILE *inpf );
 extern VOID err_mem( INFILE *inpf );
-extern VOID err_write( FILE *outf );
+extern VOID err_write( OUTFILE *outf );
 extern VOID err_longstr( INFILE *inpf );
 extern VOID err_illgwspc( INFILE *inpf );
 extern VOID err_wst( INFILE *inpf );

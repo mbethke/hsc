@@ -4,7 +4,7 @@
 **
 ** functions for skipping several things
 **
-** updated: 18-Oct-1995
+** updated:  2-Nov-1995
 ** created:  8-Oct-1995
 */
 
@@ -208,66 +208,107 @@ BOOL skip_until_eot( INFILE *inpf )
 }
 
 /*
+**-----------------
+** skip comment
+**-----------------
+*/
+
+
+/*
+** eoc_reched
+**
+** check if end of an hsc-comment is reached
+**
+** params:
+**   inpf...where to read next word from
+**   state..state var; has to be initiales by
+**          calling func with CMST_TEXT
+**   nest...comment netsing counter; has to be
+**          initiales by calling func with 0
+** result: TRUE, if end of comment reached
+*/
+BOOL eoc_reached( INFILE *inpf, BYTE *state, LONG *nest )
+{
+    STRPTR nw = infgetw( inpf );
+
+    if ( nw ) {
+
+        switch ( *state ) {
+
+            case CMST_TEXT:
+                if ( !strcmp( nw, "*" ) )
+                    *state = CMST_STAR;
+                else if ( !strcmp( nw, "<" ) )
+                    *state = CMST_TAG;
+                break;
+
+            case CMST_STAR:
+                if ( !strcmp( nw, "*" ) )
+                    *state = CMST_STAR;
+                else if ( !strcmp( nw, "<" ) )
+                    *state = CMST_TAG;
+                else if ( !strcmp( nw, ">" ) )
+                    if ( *nest ) {
+
+                        *nest--;
+                        *state = CMST_TEXT;
+
+                    } else
+                        *state = CMST_END;
+
+                break;
+
+            case CMST_TAG:
+                if ( !strcmp( nw, "<" ) )
+                    *state = CMST_TAG;
+                else {
+
+                    if ( !strcmp( nw, "*" ) )
+                        *nest++;
+                    *state = CMST_TEXT;
+
+                }
+                break;
+
+        }
+    } else {
+
+        err_eof( inpf, "missing end of comment (\"*>\")" );
+        *state = CMST_ERR;
+
+    }
+
+    return( (BOOL) ( (*state == CMST_END) || (*state == CMST_ERR ) ) );
+}
+
+/*
 ** skip_hsc_comment
 **
 ** skip text until '*>' occures;
 ** nested commets are supported
 **
 */
-BOOL skip_hsc_comment( INFILE *inpf, BOOL copy )
+BOOL skip_hsc_comment( INFILE *inpf )
 {
-    int ch;                            /* current char */
-    int prev_ch = 'x';                 /* prev char read (dummy init) */
-    BOOL abort = FALSE;
-    ULONG nesting = 1;
+    BYTE cstate = CMST_TEXT; /* vars for eoc_reached() */
+    LONG cnest  = 0;
+    BOOL end    = FALSE;     /* end of comment reached? */
 
-    do {
+    while ( !end && !fatal_error ) {
 
-        STRPTR nw = infgetw( inpf );
+        end = eoc_reached( inpf, &cstate, &cnest );
+#if 0
+        /* TODO: remove this */
+        /* write out word, if requested */
+        if ( copy ) {
 
-        if ( nw ) {
-
-            /* tokenize next word */
-            if ( !strcmp( nw, "*" ) )
-                ch = '*';
-            else if ( !strcmp( nw, ">" ) )
-                ch = '>';
-            else
-                ch = 'x'; /* dummy value */
-
-            /* check for token sequences */
-            if ( (prev_ch=='<') && (ch=='*') ) nesting++;
-            if ( (prev_ch=='*') && (ch=='>') ) nesting--;
-
-            /* set abort value, if "*>" found and
-            ** no other comments have been opened
-            */
-            abort = ( (nesting==0) );
-
-            /* remember prev. token */
-            prev_ch = ch;
-
-            /* write out word, if requested */
-            if ( copy ) {
-
-                outstr( infgetcws( inpf ) );
-                outstr( infgetcw( inpf ) );
-
-            }
-
-        } else {
-
-            err_eof( inpf, "missing end of hsc-comment (\"*>\")" );
-            abort = TRUE;
+            outstr( infgetcws( inpf ) );
+            outstr( infgetcw( inpf ) );
 
         }
-
-    } while ( !abort );
-
-#if 0
-    if ( infeof(inpf) && nesting )
-        err_eof(inpf);
 #endif
+
+    }
 
     return ( (BOOL) !fatal_error);
 }

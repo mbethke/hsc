@@ -1,0 +1,142 @@
+<*
+** this is the config file for hsc
+**
+** it defines all tags of HTML2.0, but only some entities.
+**
+** (W) by Tommy-Saftwörx in 1995
+**
+** updated:  9-Oct-1995
+** created:  8-Sep-1995
+**
+**----------------------------------------------------------------------------
+**
+** syntax to define a new tag:
+**
+**   <$DEFTAG [flag] [attribute]>
+**
+**   flag:
+**       CLOSE     tag requires closing tag (<UL>)
+**       HANDLE    handle function is called if available
+**       JERK      tag is a netscape-extension (<NOBR>)
+**       OBSOLETE  tag is obsolete and should not be used anymore (<LISTING>)
+**       ONLYONCE  tag can appear at the most once (<HEAD>)
+**       REQUIRED  tag is required at least once per document (<HEAD>)
+**
+**   attribute: <name>:<type>
+**
+**       name:
+**           name of attribute, consists of chars
+**                 ('A'..'Z', 'a'..'z', '0'..'9', '_')
+**       type:
+**           bool....boolean switch
+**           enum....enumerator type (example see <IMG ALIGN=..>)
+**           string..any text
+**           uri.....reference to another URI
+**
+**----------------------------------------------------------------------------
+**
+** syntax to define a new entity:
+**
+** <$DEFENT NAME=name [RPLC=replace]>
+**
+**   name   : name of entity, eg "Uuml"
+**   replace: special character that should be replaced
+**            if found, eg "Ü"
+**
+** NOTE: entities &amp; ("&"), &gt; (">") and &lt; ("<") are defined by hsc.
+**
+**----------------------------------------------------------------------------
+**
+** IMPORTANT: DO NOT LEAVE ANY BLANK LINES IN THIS FILE!
+**            (otherwise, a blamk line will appear in every file
+**            processed with this config - I should fix this...)
+**
+**----------------------------------------------------------------------------
+*>
+<*********************>
+<* Entities (I need) *>
+<*********************>
+<$defent NAME="auml"   RPLC="ä">
+<$defent NAME="Auml"   RPLC="Ä">
+<$defent NAME="ouml"   RPLC="ö">
+<$defent NAME="Ouml"   RPLC="Ö">
+<$defent NAME="uuml"   RPLC="ü">
+<$defent NAME="Uuml"   RPLC="Ü">
+<$defent NAME="szlig"  RPLC="ß">
+<$defent NAME="copy">
+<$defent NAME="quot">
+<$defent NAME="otilde">
+<$defent NAME="ntilde">
+<$defent NAME="Icirc">
+<*********************>
+<*** HTML 1.0 tags ***>
+<*********************>
+<$deftag ! IGNOREARGS><* do not edit *>
+<$deftag A CLOSE NOCOPY HREF:uri NAME:string REL:string>
+<$deftag ADDRESS CLOSE>
+<$deftag B CLOSE>
+<$deftag BASE ONLYONCE HREF:uri>
+<$deftag BLOCKQUOTE CLOSE>
+<$deftag BODY CLOSE REQUIRED ONLYONCE>
+<$deftag BR>
+<$deftag CITE CLOSE>
+<$deftag CODE CLOSE>
+<$deftag DD>
+<$deftag DL CLOSE COMPACT:bool>
+<$deftag DT>
+<$deftag EM CLOSE>
+<$deftag HTML CLOSE REQUIRED ONLYONCE>
+<$deftag HEAD CLOSE REQUIRED ONLYONCE>
+<$deftag IMG SRC:uri ALT:string ALIGN:enum(top|bottom|middle|*) ISMAP:bool>
+<$deftag H1 CLOSE>
+<$deftag H2 CLOSE>
+<$deftag H3 CLOSE>
+<$deftag H4 CLOSE>
+<$deftag H5 CLOSE>
+<$deftag H6 CLOSE>
+<$deftag HR>
+<$deftag I CLOSE>
+<$deftag ISINDEX ACTION:string PROMPT:string>
+<$deftag KBD CLOSE>
+<$deftag LI IGNOREARGS>
+<$deftag LINK HREF:uri TITLE:string REV:string REL:string URN:string METHODS:string>
+<$deftag NEXTID N:string>
+<$deftag P>
+<$deftag PRE CLOSE>
+<$deftag OL CLOSE COMPACT:bool>
+<$deftag SAMP CLOSE>
+<$deftag STRONG CLOSE>
+<$deftag TT CLOSE>
+<$deftag TITLE CLOSE REQUIRED ONLYONCE>
+<$deftag UL CLOSE>
+<$deftag VAR CLOSE>
+<*********************>
+<*** HTML 2.0 tags ***>
+<*********************>
+<*
+** NOTE: I haven't found a reference that discribes only
+** the HTML 2.0 tags, therefor these $deftags might
+** define some attributes that are proposed for 3.0.
+*>
+<$deftag FORM CLOSE ACTION:string METHODE:enum(get|post) ENCTYPE:string SCRIPT:string>
+<$deftag INPUT TYPE:string NAME:string VALUE:string DISABLED:bool CHECKED:bool SRC:string MD:string MAXLENGTH:string ALIGN:enum(top|middle|bottom|left|right) ACCEPT:string><* clumsy *>
+<$deftag MENU CLOSE COMPACT:bool>
+<$deftag META CONTENT:string/r HTTP-EQUIV:string NAME:string>
+<$deftag OPTION SELECTED:bool DISABLED:bool VALUE:string>
+<$deftag SELECT CLOSE NAME:string/r MULTIPLE:bool>
+<$deftag TEXTAREA CLOSE ALIGN:enum(top|bottom|middle|left|right) COLS:string NAME:string ROWS:string>
+<*********************>
+<*** OBSOLETE tags ***>
+<*********************>
+<$deftag LISTING CLOSE OBSOLETE>
+<$deftag PLAINTEXT CLOSE OBSOLETE>
+<$deftag XMP CLOSE OBSOLETE>
+<*****************>
+<*** JERK tags ***>
+<*****************>
+<$deftag BASEFONT JERK SIZE:enum(1|2|3|4|5|6|7)>
+<$deftag BLINK CLOSE JERK>
+<$deftag CENTER CLOSE JERK>
+<$deftag FONT CLOSE JERK SIZE:enum(1|2|3|4|5|6|7|+1|+2|+3|+4|+5|+6|+7|-1|-2|-3|-4|-5|-6|-7)><* looks rather stupid, eh? *>
+<$deftag NOBR CLOSE JERK>
+<$deftag WBR JERK>
