@@ -30,17 +30,19 @@
 /*
  * defines
  */
+/* convert numeric representation to text. pass an array as "buffer", not a pointer! */
+#define ENTITY_NUM2TEXT(buffer,num) \
+   (snprintf((buffer), sizeof(buffer), "&%d;",(int)(unsigned short)(num)))
 
 /*
  * structures & typdefs for entities
  */
-typedef struct hscent
-{
-    STRPTR name;                /* name/id (eg &"uuml"; ) */
-    short numeric;               /* numeric code of entity ( eg &#"123"; ) */
-    char replace[2];            /* replace by (eg "ü" ) */
-}
-HSCENT;
+typedef struct hscent {
+    STRPTR name;       /* name/id (e.g. &"uuml"; ) */
+    int numeric;     /* numeric code of entity (e.g. 252) */
+    BOOL prefnum;      /* for EMODE_REPLACE, prefer numeric representation */
+    char replace[2];   /* replaces this 8-bit character (e.g. "ü" ) */
+} HSCENT;
 
 /* value for hscent.numeric to mark icon entities */
 #define ICON_ENTITY (-1)
@@ -61,7 +63,7 @@ extern int cmp_nument(APTR cmpstr, APTR entdata);
 extern int cmp_rplcent(APTR cmpstr, APTR entdata);
 
 extern HSCENT *app_entnode(DLLIST * entlist, STRPTR entid);
-extern void add_ent(DLLIST * entlist, STRPTR entid, char entreplace, short num);
+extern void add_ent(DLLIST * entlist, STRPTR entid, char entreplace, short num, BOOL prefnum);
 
 #endif /* NOEXTERN_HSCLIB_ENTITY_H */
 
