@@ -320,7 +320,7 @@ STRPTR ustrrpbrk(CONSTRPTR str, CONSTRPTR set)
     size_t i;
     STRPTR result = NULL;
 
-    if (str)
+    if (str && ('\0' != str[0]))
     {
 
         i = strlen(str) - 1;
