@@ -1,7 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
- * Copyright (C) 2001 Matthias Bethke
+ * Copyright (C) 2001-2004 Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 #include "hsclib/input.h"
 #include "hsclib/skip.h"
 #include "hsclib/uri.h"
+#include "hsclib/regmatch.h"
 
 /* maximul length of an operator identifer */
 #define MAX_OP_LEN 8
@@ -58,6 +59,8 @@
 #define OP_GE_STR "GE"
 #define OP_LE_STR "LE"
 #define OP_INSIDE_STR "IN"
+#define OP_MATCH_STR "MATCH"
+#define OP_MATCHI_STR "MATCHI"
 #define OP_CL_BRACKET_STR ")"   /* closing bracket */
 #define OP_CL_BRACE_STR "}"     /* closing brace */
 
@@ -82,7 +85,7 @@
 typedef enum {OP_NONE=0, OP_EQ, OP_NEQ, OP_CEQ,
    OP_GT, OP_LT, OP_GE, OP_LE,
    OP_NUMGT, OP_NUMLT, OP_NUMGE, OP_NUMLE,
-   OP_INSIDE, 
+   OP_INSIDE, OP_MATCH, OP_MATCHI,
    OP_AND, OP_NOT, OP_OR, OP_XOR,
    OP_CAT, OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_MOD,
    OP_CL_BRACKET, OP_CL_BRACE} op_t;
@@ -773,6 +776,8 @@ static BYTE eval_op(HSCPRC * hp) {
       else if (!upstrcmp(nw, OP_LE_STR))    op = OP_LE; /* string less-or-equal */
       else if (!upstrcmp(nw, OP_GE_STR))    op = OP_GE;  /* string greater-or-equal */
       else if (!upstrcmp(nw, OP_INSIDE_STR)) op = OP_INSIDE; /* substring search */
+      else if (!upstrcmp(nw, OP_MATCH_STR)) op = OP_MATCH; /* regular expression matching */
+      else if (!upstrcmp(nw, OP_MATCHI_STR)) op = OP_MATCHI; /* regular expression matching, case-insensitive */
       else if (!strcmp(nw, OP_CL_BRACKET_STR)) op = OP_CL_BRACKET; /* closing bracket */
       else if (!strcmp(nw, OP_CL_BRACE_STR)) op = OP_CL_BRACE; /* closing brace */
       else if (strenum(nw, "<|=|>", '|', STEN_CASE)) {
@@ -1083,7 +1088,6 @@ static VOID process_op(HSCPRC * hp, HSCATTR * dest, BYTE op, STRPTR str1, STRPTR
             break;
 
          case OP_INSIDE:
-            /* sub-string search, ignore case */
             set_varbool(dest,(upstrstr(str2, str1)==NULL) ? FALSE : TRUE);
             break;
 
@@ -1107,6 +1111,14 @@ static VOID process_op(HSCPRC * hp, HSCATTR * dest, BYTE op, STRPTR str1, STRPTR
          case OP_LE:
          case OP_CEQ:
             result_set = process_comparison_op(hp, dest, op, str1, str2);
+            break;
+
+         case OP_MATCH:
+            set_varbool(dest,hscregmatch(hp,str1,str2,FALSE));
+            break;
+
+         case OP_MATCHI:
+            set_varbool(dest,hscregmatch(hp,str1,str2,TRUE));
             break;
 
          default:
