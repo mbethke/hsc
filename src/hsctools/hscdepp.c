@@ -118,7 +118,7 @@ static HSCPRJ *project = NULL;
  */
 static VOID cleanup(VOID)
 {
-    D(fprintf(stderr, "(cleanup)\r"));
+    D(fprintf(stderr, "(cleanup)\n"));
     del_project(project);
     del_estr(lines_precede);
     del_estr(lines_follow);
@@ -430,7 +430,7 @@ static BOOL read_project(VOID)
 
     if (verbose)
     {
-        fprintf(stderr, HD "%s: reading..\r", prjfile);
+        fprintf(stderr, HD "%s: reading..\n", prjfile);
         fflush(stderr);
     }
 

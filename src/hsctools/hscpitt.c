@@ -153,10 +153,10 @@ static HSCPRJ *project = NULL;
  */
 static VOID cleanup(VOID)
 {
-    D(fprintf(stderr, "(cleanup)\r"));
+    D(fprintf(stderr, "(cleanup)\n"));
     del_dllist(command_arglist);
     del_project(project);
-    D(fprintf(stderr, "         \r"));
+    D(fprintf(stderr, "         \n"));
 }
 
 static VOID set_return_code(int new_code)
@@ -372,7 +372,7 @@ static BOOL read_project(VOID)
 
     if (!quiet)
     {
-        fprintf(stderr, HP "%s: reading..\r", prjfile);
+        fprintf(stderr, HP "%s: reading..\n", prjfile);
         fflush(stderr);
     }
 

@@ -31,7 +31,7 @@
 
 #define PRGNAME	"hscpitt"
 #define VERS	PRGNAME __VSTR "." __RSTR
-#define VSTRING	PRGNAME __VSTR "." __RSTR DATE "\r\n"
+#define VSTRING	PRGNAME __VSTR "." __RSTR DATE "\n"
 #define VERSTAG	"\0$VER: " PRGNAME  __VSTR "." __RSTR DATE
 #define BASENAME "HSCPITT"
 #define VSTR	PRGNAME __VSTR "." __RSTR DATE

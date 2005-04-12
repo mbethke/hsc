@@ -95,7 +95,7 @@ VOID status_msg(STRPTR s)
             fputs(" ", stderr);
 
         /* perform cr & flush stdder */
-        fputs("\r", stderr);
+        fputs("\n", stderr);
         fflush(stderr);
 
         prev_stmsg_len = new_stmsg_len;
