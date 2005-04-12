@@ -91,21 +91,14 @@ static int compare_arginfo(APTR cmp_data, APTR list_data)
     BOOL eq = FALSE;
     char lastch;
 
-    if (lst_arg && cmp_arg)
-    {
+    if (lst_arg && cmp_arg) {
         STRPTR nxt_arg = strtok(lst_arg, "=");
 
-        while (nxt_arg && (eq == FALSE))
-        {
+        while (nxt_arg && (eq == FALSE)) {
             if (ai->ai_flags & ARG_CASESENS)
-            {
                 eq = (strncmp(nxt_arg, cmp_arg, strlen(nxt_arg)) == 0);
-            }
             else
-            {
                 eq = (upstrncmp(nxt_arg, cmp_arg, strlen(nxt_arg)) == 0);
-            }
-
 #if 0
             if (eq)
             {
@@ -119,14 +112,9 @@ static int compare_arginfo(APTR cmp_data, APTR list_data)
             nxt_arg = strtok(NULL, "=");
         }                       /* while */
 
-    }
-    else
-    {
+    } else 
         eq = FALSE;
-    }
-
     ufreestr(lst_arg);
-
     return eq;
 }
 
@@ -154,12 +142,10 @@ static VOID clr_ai_set(ARGLIST * al)
 
                 }
 #endif
-    if (al && (al->al_list))
-    {
+    if (al && (al->al_list)) {
         struct dlnode *nd = al->al_list->first;
 
-        while (nd)
-        {
+        while (nd) {
             struct arginfo *ai = (struct arginfo *) nd->data;
 
             if (ai)
@@ -186,28 +172,21 @@ static VOID reset_nokeywd(ARGLIST * al)
     struct dlnode *nd = al->al_list->first;
     struct arginfo *ai = (struct arginfo *) nd->data;
 
-    if (ai->ai_flags & ARG_KEYWORD || (ai->ai_type == ARG_SWITCH))
-    {
+    if (ai->ai_flags & ARG_KEYWORD || (ai->ai_type == ARG_SWITCH)) {
         al->al_nokeywd = NULL;
 
-        do
-        {
+        do {
             if ((ai->ai_flags & ARG_KEYWORD)
                 || (ai->ai_type == ARG_SWITCH))
             {
                 nd = nd->next;
                 if (nd)
                     ai = (struct arginfo *) nd->data;
-            }
-            else
+            } else
                 al->al_nokeywd = ai;
-        }
-        while (nd && !(al->al_nokeywd));
-    }
-    else
-    {
+        } while (nd && !(al->al_nokeywd));
+    } else
         al->al_nokeywd = ai;
-    }
 }
 
 /*
@@ -580,8 +559,7 @@ ARGFILE *new_argfile(char *argfname)
     ARGFILE *argf = (ARGFILE *) umalloc(sizeof(ARGFILE));
 
     BOOL no_argerr = TRUE;
-    if (argf)
-    {
+    if (argf) {
         FILE *file = NULL;
 
         argf->argc = 0;
@@ -589,62 +567,49 @@ ARGFILE *new_argfile(char *argfname)
         argf->argv[0] = NULL;
         argf->argv[1] = NULL;
 
-        if (argfname)
-        {
+        if (argfname) {
             argf->argv[0] = strclone(argfname);
             file = fopen(argfname, "r");
         }
-        if (file)
-        {
+        if (file) {
             STRPTR fgetsbuf = (STRPTR) umalloc(SIZE_FGETSBUF);   /* alloc buf for fgets() */
 
-            if (fgetsbuf)
-            {
+            if (fgetsbuf) {
                 STRPTR argline = NULL;
                 no_argerr = FALSE;
 
-                do
-                {
+                do {
                     argline = fgets(fgetsbuf, SIZE_FGETSBUF, file);
-                    if (argline)
-                    {
+                    if (argline) {
                         int i = 0;      /* loop var */
 
-                        /* increse argv-array */
+                        /* increase argv-array */
                         char **old_argv = argf->argv;
                         argf->argc++;
                         argf->argv = (char **) umalloc((argf->argc + 2) * sizeof(char *));
 
                         /* copy old argv-array */
                         for (i = 0; i <= (argf->argc); i++)
-                        {
                             argf->argv[i] = old_argv[i];
-                        }
 
                         /* free old argv-array */
                         ufree(old_argv);
 
                         /* strip succeeding linefeed */
-                        while (fgetsbuf[0]
-                               && strchr("\r\n", fgetsbuf[strlen(fgetsbuf) - 1]))
-                        {
+                        while (fgetsbuf[0] && strchr("\r\n", fgetsbuf[strlen(fgetsbuf) - 1]))
                             fgetsbuf[strlen(fgetsbuf) - 1] = '\0';
-                        }
 
                         /* assign new argv */
                         argf->argv[argf->argc] = strclone(fgetsbuf);
                         argf->argv[argf->argc + 1] = NULL;
                     }
-                }
-                while (argline);
+                } while (argline);
                 argf->argc++;
             }
-
             ufree(fgetsbuf);    /* cleanup resources */
             fclose(file);
         }
     }
-
     return (argf);
 }
 
@@ -653,10 +618,7 @@ ARGFILE *new_argfilev(STRPTR fname[])
     int i=0;
 
     while(fname[i] && !fexists(fname[i]))
-    {
         i++;
-    }
-
     return(new_argfile(fname[i]));
 }
 
@@ -665,10 +627,8 @@ ARGFILE *new_argfilev(STRPTR fname[])
  */
 VOID del_argfile(ARGFILE * argf)
 {
-    if (argf)
-    {
-        while (argf->argc+1)
-        {
+    if (argf) {
+        while (argf->argc+1) {
             ufreestr(argf->argv[argf->argc]);
             argf->argc--;
         }

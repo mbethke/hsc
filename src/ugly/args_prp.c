@@ -272,12 +272,6 @@ struct arglist *prepare_args(STRPTR arglist_name,...) {
                              */
                             APTR func_tmp = va_arg(ap, STRPTR);
                             newarg->ai_func = (STRPTR(*)(STRPTR)) func_tmp;
-#if 0
-                            /* tricky type-cast, 1-step-version, does */
-                            /* not work with several compilers */
-                            newarg->ai_func = va_arg(ap, STRPTR(*)(STRPTR));
-#endif
-
                         }
 
                         if (new_type == ARG_LONG_RANGE) {
