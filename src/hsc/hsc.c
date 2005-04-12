@@ -128,7 +128,7 @@ static VOID cleanup(VOID)
 #if DEBUG
     /* just because I'm curious how long cleanup takes */
     /* NOTE: obviously, it takes very long */
-    fputs("(cleanup)\r", stderr);
+    fputs("(cleanup)\n", stderr);
     fflush(stderr);
 #endif
 
@@ -139,7 +139,7 @@ static VOID cleanup(VOID)
     cleanup_hsc_args();
 
 #if DEBUG
-    fputs("         \r", stderr);
+    fputs("         \n", stderr);
     fflush(stderr);
 #endif
 
