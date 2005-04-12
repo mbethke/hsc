@@ -34,6 +34,14 @@
 #include "ugly/prginfo.h"
 #include "ugly/returncd.h"
 
+#ifdef AMIGA_STYLE_ARGS
+#define ARG_ALTERNATES_SEPARATOR_STR "|"
+#define ARG_ALTERNATES_SEPARATOR_CHAR '|'
+#else /* AMIGA_STYLE_ARGS */
+#define ARG_ALTERNATES_SEPARATOR_STR ","
+#define ARG_ALTERNATES_SEPARATOR_CHAR ','
+#endif /* AMIGA_STYLE_ARGS */
+
 HSCPRC *arg_hp = NULL;
 EXPSTR *fileattr_str = NULL;
 
