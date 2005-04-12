@@ -18,4 +18,5 @@ VOID set_dest_attribs(HSCPRC * hp, STRPTR destpath, STRPTR reldestpath, STRPTR d
 VOID set_source_attribs(HSCPRC * hp, STRPTR sourcepath, STRPTR sourcename);
 VOID set_global_attribs(HSCPRC * hp);
 VOID define_file_attribs(HSCPRC * hp);
+BOOL user_defines_ok(HSCPRC * hp);
 
