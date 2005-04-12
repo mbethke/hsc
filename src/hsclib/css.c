@@ -27,6 +27,7 @@
 #include "hsclib/inc_base.h"
 #include "hsclib/css.h"
 #include "hsclib/uri.h"
+#include "regex/regex.h"
 
 /*
  * cmp_stylename
@@ -124,6 +125,13 @@ HSCSTYLE *add_styledef(hsctree *styles, CONSTRPTR name, CONSTRPTR value)
    return NULL;
 }
 
+/* non-ISO isblank() function is currently needed only here */
+static int isblank(int c)
+{
+   if((c == ' ') || (c == '\t'))
+      return TRUE;
+   return FALSE;
+}
 
 #define nelems(a) (sizeof(a)/sizeof(*(a)))
 static BOOL parse_stringset(CONSTRPTR *sp, CONSTRPTR * const values, int nvalues)
@@ -152,8 +160,18 @@ static BOOL parse_frequency(CONSTRPTR *sp)
    return parse_stringset(sp,values,nelems(values));
 }
 
-static BOOL parse_singlechar(CONSTRPTR *sp, const char c) {
+static BOOL parse_singlechar(CONSTRPTR *sp, const char c)
+{
    if(c == **sp) {
+      ++*sp;
+      return TRUE;
+   }
+   return FALSE;
+}
+
+static BOOL parse_singlecharclass(CONSTRPTR *sp, int(*f)(int))
+{
+   if(f(**sp)) {
       ++*sp;
       return TRUE;
    }
@@ -198,18 +216,18 @@ static BOOL parse_p(CONSTRPTR *sp) /* numeric, positive only; percent */
       return parse_singlechar(sp,'%'); /* check for percent */
 }
 
-static BOOL parse_P(CONSTRPTR *sp) /* numeric, positive/negative; percent */
+static BOOL parse_P(CONSTRPTR *sp, BOOL eosonly) /* numeric, positive/negative; percent */
 {
    BOOL negative = FALSE, ret=FALSE;
 
    if(parse_singlechar(sp,'-'))  /* optional minus sign */
       negative = TRUE;
    if(parse_n(sp)) {             /* next a numeric value with units */
-      if('\0' == **sp)           /* successful if at EOS */
+      if(!eosonly || ('\0' == **sp))  /* successful if at EOS or flag */
          ret = TRUE;
    } else {
       if(parse_singlechar(sp,'%'))          /* check for percent */
-         ret = ('\0' == **sp) && !negative; /* must be at EOS and not negative */
+         ret = !eosonly || (('\0' == **sp) && !negative); /* must be at EOS and not negative */
    }
    return ret;
 }
@@ -269,8 +287,16 @@ static BOOL parse_c(HSCPRC *hp, CONSTRPTR *sp) /* color */
 
 static BOOL parse_u(HSCPRC *hp, CONSTRPTR *sp) /* URI */
 {
-   *sp += strlen(*sp);  /* no-op function */
-   return TRUE;
+   BOOL ret = FALSE;
+   EXPSTR *dest = init_estr(256);
+   parse_uri(hp,dest,(STRPTR)*sp);
+   if(0 == strcmp(*sp,estr2str(dest))) {
+      *sp += strlen(*sp);
+      ret = TRUE;
+   }
+   fprintf(stderr,"parse_u(%s): %s [%s]\n",*sp,estr2str(dest),ret?"TRUE":"FALSE");
+   del_estr(dest);
+   return ret;
 }
 
 static BOOL parse_h(CONSTRPTR *sp) /* hertz/kilohertz */
@@ -291,8 +317,30 @@ static BOOL parse_h(CONSTRPTR *sp) /* hertz/kilohertz */
 
 static BOOL parse_r(CONSTRPTR *sp) /* clipping rectangle */
 {
-   *sp += strlen(*sp);  /* no-op function */
-   return TRUE;
+   int i;
+
+   if(0 == upstrncmp(*sp,"rect(",5)) {
+      *sp += 5;
+      while(parse_singlecharclass(sp,&isblank)) ;
+      for(i=0; i<4; ++i) {
+         if(!parse_P(sp,FALSE)) {
+            if(0 != upstrncmp(*sp,"auto",4))
+               return FALSE;
+            *sp += 4;
+         }
+         if(i<3) {
+            if(!parse_singlecharclass(sp,&isblank))
+               return FALSE;
+            while(parse_singlecharclass(sp,&isblank)) ;
+         }
+      } 
+      while(parse_singlecharclass(sp,&isblank)) ;
+      if(!parse_singlechar(sp,')'))
+         return FALSE;
+      while(parse_singlecharclass(sp,&isblank)) ;
+      return ('\0' == **sp);
+   }
+   return FALSE;
 }
 
  
@@ -339,7 +387,7 @@ static BOOL check_css_value(HSCPRC *hp, CONSTRPTR def, CONSTRPTR val)
          ret = parse_p(&s);
          break;
       case 'P' : /* numeric, positive/negative; percent */
-         ret = parse_P(&s);
+         ret = parse_P(&s,TRUE);
          break;
       case 'c' : /* color */
          ret = parse_c(hp,&s);
