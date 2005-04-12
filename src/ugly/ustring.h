@@ -61,9 +61,9 @@ extern void ugly_reallocstr(STRPTR * oldstr, CONSTRPTR newstr, STRPTR file, ULON
 extern STRPTR ustrrpbrk(CONSTRPTR str, CONSTRPTR set);
 extern LONG strenum(CONSTRPTR str, CONSTRPTR set, char sep, BYTE options);
 
-extern int last_ch(STRPTR s);
+extern int last_ch(CONSTRPTR s);
 extern STRPTR ch2str(const char ch);
-extern BOOL str2long(STRPTR s, LONG * num);
+extern BOOL str2long(CONSTRPTR s, LONG * num);
 extern STRPTR long2str(LONG num);
 
 #endif /* NOEXTERN_UGLY_USTRING_H */

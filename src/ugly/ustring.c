@@ -40,7 +40,7 @@
  *
  * return last char of a string, or 0 on empty string
  */
-int last_ch(STRPTR s)
+int last_ch(CONSTRPTR s)
 {
     size_t len = strlen(s);
 
@@ -291,7 +291,7 @@ STRPTR ustrrpbrk(CONSTRPTR str, CONSTRPTR set) {
  * errors: returen FALSE
  *
  */
-BOOL str2long(STRPTR s, LONG * num) {
+BOOL str2long(CONSTRPTR s, LONG * num) {
     BOOL conv_ok = FALSE;
 
     if (sscanf(s, "%d", (int *) num))
