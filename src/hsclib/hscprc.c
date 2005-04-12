@@ -38,6 +38,7 @@
 #include "hsclib/idref.h"
 #include "hsclib/tag_if.h"
 #include "hsclib/css.h"
+#include "hsclib/regmatch.h"
 
 /*
  * del_inpf_stack_node
@@ -70,6 +71,9 @@ VOID del_hscprc(HSCPRC *hp)
         del_dllist(hp->select_stack);
         del_dllist(hp->tag_styles);
         del_strlist(hp->include_dirs);
+
+        /* remove precompiled regular expressions */
+        hscregfreeall(hp->re_uri);
 
         /* remove strings */
         del_estr(hp->destdir);
@@ -161,6 +165,9 @@ VOID reset_hscprc(HSCPRC * hp)
     }
 }
 
+#define REGEXP_URI "^(([a-zA-Z][-0-9a-zA-Z+.]*:)?/{0,2}[-0-9a-zA-Z;/?:@&=+$._!~*'()%]+)?" \
+                   "(#[-0-9a-zA-Z;/?:@&=+$._!~*'()%]+)?$"
+
 /*
  * new_hscprc
  *
@@ -189,6 +196,9 @@ HSCPRC *new_hscprc(void)
         hp->select_stack = init_dllist(del_select_stack_node);
         hp->tag_styles = init_dllist(&del_styleattr);
         hp->include_dirs = init_strlist();
+
+        /* precompile some regular expressions */
+        hp->re_uri = hscregcomp(NULL, REGEXP_URI, TRUE, TRUE);
 
         /* init strings */
         hp->destdir = init_estr(0);
@@ -396,8 +406,7 @@ BOOL hsc_set_iconbase(HSCPRC * hp, STRPTR uri) {
 BOOL hsc_set_server_dir(HSCPRC * hp, STRPTR dir) {
     set_estr(hp->server_dir, dir);
 
-    /* if dir does not already end with a directory separator,
-     * append if now */
+    /* if dir does not already end with a directory separator, append it now */
     if (!strchr(PATH_SEPARATOR, last_ch(dir))) {
         app_estrch(hp->server_dir, PATH_SEPARATOR[0]);
     }
@@ -481,8 +490,8 @@ VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext) {
     D(fprintf(stderr, DHL "flag: strip_ext=%d\n", new_strip_ext));
 }
 
-VOID hsc_set_nested_errors(HSCPRC * hp, BOOL new_nested_errors) {
-    hp->nested_errors = new_nested_errors;
+VOID hsc_set_no_nested_errors(HSCPRC * hp, BOOL new_nested_errors) {
+    hp->nested_errors = !new_nested_errors;
     D(fprintf(stderr, DHL "flag: nested_errors=%d\n", new_nested_errors));
 }
 
@@ -506,8 +515,8 @@ VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml) {
     D(fprintf(stderr, DHL "flag: xhtml=%d\n", new_xhtml));
 }
 
-VOID hsc_set_vcss(HSCPRC * hp, BOOL new_vcss) {
-   hp->validate_css = new_vcss;
+VOID hsc_set_novcss(HSCPRC * hp, BOOL new_vcss) {
+   hp->validate_css = !new_vcss;
    D(fprintf(stderr, DHL "flag: validatecss=%d\n", new_vcss));
 }
 
