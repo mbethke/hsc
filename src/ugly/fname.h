@@ -33,7 +33,7 @@
 #include "expstr.h"
 
 /*
- * system depandant defines
+ * system dependent defines
  */
 
 /*

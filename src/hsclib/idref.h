@@ -34,17 +34,17 @@ typedef struct idref_node {
 
 #ifndef NOEXTERN_HSCLIB_IDREF_H
 
-extern VOID del_string_entry(APTR data);
+extern void del_string_entry(APTR data);
 extern STRPTR new_string_entry(STRPTR data);
 extern int cmp_string_entry(APTR cmp_data, APTR list_data);
 
 
-extern VOID hsc_msg_unknown_id(HSCPRC * hp, STRPTR filename, STRPTR id);
+extern void hsc_msg_unknown_id(HSCPRC * hp, STRPTR filename, STRPTR id);
 
 extern BOOL add_local_iddef(HSCPRC * hp, STRPTR id);
 
-extern VOID del_idref(APTR data);
-extern VOID add_local_idref(HSCPRC * hp, STRPTR id);
+extern void del_idref(APTR data);
+extern void add_local_idref(HSCPRC * hp, STRPTR id);
 
 extern BOOL check_all_local_idref(HSCPRC * hp);
 

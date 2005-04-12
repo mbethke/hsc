@@ -116,7 +116,7 @@ static HSCPRJ *project = NULL;
  * cleanup: free all resources
  * (called in any case)
  */
-static VOID cleanup(VOID)
+static void cleanup(void)
 {
     D(fprintf(stderr, "(cleanup)\n"));
     del_project(project);
@@ -126,7 +126,7 @@ static VOID cleanup(VOID)
     D(fprintf(stderr, "         "));
 }
 
-static VOID set_return_code(int new_code)
+static void set_return_code(int new_code)
 {
     if (new_code > return_code)
         return_code = new_code;
@@ -148,7 +148,7 @@ static BOOL hscdepp_nomem_handler(size_t size)
     return (FALSE);             /* immediatly abort */
 }
 
-VOID msg_corrupt_pf(HSCPRJ * hp, STRPTR reason)
+void msg_corrupt_pf(HSCPRJ * hp, STRPTR reason)
 {
     fprintf(stderr, "project-file corrupt: %s\n", reason);
 }
@@ -267,7 +267,7 @@ static BOOL args_ok(int argc, char *argv[])
  * scan for fitting makefile, read all it's data into a list
  * of strings, exept those which are between taglines
  */
-static BOOL read_makefile(VOID)
+static BOOL read_makefile(void)
 {
     STRPTR scanfile[] =
     {"GNUmakefile", "Makefile", "makefile", NULL};
@@ -423,7 +423,7 @@ static BOOL read_makefile(VOID)
  *
  * read data from project file
  */
-static BOOL read_project(VOID)
+static BOOL read_project(void)
 {
     BOOL ok = FALSE;
     INFILE *inpf = NULL;
@@ -470,7 +470,7 @@ static BOOL read_project(VOID)
 
 
 /* append string to dependency-line */
-static VOID depline_appstr(STRPTR s, ULONG * linelen)
+static void depline_appstr(STRPTR s, ULONG * linelen)
 {
 #define LEADING_BLANKS "   "
     size_t slen = strlen(s);
@@ -495,7 +495,7 @@ static VOID depline_appstr(STRPTR s, ULONG * linelen)
 /*
  * update_makefile - main function
  */
-static BOOL update_makefile(VOID)
+static BOOL update_makefile(void)
 {
     BOOL ok = FALSE;
     ULONG linelen = 0;          /* length of current line */

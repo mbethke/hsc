@@ -49,7 +49,7 @@
  * debugging print functions
  */
 #if 0
-static VOID prt_ent(FILE * stream, APTR data)
+static void prt_ent(FILE * stream, APTR data)
 {
     HSCENT *ent = (HSCENT *) data;
 
@@ -66,7 +66,7 @@ static VOID prt_ent(FILE * stream, APTR data)
 }
 #endif
 
-static VOID prt_tag(FILE * stream, APTR data)
+static void prt_tag(FILE * stream, APTR data)
 {
     if (data)
     {
@@ -416,13 +416,13 @@ BOOL hsc_assign_tagCBs(HSCPRC * hp)
     return (TRUE);
 }
 
-DC(
 /* print a tag attached to a tree node -- for ubi_btTraverse() */
+#if DEBUG
 static void print_tag_node(ubi_btNode *nd)
 {
    prt_tag(stderr, HSCTREENODEDP(nd,HSCTAG*));
 }
-  )
+#endif
 
 /*
  * hsc_init_hscprc

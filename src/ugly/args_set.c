@@ -124,7 +124,7 @@ static int compare_arginfo(APTR cmp_data, APTR list_data)
  * clear all ai_set bits in all _arginfo entries of an _arglist
  *
  */
-static VOID clr_ai_set(ARGLIST * al)
+static void clr_ai_set(ARGLIST * al)
 {
 #if 0
     struct dlnode *nd;
@@ -161,7 +161,7 @@ static VOID clr_ai_set(ARGLIST * al)
  * set al_nokeywd to first entry w/o ARG_KEYWORD flag
  *
  */
-static VOID reset_nokeywd(ARGLIST * al)
+static void reset_nokeywd(ARGLIST * al)
 {
     /*
      * NOTE: _al must be fully initialised _arglist,
@@ -195,7 +195,7 @@ static VOID reset_nokeywd(ARGLIST * al)
  * find next entry w/o ARG_KEYWORD flag set
  *
  */
-static VOID find_nxt_nokeywd(ARGLIST * al)
+static void find_nxt_nokeywd(ARGLIST * al)
 {
     if (al->al_nokeywd)
     {
@@ -268,7 +268,7 @@ static VOID find_nxt_nokeywd(ARGLIST * al)
  * error functions for _set_args()
  *
  */
-static VOID set_argerr(int num, STRPTR arg)
+static void set_argerr(int num, STRPTR arg)
 {
     if (no_argerr)
     {
@@ -280,7 +280,7 @@ static VOID set_argerr(int num, STRPTR arg)
     }
 }
 
-static VOID clr_argerr(VOID)
+static void clr_argerr(void)
 {
     no_argerr = TRUE;
     any_argerr = FALSE;
@@ -295,7 +295,7 @@ static VOID clr_argerr(VOID)
  * error occured in last call of _set_args()
  *
  */
-STRPTR strargerr(VOID)
+STRPTR strargerr(void)
 {
     STRPTR str = "unknown error";
 
@@ -364,7 +364,7 @@ STRPTR strargerr(VOID)
  * printf error message from last call of _set_args()
  *
  */
-VOID pargerr(VOID)
+void pargerr(void)
 {
     if (arg_error_num)
     {
@@ -531,7 +531,7 @@ static UBYTE set_arg_value(struct arginfo *ai, STRPTR arg, STRPTR arg2, BOOL key
  * check, if all required arguments are set
  *
  */
-static VOID check_required_set(ARGLIST * al)
+static void check_required_set(ARGLIST * al)
 {
     DLNODE *nd = al->al_list->first;
     ARGINFO *ai;
@@ -625,7 +625,7 @@ ARGFILE *new_argfilev(STRPTR fname[])
 /*
  * del_argfile: release all resources allocated by new_argfile
  */
-VOID del_argfile(ARGFILE * argf)
+void del_argfile(ARGFILE * argf)
 {
     if (argf) {
         while (argf->argc+1) {

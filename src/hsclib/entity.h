@@ -70,7 +70,7 @@ typedef struct hscent {
 #ifndef NOEXTERN_HSCLIB_ENTITY_H
 
 extern HSCENT *new_hscent(STRPTR newid);
-extern VOID del_entity(APTR data);
+extern void del_entity(APTR data);
 extern HSCENT *cpy_hscent(HSCENT * oldent);
 
 extern int cmp_strent(APTR cmpstr, APTR entdata);

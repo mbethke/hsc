@@ -44,17 +44,10 @@
 #ifndef BETA
 #define BETA 0
 #endif
-
-/*
- * ugly includes
- */
 #include "ugly/uargs.h"
 #include "ugly/returncd.h"
-
-/*
- * local includes
- */
 #include "hsc/args.h"
+#include "hsc/args_shared.h"
 #include "hsc/callback.h"
 #include "hsc/output.h"
 #include "hsc/status.h"
@@ -74,7 +67,7 @@ static HSCPRC *hp = NULL;
  * try to add another atexit()-function; if it fails,
  * abort with error message
  */
-static BOOL attempt_atexit(VOID (*func) (VOID))
+static BOOL attempt_atexit(void (*func) (void))
 {
 #define ERRMSG_LEN 300
     BOOL ok = FALSE;
@@ -123,7 +116,7 @@ static BOOL include_ok(HSCPRC * hp)
  * cleanup: free all resources
  * (called in any case)
  */
-static VOID cleanup(VOID)
+static void cleanup(void)
 {
 #if DEBUG
     /* just because I'm curious how long cleanup takes */
@@ -148,7 +141,7 @@ static VOID cleanup(VOID)
 /*
  * callback to display "project-file corrupt"-message
  */
-static VOID msg_corrupt_pf(HSCPRJ * project, STRPTR reason)
+static void msg_corrupt_pf(HSCPRJ * project, STRPTR reason)
 {
     EXPSTR *msg = init_estr(32);
     set_estr(msg, infget_fname(project->inpf));

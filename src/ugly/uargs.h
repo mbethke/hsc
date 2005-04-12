@@ -176,20 +176,20 @@ extern ARGLIST *prepare_args(STRPTR arglist_name,...);
 extern BOOL set_args(int argc, char *argv[], ARGLIST *al);
 extern BOOL set_args_argv(int argc, char *argv[], ARGLIST * al);
 extern BOOL set_args_file(ARGFILE *argf, ARGLIST *argl);
-extern VOID free_args(ARGLIST *al);
+extern void free_args(ARGLIST *al);
 extern BOOL check_args(ARGLIST *al);
 
 extern ARGFILE *new_argfile(char *argfname);
 extern ARGFILE *new_argfilev(STRPTR fname[]);
-extern VOID del_argfile(ARGFILE *argf);
+extern void del_argfile(ARGFILE *argf);
 
 /* display help */
 extern int fprintf_arghelp(FILE * stream, ARGLIST *al);
 extern int fprintf_arghelp_short(FILE * stream, ARGLIST *al);
 
 /* error handling */
-extern STRPTR strargerr(VOID);
-extern void pargerr(VOID);
+extern STRPTR strargerr(void);
+extern void pargerr(void);
 
 #endif /* NOEXTERN_UGLY_UARGS_H */
 

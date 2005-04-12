@@ -42,7 +42,7 @@
  * prt_var
  */
 #ifdef DEBUG
-static VOID prt_var(FILE * stream, APTR data)
+static void prt_var(FILE * stream, APTR data)
 {
    HSCATTR *var = (HSCATTR *) data;
 
@@ -74,7 +74,7 @@ static VOID prt_var(FILE * stream, APTR data)
       fprintf(stream, "<NULL>\n");
 }
 
-VOID prt_varlist(DLLIST * varlist, STRPTR title)
+void prt_varlist(DLLIST * varlist, STRPTR title)
 {
    fprintf(stderr, DHL "%s\n", title);
    fprintf_dllist(stderr, varlist, prt_var);
@@ -92,7 +92,7 @@ VOID prt_varlist(DLLIST * varlist, STRPTR title)
  *
  * delete attribute
  */
-VOID del_hscattr(APTR data)
+void del_hscattr(APTR data)
 {
    HSCATTR *var = (HSCATTR *) data;
 
@@ -330,7 +330,7 @@ BOOL clr_vartext(HSCATTR * var)
  *
  * params: attr..attr to clear
  */
-VOID clr_attrdef(HSCATTR * attr)
+void clr_attrdef(HSCATTR * attr)
 {
    ufreestr(attr->deftext);
    attr->deftext = NULL;
@@ -365,7 +365,7 @@ BOOL clr_varlist(DLLIST * varlist)
  *
  * params: varlist..varlist to process
  */
-VOID clr_varlist_bool(DLLIST * varlist)
+void clr_varlist_bool(DLLIST * varlist)
 {
    DLNODE *nd = varlist->first;
    BOOL ok = TRUE;

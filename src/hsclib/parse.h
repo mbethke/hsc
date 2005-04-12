@@ -46,7 +46,7 @@ extern HSCTAG *find_end_tag(HSCPRC *hp, STRPTR tagname);
 extern HSCTAG *find_end_container_macro(HSCPRC *hp);
 
 extern HSCTAG *append_end_tag(HSCPRC * hp, HSCTAG * tag);
-extern VOID remove_end_tag(HSCPRC * hp, HSCTAG * tag);
+extern void remove_end_tag(HSCPRC * hp, HSCTAG * tag);
 
 #endif /* NOEXTERN_PARSE_H */
 #endif /* HSC_PARSE_H */

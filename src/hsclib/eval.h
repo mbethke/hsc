@@ -38,7 +38,7 @@
 #ifndef NOEXTERN_HSCLIB_EVAL_H
 
 extern STRPTR check_attrname(HSCPRC* hp, HSCATTR *dest, STRPTR name, BOOL allow_expr);
-extern VOID choose_quote(HSCPRC * hp, HSCATTR * attr);
+extern void choose_quote(HSCPRC * hp, HSCATTR * attr);
 
 extern STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr);
 extern STRPTR eval_conditional_assignment(HSCPRC *hp, HSCATTR *dest);

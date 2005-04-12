@@ -259,7 +259,7 @@ STRPTR arg_status_CB(STRPTR arg)
  *
  * set and define attributes for destination uri
  */
-VOID set_dest_attribs(HSCPRC * hp,
+void set_dest_attribs(HSCPRC * hp,
                 STRPTR destpath, STRPTR reldestpath, STRPTR destname)
 {
     set_estr(fileattr_str, "<$define HSC.DOCUMENT.NAME:string/c=\"");
@@ -280,7 +280,7 @@ VOID set_dest_attribs(HSCPRC * hp,
 }
 
 /* set_source_attribs */
-VOID set_source_attribs(HSCPRC * hp, STRPTR sourcepath, STRPTR sourcename)
+void set_source_attribs(HSCPRC * hp, STRPTR sourcepath, STRPTR sourcename)
 {
     app_estr(fileattr_str, "<$define HSC.SOURCE.NAME:string/c=\"");
     if (sourcename)
@@ -297,7 +297,7 @@ VOID set_source_attribs(HSCPRC * hp, STRPTR sourcepath, STRPTR sourcename)
 }
 
 /* set global attributes to query HSC options from source */
-VOID set_global_attribs(HSCPRC * hp)
+void set_global_attribs(HSCPRC * hp)
 {
    STRPTR emode;
 
@@ -328,7 +328,7 @@ VOID set_global_attribs(HSCPRC * hp)
 
 
 /* set_file_attribs */
-VOID define_file_attribs(HSCPRC * hp)
+void define_file_attribs(HSCPRC * hp)
 {
     hsc_include_string(hp, "[define destattr]", estr2str(fileattr_str),
                        IH_PARSE_HSC | IH_NO_STATUS);

@@ -61,16 +61,16 @@
  */
 extern LONG disp_status;
 
-extern VOID set_return_code(int newrc);
+extern void set_return_code(int newrc);
 
-extern VOID status_lf(VOID);
-extern VOID status_file_begin(HSCPRC * hp, STRPTR filename);
-extern VOID status_file_end(HSCPRC * hp);
-extern VOID status_line(HSCPRC * hp);
-extern VOID status_misc(HSCPRC * hp, STRPTR s);
-extern VOID status_error(STRPTR s);
-extern VOID status_clear(VOID);
-extern VOID status_msg(STRPTR s);
+extern void status_lf(void);
+extern void status_file_begin(HSCPRC * hp, STRPTR filename);
+extern void status_file_end(HSCPRC * hp);
+extern void status_line(HSCPRC * hp);
+extern void status_misc(HSCPRC * hp, STRPTR s);
+extern void status_error(STRPTR s);
+extern void status_clear(void);
+extern void status_msg(STRPTR s);
 
 #endif /* NOEXTERN_HSC_STATUS */
 

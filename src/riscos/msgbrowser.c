@@ -68,7 +68,7 @@ BOOL init_msg_browser(HSCPRC * hp, STRPTR filename)
     return success;
 }
 
-VOID del_msg_browser(HSCPRC * hp)
+void del_msg_browser(HSCPRC * hp)
 {
     if (!upstrcmp(msg_browser, "THROWBACK"))
     {
@@ -78,7 +78,7 @@ VOID del_msg_browser(HSCPRC * hp)
     }
 }
 
-VOID send_msg_browser(HSCPRC * hp,
+void send_msg_browser(HSCPRC * hp,
                      HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
                      STRPTR fname, ULONG x, ULONG y,
                      STRPTR msg_text)

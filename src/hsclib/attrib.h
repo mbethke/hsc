@@ -137,10 +137,10 @@ typedef struct hscstyle {
  */
 #ifndef NOEXTERN_HSCLIB_VARS_H
 
-extern VOID prt_varlist(DLLIST * varlist, STRPTR title);
+extern void prt_varlist(DLLIST * varlist, STRPTR title);
 
 extern HSCATTR *new_hscattr(CONSTRPTR newname);
-extern VOID del_hscattr(APTR data);
+extern void del_hscattr(APTR data);
 extern HSCATTR *cpy_hscattr(HSCATTR * oldvar);
 
 extern DLNODE *find_attrnode(DLLIST * varlist, STRPTR name);
@@ -152,9 +152,9 @@ extern BOOL check_enumstr(HSCATTR * var, STRPTR value, INFILE * inpf);
 extern STRPTR set_vartext(HSCATTR * var, STRPTR newtext);
 extern BOOL set_varbool(HSCATTR * attr, BOOL value);
 extern BOOL clr_vartext(HSCATTR * var);
-extern VOID clr_attrdef(HSCATTR * attr);
+extern void clr_attrdef(HSCATTR * attr);
 extern BOOL clr_varlist(DLLIST * varlist);
-extern VOID clr_varlist_bool(DLLIST * varlist);
+extern void clr_varlist_bool(DLLIST * varlist);
 
 extern STRPTR get_vartext_byname(DLLIST * varlist, STRPTR name);
 extern STRPTR get_vartext(HSCATTR * var);

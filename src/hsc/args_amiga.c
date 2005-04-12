@@ -69,7 +69,7 @@ static ARGFILE *argf = NULL;
 /*
  * cleanup_hsc_args: free local resources
  */
-VOID cleanup_hsc_args(VOID)
+void cleanup_hsc_args(void)
 {
     del_argfile(argf);
     del_estr(fileattr_str);
@@ -83,7 +83,7 @@ VOID cleanup_hsc_args(VOID)
  * prepare args, check & parse user args, display error and
  * help message if neccessary
  *
- * result: TRUE, if all args ok
+ * result: TRUE if all args ok
  */
 BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 {

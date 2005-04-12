@@ -26,25 +26,25 @@
 
 #include "hsclib/inc_base.h"
 
-VOID hsc_status_misc(HSCPRC * hp, STRPTR s)
+void hsc_status_misc(HSCPRC * hp, STRPTR s)
 {
     if (hp->CB_status_misc)
         (*hp->CB_status_misc) (hp, s);
 }
 
-VOID hsc_status_file_begin(HSCPRC * hp, STRPTR filename)
+void hsc_status_file_begin(HSCPRC * hp, STRPTR filename)
 {
     if (hp->CB_status_file_begin)
         (*hp->CB_status_file_begin) (hp, filename);
 }
 
-VOID hsc_status_file_end(HSCPRC * hp)
+void hsc_status_file_end(HSCPRC * hp)
 {
     if (hp->CB_status_file_end)
         (*hp->CB_status_file_end) (hp);
 }
 
-VOID hsc_status_line(HSCPRC * hp)
+void hsc_status_line(HSCPRC * hp)
 {
     if (hp->CB_status_line)
         (*hp->CB_status_line) (hp);

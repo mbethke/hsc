@@ -1,7 +1,7 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
  * Copyright (C) 1995-1998  Thomas Aglassinger
- * Copyright (C) 2001  Matthias Bethke
+ * Copyright (C) 2001-2004  Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "ugly/hsctrees.h"
 #include "hsclib/ldebug.h"
 #include "hsclib/tag.h"
+#include "regex/regex.h"
 
 #include "hscprj/project.h"
 
@@ -230,6 +231,8 @@ struct hsc_process
     ULONG max_errors;
     unsigned char *image_buffer;  /* buffer to get image dimension from file */
 
+    regex_t *re_uri;            /* precompiled RE to match valid URIs */
+
     BOOL chkid;                 /* flag: check existence of URIs/IDs */
     BOOL chkuri;
     BOOL compact;               /* flag: create compact output */
@@ -274,33 +277,33 @@ struct hsc_process
                                  * set by parse_tag(), if strip_badws = TRUE */
     BOOL strip_next2_whtspc;    /* flag: strip next but one white space */
     /* status callbacks */
-    VOID(*CB_status_misc) (struct hsc_process * hp, STRPTR s);
+    void(*CB_status_misc) (struct hsc_process * hp, STRPTR s);
     /* called for verbose messages */
-    VOID(*CB_status_line) (struct hsc_process * hp);
+    void(*CB_status_line) (struct hsc_process * hp);
     /* called after new line */
-    VOID(*CB_status_file_begin) (struct hsc_process * hp, STRPTR filename);
+    void(*CB_status_file_begin) (struct hsc_process * hp, STRPTR filename);
     /* called when new file is going to be loaded */
-    VOID(*CB_status_file_end) (struct hsc_process * hp);
+    void(*CB_status_file_end) (struct hsc_process * hp);
     /* called after file has fully been processed */
 
     /* message callbacks */
-    VOID(*CB_message) (struct hsc_process * hp,
+    void(*CB_message) (struct hsc_process * hp,
                        HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
                        STRPTR fname, ULONG x, ULONG y,
                        STRPTR msg_text);
-    VOID(*CB_message_ref) (struct hsc_process * hp,
+    void(*CB_message_ref) (struct hsc_process * hp,
                            HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
                            STRPTR fname, ULONG x, ULONG y,
                            STRPTR msg_text);
 
     /* syntax elements callbacks */
-    VOID(*CB_start_tag) (struct hsc_process * hp,
+    void(*CB_start_tag) (struct hsc_process * hp,
           HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close);
-    VOID(*CB_end_tag) (struct hsc_process * hp,
+    void(*CB_end_tag) (struct hsc_process * hp,
           HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close);
-    VOID(*CB_text) (struct hsc_process * hp,
+    void(*CB_text) (struct hsc_process * hp,
                     STRPTR white_spaces, STRPTR text);
-    VOID(*CB_id) (struct hsc_process * hp,
+    void(*CB_id) (struct hsc_process * hp,
                   HSCATTR * attr, STRPTR id);
 
 };
@@ -314,66 +317,66 @@ typedef struct hsc_process HSCPRC;
 
 #define anyWhtspc(hp) (estrlen(hp->whtspc))
 
-extern VOID del_hscprc(HSCPRC * hp);
+extern void del_hscprc(HSCPRC * hp);
 extern HSCPRC *new_hscprc(void);
-extern VOID reset_hscprc(HSCPRC * hp);
+extern void reset_hscprc(HSCPRC * hp);
 
 /* set-methodes for callbacks */
-extern VOID hsc_set_status_file_begin(HSCPRC * hp, VOID(*status_file) (HSCPRC * hp, STRPTR filename));
-extern VOID hsc_set_status_file_end(HSCPRC * hp, VOID(*status_file) (HSCPRC * hp));
-extern VOID hsc_set_status_line(HSCPRC * hp, VOID(*status_line) (HSCPRC * hp));
-extern VOID hsc_set_status_misc(HSCPRC * hp, VOID(*status_misc) (HSCPRC * hp, STRPTR s));
-extern VOID hsc_set_message(HSCPRC * hp,
-                            VOID(*message) (struct hsc_process * hp,
+extern void hsc_set_status_file_begin(HSCPRC * hp, void(*status_file) (HSCPRC * hp, STRPTR filename));
+extern void hsc_set_status_file_end(HSCPRC * hp, void(*status_file) (HSCPRC * hp));
+extern void hsc_set_status_line(HSCPRC * hp, void(*status_line) (HSCPRC * hp));
+extern void hsc_set_status_misc(HSCPRC * hp, void(*status_misc) (HSCPRC * hp, STRPTR s));
+extern void hsc_set_message(HSCPRC * hp,
+                            void(*message) (struct hsc_process * hp,
                                             HSCMSG_CLASS msg_class,
                                             HSCMSG_ID msg_id,
                                             STRPTR fname, ULONG x, ULONG y,
                                             STRPTR msg_text));
-extern VOID hsc_set_message_ref(HSCPRC * hp,
-                                VOID(*message_ref) (struct hsc_process * hp,
+extern void hsc_set_message_ref(HSCPRC * hp,
+                                void(*message_ref) (struct hsc_process * hp,
                                                     HSCMSG_CLASS msg_class,
                                                     HSCMSG_ID msg_id,
                                                     STRPTR fname,
                                                     ULONG x, ULONG y,
                                                     STRPTR msg_text));
-extern VOID hsc_set_start_tag(HSCPRC * hp,
-                              VOID(*CB_start_tag) (struct hsc_process * hp,
+extern void hsc_set_start_tag(HSCPRC * hp,
+                              void(*CB_start_tag) (struct hsc_process * hp,
                                                    HSCTAG * tag,
                                                    STRPTR tag_name,
                                                    STRPTR tag_attr,
                                                    STRPTR tag_close));
-extern VOID hsc_set_end_tag(HSCPRC * hp,
-                            VOID(*CB_end_tag) (struct hsc_process * hp,
+extern void hsc_set_end_tag(HSCPRC * hp,
+                            void(*CB_end_tag) (struct hsc_process * hp,
                                                HSCTAG * tag,
                                                STRPTR tag_name,
                                                STRPTR tag_attr,
                                                STRPTR tag_close));
-extern VOID hsc_set_text(HSCPRC * hp,
-                         VOID(*CB_text) (struct hsc_process * hp,
+extern void hsc_set_text(HSCPRC * hp,
+                         void(*CB_text) (struct hsc_process * hp,
                                          STRPTR white_spaces, STRPTR text));
-extern VOID hsc_set_id(HSCPRC * hp,
-                       VOID(*id) (struct hsc_process * hp,
+extern void hsc_set_id(HSCPRC * hp,
+                       void(*id) (struct hsc_process * hp,
                                   HSCATTR * attr, STRPTR id));
 
 /* set-methodes for flags */
-extern VOID hsc_set_chkid(HSCPRC * hp, BOOL new_chkid);
-extern VOID hsc_set_chkuri(HSCPRC * hp, BOOL new_chkuri);
-extern VOID hsc_set_compact(HSCPRC * hp, BOOL new_compact);
-extern VOID hsc_set_debug(HSCPRC * hp, BOOL new_debug);
-extern VOID hsc_set_getsize(HSCPRC * hp, BOOL new_getsize);
-extern VOID hsc_set_jerkvalues(HSCPRC * hp, BOOL new_jerkvalues);
-extern VOID hsc_set_rplc_ent(HSCPRC * hp, BOOL new_rplc_ent);
-extern VOID hsc_set_rplc_quote(HSCPRC * hp, BOOL new_rplc_quote);
+extern void hsc_set_chkid(HSCPRC * hp, BOOL new_chkid);
+extern void hsc_set_chkuri(HSCPRC * hp, BOOL new_chkuri);
+extern void hsc_set_compact(HSCPRC * hp, BOOL new_compact);
+extern void hsc_set_debug(HSCPRC * hp, BOOL new_debug);
+extern void hsc_set_getsize(HSCPRC * hp, BOOL new_getsize);
+extern void hsc_set_jerkvalues(HSCPRC * hp, BOOL new_jerkvalues);
+extern void hsc_set_rplc_ent(HSCPRC * hp, BOOL new_rplc_ent);
+extern void hsc_set_rplc_quote(HSCPRC * hp, BOOL new_rplc_quote);
 extern BOOL hsc_set_server_dir(HSCPRC * hp, STRPTR dir);
-extern VOID hsc_set_smart_ent(HSCPRC * hp, BOOL new_smart_ent);
-extern VOID hsc_set_strip_badws(HSCPRC * hp, BOOL new_strip_badws);
-extern VOID hsc_set_strip_cmt(HSCPRC * hp, BOOL new_strip_cmt);
-extern VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext);
-extern VOID hsc_set_nested_errors(HSCPRC * hp, BOOL new_nested_errors);
-extern VOID hsc_set_lctags(HSCPRC * hp, BOOL new_lctags);
-extern VOID hsc_set_checkext(HSCPRC * hp, BOOL new_checkext);
-extern VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml);
-extern VOID hsc_set_vcss(HSCPRC * hp, BOOL new_vcss);
+extern void hsc_set_smart_ent(HSCPRC * hp, BOOL new_smart_ent);
+extern void hsc_set_strip_badws(HSCPRC * hp, BOOL new_strip_badws);
+extern void hsc_set_strip_cmt(HSCPRC * hp, BOOL new_strip_cmt);
+extern void hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext);
+extern void hsc_set_no_nested_errors(HSCPRC * hp, BOOL new_nested_errors);
+extern void hsc_set_lctags(HSCPRC * hp, BOOL new_lctags);
+extern void hsc_set_checkext(HSCPRC * hp, BOOL new_checkext);
+extern void hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml);
+extern void hsc_set_novcss(HSCPRC * hp, BOOL new_vcss);
 
 /* set-methodes for values */
 extern BOOL hsc_set_destdir(HSCPRC * hp, STRPTR dir);
@@ -381,14 +384,14 @@ extern BOOL hsc_set_reldir(HSCPRC * hp, STRPTR fname);
 extern BOOL hsc_set_iconbase(HSCPRC * hp, STRPTR uri);
 extern BOOL hsc_set_strip_tags(HSCPRC * hp, STRPTR taglist);
 extern BOOL hsc_set_filename_document(HSCPRC * hp, STRPTR filename);
-extern VOID hsc_set_quote_mode(HSCPRC * hp, LONG new_mode);
-extern VOID hsc_set_entity_mode(HSCPRC * hp, LONG new_mode);
-extern VOID hsc_set_maximum_messages(HSCPRC * hp, LONG messages);
-extern VOID hsc_set_maximum_errors(HSCPRC * hp, LONG errors);
+extern void hsc_set_quote_mode(HSCPRC * hp, LONG new_mode);
+extern void hsc_set_entity_mode(HSCPRC * hp, LONG new_mode);
+extern void hsc_set_maximum_messages(HSCPRC * hp, LONG messages);
+extern void hsc_set_maximum_errors(HSCPRC * hp, LONG errors);
 
 /* methodes for include-directories */
 extern BOOL hsc_add_include_directory(HSCPRC * hp, STRPTR dir);
-extern VOID hsc_clr_include_directory(HSCPRC * hp);
+extern void hsc_clr_include_directory(HSCPRC * hp);
 
 /* get-methodes for flags */
 extern BOOL hsc_get_chkid(HSCPRC * hp);
@@ -435,8 +438,8 @@ extern BOOL hsc_set_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id, HSCIGN value);
 extern HSCIGN hsc_get_msg_ignore(HSCPRC * hp, HSCMSG_ID msg_id);
 extern BOOL hsc_set_msg_class(HSCPRC * hp, HSCMSG_ID msg_id, HSCMSG_CLASS msg_class);
 extern HSCMSG_CLASS hsc_get_msg_class(HSCPRC * hp, HSCMSG_ID msg_id);
-extern VOID hsc_clear_msg_ignore(HSCPRC * hp);
-extern VOID hsc_reset_msg_class(HSCPRC * hp);
+extern void hsc_clear_msg_ignore(HSCPRC * hp);
+extern void hsc_reset_msg_class(HSCPRC * hp);
 
 /* output function */
 extern STRPTR compactWs(HSCPRC * hp, STRPTR ws);

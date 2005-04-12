@@ -327,7 +327,7 @@ struct arglist *prepare_args(STRPTR arglist_name,...) {
                         }
 
                         /*
-                         * check, if arg multiple arg without keyword
+                         * check if multiple arg without keyword
                          */
                         if (new_flags & ARG_MULTIPLE)
                             if (!(new_flags & ARG_KEYWORD)) {

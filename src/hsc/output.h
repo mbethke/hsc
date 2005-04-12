@@ -27,10 +27,10 @@
 #define HSC_OUTPUT_H
 
 extern BOOL init_output(HSCPRC * hp);
-extern VOID cleanup_output(VOID);
+extern void cleanup_output(void);
 
 extern BOOL write_output(HSCPRC * hp);
-extern VOID append_output(STRPTR text);
+extern void append_output(STRPTR text);
 
 #endif /* HSC_OUTPUT_H */
 

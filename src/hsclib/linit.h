@@ -27,7 +27,7 @@
 
 #ifndef NOEXTERN_HSCLIB_LINIT_H
 
-extern HSCPRC *hsc_read_base_info(VOID);
+extern HSCPRC *hsc_read_base_info(void);
 extern BOOL hsc_copy_base_info(HSCPRC * dest_hp, HSCPRC * dummy_hp);
 
 extern BOOL hsc_init_hscprc(HSCPRC * hp, STRPTR prefs_fname);

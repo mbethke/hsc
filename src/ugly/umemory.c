@@ -106,7 +106,7 @@ BOOL(*ugly_nomem_handler) (size_t size) = NULL;
 /*
  * send panic message to stderr
  */
-VOID display_panic_message(char *msg, char *file, size_t line)
+void display_panic_message(char *msg, char *file, size_t line)
 {
     fprintf(stderr, "\n\n");
     fprintf(stderr, "  I won't be a monkey in anyone's zoo\n");

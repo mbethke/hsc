@@ -43,13 +43,13 @@
 
 #define find_strnode(nd,str) find_dlnode((nd),(APTR)(str), cmp_string_node)
 
-extern VOID del_string_node(APTR data);
+extern void del_string_node(APTR data);
 extern STRPTR new_string_node(STRPTR data);
 extern int cmp_string_node(APTR cmp_data, APTR lst_data);
 
-extern VOID clr_strlist(DLLIST *list);
-extern VOID del_strlist(DLLIST *list);
-extern DLLIST *init_strlist(VOID);
+extern void clr_strlist(DLLIST *list);
+extern void del_strlist(DLLIST *list);
+extern DLLIST *init_strlist(void);
 
 extern DLNODE *app_strnode(DLLIST * list, STRPTR str);
 extern DLNODE *add_strnode(DLLIST * list, STRPTR str);

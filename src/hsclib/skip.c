@@ -64,7 +64,7 @@ BOOL skip_expression(HSCPRC * hp, EXPSTR * content, int endmark);
 /* a small debugging-function to print a single char
  * in hex, dez and, if useful,  ascii-representation */
 #if DEBUG
-static VOID dbg_printc(int ch)
+static void dbg_printc(int ch)
 {
     fprintf(stderr, "%02x #%03d", ch, ch);
     if (ch > 31)
@@ -416,7 +416,7 @@ BOOL skip_hsc_verbatim(HSCPRC * hp, EXPSTR * content)
  */
 
 /* display message "linefeed inside sgml-comment" */
-static VOID msg_lf_in_comment(HSCPRC * hp)
+static void msg_lf_in_comment(HSCPRC * hp)
 {
     hsc_message(hp, MSG_LF_IN_COMMENT,
                 "line feed inside sgml-comment");

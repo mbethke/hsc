@@ -30,7 +30,7 @@
 #ifndef NOEXTERN_HSCLIB_CSS_H
 HSCSTYLE *new_styleattr(CONSTRPTR name, CONSTRPTR value);
 extern BOOL add_styleattr(HSCPRC *hp, CONSTRPTR property, CONSTRPTR value);
-extern VOID del_styleattr(APTR data);
+extern void del_styleattr(APTR data);
 extern int cmp_style_node(ubi_btItemPtr item, ubi_btNodePtr node);
 extern void free_style_node(ubi_btNode *node);
 extern HSCSTYLE *add_styledef(hsctree *styles, CONSTRPTR name, CONSTRPTR value);

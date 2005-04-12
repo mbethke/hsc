@@ -30,23 +30,23 @@
 
 #ifndef NOEXTERN_HSCLIB_MESSAGE_H
 
-extern VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id,
+extern void hsc_message(HSCPRC * hp, HSCMSG_ID msg_id,
                         const char *format,...);
 
-extern VOID hsc_msg_eof(HSCPRC * hp, STRPTR descr);
-extern VOID hsc_msg_illg_whtspc(HSCPRC * hp);
-extern VOID hsc_msg_stripped_tag(HSCPRC * hp, HSCTAG * tag, STRPTR why);
-extern VOID hsc_msg_unkn_attr_ref(HSCPRC * hp, STRPTR attr);
-extern VOID hsc_msg_unkn_attr_tag(HSCPRC * hp, STRPTR attr, STRPTR tag);
-extern VOID hsc_msg_unkn_attr_macro(HSCPRC * hp, STRPTR attr, STRPTR macro);
-extern VOID hsc_msg_read_error(HSCPRC * hp, STRPTR filename);
+extern void hsc_msg_eof(HSCPRC * hp, STRPTR descr);
+extern void hsc_msg_illg_whtspc(HSCPRC * hp);
+extern void hsc_msg_stripped_tag(HSCPRC * hp, HSCTAG * tag, STRPTR why);
+extern void hsc_msg_unkn_attr_ref(HSCPRC * hp, STRPTR attr);
+extern void hsc_msg_unkn_attr_tag(HSCPRC * hp, STRPTR attr, STRPTR tag);
+extern void hsc_msg_unkn_attr_macro(HSCPRC * hp, STRPTR attr, STRPTR macro);
+extern void hsc_msg_read_error(HSCPRC * hp, STRPTR filename);
 
 #if 1 /* TODO: get rid of this */
-extern VOID hsc_msg_eol(HSCPRC * hp);
+extern void hsc_msg_eol(HSCPRC * hp);
 #endif
 
-extern VOID hsc_msg_noinput(HSCPRC * hp, STRPTR filename);
-extern VOID hsc_msg_nouri(HSCPRC * hp, STRPTR filename, STRPTR uriname, STRPTR note);
+extern void hsc_msg_noinput(HSCPRC * hp, STRPTR filename);
+extern void hsc_msg_nouri(HSCPRC * hp, STRPTR filename, STRPTR uriname, STRPTR note);
 
 #endif /* NOEXTERN_HSCLIB_MESSAGE */
 #endif /* HSCLIB_MESSAGE_H */

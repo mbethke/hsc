@@ -85,7 +85,7 @@ static BOOL include_macro(HSCPRC * hp, HSCTAG * macro, STRPTR macro_text, STRPTR
  */
 
 /* just a debugging function */
-static VOID dbg_print_macro(HSCPRC * hp, HSCTAG * macro, BOOL open_mac, STRPTR prefix)
+static void dbg_print_macro(HSCPRC * hp, HSCTAG * macro, BOOL open_mac, STRPTR prefix)
 {
     DMC(fprintf(stderr, DHL "--%s ", prefix));
     if (open_mac)
@@ -244,7 +244,7 @@ static BOOL handle_content_macro(HSCPRC * hp, HSCTAG * tag)
  * handle content inside a content macro
  * (insert text of attribute HSC.CONTENT)
  */
-static VOID hsc_msg_no_content(HSCPRC *hp) {
+static void hsc_msg_no_content(HSCPRC *hp) {
     hsc_message(hp, MSG_NO_CONTENT,
                 "no content within current context");
 }

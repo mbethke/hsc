@@ -55,7 +55,7 @@ static FILE *vbrowse_file = NULL;
  * of the main (last) hsc source passed in the command line */
 static STRPTR compilation_unit = NULL;
 
-static VOID send_arexx_command(HSCPRC * hp, STRPTR arexx_command)
+static void send_arexx_command(HSCPRC * hp, STRPTR arexx_command)
 {
     /* Hex-escaped Arexx command */
     EXPSTR *escaped_arexx_command = init_estr(256);
@@ -178,7 +178,7 @@ BOOL init_msg_browser(HSCPRC * hp, STRPTR filename)
    return success;
 }
 
-VOID del_msg_browser(HSCPRC * hp)
+void del_msg_browser(HSCPRC * hp)
 {
     if (!upstrcmp(msg_browser, "SCMSG"))
     {
@@ -201,7 +201,7 @@ VOID del_msg_browser(HSCPRC * hp)
     }
 }
 
-VOID send_msg_browser(HSCPRC * hp,
+void send_msg_browser(HSCPRC * hp,
                       HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
                       STRPTR fname, ULONG x, ULONG y,
                       STRPTR msg_text)

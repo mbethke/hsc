@@ -132,7 +132,7 @@ BOOL handle_hsc_insert_expression(HSCPRC * hp, HSCTAG * tag) {
  *-------------------------------------
  */
 
-static VOID do_include(HSCPRC * hp, STRPTR filename,
+static void do_include(HSCPRC * hp, STRPTR filename,
       BOOL nostatus, BOOL temporary, BOOL source, BOOL pre,
       LONG indent, LONG tabsize)
 {
@@ -577,11 +577,11 @@ BOOL handle_hsc_deftag(HSCPRC * hp, HSCTAG * tag) {
  * <$DEFENT> define a new entity
  *-------------------------------------
  */
-static VOID msg_illegal_defent(HSCPRC * hp, STRPTR msg) {
+static void msg_illegal_defent(HSCPRC * hp, STRPTR msg) {
    hsc_message(hp, MSG_ILLG_DEFENT, "illegal entity definition (%s)", msg);
 }
 
-static VOID msg_dubious_defent(HSCPRC * hp, STRPTR msg) {
+static void msg_dubious_defent(HSCPRC * hp, STRPTR msg) {
    hsc_message(hp, MSG_DEFENT_WARN, "dubious entity definition (%s)", msg);
 }
 
@@ -642,7 +642,7 @@ BOOL handle_hsc_defent(HSCPRC * hp, HSCTAG * tag) {
  * <$DEFSTYLE> define a new CSS style
  *-------------------------------------
  */
-static VOID msg_illegal_defstyle(HSCPRC * hp, STRPTR msg) {
+static void msg_illegal_defstyle(HSCPRC * hp, STRPTR msg) {
    hsc_message(hp, MSG_ILLG_DEFSTYLE, "error in <$DEFSTYLE> (%s)", msg);
 }
 

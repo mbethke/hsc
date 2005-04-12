@@ -57,7 +57,7 @@ hsc_license2 =
  *
  * display short description of GNU GPL
  */
-VOID show_license(VOID)
+void show_license(void)
 {
    /* 2*printf just to avoid compiler moaning */
    fprintf(stderr, hsc_license1);

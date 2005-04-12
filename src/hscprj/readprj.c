@@ -50,7 +50,7 @@
  * hsc_msg_project_corrupt: display error message about
  * corrupt project file
  */
-static VOID hsc_msg_project_corrupt(HSCPRJ * hp, STRPTR descr)
+static void hsc_msg_project_corrupt(HSCPRJ * hp, STRPTR descr)
 {
     hp->fatal = TRUE;
     if (hp->CB_msg_corrupt_pf)

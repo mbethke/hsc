@@ -37,7 +37,7 @@ extern BOOL handle_hsc_cif(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_else(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_elseif(HSCPRC * hp, HSCTAG * tag);
 
-extern VOID del_select_stack_node(APTR data);
+extern void del_select_stack_node(APTR data);
 
 #endif /* HSCLIB_TAG_IF_H */
 

@@ -129,7 +129,7 @@ extern int infeof(INFILE * inpf);
 extern STRPTR infreadtoeol(INFILE * inpf);
 extern int infgotoeol(INFILE * inpf);
 
-extern VOID del_infilepos(INFILEPOS * pos);
+extern void del_infilepos(INFILEPOS * pos);
 extern INFILEPOS *new_infilepos(INFILE * inpfile);
 extern INFILEPOS *new_winfilepos(INFILE * inpfile);
 extern INFILEPOS *clone_infilepos(INFILEPOS *ipos);

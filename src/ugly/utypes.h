@@ -52,7 +52,6 @@ typedef unsigned char UBYTE;    /* unsigned 8-bit quantity */
 typedef char *STRPTR;           /* string pointer (NULL terminated) */
 
 /* Types with specific semantics */
-typedef void VOID;
 #ifndef RISCOS
 typedef short BOOL;
 typedef unsigned char TEXT;

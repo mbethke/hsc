@@ -54,7 +54,7 @@ static STRARR status_buf[MAX_STATUSLEN + 2];    /* buffer for status messages */
  * Set new value for return-code of program. If the old retcode
  * is greater than the new one, nothing is changed.
  */
-VOID set_return_code(int newrc)
+void set_return_code(int newrc)
 {
     if (newrc > return_code)
     {
@@ -79,7 +79,7 @@ VOID set_return_code(int newrc)
  *
  * params: s.....message to display
  */
-VOID status_msg(STRPTR s)
+void status_msg(STRPTR s)
 {
     size_t new_stmsg_len = strlen(s);
     size_t i;
@@ -107,7 +107,7 @@ VOID status_msg(STRPTR s)
  *
  * clear status message
  */
-VOID status_clear(VOID)
+void status_clear(void)
 {
     status_msg("");
 }
@@ -120,7 +120,7 @@ VOID status_clear(VOID)
  *
  * NOTE: messages >79 chars are truncated
  */
-static VOID status_file_and_line(HSCPRC * hp)
+static void status_file_and_line(HSCPRC * hp)
 {
     STRPTR filename = hsc_get_file_name(hp);
 
@@ -149,7 +149,7 @@ static VOID status_file_and_line(HSCPRC * hp)
  * perform a linfeed with status messages
  * (old message will stay visible)
  */
-VOID status_lf(VOID)
+void status_lf(void)
 {
     if (disp_status)
     {
@@ -164,7 +164,7 @@ VOID status_lf(VOID)
  * hsc-callback for file fully processed: display
  * file and total number of line, perform liefeed
  */
-VOID status_file_begin(HSCPRC * hp, STRPTR filename)
+void status_file_begin(HSCPRC * hp, STRPTR filename)
 {
     if (filename)
     {
@@ -183,7 +183,7 @@ VOID status_file_begin(HSCPRC * hp, STRPTR filename)
  * hsc-callback for file fully processed: display
  * file and total number of line, perform liefeed
  */
-VOID status_file_end(HSCPRC * hp)
+void status_file_end(HSCPRC * hp)
 {
     status_file_and_line(hp);
     status_msg(status_buf);
@@ -193,7 +193,7 @@ VOID status_file_end(HSCPRC * hp)
 /*
  * status_line
  */
-VOID status_line(HSCPRC * hp)
+void status_line(HSCPRC * hp)
 {
     if (disp_status_line
 #if 1
@@ -213,7 +213,7 @@ VOID status_line(HSCPRC * hp)
  *
  * display misc. status messages
  */
-VOID status_misc(HSCPRC * hp, STRPTR s)
+void status_misc(HSCPRC * hp, STRPTR s)
 {
     if (disp_status_verbose)
     {
@@ -232,7 +232,7 @@ VOID status_misc(HSCPRC * hp, STRPTR s)
  *
  * display error status messages
  */
-VOID status_error(STRPTR s)
+void status_error(STRPTR s)
 {
     /* store current status flags, enable status output */
     LONG old_disp_status = disp_status;

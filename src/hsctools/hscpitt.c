@@ -151,7 +151,7 @@ static HSCPRJ *project = NULL;
  * cleanup: free all resources
  * (called in any case)
  */
-static VOID cleanup(VOID)
+static void cleanup(void)
 {
     D(fprintf(stderr, "(cleanup)\n"));
     del_dllist(command_arglist);
@@ -159,7 +159,7 @@ static VOID cleanup(VOID)
     D(fprintf(stderr, "         \n"));
 }
 
-static VOID set_return_code(int new_code)
+static void set_return_code(int new_code)
 {
     if (new_code > return_code)
         return_code = new_code;
@@ -180,7 +180,7 @@ static BOOL hscpitt_nomem_handler(size_t size)
     return (FALSE);
 }
 
-VOID msg_corrupt_pf(HSCPRJ * hp, STRPTR reason)
+void msg_corrupt_pf(HSCPRJ * hp, STRPTR reason)
 {
     fprintf(stderr, "project-file corrupt: %s\n", reason);
     set_return_code(RC_ERROR);
@@ -365,7 +365,7 @@ static BOOL args_ok(int argc, char *argv[])
  *
  * read data from project file
  */
-static BOOL read_project(VOID)
+static BOOL read_project(void)
 {
     BOOL ok = FALSE;
     INFILE *inpf = NULL;
@@ -506,7 +506,7 @@ BOOL command_new(HSCPRJ * project, DLLIST * arglist)
  *
  * add new document and source to project
  */
-VOID command_add(HSCPRJ * project, DLLIST * arglist)
+void command_add(HSCPRJ * project, DLLIST * arglist)
 {
     if (chkArg2(CMD_ADD_STR, "DOCUMENT", "SOURCE"))
     {
@@ -558,7 +558,7 @@ VOID command_add(HSCPRJ * project, DLLIST * arglist)
  *
  * remove document(s) from project
  */
-VOID command_delete(HSCPRJ * project, DLLIST * arglist)
+void command_delete(HSCPRJ * project, DLLIST * arglist)
 {
     if (chkArgAny(CMD_DELETE_STR))
     {
@@ -622,7 +622,7 @@ static BOOL uremove(STRPTR fname)
     return (erased);
 }
 
-VOID command_erase(HSCPRJ * project, DLLIST * arglist)
+void command_erase(HSCPRJ * project, DLLIST * arglist)
 {
     if (chkArgAny(CMD_ERASE_STR))
     {
@@ -675,14 +675,14 @@ VOID command_erase(HSCPRJ * project, DLLIST * arglist)
  *
  * display detailed information about documents found in project
  */
-static VOID printfVar(STRPTR var, STRPTR value)
+static void printfVar(STRPTR var, STRPTR value)
 {
     if (!value)
         value = "";
     printf("%s=\"%s\"\n", var, value);
 }
 
-static VOID extract_document(HSCPRJ * project, HSCDOC * document, BOOL emptyLine)
+static void extract_document(HSCPRJ * project, HSCDOC * document, BOOL emptyLine)
 {
     /* show empty line; not for first document */
     if (emptyLine)
@@ -709,7 +709,7 @@ static VOID extract_document(HSCPRJ * project, HSCDOC * document, BOOL emptyLine
 #endif
 }
 
-VOID command_extract(HSCPRJ * project, DLLIST * arglist)
+void command_extract(HSCPRJ * project, DLLIST * arglist)
 {
     if (cmdArgNum)
     {
@@ -764,7 +764,7 @@ VOID command_extract(HSCPRJ * project, DLLIST * arglist)
  *
  * display number of documents currently stored in project file
  */
-VOID command_count(HSCPRJ * project, DLLIST * arglist)
+void command_count(HSCPRJ * project, DLLIST * arglist)
 {
     DLNODE *docNode = dll_first(project->documents);
     ULONG docNum = 0;
@@ -789,7 +789,7 @@ VOID command_count(HSCPRJ * project, DLLIST * arglist)
  *
  * display list of documents found in project
  */
-VOID command_list(HSCPRJ * project, DLLIST * arglist)
+void command_list(HSCPRJ * project, DLLIST * arglist)
 {
     if (chkArg0(CMD_COUNT_STR))
     {

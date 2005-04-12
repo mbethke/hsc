@@ -56,7 +56,7 @@
  * message that tells user that a special char
  * was replaced by its entity
  */
-static VOID message_rplc(HSCPRC * hp, STRPTR what, STRPTR by) {
+static void message_rplc(HSCPRC * hp, STRPTR what, STRPTR by) {
    hsc_message(hp, MSG_RPLC_ENT,
          "replaced %q by %q", what, by);
 }
@@ -662,7 +662,7 @@ BOOL hsc_parse_tag(HSCPRC * hp) {
 
       /* write whole tag out */
       if (write_tag && hnd_result) {
-         VOID(*tag_callback) (HSCPRC * hp, HSCTAG * tag,
+         void(*tag_callback) (HSCPRC * hp, HSCTAG * tag,
                STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close) = NULL;
 
          if (open_tag)
@@ -711,7 +711,7 @@ BOOL hsc_parse_tag(HSCPRC * hp) {
  */
 
 /* replace icon-entity by image */
-static VOID replace_icon(HSCPRC * hp, STRPTR icon) {
+static void replace_icon(HSCPRC * hp, STRPTR icon) {
    INFILEPOS *base = new_infilepos(hp->inpf);
    EXPSTR *image = init_estr(0);
    STRPTR s = estr2str(hp->iconbase);

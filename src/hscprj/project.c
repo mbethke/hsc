@@ -48,7 +48,7 @@
 /*
  * new_project
  */
-HSCPRJ *new_project(VOID)
+HSCPRJ *new_project(void)
 {
     HSCPRJ *hp = (HSCPRJ *) umalloc(sizeof(HSCPRJ));
 
@@ -65,7 +65,7 @@ HSCPRJ *new_project(VOID)
 /*
  * del_project
  */
-VOID del_project(HSCPRJ * hp)
+void del_project(HSCPRJ * hp)
 {
     if (hp)
     {

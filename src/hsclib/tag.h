@@ -176,7 +176,7 @@ HSCTAG;
 #ifndef NOEXTERN_HSCLIB_TAG_H
 
 extern HSCTAG *new_hsctag(STRPTR newid);
-extern VOID del_hsctag(APTR data);
+extern void del_hsctag(APTR data);
 extern HSCTAG *cpy_hsctag(HSCTAG * oldtag);
 
 extern int cmp_strtag(APTR cmpstr, APTR tagdata);

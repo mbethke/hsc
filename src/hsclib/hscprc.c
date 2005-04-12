@@ -45,7 +45,7 @@
  *
  * remove node from input file stack
  */
-static VOID del_inpf_stack_node(APTR data)
+static void del_inpf_stack_node(APTR data)
 {
     /* do nufin */
 }
@@ -55,7 +55,7 @@ static VOID del_inpf_stack_node(APTR data)
  *
  * Remove HSC process and all its resources
  */
-VOID del_hscprc(HSCPRC *hp)
+void del_hscprc(HSCPRC *hp)
 {
     if (hp) {
         /* remove list */
@@ -113,7 +113,7 @@ VOID del_hscprc(HSCPRC *hp)
  *
  * reset all items of a hsc process
  */
-VOID reset_hscprc(HSCPRC * hp)
+void reset_hscprc(HSCPRC * hp)
 {
     int i;
 
@@ -430,82 +430,82 @@ BOOL hsc_set_filename_document(HSCPRC * hp, STRPTR filename) {
 /*
  * set flags
  */
-VOID hsc_set_chkid(HSCPRC * hp, BOOL new_chkid) {
+void hsc_set_chkid(HSCPRC * hp, BOOL new_chkid) {
     hp->chkid = new_chkid;
     D(fprintf(stderr, DHL "flag: chkid    =%d\n", new_chkid));
 }
 
-VOID hsc_set_chkuri(HSCPRC * hp, BOOL new_chkuri) {
+void hsc_set_chkuri(HSCPRC * hp, BOOL new_chkuri) {
     hp->chkuri = new_chkuri;
     D(fprintf(stderr, DHL "flag: chkuri   =%d\n", new_chkuri));
 }
 
-VOID hsc_set_compact(HSCPRC * hp, BOOL new_compact) {
+void hsc_set_compact(HSCPRC * hp, BOOL new_compact) {
     hp->compact = new_compact;
     D(fprintf(stderr, DHL "flag: compact  =%d\n", new_compact));
 }
 
-VOID hsc_set_debug(HSCPRC * hp, BOOL new_debug) {
+void hsc_set_debug(HSCPRC * hp, BOOL new_debug) {
     hp->debug = new_debug;
     D(fprintf(stderr, DHL "flag: debug    =%d\n", new_debug));
 }
 
-VOID hsc_set_getsize(HSCPRC * hp, BOOL new_getsize) {
+void hsc_set_getsize(HSCPRC * hp, BOOL new_getsize) {
     hp->getsize = new_getsize;
     D(fprintf(stderr, DHL "flag: getsize  =%d\n", new_getsize));
 }
 
-VOID hsc_set_jerkvalues(HSCPRC * hp, BOOL new_jerkvalues) {
+void hsc_set_jerkvalues(HSCPRC * hp, BOOL new_jerkvalues) {
     hp->jerkvalues = new_jerkvalues;
     D(fprintf(stderr, DHL "flag: jerkval  =%d\n", new_jerkvalues));
 }
 
-VOID hsc_set_rplc_ent(HSCPRC * hp, BOOL new_rplc_ent) {
+void hsc_set_rplc_ent(HSCPRC * hp, BOOL new_rplc_ent) {
     hp->rplc_ent = new_rplc_ent;
     D(fprintf(stderr, DHL "flag: rplc_ent =%d\n", new_rplc_ent));
 }
 
-VOID hsc_set_rplc_quote(HSCPRC * hp, BOOL new_rplc_quote) {
+void hsc_set_rplc_quote(HSCPRC * hp, BOOL new_rplc_quote) {
     hp->rplc_quote = new_rplc_quote;
     D(fprintf(stderr, DHL "flag: rplc_quote =%d\n", new_rplc_quote));
 }
 
-VOID hsc_set_smart_ent(HSCPRC * hp, BOOL new_smart_ent) {
+void hsc_set_smart_ent(HSCPRC * hp, BOOL new_smart_ent) {
     hp->smart_ent = new_smart_ent;
     D(fprintf(stderr, DHL "flag: smart_ent=%d\n", new_smart_ent));
 }
 
-VOID hsc_set_strip_badws(HSCPRC * hp, BOOL new_strip_badws) {
+void hsc_set_strip_badws(HSCPRC * hp, BOOL new_strip_badws) {
     hp->strip_badws = new_strip_badws;
     D(fprintf(stderr, DHL "flag: strip_bws=%d\n", new_strip_badws));
 }
 
-VOID hsc_set_strip_cmt(HSCPRC * hp, BOOL new_strip_cmt) {
+void hsc_set_strip_cmt(HSCPRC * hp, BOOL new_strip_cmt) {
     hp->strip_cmt = new_strip_cmt;
     D(fprintf(stderr, DHL "flag: strip_cmt=%d\n", new_strip_cmt));
 }
 
-VOID hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext) {
+void hsc_set_strip_ext(HSCPRC * hp, BOOL new_strip_ext) {
     hp->strip_ext = new_strip_ext;
     D(fprintf(stderr, DHL "flag: strip_ext=%d\n", new_strip_ext));
 }
 
-VOID hsc_set_no_nested_errors(HSCPRC * hp, BOOL new_nested_errors) {
+void hsc_set_no_nested_errors(HSCPRC * hp, BOOL new_nested_errors) {
     hp->nested_errors = !new_nested_errors;
     D(fprintf(stderr, DHL "flag: nested_errors=%d\n", new_nested_errors));
 }
 
-VOID hsc_set_lctags(HSCPRC * hp, BOOL new_lctags) {
+void hsc_set_lctags(HSCPRC * hp, BOOL new_lctags) {
    hp->lctags = new_lctags;
    D(fprintf(stderr, DHL "flag: lctags=%d\n", new_lctags));
 }
 
-VOID hsc_set_checkext(HSCPRC * hp, BOOL new_checkext) {
+void hsc_set_checkext(HSCPRC * hp, BOOL new_checkext) {
    hp->checkext = new_checkext;
    D(fprintf(stderr, DHL "flag: checkext=%d\n", new_checkext));
 }
 
-VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml) {
+void hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml) {
     if((hp->xhtml = new_xhtml)) {
        hp->lctags = TRUE;            /* XHTML implies LOWERCASETAGS */
        hp->quotemode = QMODE_DOUBLE; /* use double quotes */
@@ -515,7 +515,7 @@ VOID hsc_set_xhtml(HSCPRC * hp, BOOL new_xhtml) {
     D(fprintf(stderr, DHL "flag: xhtml=%d\n", new_xhtml));
 }
 
-VOID hsc_set_novcss(HSCPRC * hp, BOOL new_vcss) {
+void hsc_set_novcss(HSCPRC * hp, BOOL new_vcss) {
    hp->validate_css = !new_vcss;
    D(fprintf(stderr, DHL "flag: validatecss=%d\n", new_vcss));
 }
@@ -523,48 +523,48 @@ VOID hsc_set_novcss(HSCPRC * hp, BOOL new_vcss) {
 /*
  * set values
  */
-VOID hsc_set_quote_mode(HSCPRC * hp, LONG new_mode) {
+void hsc_set_quote_mode(HSCPRC * hp, LONG new_mode) {
    hp->quotemode = new_mode;
    D(fprintf(stderr, DHL "quote_mode=%ld\n", new_mode));
 }
 
-VOID hsc_set_entity_mode(HSCPRC * hp, LONG new_mode) {
+void hsc_set_entity_mode(HSCPRC * hp, LONG new_mode) {
    if(EMODE_INVALID == new_mode)
       new_mode = EMODE_KEEP;    /* default if unspecified */
    hp->entitymode = new_mode;
    D(fprintf(stderr, DHL "entity_mode=%ld\n", new_mode));
 }
 
-VOID hsc_set_maximum_messages(HSCPRC * hp, LONG messages) {
+void hsc_set_maximum_messages(HSCPRC * hp, LONG messages) {
    hp->max_messages = messages;
 }
 
-VOID hsc_set_maximum_errors(HSCPRC * hp, LONG errors) {
+void hsc_set_maximum_errors(HSCPRC * hp, LONG errors) {
    hp->max_errors = errors;
 }
 
 /*
  * set call-backs
  */
-VOID hsc_set_status_file_begin(HSCPRC * hp, VOID(*status_file) (HSCPRC * hp, STRPTR filename)) {
+void hsc_set_status_file_begin(HSCPRC * hp, void(*status_file) (HSCPRC * hp, STRPTR filename)) {
     hp->CB_status_file_begin = status_file;
 }
 
-VOID hsc_set_status_file_end(HSCPRC * hp, VOID(*status_file) (HSCPRC * hp)) {
+void hsc_set_status_file_end(HSCPRC * hp, void(*status_file) (HSCPRC * hp)) {
     hp->CB_status_file_end = status_file;
 }
 
-VOID hsc_set_status_line(HSCPRC * hp, VOID(*status_line) (HSCPRC * hp)) {
+void hsc_set_status_line(HSCPRC * hp, void(*status_line) (HSCPRC * hp)) {
     hp->CB_status_line = status_line;
 }
 
-VOID hsc_set_status_misc(HSCPRC * hp, VOID(*status_misc) (HSCPRC * hp, STRPTR s)) {
+void hsc_set_status_misc(HSCPRC * hp, void(*status_misc) (HSCPRC * hp, STRPTR s)) {
     hp->CB_status_misc = status_misc;
 }
 
-VOID hsc_set_message(
+void hsc_set_message(
                         HSCPRC * hp,
-                        VOID(*message) (struct hsc_process * hp,
+                        void(*message) (struct hsc_process * hp,
                                         HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
                                         STRPTR fname, ULONG x, ULONG y,
                                         STRPTR msg_text))
@@ -572,9 +572,9 @@ VOID hsc_set_message(
     hp->CB_message = message;
 }
 
-VOID hsc_set_message_ref(
+void hsc_set_message_ref(
                             HSCPRC * hp,
-                            VOID(*message_ref) (struct hsc_process * hp,
+                            void(*message_ref) (struct hsc_process * hp,
                                    HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
                                              STRPTR fname, ULONG x, ULONG y,
                                                 STRPTR msg_text))
@@ -582,29 +582,29 @@ VOID hsc_set_message_ref(
     hp->CB_message_ref = message_ref;
 }
 
-VOID hsc_set_start_tag(HSCPRC * hp,
-                       VOID(*start_tag) (struct hsc_process * hp,
+void hsc_set_start_tag(HSCPRC * hp,
+                       void(*start_tag) (struct hsc_process * hp,
           HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close))
 {
     hp->CB_start_tag = start_tag;
 }
 
-VOID hsc_set_end_tag(HSCPRC * hp,
-                     VOID(*end_tag) (struct hsc_process * hp,
+void hsc_set_end_tag(HSCPRC * hp,
+                     void(*end_tag) (struct hsc_process * hp,
           HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close))
 {
     hp->CB_end_tag = end_tag;
 }
 
-VOID hsc_set_text(HSCPRC * hp,
-                  VOID(*text) (struct hsc_process * hp,
+void hsc_set_text(HSCPRC * hp,
+                  void(*text) (struct hsc_process * hp,
                                STRPTR white_spaces, STRPTR text))
 {
     hp->CB_text = text;
 }
 
-VOID hsc_set_id(HSCPRC * hp,
-                VOID(*id) (struct hsc_process * hp,
+void hsc_set_id(HSCPRC * hp,
+                void(*id) (struct hsc_process * hp,
                            HSCATTR * attr, STRPTR id))
 {
     hp->CB_id = id;
@@ -679,13 +679,13 @@ BOOL hsc_set_msg_ignore_port(HSCPRC * hp, BOOL value) {
 /*
  * reset whole arrays for message-class/ignores
  */
-VOID hsc_clear_msg_ignore(HSCPRC * hp) {
+void hsc_clear_msg_ignore(HSCPRC * hp) {
     size_t i;
     for (i = 0; i <= MAX_MSGID; i++)
         hp->msg_ignore[i] = FALSE;
 }
 
-VOID hsc_reset_msg_class(HSCPRC * hp) {
+void hsc_reset_msg_class(HSCPRC * hp) {
     size_t i;
     for (i = 0; i <= MAX_MSGID; i++)
         hp->msg_class[i] = MSG_NONE;
@@ -700,7 +700,7 @@ BOOL hsc_add_include_directory(HSCPRC * hp, STRPTR dir) {
    return ((BOOL) (app_strnode(hp->include_dirs, dir) != NULL));
 }
 
-VOID hsc_clr_include_directory(HSCPRC * hp) {
+void hsc_clr_include_directory(HSCPRC * hp) {
    clr_strlist(hp->include_dirs);
 }
 

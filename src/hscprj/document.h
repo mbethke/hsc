@@ -83,28 +83,28 @@ typedef struct iddef_node {
 } HSCIDD;
 
 extern CALLER *new_caller(STRPTR fname, ULONG posx, ULONG posy);
-extern VOID del_caller(APTR data);
+extern void del_caller(APTR data);
 extern CALLER *fpos2caller(INFILEPOS * fpos);
 
 extern HSCDOC *new_document(STRPTR docname);
-extern VOID del_document(APTR data);
+extern void del_document(APTR data);
 extern int cmp_document(APTR cmp_data, APTR list_data);
 extern DLNODE *find_document_node(DLLIST *list, STRPTR name);
 extern HSCDOC *find_document(DLLIST * list, STRPTR name);
 
-extern VOID del_reference(APTR data);
+extern void del_reference(APTR data);
 extern HSCREF *new_reference(STRPTR newname);
 extern int cmp_reference(APTR cmp_data, APTR list_data);
 extern HSCREF *app_reference(HSCDOC * document, STRPTR ref_name);
 
-extern VOID del_include(APTR data);
+extern void del_include(APTR data);
 extern HSCINC *new_include(STRPTR newname);
 extern int cmp_include(APTR cmp_data, APTR list_data);
 extern HSCINC *app_include(HSCDOC * document, STRPTR inc_name);
 
-extern VOID del_iddef(APTR data);
+extern void del_iddef(APTR data);
 extern HSCIDD *new_iddef(STRPTR newname);
-extern VOID prt_iddef(FILE * stream, APTR data);
+extern void prt_iddef(FILE * stream, APTR data);
 extern int cmp_iddef(APTR cmp_data, APTR list_data);
 extern HSCIDD *app_iddef(HSCDOC * document, STRPTR iddef_name);
 extern HSCIDD *find_iddef(HSCDOC * document, STRPTR name);

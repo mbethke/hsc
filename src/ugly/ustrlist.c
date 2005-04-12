@@ -36,7 +36,7 @@
 /*
  * del_string_node
  */
-VOID del_string_node(APTR data)
+void del_string_node(APTR data)
 {
    STRPTR s = (STRPTR)data;
    ufreestr(s);
@@ -74,7 +74,7 @@ int cmp_string_node(APTR cmp_data, APTR lst_data)
 /*
  * del_strlist: cleanup whole list of strings
  */
-VOID del_strlist(DLLIST * list)
+void del_strlist(DLLIST * list)
 {
     del_dllist(list);
 }
@@ -82,7 +82,7 @@ VOID del_strlist(DLLIST * list)
 /*
  * del_strlist: cleanup whole list of strings
  */
-VOID clr_strlist(DLLIST * list)
+void clr_strlist(DLLIST * list)
 {
     del_all_dlnodes(list);
 }
@@ -90,7 +90,7 @@ VOID clr_strlist(DLLIST * list)
 /*
  * init_strlist: set up new list of strings
  */
-DLLIST *init_strlist(VOID)
+DLLIST *init_strlist(void)
 {
     return (init_dllist(del_string_node));
 }

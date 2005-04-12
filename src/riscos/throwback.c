@@ -62,7 +62,7 @@ BOOL hsc_init_throwback(HSCPRC * hp)
     return success;
 }
 
-VOID hsc_del_throwback(HSCPRC * hp)
+void hsc_del_throwback(HSCPRC * hp)
 {
     if (hsc_get_throwback(hp))
     {
@@ -72,7 +72,7 @@ VOID hsc_del_throwback(HSCPRC * hp)
     }
 }
 
-VOID hsc_throwback(HSCPRC * hp,
+void hsc_throwback(HSCPRC * hp,
                    HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
                    STRPTR fname, ULONG x, ULONG y,
                    STRPTR msg_text)

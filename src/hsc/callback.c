@@ -70,12 +70,12 @@ BOOL init_msg_browser(HSCPRC * hp, STRPTR filename)
    return TRUE;
 }
 
-VOID del_msg_browser(HSCPRC * hp)
+void del_msg_browser(HSCPRC * hp)
 {
    /* Do nufin */
 }
 
-VOID send_msg_browser(HSCPRC * hp,
+void send_msg_browser(HSCPRC * hp,
       HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
       STRPTR fname, ULONG x, ULONG y,
       STRPTR msg_text)
@@ -106,7 +106,7 @@ BOOL hsc_nomem_handler(size_t size)
  *
  * hsc-callback to display message coming from parser
  */
-static VOID message(HSCPRC * hp,
+static void message(HSCPRC * hp,
       HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
       STRPTR fname, ULONG x, ULONG y,
       STRPTR msg_text)
@@ -250,7 +250,7 @@ static VOID message(HSCPRC * hp,
  *
  * hsc-callback to display ref-message coming from parser
  */
-static VOID message_ref(HSCPRC * hp,
+static void message_ref(HSCPRC * hp,
       HSCMSG_CLASS msg_class, HSCMSG_ID msg_id,
       STRPTR fname, ULONG x, ULONG y,
       STRPTR msg_text)
@@ -262,7 +262,7 @@ static VOID message_ref(HSCPRC * hp,
             "(location of previous call)");
 }
 
-static VOID do_hsc_id(HSCPRC * hp, HSCATTR * attr, STRPTR id)
+static void do_hsc_id(HSCPRC * hp, HSCATTR * attr, STRPTR id)
 {
 #if 0
    fprintf(stderr, "new id   : `%s' for attr `%s'\n",
@@ -275,7 +275,7 @@ static VOID do_hsc_id(HSCPRC * hp, HSCATTR * attr, STRPTR id)
  *
  * hsc-callback for processing start tag
  */
-static VOID do_hsc_start_tag(HSCPRC * hp, HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close)
+static void do_hsc_start_tag(HSCPRC * hp, HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close)
 {
 #if 0
    if (tag)
@@ -295,7 +295,7 @@ static VOID do_hsc_start_tag(HSCPRC * hp, HSCTAG * tag, STRPTR tag_name, STRPTR 
    append_output(tag_close);
 }
 
-static VOID do_hsc_end_tag(HSCPRC * hp, HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close)
+static void do_hsc_end_tag(HSCPRC * hp, HSCTAG * tag, STRPTR tag_name, STRPTR tag_attr, STRPTR tag_close)
 {
 #if 0
    if (tag)
@@ -308,7 +308,7 @@ static VOID do_hsc_end_tag(HSCPRC * hp, HSCTAG * tag, STRPTR tag_name, STRPTR ta
    append_output(tag_close);
 }
 
-static VOID do_hsc_text(HSCPRC * hp, STRPTR whtspc, STRPTR text)
+static void do_hsc_text(HSCPRC * hp, STRPTR whtspc, STRPTR text)
 {
 #if 0
    fprintf(stderr, "text     : \"%s\", \"%s\"\n", whtspc, text);
@@ -389,7 +389,7 @@ BOOL init_msgfile(HSCPRC * hp, STRPTR fname)
  *
  * close message file if neccessary
  */
-VOID cleanup_msgfile(VOID)
+void cleanup_msgfile(void)
 {
    if (msgfile && (msgfile != stderr))
       fclose(msgfile);

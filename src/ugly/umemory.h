@@ -84,7 +84,7 @@ typedef struct uglymem UGLYMEM;
 
 #ifndef NOEXTERN_UGLY_UMEMORY_H
 
-extern VOID display_panic_message(char *msg, char *file, size_t line);
+extern void display_panic_message(char *msg, char *file, size_t line);
 
 extern void *ugly_malloc_tracking(size_t size, STRPTR file, ULONG line);
 extern void *ugly_malloc_notracking(size_t size);

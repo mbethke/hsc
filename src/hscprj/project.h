@@ -42,9 +42,9 @@ typedef struct hscproject
                                  * hsc-process to it */
 
     /* callbacks */
-      VOID(*CB_msg_unknown_id) (struct hscproject * hp,
+      void(*CB_msg_unknown_id) (struct hscproject * hp,
                                 STRPTR document, STRPTR id);
-      VOID(*CB_msg_corrupt_pf) (struct hscproject * hp, STRPTR reason);
+      void(*CB_msg_corrupt_pf) (struct hscproject * hp, STRPTR reason);
 }
 HSCPRJ;
 
@@ -55,8 +55,8 @@ HSCPRJ;
 
 extern int check_document_id(HSCPRJ * hp, STRPTR docname, STRPTR id);
 
-extern HSCPRJ *new_project( VOID );
-extern VOID del_project(HSCPRJ *hp);
+extern HSCPRJ *new_project( void );
+extern void del_project(HSCPRJ *hp);
 
 extern BOOL hsc_project_read_data(HSCPRJ * hp, INFILE * inpf);
 extern BOOL hsc_project_write_data(HSCPRJ * hp, STRPTR project_fname, BOOL force);

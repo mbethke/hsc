@@ -94,7 +94,7 @@ typedef enum {OP_NONE=0, OP_EQ, OP_NEQ, OP_CEQ,
  * forward references
  */
 STRPTR eval_expression(HSCPRC * hp, HSCATTR * dest, STRPTR endstr);
-static VOID check_integer(HSCPRC * hp, HSCATTR * dest, STRPTR value);
+static void check_integer(HSCPRC * hp, HSCATTR * dest, STRPTR value);
 
 /*
  * 
@@ -105,7 +105,7 @@ static VOID check_integer(HSCPRC * hp, HSCATTR * dest, STRPTR value);
 /*
  * err_op: unknown binary operator
  */
-static VOID err_op(HSCPRC * hp, STRPTR opstr) {
+static void err_op(HSCPRC * hp, STRPTR opstr) {
    hsc_message(hp, MSG_UNKN_BINOP, "unknown binary operator %q", opstr);
 }
 
@@ -120,7 +120,7 @@ static BOOL eval_boolstr(STRPTR s) {
 }
 
 /* check for empty brackets (after GetTime/GetGmTime) */
-static VOID check_brackets(HSCPRC * hp) {
+static void check_brackets(HSCPRC * hp) {
    if (parse_wd(hp, "("))
       parse_wd(hp, ")");
 }
@@ -396,7 +396,7 @@ STRPTR quotestr(int quote) {
  * choose quote to be used for attr, depending on
  * hp->quotemode and quotes used inside the value
  */
-VOID choose_quote(HSCPRC * hp, HSCATTR * attr) {
+void choose_quote(HSCPRC * hp, HSCATTR * attr) {
    int quote = attr->quote;
    LONG qm = hp->quotemode;     /* lazy.. */
    BOOL single_quote = FALSE;
@@ -1067,7 +1067,7 @@ static BOOL process_comparison_op(HSCPRC * hp, HSCATTR * dest, BYTE op, STRPTR s
 /*
  * process_op
  */
-static VOID process_op(HSCPRC * hp, HSCATTR * dest, BYTE op, STRPTR str1, STRPTR str2) {
+static void process_op(HSCPRC * hp, HSCATTR * dest, BYTE op, STRPTR str1, STRPTR str2) {
    EXPSTR *result = init_estr(40);
    BOOL result_set = FALSE;
 
@@ -1293,7 +1293,7 @@ STRPTR eval_attrref(HSCPRC * hp, HSCATTR * destattr) {
 /*
  * check_color - check if a color constant is legal
  */
-static VOID check_color(HSCPRC * hp, HSCATTR * dest, STRPTR value) {
+static void check_color(HSCPRC * hp, HSCATTR * dest, STRPTR value) {
    BOOL ok = FALSE;
    size_t color_len = strlen("#rrggbb");
 
@@ -1328,7 +1328,7 @@ static VOID check_color(HSCPRC * hp, HSCATTR * dest, STRPTR value) {
 /*
  * check_integer - check if a integer constant is legal
  */
-static VOID check_integer(HSCPRC * hp, HSCATTR * dest, STRPTR value) {
+static void check_integer(HSCPRC * hp, HSCATTR * dest, STRPTR value) {
    BOOL ok = FALSE;
    int i = 0;
 

@@ -49,7 +49,7 @@
 /*
  * strcat_flag
  */
-static VOID strcat_flag(STRPTR s, struct arginfo *ai, ULONG chk_flag, char ch)
+static void strcat_flag(STRPTR s, struct arginfo *ai, ULONG chk_flag, char ch)
 {
     char flag[3] = "/x";
 

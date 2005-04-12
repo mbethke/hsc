@@ -61,7 +61,7 @@ static STRARR timebuf[TIMEBUFSIZE];
  *
  * write ids to file
  */
-static VOID append_ulong(EXPSTR * dest, ULONG num)
+static void append_ulong(EXPSTR * dest, ULONG num)
 {
     STRARR lenbuf[20];
 
@@ -69,13 +69,13 @@ static VOID append_ulong(EXPSTR * dest, ULONG num)
     app_estr(dest, lenbuf);
 }
 
-static VOID append_string(EXPSTR * dest, STRPTR s)
+static void append_string(EXPSTR * dest, STRPTR s)
 {
 /*    append_ulong(dest, (ULONG) strlen(s)); */
     app_estr(dest, s);
 }
 
-static VOID append_caller(EXPSTR * dest, CALLER * caller)
+static void append_caller(EXPSTR * dest, CALLER * caller)
 {
 #if 0
     if (caller)
@@ -88,7 +88,7 @@ static VOID append_caller(EXPSTR * dest, CALLER * caller)
 #endif
 }
 
-static VOID append_docname(EXPSTR * prjstr, STRPTR docname)
+static void append_docname(EXPSTR * prjstr, STRPTR docname)
 {
     app_estr(prjstr, LINE_DOCUMENT_STR);
     app_estr(prjstr, " ");
@@ -96,7 +96,7 @@ static VOID append_docname(EXPSTR * prjstr, STRPTR docname)
     app_estr(prjstr, "\n");
 }
 
-static VOID append_sourcename(EXPSTR * prjstr, STRPTR sourcename)
+static void append_sourcename(EXPSTR * prjstr, STRPTR sourcename)
 {
     if (sourcename)
     {
@@ -107,7 +107,7 @@ static VOID append_sourcename(EXPSTR * prjstr, STRPTR sourcename)
     }
 }
 
-static VOID append_title(EXPSTR * prjstr, STRPTR title)
+static void append_title(EXPSTR * prjstr, STRPTR title)
 {
     if (title)
     {
@@ -119,7 +119,7 @@ static VOID append_title(EXPSTR * prjstr, STRPTR title)
 }
 
 #if 0
-static VOID append_id(EXPSTR * prjstr, STRPTR id)
+static void append_id(EXPSTR * prjstr, STRPTR id)
 {
     app_estr(prjstr, LINE_ID_STR);
     app_estr(prjstr, " ");
@@ -128,7 +128,7 @@ static VOID append_id(EXPSTR * prjstr, STRPTR id)
 }
 #endif
 
-static VOID append_include(EXPSTR * prjstr, HSCINC * include)
+static void append_include(EXPSTR * prjstr, HSCINC * include)
 {
     app_estr(prjstr, LINE_INCLUDE_STR);
     app_estr(prjstr, " ");
@@ -141,7 +141,7 @@ static VOID append_include(EXPSTR * prjstr, HSCINC * include)
 }
 
 #if 0
-static VOID append_reference(EXPSTR * prjstr, HSCREF * reference)
+static void append_reference(EXPSTR * prjstr, HSCREF * reference)
 {
 #if 1
     app_estr(prjstr, LINE_REFERENCE_STR);
@@ -155,7 +155,7 @@ static VOID append_reference(EXPSTR * prjstr, HSCREF * reference)
 }
 #endif
 
-static VOID append_iddef(EXPSTR * prjstr, HSCIDD * iddef)
+static void append_iddef(EXPSTR * prjstr, HSCIDD * iddef)
 {
     app_estr(prjstr, LINE_ID_STR);
     app_estr(prjstr, " ");
@@ -167,7 +167,7 @@ static VOID append_iddef(EXPSTR * prjstr, HSCIDD * iddef)
 /*
  * append groups of data
  */
-static VOID append_header(EXPSTR * prjstr)
+static void append_header(EXPSTR * prjstr)
 {
     time_t now = time(NULL);    /* get current time */
 
@@ -190,7 +190,7 @@ static VOID append_header(EXPSTR * prjstr)
 }
 
 /* append included files */
-static VOID append_doc_includes(EXPSTR * prjstr, DLLIST * inclist)
+static void append_doc_includes(EXPSTR * prjstr, DLLIST * inclist)
 {
     DLNODE *nd = dll_first(inclist);
     while (nd)
@@ -202,7 +202,7 @@ static VOID append_doc_includes(EXPSTR * prjstr, DLLIST * inclist)
 
 /* append other documents referered */
 #if 0
-static VOID append_doc_references(EXPSTR * prjstr, DLLIST * reflist)
+static void append_doc_references(EXPSTR * prjstr, DLLIST * reflist)
 {
     DLNODE *nd = dll_first(reflist);
     while (nd)
@@ -214,7 +214,7 @@ static VOID append_doc_references(EXPSTR * prjstr, DLLIST * reflist)
 #endif
 
 /* append ids defined within documents */
-static VOID append_doc_iddefs(EXPSTR * prjstr, DLLIST * iddefs)
+static void append_doc_iddefs(EXPSTR * prjstr, DLLIST * iddefs)
 {
     DLNODE *nd = dll_first(iddefs);
     while (nd)
@@ -225,7 +225,7 @@ static VOID append_doc_iddefs(EXPSTR * prjstr, DLLIST * iddefs)
 }
 
 /* append all document-related data */
-static VOID append_document(EXPSTR * prjstr, HSCDOC * document)
+static void append_document(EXPSTR * prjstr, HSCDOC * document)
 {
     STRPTR docname = document->docname;
 

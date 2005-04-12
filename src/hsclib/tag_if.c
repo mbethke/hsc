@@ -41,7 +41,7 @@
 typedef BYTE if_t;
 
 /* error message */
-static VOID message_unma_else(HSCPRC * hp, HSCTAG * tag)
+static void message_unma_else(HSCPRC * hp, HSCTAG * tag)
 {
     hsc_message(hp, MSG_UNMA_ELSE,
                 "unmatched conditional %T", tag);
@@ -68,7 +68,7 @@ static if_t bool2ift(BOOL bval)
  */
 
 /* is_push: add a new value to the if-stack */
-static VOID is_push(HSCPRC * hp, if_t value)
+static void is_push(HSCPRC * hp, if_t value)
 {
     app_estrch(hp->if_stack, (char) value);
 
@@ -151,7 +151,7 @@ static BOOL is_empty(HSCPRC * hp)
 /*
  * del_select_stack_node
  */
-VOID del_select_stack_node(APTR data)
+void del_select_stack_node(APTR data)
 {
     STRPTR s = (STRPTR) data;
     ufreestr(s);
@@ -188,7 +188,7 @@ int cmp_select_stack_node(APTR cmp_data, APTR lst_data)
 
 /* ss_push: add a new value to the if-stack */
 #if 0
-static VOID ss_push(HSCPRC * hp, STRPTR value)
+static void ss_push(HSCPRC * hp, STRPTR value)
 {
     app_dlnode(hp->select_stack, new_select_stack_node(value));
     DIF(fprintf(stderr, DHL "push select_stack: \"%s\"\n", value));
@@ -263,7 +263,7 @@ static BOOL ss_empty(HSCPRC * hp)
  *
  * remove </$IF> from closing tag stack
  */
-static VOID remove_cif_tag(HSCPRC * hp)
+static void remove_cif_tag(HSCPRC * hp)
 {
     HSCTAG endiftag;            /* artificial if-tag to remove */
 
@@ -323,7 +323,7 @@ static if_t get_condition(HSCPRC * hp)
  * also handle recursive IFs
  *
  */
-static VOID skip_until_conditional(HSCPRC * hp)
+static void skip_until_conditional(HSCPRC * hp)
 {
     EXPSTR *s = init_estr(32);
     /* skip until next conditional tag is found; this specific tag

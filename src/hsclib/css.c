@@ -82,7 +82,7 @@ HSCSTYLE *new_styleattr(CONSTRPTR name, CONSTRPTR value)
  *
  * delete style element
  */
-VOID del_styleattr(APTR data)
+void del_styleattr(APTR data)
 {
 #if DEBUG_ATTR
    fprintf(stderr, DHL "   del_styleattr %s (mci=%d)\n",

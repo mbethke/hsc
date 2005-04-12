@@ -24,5 +24,5 @@
  */
 
 BOOL args_ok(HSCPRC * hp, int argc, char *argv[]);
-VOID cleanup_hsc_args(VOID);
+void cleanup_hsc_args(void);
 

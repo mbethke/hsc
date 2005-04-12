@@ -658,7 +658,7 @@ static BOOL set_tag_arg(HSCPRC * hp, DLLIST * varlist, STRPTR varname, STRPTR ta
  * append attributes which have not been set by user but contain
  * a default value to the hp->tag_attr_str
  */
-static VOID set_tag_defaults(HSCPRC * hp, HSCTAG * tag)
+static void set_tag_defaults(HSCPRC * hp, HSCTAG * tag)
 {
    DLNODE *nd = dll_first(tag->attr);
 

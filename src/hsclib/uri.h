@@ -44,13 +44,13 @@ URIKIND;                        /* uri kinds */
  */
 #ifndef NOEXTERN_HSCLIB_URI_H
 
-extern VOID conv_path2uri(EXPSTR * dest, STRPTR path);
-extern VOID conv_uri2path(EXPSTR * dest, STRPTR uri, BOOL weenix);
+extern void conv_path2uri(EXPSTR * dest, STRPTR path);
+extern void conv_uri2path(EXPSTR * dest, STRPTR uri, BOOL weenix);
 
-extern VOID conv_hscuri2file(HSCPRC * hp, EXPSTR * dest_fname, STRPTR uri);
-extern VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_fname, STRPTR uri);
+extern void conv_hscuri2file(HSCPRC * hp, EXPSTR * dest_fname, STRPTR uri);
+extern void conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_fname, STRPTR uri);
 
-extern VOID parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri);
+extern void parse_uri(HSCPRC * hp, EXPSTR * dest_uri, STRPTR uri);
 extern URIKIND uri_kind(STRPTR uri);
 
 #endif /* NOEXTERN_HSCLIB_URI_H */

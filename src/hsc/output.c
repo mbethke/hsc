@@ -44,7 +44,7 @@ static DLLIST *outlist = NULL;
 /*
  * del_outstr
  */
-static VOID del_outstr(APTR data)
+static void del_outstr(APTR data)
 {
     del_estr((EXPSTR *) data);
 }
@@ -73,7 +73,7 @@ BOOL init_output(HSCPRC * hp)
  * free output string
  *
  */
-VOID cleanup_output(VOID)
+void cleanup_output(void)
 {
     del_dllist(outlist);
 }
@@ -179,7 +179,7 @@ BOOL write_output(HSCPRC * hp)
  *
  * append text to output string
  */
-VOID append_output(STRPTR text)
+void append_output(STRPTR text)
 {
     EXPSTR *outstr = (EXPSTR *) dln_data(dll_last(outlist));
 

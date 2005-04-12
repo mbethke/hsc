@@ -112,10 +112,10 @@ extern STRPTR msg_browser;
 extern EXPSTR *msgbuf;
 extern int return_code;
 
-extern BOOL init_global(VOID);
-extern VOID cleanup_global(VOID);
+extern BOOL init_global(void);
+extern void cleanup_global(void);
 
-extern STRPTR get_outfilename(VOID);
+extern STRPTR get_outfilename(void);
 
 #endif /* NOEXTERN_HSC_GLOBAL_H */
 

@@ -69,7 +69,7 @@ static ARGFILE *argf = NULL;
 /*
  * cleanup_hsc_args: free local resources
  */
-VOID cleanup_hsc_args(VOID)
+void cleanup_hsc_args(void)
 {
     del_argfile(argf);
     del_estr(fileattr_str);
@@ -161,7 +161,8 @@ static char *hscopts_to_getopt_short(const struct hscoption *o, int nopts)
    for(i=0; i<nopts; ++i)
       if('\0' != o[i].sopt)
          ++n;
-   sop = tsop = umalloc((3*n+1) * sizeof(*sop));
+   sop = tsop = umalloc(1 + (3*n+1) * sizeof(*sop));
+   *tsop++ = '-';
    for(i=0; i<nopts; ++i) {
       if('\0' != o[i].sopt) {
          *tsop++ = o[i].sopt;
@@ -247,9 +248,15 @@ static BOOL verify_option(HSCPRC *hp, const struct hscoption *o, char *val)
    return ok;
 }
 
-void process_short_option(HSCPRC *hp, char c)
+void process_short_option(HSCPRC *hp, char c, const char *val)
 {
    switch(c) {
+      case 1   :
+         /* default for non-options */
+         app_dlnode(incfile,val);
+         break;
+      case 'f' :
+         break;
       case 'o' :
          break;
       case 'p' :
@@ -287,7 +294,7 @@ void process_short_option(HSCPRC *hp, char c)
    }
 }
 
-void process_long_option(HSCPRC *hp, const char *s)
+void process_long_option(HSCPRC *hp, const char *s, const char *val)
 {
    static const struct BOOLOPT { const char *s; void (*v)(HSCPRC*,BOOL); } boolopts[] = {
       {"rplcent",&hsc_set_rplc_ent},
@@ -316,9 +323,18 @@ void process_long_option(HSCPRC *hp, const char *s)
       */
 }
 
+/*
+ * args_ok
+ *
+ * prepare args, check & parse user args, display error and
+ * help message if neccessary
+ *
+ * result: TRUE if all args ok
+ */
 BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
 {
    static const struct hscoption opts[] = {
+      {"from",        "Input file(s)",                                             "FILE",  NULL,ARG_OBL, OPT_TXT, 'f'},
       {"to",          "Output file",                                               "FILE",  NULL,ARG_OBL, OPT_TXT, 'o'},
       {"prj",         "Project file",                                              "FILE",  NULL,ARG_OBL, OPT_TXT, 'p'},
       {"syntax",      "Syntax definition file (default: hsc.prefs)",               "FILE",  NULL,ARG_OBL, OPT_TXT, 's'},
@@ -360,29 +376,34 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
    int nopts=sizeof(opts)/sizeof(opts[0]);
    struct option *lop = hscopts_to_getopt_long(opts,nopts);
    char *sop = hscopts_to_getopt_short(opts,nopts);
+   EXPSTR *destdir = init_estr(32);       /* destination dir */
+   EXPSTR *rel_destdir = init_estr(32);   /* relative destination dir */
+   EXPSTR *kack_name = init_estr(0);      /* temp. str for outfilename */
+   LONG maximum_number_of_errors = strtol(DEFAULT_MAXERR, (char **) NULL, 10);
+   LONG maximum_number_of_messages = strtol(DEFAULT_MAXMSG, (char **) NULL, 10);
+
+   arg_hp = hp;
+   arg_mode_CB(DEFAULT_MODE_STR);
 
    while(1) {
       int opt_index;
 
       c = getopt_long(argc, argv, sop, lop, &opt_index);
-      if(-1 == c)
-         break;
+      if(-1 == c) break;
 
       if(c) {
          if(!verify_option(hp, find_short_option(hp,opts,nopts,c), optarg))
             return FALSE;
-         process_short_option(hp, c);
+         process_short_option(hp, c, optarg);
       } else {
          if(!verify_option(hp, find_long_option(hp,opts,nopts,lop[opt_index].name), optarg))
             return FALSE;
-         process_long_option(hp, lop[opt_index].name);
+         process_long_option(hp, lop[opt_index].name, optarg);
          break;
       }
    }
-   print_help(opts,nopts);
-
    ufree(lop);
    ufree(sop);
-   return FALSE;
+   return TRUE;
 }
 

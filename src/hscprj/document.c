@@ -50,7 +50,7 @@
  */
 
 /* del_document: remove document */
-VOID del_document(APTR data)
+void del_document(APTR data)
 {
     if (data)
     {
@@ -151,7 +151,7 @@ CALLER *new_caller(STRPTR name, ULONG posx, ULONG posy)
     return (caller);
 }
 
-VOID del_caller(APTR data)
+void del_caller(APTR data)
 {
     if (data)
     {
@@ -181,7 +181,7 @@ CALLER *fpos2caller(INFILEPOS * fpos)
  */
 
 /* del_reference: remove a reference */
-VOID del_reference(APTR data)
+void del_reference(APTR data)
 {
     HSCREF *ref = (HSCREF *) data;
 
@@ -263,7 +263,7 @@ HSCREF *app_reference(HSCDOC * document, STRPTR ref_name)
  */
 
 /* del_include: remove a include */
-VOID del_include(APTR data)
+void del_include(APTR data)
 {
     HSCINC *inc = (HSCINC *) data;
 
@@ -335,7 +335,7 @@ HSCINC *app_include(HSCDOC * document, STRPTR inc_name)
  */
 
 /* del_iddef: remove an id-definition */
-VOID del_iddef(APTR data)
+void del_iddef(APTR data)
 {
     HSCIDD *iddef = (HSCIDD *) data;
 
@@ -363,7 +363,7 @@ HSCIDD *new_iddef(STRPTR newname)
 /*
  * debugging printf functions
  */
-VOID prt_iddef(FILE * stream, APTR data)
+void prt_iddef(FILE * stream, APTR data)
 {
     HSCIDD *iddef = (HSCIDD *) data;
     INFILEPOS *fpos = iddef->fpos;

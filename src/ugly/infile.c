@@ -79,7 +79,7 @@ STRPTR FNAME_STDIN = "STDIN";   /* filename for stdin (CONSTANT) */
 
 /* forward references */
 BOOL infget_skws(INFILE * inpf);
-static VOID del_infilepos_nddata(APTR data);
+static void del_infilepos_nddata(APTR data);
 
 /*
  *
@@ -124,7 +124,7 @@ static BOOL default_normch(int ch)
  * "normal" position in input file
  *
  */
-static VOID update_wpos(INFILE * inpf)
+static void update_wpos(INFILE * inpf)
 {
     inpf->wpos_x = inpf->pos_x;
     inpf->wpos_y = inpf->pos_y;
@@ -142,7 +142,7 @@ static VOID update_wpos(INFILE * inpf)
  * reset a INFILE struct (set all items to NULL)
  * (only called by con/destructor)
  */
-static VOID reset_infile(INFILE * inpf)
+static void reset_infile(INFILE * inpf)
 {
     inpf->infile = NULL;
     inpf->filename = NULL;
@@ -170,7 +170,7 @@ static VOID reset_infile(INFILE * inpf)
 /*
  * remove INFILE structure
  */
-static VOID del_infile(INFILE * inpf)
+static void del_infile(INFILE * inpf)
 {
     if (inpf)
     {
@@ -1007,7 +1007,7 @@ int infgotoeol(INFILE * inpf)
 /*
  * del_infilepos_nddata
  */
-static VOID del_infilepos_nddata(APTR data)
+static void del_infilepos_nddata(APTR data)
 {
     INFILEPOS *pos = (INFILEPOS *) data;
 
@@ -1043,7 +1043,7 @@ static int cmp_posdata(APTR data1, APTR data2)
 /*
  * del_infilepos
  */
-VOID del_infilepos(INFILEPOS * pos)
+void del_infilepos(INFILEPOS * pos)
 {
     if (pos)
     {
@@ -1077,7 +1077,7 @@ VOID del_infilepos(INFILEPOS * pos)
 /*
  * del_all_infilepos
  */
-VOID del_all_infilepos(INFILE * inpf)
+void del_all_infilepos(INFILE * inpf)
 {
     del_all_dlnodes(inpf->pos_list);
 }

@@ -28,7 +28,7 @@
 #define HSCPRJ_LICENSE_H
 
 extern STRPTR hsc_license;
-extern VOID show_license(VOID);
+extern void show_license(void);
 
 #endif /* HSCPRJ_LICENSE_H */
 

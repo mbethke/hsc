@@ -42,7 +42,7 @@
 #endif
 
 /* hsc_msg_unknown_id: warning about unknown id-refrence */
-VOID hsc_msg_unknown_id(HSCPRC * hp, STRPTR filename, STRPTR id)
+void hsc_msg_unknown_id(HSCPRC * hp, STRPTR filename, STRPTR id)
 {
     if (filename)
         hsc_message(hp, MSG_UNKN_ID, "unknown id `%s#%s'",
@@ -67,7 +67,7 @@ VOID hsc_msg_unknown_id(HSCPRC * hp, STRPTR filename, STRPTR id)
  */
 
 /* del_idref: remove referenced id */
-VOID del_idref(APTR data)
+void del_idref(APTR data)
 {
     IDREF *idref = (IDREF *) data;
 
@@ -87,7 +87,7 @@ static IDREF *new_idref(STRPTR id, INFILEPOS * fpos)
     return (newid);
 }
 
-VOID prt_idref(FILE * stream, APTR data)
+void prt_idref(FILE * stream, APTR data)
 {
     IDREF *idref = (IDREF *) data;
     INFILEPOS *fpos = idref->fpos;
@@ -146,7 +146,7 @@ BOOL add_local_iddef(HSCPRC * hp, STRPTR id)
  * append id to idref-list so it as checked when
  * check_all_local_idref() is called
  */
-VOID add_local_idref(HSCPRC * hp, STRPTR id)
+void add_local_idref(HSCPRC * hp, STRPTR id)
 {
     INFILEPOS *fpos = new_infilepos(hp->inpf);
 

@@ -60,7 +60,7 @@ HSCENT *new_hscent(STRPTR newid) {
 /*
  * del_entity
  */
-VOID del_entity(APTR data) {
+void del_entity(APTR data) {
     HSCENT *ent = (HSCENT*)data;
 
 #if DEBUG_ENTITY

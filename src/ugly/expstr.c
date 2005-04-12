@@ -468,7 +468,7 @@ EXPSTR *ugly_init_estr(size_t step_size)
 *   SYNOPSIS
 *       del_estr( string )
 *
-*       VOID * init_estr
+*       void * init_estr
 *            ( EXPSTR * string )
 *
 *   FUNCTION
@@ -486,7 +486,7 @@ EXPSTR *ugly_init_estr(size_t step_size)
 *
 ******************************************************************************
 */
-VOID del_estr(EXPSTR * es)
+void del_estr(EXPSTR * es)
 {
 #if DEBUG_UGLY_EXPSTR
     if (es)

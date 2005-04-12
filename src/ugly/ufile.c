@@ -75,9 +75,7 @@ BOOL fexists(STRPTR filename)
 {
     FILE *file = fopen(filename, "r");
     if (file)
-    {
         fclose(file);
-    }
     return ((BOOL) (file != NULL));
 }
 

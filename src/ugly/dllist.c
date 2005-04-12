@@ -158,7 +158,7 @@ void move_dlnode(DLLIST *dest, DLLIST *src, DLNODE *node)
  *
  * remove all nodes from a list
  */
-VOID del_all_dlnodes(DLLIST * list)
+void del_all_dlnodes(DLLIST * list)
 {
     while (list->first)
         del_dlnode(list, list->first);

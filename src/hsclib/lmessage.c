@@ -32,47 +32,47 @@
 #include "ugly/returncd.h"
 
 /* forward reference */
-static VOID handle_too_many_messages(HSCPRC * hp);
+static void handle_too_many_messages(HSCPRC * hp);
 
 /*
  * NOTE: see "hsclib/msgid.h" for message-ids and
  *       how a message-id is build.
  */
 
-static VOID msg_tag(EXPSTR * msgstr, CONSTRPTR tagname)
+static void msg_tag(EXPSTR * msgstr, CONSTRPTR tagname)
 {
     app_estr(msgstr, "tag <");
     app_estr(msgstr, tagname);
     app_estr(msgstr, ">");
 }
 
-static VOID msg_endtag(EXPSTR * msgstr, CONSTRPTR tagname)
+static void msg_endtag(EXPSTR * msgstr, CONSTRPTR tagname)
 {
     app_estr(msgstr, "end tag </");
     app_estr(msgstr, tagname);
     app_estr(msgstr, ">");
 }
 
-static VOID msg_attr(EXPSTR * msgstr, CONSTRPTR attrname)
+static void msg_attr(EXPSTR * msgstr, CONSTRPTR attrname)
 {
     app_estr(msgstr, "attribute ");
     app_estr(msgstr, attrname);
 }
 
-static VOID msg_lazy(EXPSTR * msgstr, CONSTRPTR lazy_name)
+static void msg_lazy(EXPSTR * msgstr, CONSTRPTR lazy_name)
 {
     app_estr(msgstr, "var-list ");
     app_estr(msgstr, lazy_name);
 }
 
-static VOID msg_entity(EXPSTR * msgstr, CONSTRPTR entname)
+static void msg_entity(EXPSTR * msgstr, CONSTRPTR entname)
 {
     app_estr(msgstr, "entity `");
     app_estr(msgstr, entname);
     app_estr(msgstr, "'");
 }
 
-static VOID msg_idname(EXPSTR * msgstr, CONSTRPTR idname)
+static void msg_idname(EXPSTR * msgstr, CONSTRPTR idname)
 {
     app_estr(msgstr, "id ");
     app_estr(msgstr, "\"#");
@@ -159,7 +159,7 @@ static BOOL really_display_message(HSCPRC * hp, HSCMSG_ID msg_id)
     return disp_msg;
 }
 
-VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...) {
+void hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...) {
     HSCMSG_CLASS msg_class = hsc_get_msg_class(hp, msg_id);
     HSCMSG_ID msg_id_unmasked = msg_id & MASK_MESSAGE;
     INFILE *msg_inpf = NULL;
@@ -405,7 +405,7 @@ VOID hsc_message(HSCPRC * hp, HSCMSG_ID msg_id, const char *format,...) {
 
 /* check if there are already too many errors and view an
  * fatal error "too many messages" */
-static VOID handle_too_many_messages(HSCPRC * hp)
+static void handle_too_many_messages(HSCPRC * hp)
 {
     if (hp->max_errors != MAXIMUM_MESSAGE_INFINITE)
         hp->max_errors -= 1;
@@ -422,7 +422,7 @@ static VOID handle_too_many_messages(HSCPRC * hp)
  *-------------------------------------
  */
 
-VOID hsc_msg_eof(HSCPRC * hp, STRPTR descr)
+void hsc_msg_eof(HSCPRC * hp, STRPTR descr)
 {
     STRPTR eoftxt = "unexpected end of context";
 
@@ -432,12 +432,12 @@ VOID hsc_msg_eof(HSCPRC * hp, STRPTR descr)
         hsc_message(hp, MSG_UNEX_EOF, "%s", eoftxt);
 }
 
-VOID hsc_msg_illg_whtspc(HSCPRC * hp)
+void hsc_msg_illg_whtspc(HSCPRC * hp)
 {
     hsc_message(hp, MSG_ILLG_WHTSPC, "illegal white space");
 }
 
-VOID hsc_msg_stripped_tag(HSCPRC * hp, HSCTAG * tag, STRPTR why)
+void hsc_msg_stripped_tag(HSCPRC * hp, HSCTAG * tag, STRPTR why)
 {
     if (why)
         hsc_message(hp, MSG_TAG_STRIPPED,
@@ -447,39 +447,39 @@ VOID hsc_msg_stripped_tag(HSCPRC * hp, HSCTAG * tag, STRPTR why)
                     "stripped %T", tag);
 }
 
-VOID hsc_msg_unkn_attr_ref(HSCPRC * hp, STRPTR attr)
+void hsc_msg_unkn_attr_ref(HSCPRC * hp, STRPTR attr)
 {
     hsc_message(hp, MSG_UNKN_ATTR_REF,
                 "unknown %a", attr);
 }
 
-VOID hsc_msg_unkn_attr_tag(HSCPRC * hp, STRPTR attr, STRPTR tag)
+void hsc_msg_unkn_attr_tag(HSCPRC * hp, STRPTR attr, STRPTR tag)
 {
     hsc_message(hp, MSG_UNKN_ATTR_TAG,
                 "unknown %a for %t", attr, tag);
 }
 
-VOID hsc_msg_unkn_attr_macro(HSCPRC * hp, STRPTR attr, STRPTR macro)
+void hsc_msg_unkn_attr_macro(HSCPRC * hp, STRPTR attr, STRPTR macro)
 {
     hsc_message(hp, MSG_UNKN_ATTR_MACRO,
                 "unknown %a for %t", attr, macro);
 }
 
-VOID hsc_msg_noinput(HSCPRC * hp, STRPTR filename)
+void hsc_msg_noinput(HSCPRC * hp, STRPTR filename)
 {
     hsc_message(hp, MSG_NO_INPUT,
                 "can not open %q for input: %s",
                 filename, strerror(errno));
 }
 
-VOID hsc_msg_read_error(HSCPRC * hp, STRPTR filename)
+void hsc_msg_read_error(HSCPRC * hp, STRPTR filename)
 {
     hsc_message(hp, MSG_READ_ERROR,
                 "error reading %s: %s",
                 filename, strerror(errno));
 }
 
-VOID hsc_msg_nouri(HSCPRC * hp, STRPTR filename, STRPTR uriname, STRPTR note)
+void hsc_msg_nouri(HSCPRC * hp, STRPTR filename, STRPTR uriname, STRPTR note)
 {
     if (note) {
         hsc_message(hp, MSG_NO_URIPATH,

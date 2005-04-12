@@ -46,7 +46,7 @@
  * convert a path for local (system-dependant)
  * file system to URI
  */
-VOID conv_path2uri(EXPSTR * dest, STRPTR path)
+void conv_path2uri(EXPSTR * dest, STRPTR path)
 {
     clr_estr(dest);
 
@@ -82,7 +82,7 @@ VOID conv_path2uri(EXPSTR * dest, STRPTR path)
  * convert a uri to a path for local (system-dependant)
  * file system
  */
-VOID conv_uri2path(EXPSTR * dest, STRPTR uri, BOOL weenix)
+void conv_uri2path(EXPSTR * dest, STRPTR uri, BOOL weenix)
 {
     clr_estr(dest);
 
@@ -155,7 +155,7 @@ URIKIND uri_kind(CONSTRPTR uri)
  *
  * TODO: optimize or rewrite this mess
  */
-VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_fname, STRPTR uri)
+void conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_fname, STRPTR uri)
 {
    EXPSTR *rel_path = init_estr(32);   /* relative path */
    EXPSTR *turi = init_estr(32);   /* modifiable URI */
@@ -325,7 +325,7 @@ VOID conv_hscuri2fileNuri(HSCPRC * hp, EXPSTR * dest_uri, EXPSTR * dest_fname, S
    del_estr(rel_path);
 }
 
-VOID conv_hscuri2file(HSCPRC * hp, EXPSTR * dest_fname, STRPTR uri)
+void conv_hscuri2file(HSCPRC * hp, EXPSTR * dest_fname, STRPTR uri)
 {
    EXPSTR *dest_uri = init_estr(64);
    conv_hscuri2fileNuri(hp, dest_uri, dest_fname, uri);
@@ -341,7 +341,7 @@ VOID conv_hscuri2file(HSCPRC * hp, EXPSTR * dest_fname, STRPTR uri)
  *
  * uri = "rsrc_type://host.domain:port/pathname#id"
  */
-VOID parse_uri(HSCPRC * hp, EXPSTR *dest_uri, STRPTR uri)
+void parse_uri(HSCPRC * hp, EXPSTR *dest_uri, STRPTR uri)
 {
    /* sample URI could be:
     * http://www.host.at:80/file.html#name

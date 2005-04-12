@@ -36,14 +36,14 @@
 
 /* scope rules support */
 extern LONG get_mci( HSCPRC *hp );
-extern VOID unget_mci( HSCPRC *hp );
+extern void unget_mci( HSCPRC *hp );
 extern LONG get_current_mci( HSCPRC *hp );
 
 /* attribute list manipulation */
 extern BOOL copy_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci);
 extern void move_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci);
 extern BOOL set_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci);
-extern VOID remove_local_varlist(DLLIST * varlist, ULONG mci);
+extern void remove_local_varlist(DLLIST * varlist, ULONG mci);
 extern BOOL check_varlist(HSCPRC * hp, DLLIST * varlist);
 
 /* define attribute */

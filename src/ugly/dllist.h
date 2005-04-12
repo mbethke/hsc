@@ -96,7 +96,7 @@ extern DLNODE *add_dlnode(DLLIST * list, APTR data);
 extern APTR detach_dlnode(DLLIST * list, DLNODE * node);
 extern void del_dlnode(DLLIST * list, DLNODE * node);
 void move_dlnode(DLLIST *dest, DLLIST *src, DLNODE *node);
-extern VOID del_all_dlnodes(DLLIST * list);
+extern void del_all_dlnodes(DLLIST * list);
 extern void del_dllist(DLLIST * list);
 
 extern BOOL empty_dllist(DLLIST * list);

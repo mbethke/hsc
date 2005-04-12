@@ -61,7 +61,7 @@ STRARR misc_buffer[6000];       /* misc. buffer (must be >5000) */
  *
  * init global data
  */
-BOOL init_global(VOID)
+BOOL init_global(void)
 {
     BOOL ok = TRUE;
 
@@ -81,7 +81,7 @@ BOOL init_global(VOID)
  *
  * cleanup global data
  */
-VOID cleanup_global(VOID)
+void cleanup_global(void)
 {
     del_estr(inpfilename);
     del_estr(outfilename);
@@ -95,7 +95,7 @@ VOID cleanup_global(VOID)
  *
  * return output filename or `<stdout>'
  */
-STRPTR get_outfilename(VOID)
+STRPTR get_outfilename(void)
 {
     if (outfilename)
         return (estr2str(outfilename));

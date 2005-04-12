@@ -116,7 +116,7 @@ LONG get_mci(HSCPRC * hp)
  * unget_mci
  *
  */
-VOID unget_mci(HSCPRC * hp)
+void unget_mci(HSCPRC * hp)
 {
    hp->tag_call_id--;
    if (hp->tag_call_id < 0)
@@ -594,7 +594,7 @@ BOOL set_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci)
 /*
  * remove_local_varlist
  */
-VOID remove_local_varlist(DLLIST * varlist, ULONG mci)
+void remove_local_varlist(DLLIST * varlist, ULONG mci)
 {
    DLNODE *nd = varlist->first;
    

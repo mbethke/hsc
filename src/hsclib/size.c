@@ -81,7 +81,7 @@ static const unsigned char id_PNG[] =
  *
  * display message that image is corrupt
  */
-static VOID hsc_msg_img_corrupt(HSCPRC * hp, STRPTR name, STRPTR cause)
+static void hsc_msg_img_corrupt(HSCPRC * hp, STRPTR name, STRPTR cause)
 {
     hsc_message(hp, MSG_IMG_CORRUPT, "image %q is corrupt (%s)",name,cause);
 }
@@ -94,7 +94,7 @@ static VOID hsc_msg_img_corrupt(HSCPRC * hp, STRPTR name, STRPTR cause)
  * just compare the old and new value and warn if they
  * differ
  */
-static VOID try_setattr(HSCPRC * hp, HSCVAR * attr, ULONG value)
+static void try_setattr(HSCPRC * hp, HSCVAR * attr, ULONG value)
 {
     if (attr)
     {

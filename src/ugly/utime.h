@@ -41,7 +41,7 @@
 
 #ifndef NOEXTERN_UGLY_UTIME_H
 
-extern VOID clrtime(struct tm *time);
+extern void clrtime(struct tm *time);
 extern BOOL time2estr(EXPSTR * dest, struct tm *time);
 extern BOOL str2time(struct tm *time, STRPTR timestr);
 
