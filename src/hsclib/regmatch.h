@@ -31,14 +31,14 @@
 #include "hsclib/hscprc.h"
 
 #define hscregfree(r) regfree(r)
-#define hscregfreeall(r) regfree(r); ufree(r)
+#define hscregfreeall(r) if((r)->fastmap) ufree((r)->fastmap); regfree(r); ufree(r)
 
 /* a simple check for match, compiling the pattern on the fly */
 extern BOOL hscregmatch(HSCPRC *hp, CONSTRPTR s, CONSTRPTR p, BOOL nocase);
 /* a simple check for match using a precompiled regexp */
 extern BOOL hscregmatch_pc(CONSTRPTR s, CONSTRPTR p, regex_t *re);
 /* precompile a pattern to an existing regex_t */
-extern BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR p, BOOL nocase, BOOL fastmap);
+extern BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR p, BOOL nocase,  char *fastmap);
 /* precompile a pattern to a new regex_t */
 extern regex_t *hscregcomp(HSCPRC *hp, CONSTRPTR p, BOOL nocase, BOOL fastmap);
 

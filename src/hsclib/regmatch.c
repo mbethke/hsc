@@ -36,7 +36,6 @@ BOOL hscregmatch_pc(CONSTRPTR s, CONSTRPTR p, regex_t *re)
    int regerr;
    const int slen = strlen(s);
 
-   re_set_syntax(RE_SYNTAX_POSIX_EGREP);
    if(0 == (regerr = re_search(re,s,slen,0,slen,NULL)))
       return TRUE;
    if(-2 == regerr) {
@@ -50,7 +49,7 @@ BOOL hscregmatch(HSCPRC *hp, CONSTRPTR s, CONSTRPTR p, BOOL nocase)
 {
    BOOL ret = FALSE;
    regex_t re;
-   if(hscregcomp_re(hp,&re,p,nocase,FALSE)) {
+   if(hscregcomp_re(hp,&re,p,nocase,NULL)) {
       ret = hscregmatch_pc(s,p,&re);
       regfree(&re);
    }
@@ -58,7 +57,7 @@ BOOL hscregmatch(HSCPRC *hp, CONSTRPTR s, CONSTRPTR p, BOOL nocase)
 }
 
 /* precompile a pattern to an existing regex_t */
-BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR p, BOOL nocase, BOOL fastmap)
+BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR p, BOOL nocase, char *fastmap)
 {
    static BOOL lcmap_init = TRUE;
    const char *regerrs;
@@ -69,12 +68,13 @@ BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR p, BOOL nocase, BOOL fastm
       for(i=0; i<sizeof(lowercasemap); ++i)
          lowercasemap[i] = toupper((char)i);
       lcmap_init = FALSE;
+      re_set_syntax(RE_SYNTAX_POSIX_EGREP);
    }
 
    /* initialize regex structure before compiling */
    re->buffer = NULL;
    re->allocated = 0;
-   re->fastmap = NULL;
+   re->fastmap = fastmap;
    re->translate = nocase ? lowercasemap : NULL;
    re->no_sub = 1;
    
@@ -85,19 +85,24 @@ BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR p, BOOL nocase, BOOL fastm
       }
       return FALSE;
    }
+   if(fastmap && (-2 == re_compile_fastmap(re))) {
+      regfree(re);
+      fprintf(stderr,"** re_compile_fastmap(): internal error\n");
+      return FALSE;
+   }
    return TRUE;
 }
 
 /* precompile a pattern to a new regex_t */
 regex_t *hscregcomp(HSCPRC *hp, CONSTRPTR p, BOOL nocase, BOOL fastmap)
 {
+   char *fmap = fastmap ? umalloc(256) : NULL;
    regex_t *re = umalloc(sizeof(regex_t));
-
-   if(re) {
-      if(!hscregcomp_re(hp,re,p,nocase,fastmap)) {
-         ufree(re);
-         re = NULL;
-      }
+   
+   if(!hscregcomp_re(hp,re,p,nocase,fmap)) {
+      ufree(re);
+      if(fmap) ufree(fmap);
+      re = NULL;
    }
    return re;
 }
