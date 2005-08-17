@@ -82,7 +82,7 @@ static ARGFILE *argf = NULL;
 /*
  * cleanup_hsc_args: free local resources
  */
-VOID cleanup_hsc_args(VOID)
+void cleanup_hsc_args(VOID)
 {
     del_argfile(argf);
     del_estr(fileattr_str);
@@ -307,7 +307,7 @@ static STRPTR arg_status_CB(STRPTR arg)
  *
  * set and define attributes for destination uri
  */
-static VOID set_dest_attribs(HSCPRC * hp,
+static void set_dest_attribs(HSCPRC * hp,
                 STRPTR destpath, STRPTR reldestpath, STRPTR destname)
 {
     set_estr(fileattr_str, "<$define HSC.DOCUMENT.NAME:string/c=\"");
@@ -328,7 +328,7 @@ static VOID set_dest_attribs(HSCPRC * hp,
 }
 
 /* set_source_attribs */
-static VOID set_source_attribs(HSCPRC * hp, STRPTR sourcepath, STRPTR sourcename)
+static void set_source_attribs(HSCPRC * hp, STRPTR sourcepath, STRPTR sourcename)
 {
     app_estr(fileattr_str, "<$define HSC.SOURCE.NAME:string/c=\"");
     if (sourcename)
@@ -345,7 +345,7 @@ static VOID set_source_attribs(HSCPRC * hp, STRPTR sourcepath, STRPTR sourcename
 }
 
 /* set global attributes to query HSC options from source */
-static VOID set_global_attribs(HSCPRC * hp)
+static void set_global_attribs(HSCPRC * hp)
 {
    STRPTR emode;
 
@@ -376,7 +376,7 @@ static VOID set_global_attribs(HSCPRC * hp)
 
 
 /* set_file_attribs */
-static VOID define_file_attribs(HSCPRC * hp)
+static void define_file_attribs(HSCPRC * hp)
 {
     hsc_include_string(hp, "[define destattr]", estr2str(fileattr_str),
                        IH_PARSE_HSC | IH_NO_STATUS);
@@ -988,14 +988,14 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
             hsc_set_strip_badws(hp, arg_strip_badws);
             hsc_set_strip_cmt(hp, arg_strip_cmt);
             hsc_set_strip_ext(hp, arg_strip_ext);
-            hsc_set_nested_errors(hp, !arg_nonesterr);
+            hsc_set_no_nested_errors(hp, arg_nonesterr);
             hsc_set_strip_tags(hp, arg_striptags);
             hsc_set_lctags(hp, arg_lctags);
             hsc_set_checkext(hp, arg_checkext);
             if(arg_xhtml && arg_nvcss)
                fprintf(stderr, "Warning: cannot disable CSS checking in XHTML mode!\n");
             else
-               hsc_set_vcss(hp, !arg_nvcss);
+               hsc_set_novcss(hp, arg_nvcss);
             if(arg_xhtml && (QMODE_DOUBLE != arg_quotemode))
                fprintf(stderr, "Warning: XHTML only allows double quotes, ignoring QUOTESTYLE option!\n");
             else
