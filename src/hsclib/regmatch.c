@@ -1,6 +1,6 @@
 /*
  * This source code is part of hsc, a html-preprocessor,
- * Copyright (C) 2004 Matthias Bethke
+ * Copyright (C) 2004-2005 Matthias Bethke
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 static char lowercasemap[256];
 
 /* P may be NULL, only used for error reporting */
-BOOL hscregmatch_pc(CONSTRPTR s, CONSTRPTR p, regex_t *re)
+BOOL hscregmatch_pc(CONSTRPTR s, CONSTRPTR pattern, regex_t *re)
 {
    int regerr;
    const int slen = strlen(s);
@@ -40,24 +40,24 @@ BOOL hscregmatch_pc(CONSTRPTR s, CONSTRPTR p, regex_t *re)
       return TRUE;
    if(-2 == regerr) {
       /* should not happen */
-      fprintf(stderr,"** re_search(%s,%s): internal error\n",p?p:"<UNKNOWN-REGEX>",s);
+      fprintf(stderr,"** re_search(%s,%s): internal error\n",pattern?pattern:"<UNKNOWN-REGEX>",s);
    }
    return FALSE;
 }
 
-BOOL hscregmatch(HSCPRC *hp, CONSTRPTR s, CONSTRPTR p, BOOL nocase)
+BOOL hscregmatch(HSCPRC *hp, CONSTRPTR s, CONSTRPTR pattern, BOOL nocase)
 {
    BOOL ret = FALSE;
    regex_t re;
-   if(hscregcomp_re(hp,&re,p,nocase,NULL)) {
-      ret = hscregmatch_pc(s,p,&re);
+   if(hscregcomp_re(hp,&re,pattern,nocase,NULL)) {
+      ret = hscregmatch_pc(s,pattern,&re);
       regfree(&re);
    }
    return ret;
 }
 
 /* precompile a pattern to an existing regex_t */
-BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR p, BOOL nocase, char *fastmap)
+BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR pattern, BOOL nocase, char *fastmap)
 {
    static BOOL lcmap_init = TRUE;
    const char *regerrs;
@@ -78,10 +78,10 @@ BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR p, BOOL nocase, char *fast
    re->translate = nocase ? lowercasemap : NULL;
    re->no_sub = 1;
    
-   if((regerrs = re_compile_pattern(p,strlen(p),re))) {
+   if((regerrs = re_compile_pattern(pattern,strlen(pattern),re))) {
       if(hp) {
          hsc_message(hp, MSG_ILLG_REGEX, "error in regular expression %q: %s",
-               p,regerrs);
+               pattern,regerrs);
       }
       return FALSE;
    }
@@ -94,15 +94,15 @@ BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR p, BOOL nocase, char *fast
 }
 
 /* precompile a pattern to a new regex_t */
-regex_t *hscregcomp(HSCPRC *hp, CONSTRPTR p, BOOL nocase, BOOL fastmap)
+regex_t *hscregcomp(HSCPRC *hp, CONSTRPTR pattern, BOOL nocase, BOOL fastmap)
 {
    char *fmap = fastmap ? umalloc(256) : NULL;
-   regex_t *re = umalloc(sizeof(regex_t));
+   regex_t *re = ucalloc(1,sizeof(regex_t));
    
-   if(!hscregcomp_re(hp,re,p,nocase,fmap)) {
+   if(!hscregcomp_re(hp,re,pattern,nocase,fmap)) {
       ufree(re);
-      if(fmap) ufree(fmap);
       re = NULL;
+      if(fmap) ufree(fmap);
    }
    return re;
 }
