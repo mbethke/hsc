@@ -123,7 +123,7 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
                      "how to display messages",
 
                      "MSGBROWSER/T/K", &msg_browser,
-                     "message browser to use (default:none)",
+                     "message browser to use (default: none)",
     /* numeric */
                      "MAXERR/N/K", &maximum_number_of_errors,
                      "max. number of errors (default: " DEFAULT_MAXERR ")",

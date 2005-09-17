@@ -34,6 +34,7 @@
 #include "ugly/prginfo.h"
 #include "ugly/returncd.h"
 
+/* TODO: replace with external constants defined in arg_amiga etc. */
 #ifdef AMIGA_STYLE_ARGS
 #define ARG_ALTERNATES_SEPARATOR_STR "|"
 #define ARG_ALTERNATES_SEPARATOR_CHAR '|'
@@ -166,10 +167,10 @@ STRPTR arg_incdir_CB(STRPTR arg)
  * to "MODE=..". this one resets all ignored
  * messages.
  */
-STRPTR arg_mode_CB(CONSTRPTR arg)
+CONSTRPTR arg_mode_CB(CONSTRPTR arg)
 {
     STRPTR errmsg = NULL;
-    size_t mode = strenum(arg, MODE_ENUMSTR, ARG_ALTERNATES_SEPARATOR_CHAR, STEN_NOCASE);
+    size_t mode = strenum(arg, MODE_ENUMSTR, '|', STEN_NOCASE);
     HSCPRC *hp = arg_hp;
 
     D(fprintf(stderr, DHSC "args: mode=%s\n", arg));

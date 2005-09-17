@@ -234,7 +234,7 @@ static BOOL verify_option(HSCPRC *hp, const struct hscoption *o, char *val)
       case OPT_FLT :
          /* unused so far, so fall through */
       default :
-         panic("Unknown option type, check hscoptions!\n");
+         panic("Unknown option type, please notify author!\n");
    }
    if(!ok) {
       const char *s = o->lopt;
@@ -248,30 +248,43 @@ static BOOL verify_option(HSCPRC *hp, const struct hscoption *o, char *val)
    return ok;
 }
 
-void process_short_option(HSCPRC *hp, char c, const char *val)
+void process_short_option(HSCPRC *hp, char c, char *val)
 {
+   const char *error;
+   void *dest; 
+
    switch(c) {
       case 1   :
          /* default for non-options */
+      case 'f' :  /* input file */
          app_dlnode(incfile,val);
          break;
-      case 'f' :
-         break;
       case 'o' :
+         dest = &arg_outfname;
          break;
       case 'p' :
+         dest = prjfilename;
          break;
       case 's' :
+         dest = prefsfilename;
          break;
       case 'D' :
+         /* TODO */
          break;
       case 'i' :
+         /* TODO */
          break;
       case 'e' :
+         /* TODO */
          break;
       case 'm' :
+         if(error = arg_mode_CB(val)) {
+            panic(error);
+            /* TODO: handle this more intelligently */
+         }
          break;
       case 'I' :
+         arg_incdir_CB(val);
          break;
       case 'c' :
          break;
@@ -345,8 +358,8 @@ BOOL args_ok(HSCPRC * hp, int argc, char *argv[])
       {"maxmsg",      "Maximum numer of messages (default: " DEFAULT_MAXMSG ")",   "NUM",   NULL,ARG_OBL, OPT_DEC, 0},
       {"ext",         "Output file extension (default: " DEFAULT_EXTENSION ")",    "WORD",  NULL,ARG_OBL, OPT_TXT, 0},
       {"define",      "Define global attribute",                                   "WORD",  NULL,ARG_OBL, OPT_TXT, 'D'},
-      {"ignore",      "Ignore message numer or class",                             "WORD",  NULL,ARG_OBL, OPT_TXT, 'i'},
-      {"enable",      "Enable message numer or class",                             "WORD",  NULL,ARG_OBL, OPT_TXT, 'e'},
+      {"ignore",      "Ignore message number or class",                            "WORD",  NULL,ARG_OBL, OPT_TXT, 'i'},
+      {"enable",      "Enable message number or class",                            "WORD",  NULL,ARG_OBL, OPT_TXT, 'e'},
       {"msgmode",     "Syntax checking mode (" MODE_ENUMSTR ")",                   "WORD",  NULL,ARG_OBL, OPT_TXT, 'm'},
       {"qstyle",      "Quote style  (" QMODE_ENUMSTR ")",                          "WORD",  NULL,ARG_OBL, OPT_TXT, 0},
       {"estyle",      "Entity style  (" EMODE_ENUMSTR ")",                         "WORD",  NULL,ARG_OBL, OPT_TXT, 0},
