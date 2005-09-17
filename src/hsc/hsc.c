@@ -70,23 +70,16 @@ static HSCPRC *hp = NULL;
 static BOOL attempt_atexit(void (*func) (void))
 {
 #define ERRMSG_LEN 300
-    BOOL ok = FALSE;
-
     errno = 0;
-    if (atexit(func))
-    {
+    if (atexit(func)) {
         /* atexit() failed; display error message */
         char errmsg[ERRMSG_LEN];
         strncpy(errmsg, "atexit() failed: ", ERRMSG_LEN);
         strncat(errmsg, strerror(errno), ERRMSG_LEN);
         status_error(errmsg);
-    }
-    else
-    {
-        ok = TRUE;
-    }
-
-    return ok;
+        return FALSE;
+    } else
+    return TRUE;
 }
 
 /*
@@ -98,12 +91,10 @@ static BOOL include_ok(HSCPRC * hp)
 {
     BOOL ok = TRUE;
 
-    if (incfile)
-    {
+    if (incfile) {
         DLNODE *nd = dll_first(incfile);
 
-        while (nd && ok)
-        {
+        while (nd && ok) {
             STRPTR filename = (STRPTR) dln_data(nd);
             ok = hsc_include_file(hp, filename, IH_IS_INCLUDE);
             nd = dln_next(nd);
