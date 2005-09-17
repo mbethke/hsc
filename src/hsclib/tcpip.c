@@ -25,6 +25,8 @@
  * created:  23-Dec-2003
  */
 
+#include "sysdep.h"
+
 #include "hsclib/tcpip.h"
 #include "hsclib/ldebug.h"
 #include "hsclib/lmessage.h"
@@ -32,8 +34,6 @@
 #include "ugly/umemory.h"
 #include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <errno.h>
 
 #ifdef AMIGA
@@ -45,12 +45,16 @@
 #include <netdb.h>
 #include <unistd.h>
 struct Library *SocketBase;
-#elif defined UNIX
-#include <unistd.h>
-#include <sys/types.h>
+#elif defined UNIX && HAVE_UNISTD_H
+#ifdef SYS_SOCKET_H
 #include <sys/socket.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
+#endif
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
+#endif
 #else
 /* this system is not yet supported, just create a dummy function */
 BOOL check_ext_uri(HSCPRC *hp, char *uri)
