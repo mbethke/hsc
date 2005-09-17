@@ -34,7 +34,7 @@ extern void hsc_message(HSCPRC * hp, HSCMSG_ID msg_id,
                         const char *format,...);
 
 extern void hsc_msg_eof(HSCPRC * hp, STRPTR descr);
-extern void hsc_msg_illg_whtspc(HSCPRC * hp);
+extern void hsc_msg_illg_whtspc(HSCPRC * hp, CONSTRPTR why);
 extern void hsc_msg_stripped_tag(HSCPRC * hp, HSCTAG * tag, STRPTR why);
 extern void hsc_msg_unkn_attr_ref(HSCPRC * hp, STRPTR attr);
 extern void hsc_msg_unkn_attr_tag(HSCPRC * hp, STRPTR attr, STRPTR tag);

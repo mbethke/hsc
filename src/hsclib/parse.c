@@ -771,7 +771,7 @@ BOOL hsc_parse_amp(HSCPRC * hp) {
 
       /* check for illegal white-space */
       if (strlen(infgetcws(inpf)))
-         hsc_msg_illg_whtspc(hp);
+         hsc_msg_illg_whtspc(hp,"within entity after `&'");
 
       if (nxtwd == NULL) {
          hsc_msg_eof(hp, "missing entity");
@@ -806,7 +806,7 @@ BOOL hsc_parse_amp(HSCPRC * hp) {
 
             /* check for illegal white-space */
             if (strlen(infgetcws(inpf)))
-               hsc_msg_illg_whtspc(hp);
+               hsc_msg_illg_whtspc(hp,"within numeric entity after `#'");
 
             /* find out wheter it is an decimal or a hexadecimal
              * entity and set base according to it */
@@ -871,7 +871,7 @@ BOOL hsc_parse_amp(HSCPRC * hp) {
          if (nxtwd) {
             if (!strcmp(nxtwd, ";")) {
                if (strlen(infgetcws(inpf)))
-                  hsc_msg_illg_whtspc(hp);
+                  hsc_msg_illg_whtspc(hp,"within entity before closing semicolon");
 
                if (app_entity) {
                   app_estr(amp_str, infgetcws(inpf));

@@ -432,9 +432,9 @@ void hsc_msg_eof(HSCPRC * hp, STRPTR descr)
         hsc_message(hp, MSG_UNEX_EOF, "%s", eoftxt);
 }
 
-void hsc_msg_illg_whtspc(HSCPRC * hp)
+void hsc_msg_illg_whtspc(HSCPRC * hp, CONSTRPTR why)
 {
-    hsc_message(hp, MSG_ILLG_WHTSPC, "illegal white space");
+    hsc_message(hp, MSG_ILLG_WHTSPC, "illegal whitespace (%s)",why);
 }
 
 void hsc_msg_stripped_tag(HSCPRC * hp, HSCTAG * tag, STRPTR why)
