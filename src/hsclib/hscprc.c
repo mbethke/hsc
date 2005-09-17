@@ -198,7 +198,7 @@ HSCPRC *new_hscprc(void)
         hp->include_dirs = init_strlist();
 
         /* precompile some regular expressions */
-        hp->re_uri = hscregcomp(NULL, REGEXP_URI, TRUE, TRUE);
+        hp->re_uri = hscregcomp(hp, REGEXP_URI, TRUE, TRUE);
 
         /* init strings */
         hp->destdir = init_estr(0);
