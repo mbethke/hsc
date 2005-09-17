@@ -109,6 +109,7 @@ static struct HSCENTITY {
  	{"alefsym",	8501, FALSE},
  	{"larr",	8592, FALSE},
  	{"uarr",	8593, FALSE},
+ 	{"rarr",	8594, FALSE},
  	{"darr",	8595, FALSE},
  	{"harr",	8596, FALSE},
  	{"crarr",	8629, FALSE},
