@@ -45,6 +45,7 @@
 #include "ugly/returncd.h"
 
 /* hsclib includes */
+#include "hscprj/pdefs.h"
 #include "hscprj/document.h"
 #include "hscprj/project.h"
 #include "hscprj/license.h"
@@ -551,6 +552,15 @@ static BOOL update_makefile(void)
         HSCDOC *document = dln_data(docnode);
         DLNODE *incnode = dll_first(document->includes);
 
+        if((NULL == document->docname) || (NULL == document->sourcename)) {
+           fprintf(stderr,"Uncaught project file corruption! ");
+           if(document->docname)
+              fprintf(stderr,"(%s %s)\n",LINE_DOCUMENT_STR,document->docname);
+           if(document->sourcename)
+              fprintf(stderr,"(%s %s)\n",LINE_SOURCE_STR,document->sourcename);
+           fprintf(stderr,"\n");
+        }
+        
         D(fprintf(stderr, DHD "document `%s'\n", document->docname));
 
         app_estr(lines_depend, document->docname);
