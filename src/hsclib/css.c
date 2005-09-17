@@ -103,7 +103,7 @@ int cmp_style_node(ubi_btItemPtr item, ubi_btNodePtr node)
 void free_style_node(ubi_btNode *node)
 {
    del_styleattr(*HSCTREENODEDP(node,HSCSTYLE*));
-   ufree(node);
+   /* ufree(node); */
 }
 
 HSCSTYLE *add_styledef(hsctree *styles, CONSTRPTR name, CONSTRPTR value)
