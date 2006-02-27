@@ -325,13 +325,11 @@ static if_t get_condition(HSCPRC * hp)
  */
 static void skip_until_conditional(HSCPRC * hp)
 {
-    EXPSTR *s = init_estr(32);
     /* skip until next conditional tag is found; this specific tag
      * will not be skipped, and be parsed afterwards */
-    skip_until_tag(hp, NULL, s,
+    skip_until_tag(hp, NULL, NULL,
                    HSC_ELSE_STR "|" HSC_ELSEIF_STR, HSC_IF_STR,
                    SKUT_NO_SKIP_TAGFOUND);
-    del_estr(s);
 }
 
 /*
@@ -354,16 +352,12 @@ BOOL handle_hsc_if(HSCPRC * hp, HSCTAG * tag)
     is_push(hp, new_cond);
     DIF(fprintf(stderr, DHL "  new_cond=`%c'\n", new_cond));
 
-    if (new_cond != ISTK_TRUE)
-    {
+    if (new_cond != ISTK_TRUE) {
         DIF(DMSG("IF: refused"));
         skip_until_conditional(hp);
-    }
-    else
-    {
+    } else {
         DIF(DMSG(" IF: GRANTED"));
     }
-
     return (FALSE);
 }
 
@@ -378,7 +372,7 @@ BOOL handle_hsc_cif(HSCPRC * hp, HSCTAG * tag)
 
     if (is_empty(hp))
     {
-        /* this can happen, if <$if> had errors in args */
+        /* this can happen if <$if> had errors in args */
         DIF(fprintf(stderr, DHL "%s: unhandled handler conditional\n",
                  tag->name));
     }
