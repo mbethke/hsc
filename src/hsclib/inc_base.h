@@ -28,11 +28,9 @@
 #ifndef HSCLIB_INC_BASE_H
 #define HSCLIB_INC_BASE_H
 
-#define NMEMBERS(s) (sizeof(s)/sizeof(s[0]))
-
+#include "sysdep.h"
 #include <stdio.h>
 #include <stdarg.h>
-#include <string.h>
 #include <errno.h>
 #include <ctype.h>
 
@@ -57,6 +55,8 @@
 #include "hsclib/hscprc.h"
 #include "hsclib/lmessage.h"
 #include "hsclib/lstatus.h"
+
+#define NMEMBERS(s) (sizeof(s)/sizeof(s[0]))
 
 #endif /* HSCLIB_INC_BASE_H */
 
