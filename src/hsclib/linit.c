@@ -235,7 +235,7 @@ static void hsc_set_tagCB(HSCPRC * hp, STRPTR name,
     if (tag && !(tag->option & HT_NOHANDLE)) {
         /* set handles */
         DC(fprintf(stderr, DHL "add handles for <%s> (%p,%p)\n",
-                   name, (void*)op_hnd, (void*)cl_hnd));
+                   name, op_hnd, cl_hnd));   /* rather get a %p warning than violate C99 */
         tag->o_handle = op_hnd;
         tag->c_handle = cl_hnd;
     }
