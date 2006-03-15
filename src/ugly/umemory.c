@@ -47,10 +47,8 @@
  *
  */
 
+#include "sysdep.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "utypes.h"
 
 #define NOEXTERN_UGLY_UMEMORY_H
@@ -285,65 +283,53 @@ static void uglymem_message(STRPTR msg)
 
 static void ugly_memdump(void *ptr, size_t size)
 {
-    STRPTR data = (STRPTR) ptr;
+   unsigned char *data = (unsigned char*)ptr;
+   size_t i,chunk;
 
-    /* limit size */
-    if (size > 16)
-    {
-	size = 16;
-    }
+   /* limit size (disabled for now) --mb*/
+   /* if (size > 16) size = 16; */
 
-    fprintf(stderr, "  %p:", ptr);
-    if (data)
-    {
-	size_t i;
+   if(!data) {
+      fprintf(stderr, "  %p: NULL\n", ptr);
+      return;
+   }
+      
+   while(size) {
+      chunk = size>16 ? 16 : size;
+      fprintf(stderr, "  %p: ", data);
 
-	/* hex dump */
-	for (i = 0; i < size; i++)
-	{
-	    if (!(i % 4))
-	    {
-		fprintf(stderr, " ");
-	    }
-	    fprintf(stderr, "%02x", data[i]);
+      /* hex dump */
+      for (i = 0; i < chunk; i++) {
+         if (!(i % 4))
+            fprintf(stderr, " ");
+         fprintf(stderr, "%02x", data[i]);
+      }
 
-	}
+      /* fill with blanks */
+      while (i < 16) {
+         if (!(i % 4))
+            fprintf(stderr, " ");
+         fprintf(stderr, "  ");
+         i++;
+      }
 
-	/* fill with blanks */
-	while (i < 16)
-	{
-	    if (!(i % 4))
-	    {
-		fprintf(stderr, " ");
-	    }
-	    fprintf(stderr, "  ");
-	    i++;
-	}
-
-	fprintf(stderr, "  \"");
-	/* ascii dump */
-	for (i = 0; i < size; i++)
-	{
-	    if (data[i] < ' ')
-	    {
-		fprintf(stderr, ".");
-	    }
-	    else
-	    {
-		fprintf(stderr, "%c", data[i]);
-	    }
-	}
-	fprintf(stderr, "\"\n");
-
-    }
-    else
-	fprintf(stderr, "NULL\n");
-
+      fprintf(stderr, "  \"");
+      /* ascii dump */
+      for (i = 0; i < chunk; i++) {
+         if (data[i] < ' ')
+            fprintf(stderr, ".");
+         else
+            fprintf(stderr, "%c", data[i]);
+      }
+      fprintf(stderr, "\"\n");
+      size -= chunk;
+      data += 16;
+   }
 }
 
 static void uglymem_meminfo(void *ptr, STRPTR file, ULONG line)
 {
-    fprintf(stderr, "  %p: from \"%s\" (%lu)\n", ptr, file, line);
+   fprintf(stderr, "  %p: from \"%s\" (%lu)\n", ptr, file, line);
 }
 
 static void umem_info(UGLYMEM * umem)
