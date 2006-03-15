@@ -798,28 +798,28 @@ BOOL skip_tag_attribs(HSCPRC * hp, EXPSTR * content)
  *                   do not analyse tag attributes and special tags;
  *                   this is more or less only used by <$source>
  */
-#define STATE_TEXT            1 /* normal text */
-#define STATE_TAG             2 /* after "<" */
-#define STATE_COMMENT         3 /* inside hsc-comment */
-#define STATE_COMMENT_STAR    4 /* inside hsc-comment, after "*" */
-#define STATE_TAG_STOP        5 /* found tag in stoplist */
-#define STATE_SKIP            6 /* inside `skip section' "<|..|>" */
-#define STATE_VBAR            7 /* inside `skip section', after "|" */
-#define STATE_ENDTAG          8 /* after end-tagname */
-
-#define STATE_COMMENT_TAG    14 /* found "<" inside comment (nest comment) */
-
-#define STATE_EXIT_ERROR_EOF 99 /* unexpected eof */
+typedef enum {
+STATE_TEXT,             /* normal text */
+STATE_TAG,              /* after "<" */
+STATE_COMMENT,          /* inside hsc-comment */
+STATE_COMMENT_STAR,     /* inside hsc-comment, after "*" */
+STATE_TAG_STOP,         /* found tag in stoplist */
+STATE_SKIP,             /* inside `skip section' "<|..|>" */
+STATE_VBAR,             /* inside `skip section', after "|" */
+STATE_ENDTAG,           /* after end-tagname */
+STATE_COMMENT_TAG=14,   /* found "<" inside comment (nest comment) */
+STATE_EXIT_ERROR_EOF=99 /* unexpected eof */
+} t_state;
 
 BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STRPTR tagstoplist, STRPTR tagnest, ULONG option)
 {
 #define RESET_TAGSTR(init)
-    UBYTE state = STATE_TEXT;   /* */
+    t_state state = STATE_TEXT;   /* */
     INFILE *inpf = hp->inpf;    /* input file */
     LONG nesting = 0;           /* tag-nesting */
     STRPTR nw = NULL;
     BOOL quit = FALSE;          /* flag: exit from skipping */
-    EXPSTR *tagstr = init_estr(128);    /* text of current tag */
+    EXPSTR *tagstr = init_estr(512);    /* text of current tag */
 
     /* clear result-var tagfound, if passed */
     if (tagfound)
@@ -867,8 +867,7 @@ BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STRPTR tag
                 /* check which tag it is and how to act */
             case STATE_TAG:
                 if (!strcmp(nw, "<")) {
-                   /* this handles constructs like ``<</$source>''
-                    * correctly */
+                   /* this handles constructs like ``<</$source>'' correctly */
                    APP_CONTENT_ESTR(tagstr);
 
                    /* unget current "<" */
@@ -892,20 +891,20 @@ BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STRPTR tag
                    else if (option & SKUT_NO_ANALYSE_TAGS)
                       /* abort tag scan */
                       append_tag = TRUE;
-                   /* check, if hsc-comment reached */
+                   /* check if hsc-comment reached */
                    else if (!upstrcmp(nw, HSC_COMMENT_STR)) {
                       DS(fprintf(stderr, DHLS "hsc-comment\n"));
                       APP_CONTENT(estr2str(tagstr));
                       skip_hsc_comment(hp, content);
                       state = STATE_TEXT;
                    } else if (!upstrcmp(nw, HSC_VERBATIM_STR)) {
-                      /* check, if hsc-verbatim reached */
+                      /* check if hsc-verbatim reached */
                       DS(fprintf(stderr, DHLS "hsc-verbatim\n"));
                       APP_CONTENT(estr2str(tagstr));
                       skip_hsc_verbatim(hp, content);
                       state = STATE_TEXT;
                    } else if (!upstrcmp(nw, HSC_SOURCE_STR)) {
-                      /* check, if hsc-source reached */
+                      /* check if hsc-source reached */
                       DS(fprintf(stderr, DHLS "hsc-source\n"));
                       APP_CONTENT(estr2str(tagstr));
                       skip_tag_attribs(hp, content);
@@ -914,7 +913,7 @@ BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STRPTR tag
                             SKUT_NO_ANALYSE_TAGS);
                       state = STATE_TEXT;
                    } else if (!strcmp(nw, "!")) {
-                      /* check, if sgml-special-tag reached */
+                      /* check if sgml-special-tag reached */
                       BOOL dummy_stripped;
                       DS(fprintf(stderr, DHLS "sgml-special\n"));
                       APP_CONTENT(estr2str(tagstr));
@@ -924,7 +923,7 @@ BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STRPTR tag
                       HSCTAG *tag = find_named_tag(hp->deftag, nw);
                       DS(fprintf(stderr, DHLS "tag <%s>\n", nw));
 
-                      /* check, if nesting-tag should be incr. */
+                      /* check whether nesting-tag should be incremented */
                       if (!upstrcmp(nw, tagnest)) {
                          DS(fprintf(stderr, DHLS "  nest-tag (%ld)\n", nesting));
                          nesting++;
@@ -932,7 +931,7 @@ BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STRPTR tag
                          append_tag = TRUE;
                       } else if (!nesting && tagstoplist
                             && strenum(nw, tagstoplist, '|', STEN_NOCASE)) {
-                         /* check, if stop-tag reached */
+                         /* check whether stop-tag has been reached */
                          DS(fprintf(stderr, DHLS "  stop-tag <%s>\n", nw));
                          if (tagfound)
                             set_estr(tagfound, nw);
