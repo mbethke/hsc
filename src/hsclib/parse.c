@@ -93,7 +93,8 @@ static BOOL check_mbinaw(HSCPRC * hp, HSCTAG * tag) {
 
       if (!found) {
          hsc_message(hp, MSG_MBI,
-               "%T must be inside %t", tag, tag->mbi);
+               "%T must be inside %t (but is directly in %T)",
+               tag, tag->mbi,hp->container_stack->last->data);
          ok = FALSE;
       }
    }
