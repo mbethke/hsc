@@ -1114,11 +1114,11 @@ static void process_op(HSCPRC * hp, HSCATTR * dest, BYTE op, STRPTR str1, STRPTR
             break;
 
          case OP_MATCH:
-            set_varbool(dest,hscregmatch(hp,str1,str2,FALSE));
+            set_varbool(dest,hscregsearch(hp,str1,str2,FALSE));
             break;
 
          case OP_MATCHI:
-            set_varbool(dest,hscregmatch(hp,str1,str2,TRUE));
+            set_varbool(dest,hscregsearch(hp,str1,str2,TRUE));
             break;
 
          default:
