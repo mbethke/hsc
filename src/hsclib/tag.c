@@ -72,7 +72,7 @@ void del_hsctag(HSCTAG *tag)
 HSCTAG *new_hsctag(STRPTR newid)
 {
 
-    HSCTAG *newtag = (HSCTAG *) umalloc(sizeof(HSCTAG));
+    HSCTAG *newtag = (HSCTAG*) umalloc(sizeof(HSCTAG));
 
     if (newtag)
     {
@@ -249,7 +249,7 @@ HSCTAG *app_tag(hsctree *tags, STRPTR tagid)
 void free_tag_node(ubi_btNode *node)
 {
    del_hsctag(*HSCTREENODEDP(node,HSCTAG*));
-   ufree(node);
+   /* ufree(node); */
 }
 
 /* ubiqx-tree comparison function for finding tags given a name */

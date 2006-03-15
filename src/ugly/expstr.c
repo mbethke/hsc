@@ -99,10 +99,9 @@
 ******************************************************************************
 */
 
+#include "sysdep.h"
 #include <ctype.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "utypes.h"
 #include "ustring.h"

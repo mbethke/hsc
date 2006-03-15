@@ -32,9 +32,8 @@
  */
 
 /* ANSI includes */
-#include <stdlib.h>
+#include "sysdep.h"
 #include <stdio.h>
-#include <string.h>
 
 #include "utypes.h"
 

@@ -27,7 +27,7 @@
  *
  */
 
-#include <stdlib.h>
+#include "sysdep.h"
 #include <stdio.h>
 
 #include "utypes.h"

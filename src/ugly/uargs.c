@@ -30,11 +30,10 @@
 /*
  * includes
  */
+#include "sysdep.h"
 #include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdarg.h>
-#include <string.h>
 
 #include "utypes.h"
 #include "umemory.h"

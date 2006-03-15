@@ -29,11 +29,11 @@
  *
  */
 
-#include <stddef.h>
-
+#include "sysdep.h"
 #include "utypes.h"
 
 #define freestr( s ) ugly_freestr(s,__FILE__,__LINE__)
+#define newstr( s ) ugly_newstr(s,__FILE__,__LINE__)
 #define ufreestr( s ) freestr(s),s=NULL
 #define strclone( s ) ugly_strclone(s,__FILE__,__LINE__)
 #define reallocstr( o,n ) ugly_reallocstr(o,n,__FILE__,__LINE__)
@@ -55,6 +55,7 @@ extern int upstrncmp(CONSTRPTR s1, CONSTRPTR s2, size_t n);
 extern STRPTR upstrstr(CONSTRPTR s1, CONSTRPTR s2);
 
 extern void ugly_freestr(STRPTR s, STRPTR file, ULONG line);
+extern STRPTR ugly_newstr(int size, STRPTR file, ULONG line);
 extern STRPTR ugly_strclone(CONSTRPTR oldstr, STRPTR file, ULONG line);
 extern void ugly_reallocstr(STRPTR * oldstr, CONSTRPTR newstr, STRPTR file, ULONG line);
 

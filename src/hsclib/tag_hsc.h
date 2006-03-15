@@ -51,6 +51,7 @@ extern BOOL handle_hsc_message(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_stripws(HSCPRC * hp, HSCTAG * tag);
+extern BOOL handle_hsc_match(HSCPRC * hp, HSCTAG * tag);
 extern BOOL handle_hsc_insert_expression(HSCPRC * hp, HSCTAG * tag);
 
 #endif /* HSCLIB_TAG_HSC_H */

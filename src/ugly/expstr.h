@@ -29,8 +29,7 @@
  *
  */
 
-#include <stddef.h>
-
+#include "sysdep.h"
 #include "utypes.h"
 
 #define EXPSTR_MEMSTEP 96

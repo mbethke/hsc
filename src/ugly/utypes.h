@@ -53,19 +53,13 @@ typedef char *STRPTR;           /* string pointer (NULL terminated) */
 
 /* Types with specific semantics */
 #ifndef RISCOS
-typedef short BOOL;
 typedef unsigned char TEXT;
 #else
-typedef int BOOL;
 typedef char TEXT;
 #endif
 
-#ifndef TRUE
-#define TRUE            (1)
-#endif
-#ifndef FALSE
-#define FALSE           (0)
-#endif
+typedef enum { FALSE=0, TRUE=1} BOOL;
+
 #ifndef NULL
 #define NULL            ((void*)0L)
 #endif

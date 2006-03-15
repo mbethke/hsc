@@ -27,17 +27,10 @@
  *
  */
 
-#include <stdlib.h>
+#include "sysdep.h"
 #include <stdio.h>
-#include <string.h>
 #include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <time.h>
-
-#ifndef WINNT
-#include <unistd.h>
-#endif
 
 #ifdef AMIGA
 /* SAS/C's stat handling is weird, so use dos.library :-( */

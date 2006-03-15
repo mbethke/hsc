@@ -24,11 +24,9 @@
  * created: 31-Jul-1993
  */
 
+#include "sysdep.h"
 #include <ctype.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-
 #include "utypes.h"
 #include "umemory.h"
 
@@ -48,6 +46,27 @@ int last_ch(CONSTRPTR s)
         return (int)(s[len - 1]);
     else
         return 0;
+}
+
+/*
+ * ugly_newstr
+ *
+ * allocate space for a string
+ * (basically like umalloc, just to avoid problems with the memtracking
+ * versions)
+ *
+ * params: size: bytes to allocate (does not add any space for '\0'!)
+ * result: ptr to free memory
+ * errors: out of memory: returns NULL
+ *
+ */
+STRPTR ugly_newstr(int size, STRPTR file, ULONG line)
+{
+#if DEBUG_UGLY_MEMORY
+        return (STRPTR) ugly_malloc_tracking(size, file, line);
+#else
+        return (STRPTR) umalloc(size);
+#endif
 }
 
 /*

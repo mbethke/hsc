@@ -25,9 +25,8 @@
  *
  */
 
-#include <stdlib.h>
+#include "sysdep.h"
 #include <stdio.h>
-#include <string.h>
 
 #include "umemory.h"
 #define NOEXTERN_UGLY_USTRLIST_H

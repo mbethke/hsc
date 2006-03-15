@@ -58,6 +58,7 @@
 #define HSC_MACRO_STR    HSC_TAGID "macro"
 #define HSC_MESSAGE_STR  HSC_TAGID "message"
 #define HSC_SOURCE_STR   HSC_TAGID "source"
+#define HSC_MATCH_STR    HSC_TAGID "match"
 #define HSC_STRIPWS_STR  HSC_TAGID "StripWS"
 
 #define HSC_TEXT_STR     "TEXT"

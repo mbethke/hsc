@@ -360,7 +360,7 @@ void parse_uri(HSCPRC * hp, EXPSTR *dest_uri, STRPTR uri)
    if (uri) {
       /* check for valid uri */
       URIKIND kind = uri_kind(uri);
-      if(!hscregmatch_pc(uri,NULL,hp->re_uri)) {
+      if(!hscregsearch_pc(uri,NULL,hp->re_uri,NULL)) {
          hsc_message(hp,MSG_INVALID_URI,"URI %q is syntactically invalid",uri);
       }
       if ((kind == URI_ext) ||

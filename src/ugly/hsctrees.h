@@ -30,6 +30,7 @@
 #include "ugly/utypes.h"
 #include "ubiqx/ubi_SplayTree.h"
 
+/* Get the Data Pointer from an HSC tree node */
 #define HSCTREENODEDP(n,T) ((T*)((n)+1))
 
 typedef struct HSCTREE {
