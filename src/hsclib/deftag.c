@@ -83,9 +83,10 @@ HSCTAG *def_tag_name(HSCPRC * hp, BOOL * start_tag)
 
          if(tagnode) {
             /* new tag/macro replaces old tag/macro */
-            tag->occured = FALSE;
+            tag = *HSCTREENODEDP(tagnode,HSCTAG*);
             hsc_message(hp, MSG_REDEFINE_TAG, "redefined %T", tag);
             ubi_trRemove(tags,tagnode);
+            del_hsctag(tag);
          }
 
          /* create a new opening tag */
