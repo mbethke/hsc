@@ -31,23 +31,17 @@
 #include "hsclib/hscprc.h"
 
 #define hscregfree(r) regfree(r)
-#define hscregfreeall(r) \
-   if((r)->fastmap) { \
-      ufree((r)->fastmap); \
-      (r)->fastmap = NULL; \
-      (r)->fastmap_accurate = 0; \
-   } (r)->translate = NULL; \
-   regfree(r); \
-   ufree(r)
 
 /* a simple check for match, compiling the pattern on the fly */
-extern BOOL hscregmatch(HSCPRC *hp, CONSTRPTR s, CONSTRPTR pattern, BOOL nocase);
+extern BOOL hscregsearch(HSCPRC *hp, CONSTRPTR s, CONSTRPTR pattern, BOOL nocase);
 /* a simple check for match using a precompiled regexp */
-extern BOOL hscregmatch_pc(CONSTRPTR s, CONSTRPTR pattern, regex_t *re);
+extern BOOL hscregsearch_pc(CONSTRPTR s, CONSTRPTR pattern, regex_t *re, struct re_registers *regs);
 /* precompile a pattern to an existing regex_t */
 extern BOOL hscregcomp_re(HSCPRC *hp, regex_t *re, CONSTRPTR pattern, BOOL nocase,  char *fastmap);
 /* precompile a pattern to a new regex_t */
 extern regex_t *hscregcomp(HSCPRC *hp, CONSTRPTR pattern, BOOL nocase, BOOL fastmap);
+/* free a regex_t structure initialized by hscregcomp or hscregcomp_re, including subfields */
+void hscregfreeall(regex_t *r);
 
 #endif /* HSC_REGMATCH_H */
 
