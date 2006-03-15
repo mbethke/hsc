@@ -288,6 +288,9 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
         HSC_LET_STR " /SKIPLF /SPECIAL>",
         HSC_MACRO_STR " /SKIPLF /SPECIAL>",
         HSC_SOURCE_STR " /SKIPLF PRE:bool>",
+        HSC_MATCH_STR "/SKIPLF NOCASE:bool RE:string/r S:string/r "
+           "C0:string C1:string C2:string C3:string C4:string "
+           "C5:string C6:string C7:string C8:string C9:string>", 
         HSC_STRIPWS_STR " TYPE:enum(\"" STRIPWS_ENUM "\")=\"" STRIPWS_BOTH "\">",
         NULL
     };
@@ -363,6 +366,7 @@ BOOL hsc_init_tagsNattr(HSCPRC * hp)
         hsc_set_tagCB(hp, HSC_MESSAGE_STR, handle_hsc_message, NULL);
         hsc_set_tagCB(hp, HSC_VERBATIM_STR, handle_hsc_verbatim, NULL);
         hsc_set_tagCB(hp, HSC_SOURCE_STR, handle_hsc_source, NULL);
+        hsc_set_tagCB(hp, HSC_MATCH_STR, handle_hsc_match, NULL);
         hsc_set_tagCB(hp, HSC_STRIPWS_STR, handle_hsc_stripws, NULL);
     }
 
