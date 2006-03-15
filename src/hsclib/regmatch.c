@@ -30,27 +30,27 @@
 
 static char lowercasemap[256];
 
-/* P may be NULL, only used for error reporting */
-BOOL hscregmatch_pc(CONSTRPTR s, CONSTRPTR pattern, regex_t *re)
+/* PATTERN may be NULL, only used for error reporting */
+BOOL hscregsearch_pc(CONSTRPTR s, CONSTRPTR pattern, regex_t *re, struct re_registers *regs)
 {
    int regerr;
    const int slen = strlen(s);
 
-   if(0 == (regerr = re_search(re,s,slen,0,slen,NULL)))
+   if(0 == (regerr = re_search(re,s,slen,0,slen,regs)))
       return TRUE;
    if(-2 == regerr) {
       /* should not happen */
-      fprintf(stderr,"** re_search(%s,%s): internal error\n",pattern?pattern:"<UNKNOWN-REGEX>",s);
+      fprintf(stderr,"** hscregsearch_pc(%s,%s): internal error\n",pattern?pattern:"<UNKNOWN-REGEX>",s);
    }
    return FALSE;
 }
 
-BOOL hscregmatch(HSCPRC *hp, CONSTRPTR s, CONSTRPTR pattern, BOOL nocase)
+BOOL hscregsearch(HSCPRC *hp, CONSTRPTR s, CONSTRPTR pattern, BOOL nocase)
 {
    BOOL ret = FALSE;
    regex_t re;
    if(hscregcomp_re(hp,&re,pattern,nocase,NULL)) {
-      ret = hscregmatch_pc(s,pattern,&re);
+      ret = hscregsearch_pc(s,pattern,&re,NULL);
       regfree(&re);
    }
    return ret;
@@ -98,13 +98,27 @@ regex_t *hscregcomp(HSCPRC *hp, CONSTRPTR pattern, BOOL nocase, BOOL fastmap)
 {
    char *fmap = fastmap ? umalloc(256) : NULL;
    regex_t *re = ucalloc(1,sizeof(regex_t));
-   
    if(!hscregcomp_re(hp,re,pattern,nocase,fmap)) {
       ufree(re);
       re = NULL;
       if(fmap) ufree(fmap);
    }
    return re;
+}
+
+/* free a regex_t structure initialized by hscregcomp or hscregcomp_re,
+ * including subfields
+ */
+void hscregfreeall(regex_t *r)
+{
+   if(r->fastmap) {
+      ufree(r->fastmap);
+      r->fastmap = NULL;
+      r->fastmap_accurate = 0;
+   }
+   r->translate = NULL;
+   hscregfree(r);
+   ufree(r);
 }
 
 /* $Id$*/
