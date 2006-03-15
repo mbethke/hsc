@@ -39,6 +39,7 @@
 
 #include "hsclib/tag_macro.h"
 #include "hsclib/tag_if.h"
+#include "hsclib/regmatch.h"
 
 #define TIMEBUF_INC    20
 #define ES_STEP_SOURCE 1024
@@ -105,7 +106,7 @@ BOOL handle_hsc_verbatim(HSCPRC * hp, HSCTAG * tag) {
  *
  * insert value of a hsc-expression
  *
- * TODO: what to use as error-location, when inserting expression?
+ * TODO: what to use as error-location when inserting expression?
  */
 BOOL handle_hsc_insert_expression(HSCPRC * hp, HSCTAG * tag) {
    HSCATTR *dest = new_hscattr(PREFIX_TMPATTR "insert.expression");
@@ -885,11 +886,100 @@ BOOL handle_hsc_source(HSCPRC * hp, HSCTAG * tag) {
 }
 
 /*
+ *---------------------------------------------------------
+ * <$MATCH> match a regular expression and capture patterns
+ *---------------------------------------------------------
+ */
+
+/*
+static void msg_illegal_match(HSCPRC * hp, STRPTR msg) {
+   hsc_message(hp, MSG_ILLG_MATCH, "error in <$MATCH> (%s)", msg);
+}
+*/
+/* Helper function to copy string ranges. "start" must be the first character to copy,
+ * "end" is one past the last character to copy. Deals only with positive offsets! */
+static STRPTR clone_string_range(CONSTRPTR s, int start, int end)
+{
+   STRPTR t;
+   
+   if(end <= start)
+      return NULL;
+   t = newstr(end-start+1);
+   strncpy(t,s+start,end-start);
+   t[end-start] = '\0';
+   return t;
+}
+
+BOOL handle_hsc_match(HSCPRC * hp, HSCTAG * tag)
+{
+   enum {NREGS=10};
+   BOOL ok = TRUE;
+   BOOL nocase = get_varbool_byname(tag->attr, "NOCASE");
+   CONSTRPTR pat = get_vartext_byname(tag->attr, "RE");
+   CONSTRPTR str = get_vartext_byname(tag->attr, "S");
+   STRPTR cap[NREGS];
+   char fastmap[256];
+   regex_t re;
+   struct re_registers regs;
+   regoff_t regs_start[NREGS], regs_end[NREGS];
+   int i;
+
+   /* get variable names for each pattern capture specified */
+   for(i=0; i<NREGS; ++i) {
+      char capturename[] = "C0";
+      capturename[1] = '0' + i;
+      cap[i] = get_vartext_byname(tag->attr, capturename);
+   }
+   
+   /* compile pattern into a regex_t */
+   if(hscregcomp_re(hp,&re,pat,nocase,fastmap)) {
+      /* set registers (max. NREGS) */
+      regs.start = regs_start;
+      regs.end = regs_end;
+      regs.num_regs = NREGS;
+      re.regs_allocated = REGS_FIXED;
+      /* perform the search */
+      ok = hscregsearch_pc(str,pat,&re,&regs);
+      re.translate = NULL;  /* don't free the translation map, if there, it's static */
+      re.fastmap = NULL;    /* don't free the fastmap, it's on the stack */
+      regfree(&re);
+   }
+
+   for(i=0; i<NREGS; ++i) {
+      /* check if user is interested in this pattern capture */
+      if(cap[i] && cap[i][0]) {
+         /* find the variable or create it if not found */
+         HSCATTR *var = find_varname(hp->defattr,cap[i]); 
+         D(fprintf(stderr,DHL "Capture #%d requested\n",i);)
+         if(!var) {
+            D(fprintf(stderr,DHL "Gotta create var '%s'\n",cap[i]);)
+            var = app_var(hp->defattr,cap[i]);
+            var->vartype = VT_STRING;
+            var->varflag |= VF_MACRO;
+            var->macro_id = get_current_mci(hp);    /* make this a macro-local variable */
+         }
+         /* did the pattern match and has the corresponding capture been filled? */
+         if(ok && (-1 != regs_start[i])) {
+            ufreestr(var->text);
+            var->text = clone_string_range(str,regs_start[i],regs_end[i]);
+            D(fprintf(stderr,DHL "Set var to '%s'\n",var->text);)
+         } else {
+            /* no match/unfilled capture, so set variable to "undefined" */
+            ufreestr(var->text);
+            D(fprintf(stderr,DHL "Set var to undef (no %s)\n",ok?"capture":"match");)
+         }
+      }
+   }
+   return FALSE;
+}
+
+/*
  *-------------------------------------
  * <$StripWS> strip white spaces
  *-------------------------------------
  */
-BOOL handle_hsc_stripws(HSCPRC * hp, HSCTAG * tag) {
+BOOL handle_hsc_stripws(HSCPRC * hp, HSCTAG * tag)
+{
    STRPTR strip_type = get_vartext_byname(tag->attr, "TYPE");
    BOOL strip_prev = FALSE;
    BOOL strip_succ = FALSE;
