@@ -1,0 +1,120 @@
+# Makefile for HSC ("HTML Sucks Completely")
+#
+# Copyright (C) 2001-2004 Matthias Bethke
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+# $Id$
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+BINDIR=@bindir@
+DATADIR=@datadir@
+
+.PHONY: all clean all_clean sterile depend ckx rex
+
+CFLAGS	= @CFLAGS@ -D@SYSTEM@ -I.
+COMP	= @CC@ -o $@ $(CFLAGS)
+LINK	= @CC@ -o $@ $(CFLAGS)
+MOVE	= mv
+COPY	= cp
+DELETE	= rm -f
+INSTALL	= install
+
+PROJECT_DIRS = amiga hsc hsclib hscprj hsctools riscos ugly regex ubiqx
+#
+# symbols for objects and executables
+#
+OBJ_TOOLS	= ugly/umemory.o ugly/ustring.o ugly/unikot.o ugly/expstr.o \
+		ugly/fname.o ugly/dllist.o ugly/ufile.o ugly/uargs.o \
+		ugly/ustrlist.o ugly/infile.o ugly/prginfo.o \
+		hscprj/document.o hscprj/license.o hscprj/project.o \
+		hscprj/readprj.o hscprj/writeprj.o
+
+OBJ_REGEX	= regex/regex.o
+OBJ_UBIQX	= ubiqx/ubi_BinTree.o ubiqx/ubi_SplayTree.o
+OBJ_HSC		= $(OBJ_REGEX) $(OBJ_UBIQX) $(OBJ_TOOLS) \
+		hsclib/lmessage.o hsclib/entity.o hsclib/tag.o hsclib/attrib.o \
+		hsclib/idref.o hsclib/hscprc.o hsclib/lstatus.o hsclib/input.o \
+		hsclib/skip.o hsclib/uri.o hsclib/eval.o hsclib/posteval.o \
+		hsclib/defattr.o hsclib/deftag.o hsclib/css.o hsclib/parse.o \
+		hsclib/include.o hsclib/linit.o hsclib/size.o hsclib/tag_misc.o \
+		hsclib/tag_a.o hsclib/tag_hsc.o hsclib/tag_if.o hsclib/regmatch.o \
+		hsclib/tag_macro.o hsclib/tcpip.o ugly/hsctrees.o \
+		hsc/global.o hsc/status.o hsc/callback.o hsc/args.o \
+		hsc/output.o hsc/hsc.o
+OBJ_DEPP	= hsctools/hscdepp.o
+OBJ_PITT	= hsctools/hscpitt.o
+OBJ_ALL		= $(OBJ_HSC)
+EXE_ALL		= hsc/hsc hsctools/hscdepp hsctools/hscpitt
+
+#
+# compile all tools
+#
+all : rex $(EXE_ALL)
+
+# implict rule for object-files
+# (old-style implicit rule)
+%.o : %.c
+	$(COMP) -c $<
+
+hsc/hsc : $(OBJ_HSC)
+	$(LINK) $(OBJ_HSC)
+
+hsctools/hscdepp : $(OBJ_TOOLS) $(OBJ_DEPP)
+	$(LINK) $(OBJ_DEPP) $(OBJ_TOOLS)
+
+hsctools/hscpitt : $(OBJ_TOOLS) $(OBJ_PITT)
+	$(LINK) $(OBJ_PITT) $(OBJ_TOOLS)
+
+rex:
+	make -C regex
+
+#--------------------------------------------------------------------
+# installation
+#--------------------------------------------------------------------
+install : all
+	strip $(EXE_ALL)
+	$(INSTALL) -Ds hsc/hsc $(BINDIR)/hsc
+	$(INSTALL) -Ds hsctools/hscdepp $(BINDIR)/hscdepp
+	$(INSTALL) -Ds hsctools/hscpitt $(BINDIR)/hscpitt
+
+#--------------------------------------------------------------------
+# cleanup - remove all objects and executables
+#--------------------------------------------------------------------
+clean :
+	make -C regex clean
+	$(DELETE) $(EXE_ALL)
+	$(DELETE) $(foreach d,$(PROJECT_DIRS),$(wildcard $(d)/*.o))
+
+sterile : clean
+	make -C regex distclean
+	$(DELETE) tags $(foreach d,$(PROJECT_DIRS),$d/tags)
+	$(DELETE) .nautilus-metafile.xml .thumbs .xvpics $(foreach d,$(PROJECT_DIRS),$d/{.nautilus-metafile.xml,.thumbnails,.xvpics})
+
+#--------------------------------------------------------------------
+# update dependencies
+#--------------------------------------------------------------------
+DEP=.deps
+depend:
+	$(DELETE) $(DEP)
+	for d in $(PROJECT_DIRS); do \
+		for f in `ls $$d/*.c`; do \
+			gcc -D@SYSTEM@ -I. -MM "$$f" | \
+			sed -e "s/^\w\+\.o:/$$d\/&/" >>$(DEP); \
+		done; \
+	done
+
+include $(DEP)
