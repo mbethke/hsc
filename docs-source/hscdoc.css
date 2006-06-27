@@ -1,0 +1,101 @@
+/* background, borders etc., stuff that affects the whole page */
+html, body {
+	background-color: #ccc;
+	color: black;
+	margin: 0px;
+	padding: 0px;
+}
+
+/* the DIV that contains the actual page */
+div.page {
+	margin: 0px 1em 0px 11.5em;
+	padding-left: 1em;
+	height: 100%;
+	border: thin solid #ccc; /* Hack :( */
+}
+
+/* the DIV for the navigation menu on the left */
+div.menu {
+	margin: 0;
+	padding: 0px 0em 0px 0.5em;
+	height: 100%;
+	width: 11em;
+	float: left;
+	background-color: #bbb;
+}
+
+/* hide the navigation menu when printing */
+@media print {
+	div.menu { display: none; }
+	div.page { margin-left: 1em; }
+}
+
+.menu a[href] {
+	text-decoration: none;
+	display: block;
+	padding-left: 2px;
+}
+
+.menu span { display: block; }
+
+.menu ul {
+	padding-left: 0em;
+	font-size: 120%;
+	list-style-type: none;
+	line-height: 140%;
+	margin-top: 0px;
+}
+
+.menu ul ul {
+	padding-left: 1em;
+	font-size: 85%;
+}
+
+.menu ul ul ul {
+  font-size: 75%;
+	line-height: 180%;
+}
+
+#hilitemenu {
+  border-left: thin solid #888;
+  border-top: thin solid #888;
+  border-bottom: thin solid #888;
+  background-color: #ccc;
+  padding-left: 2px;
+}
+
+/* General anchors */
+a[href]:link    { color: #05F; }
+a[href]:visited { color: #101080; }
+a[href]:active  { color: #8033FF; }
+a[href]:hover   { background-color: #eee; }
+/* non-highlighting */
+a[href].nohl:hover { background-color: #ccc; }
+
+/* Bibliographies */
+div.bibliography em { font-style: italic; }
+
+/* bibliography keys */
+.bibliography td.key { vertical-align:top; }
+
+/* make footnotes small decimally numbered lists */
+div.footnotes ol {
+	font-size: small;
+	list-style-type: decimal;
+}
+
+/* this list indentaion is just nicer */
+li,ol { list-style-position: outside; }
+
+/* the usual font size/border classes formatting */
+.big { font-size: large; }
+.small { font-size: small; }
+.noborder { border: 0; }
+.invisible { display: none; }
+
+.quote {
+	text-align: right;
+	font-style: italic;
+}
+
+/* vi: set ts=2 sw=2 noet */

@@ -1,0 +1,12 @@
+Documentation Source Directory
+==============================
+
+This directory contains the hsc sources for the documentation to this
+package.
+
+They have been included to provide a rather complex example. Feel free
+to examine the sources and the Makefile.
+
+For some binary distributions (AmigaOS, RiscOS), you might only find
+this README. Please refer to "hsc/README" (see parent directory) where
+you can obtain the source archive from.

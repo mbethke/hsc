@@ -1,0 +1,542 @@
+
+CHANGES
+=======
+
+This file describes improvements and fixes compared to earlier
+versions of hsc. The current version is mentioned first, for
+older versions, look below.
+
+---------------------------------------------------------------------
+Version 1.0 11-Sep-2005
+ (minor improvements)
+
+hsc:
+- Added the $MATCH tag for patternmatching beyond boolean testing: $MATCH can
+  capture the complete match plus up to nine subpatterns (\1 - \9 in vi, $1 - $9
+  in Perl) to variables and thus allows for simple parsing of variable contents.
+
+Documentation:
+- The last version came with an incomplete menu file for the docs. The new one
+  should be complete.
+
+---------------------------------------------------------------------
+Version 0.999, 17-Sep-2005
+ (major improvements, bugfixes)
+
+hsc:
+- Added MATCH and MATCHI operators for case-sensitive and -insensitive regular
+  expression matching. See the docs on expressions for details.
+- Changed container nesting checks: before, a single forgotten closing tag
+  would yield a whole series of errors, like for
+  <html>[...]<body><div><p></div></body></html> in XHTML mode:
+  Warning 14: illegal end tag nesting (expected end tag </P>, found end tag </DIV>)
+  Warning 14: illegal end tag nesting (expected end tag </P>, found end tag </BODY>)
+  Warning 14: illegal end tag nesting (expected end tag </P>, found end tag </HTML>)
+  Now, if there is only a single intervening tag, it will be silently removed,
+  so only a single error is reported.
+- filedate() gave a wrong date on AmigaOS. Fixed.
+- I/O errors upon writing to stdout (due to a supposed glibc weirdness this
+  happened when redirecting to /dev/null) caused a NULL-pointer read. Fixed.
+- Changed message classes to single words (Note, Style, Portability, Warning,
+  Error and Fatal) to simplify parsing.
+- Added checking of CSS clipping rectangles, hopefully completing the parser.
+- Replaced linear lists for defined tags and CSS styles with splay trees from
+  the UBIQX library. There is not as much speed gain as I had expected, but it's
+  noticeable.
+- Started a more unixish commandline parser using getopt, but I'm too lazy to
+  finish it now.
+- Revision bump to V0.999 or 1.0 beta :)
+
+hscdepp:
+- Fixed possible crash when a corrupted project file contained an empty SOURCE
+
+Documentation:
+- Complete overhaul of documentation layout, taking advantage of new macros
+
+---------------------------------------------------------------------
+Version 0.935a, 03-Jun-2004 (The Redmond Release)
+ (workarounds)
+
+This is just a minor release that restores compatibility with Windoze; users of
+other systems won't find any difference other than a later release date. Now
+that I got access to Microsoft's C++ compiler I found that it wouldn't compile
+some of my earlier changes due to its broken includes. V0.935a works around them
+and also includes "Makefile-VC++" that should work without changes if you rename
+it to "Makefile" and call nmake. It doesn't compile the docs nor supports the
+"install" or "clean" targets though.
+
+---------------------------------------------------------------------
+Version 0.935, 20-May-2004
+ (fixes, new features)
+
+hsc:
+- Expanding a simple (non-container) macro in a <$content> context would make
+  the parent container's unset attributes disappear, possibly leading to error
+  messages. Fixed.
+- Fixed include-path bug that would omit the current directory in a source file
+  living in a subdirectory.
+- Added a parser for STYLE values so a lot more checks can be performed on them.
+  See the manual's CSS section for details.
+- On Unixoids, looks for system-wide prefs in /usr/local/lib/hsc and
+  /usr/lib/hsc now. If you want to keep your files in /usr/local/lib or
+  /usr/lib, you can put the directory in $HSCPATH.
+- Include paths can be taken from $HSCINCLUDE as well now.
+- Compiling with debugging enabled caused a small memory leak to be reported
+  where actually there was none.
+- Corrected some harmless warnings upon reading a project file with memory
+  tracking enabled.
+
+prefs:
+- Updated for the new CSS-checking capabilities.
+- Added CSS 2.0 user-specified color names
+
+---------------------------------------------------------------------
+Version 0.934, 05-Feb-2004
+ (fixes, new port)
+
+all:
+- Crosscompiles for AROS now (only tested in hosted mode on Linux/x86 so far),
+  see the Makefile for the set of options
+
+hsc:
+- The JPEG parser that gets the size information from a picture would crash if
+  this information wasn't found within the first 2KB. The fixed version is an
+  order of magnitude or so slower but should handle all JFIF-conforming pictures
+  correctly now, including EXIF.
+- Error message #8 showed garbage at the end and no filename. Fixed.
+- The MOD operator was required to be uppercase. Fixed.
+
+prefs:
+- Fixed /MBI spec for the <tr> tag in XHTML mode
+
+Documentation:
+- Documented error messages #5 and #8
+- HTML docs are now created world-readable. This is mainly to support my
+  laziness, but should be fine for installation in system-wide doc directories
+  as well.
+
+---------------------------------------------------------------------
+Version 0.933, 10-Jan-2004
+ (fixes)
+
+hsc:
+- Added error message #95 to signal network problems when checking external
+  URIs instead of the previous quick-n-dirty perror()
+- A failed connect() was not considered an error, which of course it should
+- Added "Host:" line to HTTP request to make querying virtual servers work
+  without a proxy
+- On systems other than Unices or AmigaOS, the TCP module compiles now but
+  yields error #95 when trying to use it.
+- Plugged a small memory leak in get_http_hdr()
+- Cleaned up some embarassing socket mess
+
+---------------------------------------------------------------------
+Version 0.932, 24-Dec-2003 (The Merry Xmas Release)
+ (fixes, new features)
+
+hsc:
+- Fixed warning when XHTML mode but not QUOTEMODE=double was specified. This
+  quotemode is now the default.
+- Added HTTP support for online checking of external links.
+- Compiles with a standard UNIX target on MacOS "Panther" now
+
+---------------------------------------------------------------------
+Version 0.931, 10-Jul-2003
+ (fixes, new features)
+
+hsc:
+- Replaced the partial (and partially wrong) compiled-in entity list with the
+  official and complete one from the W3C website.
+- Activated the ENTITYSTYLE option that had been hidden in there since Agi's
+  times. HSC can now write entities either as found in the source,
+  symbolically (like "&uuml;"), numerically ("&#252;"), or as UTF-8 ("ü"). The
+  latter is now the default for XHTML documents!
+- Added a PREFNUM attribute to <$defent>, meaning that the numeric
+  representation should be used if ENTITYSTYLE=replace
+- Entities with a RPLC character may have arbitrary numeric representations, as
+  long as these are above 160 (positions 128-159 are unused in Latin1 and
+  Unicode!).
+  This allows e.g. to replace the CP-1252 Euro symbol (#128, if your HSC source
+  should be in this charset, which is not recommended) with a proper Unicode
+  Euro (#8364). See the file "defent-cp1252.prefs" for a mapping from
+  Unicode-illegal CP-1252 characters to Unicode.
+- Removed the undocumented (and fairly dangerous [well, you shouldn't have tried
+  this at home in the first place!] BTW) option JENS/S.
+
+all:
+- Reverted to compilation of individual object files from each source. The
+  significantly smaller executable size should give a bigger speed gain on
+  today's cached memory architectures than a little aid to the global
+  optimizer, which made sense on the virtually cache-less Amiga.
+
+documentation:
+- Updated the Requirements page, documented new features, corrected minor bits.
+
+---------------------------------------------------------------------
+Version 0.930, 28-Apr-2003
+ (fixes)
+
+hsc:
+- No idea what broke the tag-nesting checks, but V0.929 silently accepted stuff
+  like "<b><i>blah</b></i>" :-( Fixed!
+- The /AUTOCLOSE stuff was pretty much broken, probably since last century. HSC
+  considered constructions like "<dl><dt>blah<dd>foo</dl></dd>" acceptable, and
+  I'm quite sure has done so ever since. This was completely reworked and
+  should neither let illegal constructions pass now nor moan about correct
+  ones.
+- STRIPCOMMENTS is more selective now and only strips real SGML comments
+  starting in "<!--", not everything with "<!" like DOCTYPE declarations.
+- In container macros, the current context was not correctly restored after a
+  <$content> tag, causing global variables to be considered local and changes
+  to them discarded at the end of the macro. Fixing this also sped up macro
+  expansion a little.
+- Internalized all entity definitions that had been in the prefs file so far.
+
+prefs:
+- removed obsolete entity definitions.
+
+---------------------------------------------------------------------
+Version 0.929, 03-Apr-2003
+ (fixes, new features)
+
+all:
+- Added a (still somewhat incomplete) VIM syntax highlighting file to the
+  grafflwerk directory.
+
+hsc:
+- Added some CSS support: STYLE attributes are now treated specially in that
+  their values are parsed, multiple attributes in one tag merged into one and
+  warnings issued for properties that appeared more than once.
+- Added <$defstyle> tag to define CSS styles and check STYLE attributes against
+  them
+- Added NOVALIDATECSS=NVCS/S commandline option to disable CSS checking
+- Added GETFILEDATE operator to get the modification date of a file.
+- The /MUST_BE_INSIDE=MBI tag modifier is much stricter in XHTML mode now, it
+  now means "*directly* inside". This pertains to actual HTML tags only though,
+  not macros or HSC tags such as <$if>.
+- <$defent> gives more meaningful warnings now if something is wrong.
+- Fixed an almost certain crash when using the JENS cmdline argument (but you
+  shouldn't have tried this at home in the first place!)
+- Fixed minor hiccoughs of the /OBSOLETE attribute modifier.
+
+prefs:
+- Added CSS definitions that should cover pretty much everything up to CSS 2.0
+- Fixed a tag nesting problem caused by the new /MBI semantics
+
+Documentation:
+- Added message numbers 88-91
+- Added page on CSS
+- Updated the GETSIZE docs and some other minor things
+
+---------------------------------------------------------------------
+Version 0.928, 19-Nov-2002
+ (fixes, new features)
+
+all:
+- Changed default installation prefix to /usr/local [Felix Wiemann]
+- Updated the SAS/C smakefile
+
+hsc:
+- Fixed a somewhat too general URI expansion bugfix in the last version that
+  broke commandline reading -- ``hsc'' with no parameters would not print the
+  option summary.
+- Plugged a small memory leak resulting from yet unused per-tag CSS management
+  functions introduced in an earlier version.
+- Improved URI handling again: relative URIs get optimized now, and links to
+  (local) directories always get a trailing slash to avoid server
+  redirects, thus improving page loading times. 
+- Include files are now first searched for in the including file's directory,
+  before trying the current directory at HSC invocation or any directory
+  specified via INCLUDEDIR.
+- In XHTML mode, the tag modifier /AUTOCLOSE is now synonymous to /CLOSE, as
+  XHTML doesn't have autoclosing tags any more.
+- HSC can handle Unicode entities now. They don't have an equivalent character
+  in the ISO-Latin-1 charset and consequently cannot have a (non-empty) RPLC
+  attribute, but they may be declared, so you don't have to switch off warning
+  #18 to use stuff like typographic quotes etc.
+- Fixed a possible crash when RPLC was missing in a <$defent>
+
+prefs:
+- Generally improved tag-nesting checks, prohibiting block-level elements
+  inside inline elements.
+- Obsolete/nonstandard tags are finally gone completely in XHTML mode
+- Added a short list of Unicode entities from the DocBook DTD. Now that there
+  is a good chance of making all official entities known to HSC, they should
+  probably be compiled into the program to reduce startup time -- they are
+  not likely to change any time soon anyway...
+
+Documentation:
+- Documented symbolic references.
+- Some minor rephrasing and reformatting of the expressions page and others.
+- Cut ancient history (before V0.917) from CHANGES
+
+misc:
+- Added the CvtEntities script to the grafflwerk directory
+
+---------------------------------------------------------------------
+Version 0.927, 06-Nov-2002
+ (fixes, new features, restructuring)
+
+all:
+- Changed the directory layout. Looks a little cluttered now, but compiles
+  like other *IX programs with
+  (untarbz $foo.tar.bz2; cd $foo; make; make install) now.
+- Added the full text of the GPL that should hve been there since Agi GPLed the
+  whole thing.
+- Removed the NEWS file -- you should (and do :)) read CHANGES anyway.
+- Added a spec file for RPM archive creation.
+  
+hsc:
+- Fixed a bug that caused `minmal' absolute URIs (":") not to be replaced.
+- Fixed expansion of links that referenced their document's directory
+  indirectly. These expand to "./" now, instead of "", which means the
+  current document.
+- Fixed symbolic reference evaluation where a function returned a pointer to
+  unallocated memory.
+- Fixed handling of the (set {some-symref}) expression that didn't work.
+- Added MacOS X port.
+- Added unixish syntax (``-'') for reading from STDIN.
+
+prefs:
+- replaced some string definitions for /LAZY with $varlist.
+- stricter rules for HTML/HEAD/BODY in XHTML mode: all /REQUIRED instead of
+  /RECOMMENDED now.
+
+Documentation:
+- Some updates to the ports and use-cases sections, some general typo fixing.
+- Formatted documentation is no longer included with the sources but will be
+  recreated when compiling HSC.
+- Removed the Distribution page.
+- Converted all graphics to PNG format, as I should have done a long time ago.
+- Added a few things to the Makefile.
+- Added macros.readme with a short overview of the macros available in
+  macros.hsc and their purpose.
+
+---------------------------------------------------------------------
+Version 0.926, 17-Aug-2002
+ (new features)
+
+hsc:
+- Added support for symbolic references: expressions enclosed in curly braces
+  will evaluate to the value of the variable whose name is the result of the
+  expression. I.e.
+    <$define foobar:string="foobar-contents">
+    <( {"foo" + "bar"} )>
+  will yield "foobar-contents".
+- Added CHR() and ORD() functions
+
+prefs:
+- stricter yet in XHTML mode (old /JERK tags are gone)
+- some fixes
+
+---------------------------------------------------------------------
+Version 0.925, 13-May-2002
+ (new features)
+
+hsc:
+- shows errors for missing required tags in NORMAL mode now, only RELAXED
+  disables them.
+- added /RCMD=RECOMMENDED attribute modifier. Useful for accessibility tags
+  like ACCESSKEY, TITLE etc., this yields "bad style" warning #90. HSC.Prefs is
+  still awaiting a full update according to the W3C guidelines.
+- user defines from the commandline are now processed before the prefsfile is
+  read. This allows individual prefs to be used depending on commandline
+  switches that needn't be built in but can be user-supplied in form of a
+  DEFINE.
+
+prefs:
+- minor fixes
+- collected some commonly used attribute declarations in $VARLISTs after
+  grokking the corresponding code in HSC. This practical feature had been
+  completely undocumented so far.
+- made some attributes "recomended"; if HSC_ACCESSIBILITY_MOANING is defined,
+  several others will get this modifier too.
+
+documentation:
+- added a description of the $varlist tag.
+- some other small updates on features/prefs.html
+
+---------------------------------------------------------------------
+Version 0.924, 24-Mar-2002
+ (fixes, new features)
+
+hsc:
+- GETSIZE now yields CSS STYLE attributes instead of WIDTH/HEIGHT in
+  XHTML mode. If STYLE exists already, "width:"/"height:" specs are merged in,
+  but without checking if they were already given!
+- whitespace between attribute and value is always removed now
+- LOWERCASETAGS didn't work for automatically generated WIDTH/HEIGHT attributes.
+  Fixed.
+- new global constant HSC.OPTS.XHTML, defined when XHTML option is set
+
+---------------------------------------------------------------------
+Version 0.923, 22-Mar-2002
+ (fixes, some cleanup)
+
+hsc:
+- LOWERCASETAGS/XHTML now also applies to ENUM attribute strings
+- XHTML now implies QUOTESTYLE=double
+- removed some unused debug code
+
+all:
+- now compiles with Visual C++ 6.0 on Windows NT/2000/XP (thanks Olaf!)
+
+documentation:
+- documented the special attribute Hsc.DestPath, which has been there for quite
+  a while
+
+---------------------------------------------------------------------
+Version 0.922, 26-Nov-2001
+ (fixes, new features)
+
+hsc:
+- added experimental XHTML mode
+- removed minor bogons and dead code
+
+---------------------------------------------------------------------
+Version 0.921, 18-Nov-2001
+ (fixes, new features, some cleanup)
+
+all: 
+- Removed superfluous anti-MSDOS code (thanks to Olaf Peters for the patch!)
+- Made some type conversions explicit (also O.Peters)
+- Simplified project file format for easier editing. HSC can still read
+  version 2 project files but always writes V3. The V3 format doesn't have
+  the hexadecimal length of the rest of the line after a tag any more, so you
+  can do search-and-replace editing of project files, e.g. to change your
+  directory structure without rePITTing everything.
+
+hsc:
+- Added NONESTERR switch to suppress "location of last call" messages
+- Checking of attribute values against allowed list in ENUM attributes was
+  broken. Fixed.
+- Fixed basename and extension operator for inputs without extension
+- Added /OBSOLETE attribute modifier, generating WARNING #87
+- Added /LAZY switches (HTML4.01 coreattrs/i18n):
+    't'=TITLE:string
+    'y'=STYLE:string  
+    'd'=DIR:enum("ltr|rtl")
+    'v'=events -> bulk declaration of all HTML4 %events, currently:
+        onclick, ondblclick,
+        onmousedown, onmouseup, onmouseover, onmousemove, onmouseout, 
+        onkeypress, onkeydown, onkeyup
+- Removed /LAZY switch 'w'=NOWRAP:bool, because this attribute is pretty much
+  obsolete for most HTML4 tags. It should be specified explicitely as
+  NOWRAP:bool[/O] in the prefs file.
+ 
+hscpitt & hscdepp:
+- Bumped revision due to changes in the project file format. Oh, and they show
+  the current date now :-)
+
+documentation:
+- Documented the basename, extension and urikind operators
+- Documented new attribute modifiers and LAZY switches
+- Corrected SIZE modifier to the GETSIZE it always was
+
+hsc.prefs
+- Started a major overhaul to update tags and attributes to HTML 4.01
+
+TODO:
+- Add workaround for empty XHTML tags of the form <HUGO />
+- Add option to force tags to lowercase
+
+---------------------------------------------------------------------
+Version 0.920, 23-Sep-2001
+ (minor changes)
+
+hsc:
+- changed the string comparison operators to resemble PERL: LT/GT/LE/GE
+- added a few macros to simplify version management w/o the RevUp utility
+
+documentation:
+- documented the above operators
+- updated author page and other minor things
+
+---------------------------------------------------------------------
+
+Version 0.919, 22-Sep-2001 (The Wakey-Wakey Release)
+ (fixes, new features)
+
+hsc:
+- Added unary operators BASENAME, EXTENSION and URIKIND
+- Fixed string comparison oprators <, <=, >, >=
+- Changed semantics of above operators to mean integer comparison
+- Changed string comparison operators to LT, LTE, GT and GTE
+- "INSIDE"-operator doesn't have to be uppercase any more
+- Added special attributes HSC.Version, HSC.Revision and HSC.DestPath
+- Some minor code simplifications and bugfixes
+- Bugfix: absolute URIs were not expanded upon conditional
+  assignments of the form <TAG ATTR?=VAR>.
+
+documentation:
+- moved now sufficiently tested features from undocumented.html to
+  other sections
+
+--------------------------------------------------------------------
+
+Version 0.918, 08-May-2001
+ (internal)
+
+---------------------------------------------------------------------
+
+Version 0.917, 21-Sep-1998 (The Good Night Release)
+ (fixes, code cleanup, message browser support)
+
+ hsc:
+ - Fixed bug: checking IDs for project relative URIs did not work if
+   the source file was in a nested directory. In more detail:
+   references like ":sepp.html#hugo" did not find ":sepp.html" in the
+   project data structures if it was expanded to something like
+   "resi//sepp.html" when resolving the actual filename. Now the
+   filename is "optimized", so the above example would give
+   "sepp.html" with the useless "resi//" removed. [Ross Nicoll]
+ - Fixed bug: output of message#46 ("replaced entity") used negative
+   numbers due a problem with signed/unsigned characters [Marc Aurel]
+ - Fixed bug: removed a useless "typedef short BOOL" in one of the
+   source files as the "real" typedef is somewhere else and "short"
+   is an improper value for RiscOS [Sergio Monesi]
+ - Fixed "unintentional" feature for automatic URI expansion when
+   comparing two URIs or an URI with a string [Sergio Monesi]
+ - Fixed enforcer hit if entity after "&" was missing and the file or
+   macro ended afterwards
+ - Added code to support <$exec> under RiscOS [Sergio Monesi]
+ - Added Throwback support for RiscOS, use CLI option
+   MSGBROWSER=THROWBACK to activate [Sergio Monesi]
+ - Added ScMsg support for AmigaOS, use CLI option MSGBROWSER=SCMSG
+   to activate
+ - Added VBrowse support for AmigaOS, use CLI option
+   MSGBROWSER=vbrowse to activate
+ - Added message#86 ("error removing file")
+ - Added format specification "%%" for CLI option MSGFORMAT
+ - Removed CLI option MSGANSI, use MSGBROWSER=ANSI instead
+ - Removed CLI option SMARTENT
+
+ hScMsg.rexx (v1.1):
+ - Added not to show message class "Note" as "Warning" rather than
+   as (surprise) "Note" - ScMsg also supports this
+ - Added not to acticate ScMsg's window if no messages showed up
+ - Changed call to 'DelFile' to 'DelComp' so also messages related
+   to include files are removed
+ - Changed copyright to public domain.
+
+ hscpaltrow.rexx (v1.1):
+ - Changed copyright to public domain.
+
+ SendScMsg.rexx (v1.1):
+ - Changed copyright to public domain.
+
+ SendBrowser.rexx:
+ - Removed. Use OpenURL from Aminet instead.
+
+ documentation:
+ - There is now a port for AmigaOS/PPC (ports.html)
+ - The port for RiscOS has a new support page (ports.html)
+ - Clarified options MAXMSG and MAXERR (messages.html)
+ - Clarified how to use quotes inside string constants (assign.html)
+
+ hsc.prefs:
+ - DD and DT are now /AutoClose
+
+ miscellaneous:
+ - compiled with SAS/c 6.58
+
