@@ -1,0 +1,65 @@
+# Makefile for HSC ("HTML Sucks Completely")
+#
+# Copyright (C) 2001-2005 Matthias Bethke
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+
+prefix=@prefix@
+docdir=@datadir@/doc/hsc
+datadir=@datadir@
+DELETE	= rm -f
+DELETEALL= rm -Rf
+INSTALL	= install
+
+.PHONY: all hsc docs clean distclean sterile depend install
+
+all: hsc docs
+
+hsc:
+	make -C src
+docs:
+	PATH="$(shell pwd)/src/hsc:$(PATH)" HSCEXTRAOPTS="IGNORE=21" make -C docs-source
+
+install:
+	make -C src install
+	$(INSTALL) -m 644 hsc.prefs $(datadir)/hsc.prefs
+	$(INSTALL) -m 644 -D README $(docdir)/README
+	$(INSTALL) -m 644 -D CHANGES $(docdir)/CHANGES
+	cp -R docs $(docdir)/
+	cp -R examples $(docdir)/
+	cp -R starter-project $(docdir)/
+	cp -R docs-source $(docdir)/examples/
+	find $(docdir)/docs -type d | xargs -r chmod 755
+	find $(docdir)/docs -type f | xargs -r chmod 644
+	find $(docdir)/examples -type d | xargs -r chmod 755
+	find $(docdir)/examples -type f | xargs -r chmod 644
+	find $(docdir)/starter-project -type d | xargs -r chmod 755
+	find $(docdir)/starter-project -type f | xargs -r chmod 644
+
+clean:
+	make -C src clean
+	$(DELETE) config.log config.status autom4te.cache/*
+
+distclean:
+	make -C src distclean
+	make -C docs-source sterile
+	$(DELETEALL) src/Makefile docs-source/Makefile Makefile config.log config.status autom4te.cache
+
+sterile: distclean
+
+depend: 
+	make -C src depend
+

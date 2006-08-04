@@ -54,7 +54,7 @@
 
 #elif (defined NEXTSTEP) || (defined UNIX) || (defined BEOS) || (defined WINNT)
 #define CONFIG_FILE "hsc.prefs"
-#define CONFIG_PATH "/usr/local/lib/hsc/", "/usr/lib/hsc/"
+#define CONFIG_PATH DATADIR /* see Makefile, set by the configure script */
 #define OPTION_FILE "hsc.options"
 
 /* [3] */

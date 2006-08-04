@@ -25,7 +25,7 @@ DATADIR=@datadir@
 
 .PHONY: all clean all_clean sterile depend ckx rex
 
-CFLAGS	= @CFLAGS@ -D@SYSTEM@ -I.
+CFLAGS	= @CFLAGS@ -D@SYSTEM@ -DDATADIR=$(DATADIR)/hsc/ -I.
 COMP	= @CC@ -o $@ $(CFLAGS)
 LINK	= @CC@ -o $@ $(CFLAGS)
 MOVE	= mv
