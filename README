@@ -1,0 +1,100 @@
+
+NAME
+
+  hsc - HTML Sucks Completely
+
+VERSION 
+
+  1.0
+
+AUTHOR
+
+  Matthias Bethke <Matthias.Bethke@gmx.net> (since V0.918)
+  Thomas Aglassinger <agi@giga.or.at>
+
+DESCRIPTION
+
+  Hsc is a developer tool for HTML projects.
+
+  It can be used on any HTML file and creates a new HTML file as
+  output. In the input file, you may use an extended syntax based on
+  HTML, which allows for things like macros, conditionals, variables,
+  expressions etc.
+
+  It is mainly intended for creating and maintaining larger HTML projects.
+  As a commandline tool, it can be used together with `make', and a
+  dependency generator is included.
+
+  Hsc is not a tool to make HTML easier for beginners; it's a tool
+  to make HTML a bit less painful and brain-damaged for people who
+  already know how to work with it.
+
+FEATURES
+
+  - macros (implemented as additional tags)
+  - conditionals (if/else/elseif)
+  - expressions, supporting
+    - string concatenation and comparison
+    - integer maths
+    - import of environment variables
+    - current time, file modification time
+    - size of files
+  - special tags to
+    - include files (also verbatim text)
+    - export data to files
+    - execute external commands (and include output)
+    - write comments in a reasonable way
+  - checks both local and remote URIs
+  - project relative URIs
+  - replaces special characters with entities
+  - translates arbitrary 8-bit charsets to UTF-8
+  - adds attributes for image size (PNG/JFIF/GIF)
+  - can strip useless whitespace, comments and tags
+  - replaces icon entities by images
+  - performs a basic syntax and structure check
+  - error messages are easier to understand than the esoteric crap
+    tools like sglms vomit
+  - maintains a project file
+  - includes hscpitt, a tool to examine/manipulate project files
+  - includes hscdepp, a dependancy generator for makefiles
+
+NEW FEATURES
+  see CHANGES
+
+REQUIREMENTS
+
+  Unixoid: tested on Linux, and MacOS X; Makefile supports
+           NeXTStep, should compile fine on other flavors, too.
+  AmigaOS: OS2.04 or higher (tested: OS3.1), 2 MB RAM, 68020
+           recommended: 4 MB RAM, 68060.
+           Compilation requires unistd.h which comes (at least) with SAS/C
+           and gcc
+  Windows: Should be fine on any W32 system, as long as the file system
+           supports long filenames (or what counted as "long" in the last
+           millennium...)
+  RiscOS : anybody without the latest version left? :) This hasn't been tested
+           for quite a few releases and is likely to need fixing.
+
+  For non-Unixoids, also see the README files in your respective OS'
+  subdirectory!
+
+  Unlike many other HTML tools, HSC requires a user IQ >50. You should
+  also know how to work with the shell and how to write Makefiles. Some
+  experience with macro processors and/or programming languages ([A]Rexx,
+  Perl, Python or even a Real Language[tm]) facilitate things :)
+
+AVAILABILITY
+
+ - currently only from my homepage at
+   http://www.linguistik.uni-erlangen.de/~msbethke/software.html
+   This release consists of a source archive and an RPM for Linux/i386
+   See the webpage or mail me (mb) for binaries for other platforms.
+
+PRICE
+
+  Freeware.
+
+DISTRIBUTION
+
+  Distributed under the GNU General Public License.
+
