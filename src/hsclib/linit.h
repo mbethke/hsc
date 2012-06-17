@@ -40,6 +40,6 @@ extern BOOL hsc_assign_tagCBs(HSCPRC * hp);
 #endif /* NOEXTERN_HSCLIB_LINIT_H */
 #endif /* HSCLIB_LINIT_H */
 
-/* $Id$ */
+/* $Id: linit.h,v 1.4 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */
 

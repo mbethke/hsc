@@ -38,6 +38,14 @@
 #define strclone( s ) ugly_strclone(s,__FILE__,__LINE__)
 #define reallocstr( o,n ) ugly_reallocstr(o,n,__FILE__,__LINE__)
 
+#if DEBUG_UGLY_MEMORY
+#define ugly_newstr(size,file,line) \
+   ((STRPTR)ugly_malloc_tracking((size), (file), (line)))
+#else
+#define ugly_newstr(size,file,line) \
+   ((STRPTR)umalloc(size))
+#endif
+
 /* options for strenum */
 #define STEN_CASE   0           /* case sensitive search */
 #define STEN_NOCASE 1           /* case insensitive search */
@@ -55,7 +63,6 @@ extern int upstrncmp(CONSTRPTR s1, CONSTRPTR s2, size_t n);
 extern STRPTR upstrstr(CONSTRPTR s1, CONSTRPTR s2);
 
 extern void ugly_freestr(STRPTR s, STRPTR file, ULONG line);
-extern STRPTR ugly_newstr(int size, STRPTR file, ULONG line);
 extern STRPTR ugly_strclone(CONSTRPTR oldstr, STRPTR file, ULONG line);
 extern void ugly_reallocstr(STRPTR * oldstr, CONSTRPTR newstr, STRPTR file, ULONG line);
 

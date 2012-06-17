@@ -810,5 +810,5 @@ BOOL hsc_standard_nomem_handler(size_t size) {
     return (FALSE);             /* abort immediately */
 }
 
-/* $Id$ */
+/* $Id: hscprc.c,v 1.13 2005/09/17 15:08:59 mb Exp $ */
 /* vi: set ts=3 sw=3: */

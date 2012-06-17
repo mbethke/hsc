@@ -195,5 +195,5 @@ extern BOOL is_macro_tag(HSCTAG * tag);
 #endif /* NOEXTERN_HSCLIB_TAG_H */
 #endif /* HSCLIB_TAG_H */
 
-/* $Id$ */
+/* $Id: tag.h,v 1.9 2006/03/15 22:05:06 mb Exp mb $ */
 /* vi: set ts=4: */

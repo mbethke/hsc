@@ -45,5 +45,5 @@ void hscregfreeall(regex_t *r);
 
 #endif /* HSC_REGMATCH_H */
 
-/* $Id$*/
+/* $Id: regmatch.h,v 1.5 2006/03/15 22:01:52 mb Exp $*/
 /* vi: set ts=4: */

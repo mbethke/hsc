@@ -28,7 +28,6 @@
 #ifndef HSCLIB_INC_BASE_H
 #define HSCLIB_INC_BASE_H
 
-#include "sysdep.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <errno.h>
@@ -60,6 +59,6 @@
 
 #endif /* HSCLIB_INC_BASE_H */
 
-/* $Id$ */
+/* $Id: inc_base.h,v 1.6 2006/03/15 21:59:36 mb Exp $ */
 /* vi: set ts=4: */
 

@@ -51,6 +51,6 @@ extern void hsc_msg_nouri(HSCPRC * hp, STRPTR filename, STRPTR uriname, STRPTR n
 #endif /* NOEXTERN_HSCLIB_MESSAGE */
 #endif /* HSCLIB_MESSAGE_H */
 
-/* $Id$ */
+/* $Id: lmessage.h,v 1.6 2005/09/17 15:09:52 mb Exp $ */
 /* vi: set ts=4: */
 

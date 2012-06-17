@@ -125,12 +125,10 @@ HSCSTYLE *add_styledef(hsctree *styles, CONSTRPTR name, CONSTRPTR value)
    return NULL;
 }
 
-/* non-ISO isblank() function is currently needed only here */
-static int isblank(int c)
+/* make isblank() a proper function even if defined as a macro in sysdep.h */
+static int isblank_local(int c)
 {
-   if((c == ' ') || (c == '\t'))
-      return TRUE;
-   return FALSE;
+   return ISBLANK(c);
 }
 
 #define nelems(a) (sizeof(a)/sizeof(*(a)))
@@ -140,11 +138,9 @@ static BOOL parse_stringset(CONSTRPTR *sp, CONSTRPTR * const values, int nvalues
    for(i=0; i<nvalues; ++i) {
       if(0 == upstrncmp(values[i],*sp,strlen(values[i]))) {
          *sp += strlen(values[i]);
-         /* fprintf(stderr, "parse_stringset() found match '%s'\n",values[i]); */
          return TRUE;
       }
    }
-   /* fprintf(stderr, "parse_stringset() no match\n"); */
    return FALSE;
 }
 
@@ -321,7 +317,7 @@ static BOOL parse_r(CONSTRPTR *sp) /* clipping rectangle */
 
    if(0 == upstrncmp(*sp,"rect(",5)) {
       *sp += 5;
-      while(parse_singlecharclass(sp,&isblank)) ;
+      while(parse_singlecharclass(sp,&isblank_local)) ;
       for(i=0; i<4; ++i) {
          if(!parse_P(sp,FALSE)) {
             if(0 != upstrncmp(*sp,"auto",4))
@@ -329,15 +325,15 @@ static BOOL parse_r(CONSTRPTR *sp) /* clipping rectangle */
             *sp += 4;
          }
          if(i<3) {
-            if(!parse_singlecharclass(sp,&isblank))
+            if(!parse_singlecharclass(sp,&isblank_local))
                return FALSE;
-            while(parse_singlecharclass(sp,&isblank)) ;
+            while(parse_singlecharclass(sp,&isblank_local)) ;
          }
       } 
-      while(parse_singlecharclass(sp,&isblank)) ;
+      while(parse_singlecharclass(sp,&isblank_local)) ;
       if(!parse_singlechar(sp,')'))
          return FALSE;
-      while(parse_singlecharclass(sp,&isblank)) ;
+      while(parse_singlecharclass(sp,&isblank_local)) ;
       return ('\0' == **sp);
    }
    return FALSE;
@@ -469,4 +465,4 @@ BOOL add_width_height_attrs(HSCPRC *hp, ULONG width, ULONG height)
    return (BOOL)(rw && rh);
 } 
 
-/* $Id$ */
+/* $Id: css.c,v 1.11 2012/06/17 19:34:46 mb Exp mb $ */

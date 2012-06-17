@@ -1031,5 +1031,5 @@ BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STRPTR tag
     return ((BOOL) (nw != NULL));
 }
 
-/* $Id$ */
+/* $Id: skip.c,v 1.6 2006/03/15 22:02:38 mb Exp $ */
 /* vi: set ts=4: */

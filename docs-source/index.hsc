@@ -32,12 +32,12 @@ Don't believe the hype<BR>Take a look at the small print<BR>Ignore the bold type
 <p class="version">(Version <(Version)>
 <$stripws type="both">, <(release-date)>)</p>
 
-<p lang="de"><img src="image/teutsch.png" ALT="[german]" ALIGN="middle">Es
+<p lang="de"><img src="image/teutsch.png" ALT="[german]">Es
 gibt keine <A HREF="teutsch.html">deutschsprachige Dokumentation</A>.</P>
 
 <P><(DESCRIPTION)></P>
 
-<IMG SRC="image/hsc.png" ALT="..SUCK SUCK SUCK.." ALIGN="right">
+<IMG SRC="image/hsc.png" ALT="..SUCK SUCK SUCK..">
 
 <P>A current version of this program and manual should always be
 available from <A HREF="http://www.linguistik.uni-erlangen.de/~msbethke/software.html"><(HSC.ANCHOR)></A></P>

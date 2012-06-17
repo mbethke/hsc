@@ -168,6 +168,6 @@ extern STRPTR get_vardeftext(HSCATTR * var);
 #endif /* NOEXTERN_HSCLIB_ATTRIBUTE_H */
 #endif /* HSCLIB_ATTRIBUTE_H */
 
-/* $Id$ */
+/* $Id: attrib.h,v 1.7 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */
 

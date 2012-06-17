@@ -147,5 +147,5 @@ BOOL handle_sgml_comment(HSCPRC * hp, HSCTAG * tag)
     return !stripped;
 }
 
-/* $Id$ */
+/* $Id: tag_misc.c,v 1.3 2003/07/06 04:37:34 mb Exp $ */
 /* vi: set ts=4: */

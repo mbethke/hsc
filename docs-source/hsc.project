@@ -2,7 +2,7 @@ HSC_PROJECT
 VERSION 3 
 # Contains all data relevant for project.
 # Maintained by hsc, DO NOT MODIFY!
-# updated: 13-Jun-2006 00:21:42
+# updated: 17-Jun-2012 14:20:05
 DOCUMENT ../docs/macro/flag.html
 SOURCE macro/flag.hsc
 TITLE 
@@ -634,6 +634,31 @@ INCLUDE inc/webpage.hsc
 INCLUDE inc/menus.hsc
 INCLUDE features/menu.hsc
 INCLUDE menu.hsc
+DOCUMENT ../docs/features/spctags.html
+SOURCE features/spctags.hsc
+TITLE 
+ID _menuskipped
+ID comments
+ID content
+ID if
+ID depend
+ID include
+ID define
+ID let
+ID macro
+ID message
+ID match
+ID stripws
+ID export
+ID expression
+ID dontparse
+INCLUDE inc/macros.hsc
+INCLUDE inc/html.hsc
+INCLUDE inc/macro.hsc
+INCLUDE inc/webpage.hsc
+INCLUDE inc/menus.hsc
+INCLUDE features/menu.hsc
+INCLUDE menu.hsc
 DOCUMENT ../docs/messages.html
 SOURCE messages.hsc
 TITLE 
@@ -796,31 +821,6 @@ DOCUMENT ../docs/features/css.html
 SOURCE features/css.hsc
 TITLE 
 ID _menuskipped
-INCLUDE inc/macros.hsc
-INCLUDE inc/html.hsc
-INCLUDE inc/macro.hsc
-INCLUDE inc/webpage.hsc
-INCLUDE inc/menus.hsc
-INCLUDE features/menu.hsc
-INCLUDE menu.hsc
-DOCUMENT ../docs/features/spctags.html
-SOURCE features/spctags.hsc
-TITLE 
-ID _menuskipped
-ID comments
-ID content
-ID if
-ID depend
-ID include
-ID define
-ID let
-ID macro
-ID message
-ID match
-ID stripws
-ID export
-ID expression
-ID dontparse
 INCLUDE inc/macros.hsc
 INCLUDE inc/html.hsc
 INCLUDE inc/macro.hsc

@@ -29,6 +29,7 @@
 #include <time.h>
 
 #include "hsclib/hsclib.h"
+#include "hsclib/tcpip.h"
 #include "ugly/returncd.h"
 
 #define NOEXTERN_HSC_GLOBAL_H
@@ -63,17 +64,17 @@ STRARR misc_buffer[6000];       /* misc. buffer (must be >5000) */
  */
 BOOL init_global(void)
 {
-    BOOL ok = TRUE;
+   BOOL ok = TRUE;
 
-    return_code = RC_OK;
+   return_code = RC_OK;
 
-    /* init some string */
-    inpfilename = init_estr(32);
-    msgbuf = init_estr(64);
-
-    ok = (inpfilename && msgbuf);
-
-    return (ok);
+   /* init some string */
+   inpfilename = init_estr(32);
+   msgbuf = init_estr(64);
+   init_tcpip();
+   ok = (inpfilename && msgbuf);
+  
+   return (ok);
 }
 
 /*
@@ -83,11 +84,12 @@ BOOL init_global(void)
  */
 void cleanup_global(void)
 {
-    del_estr(inpfilename);
-    del_estr(outfilename);
-    del_dllist(define_list);
-    del_dllist(incfile);
-    del_estr(msgbuf);
+   del_estr(inpfilename);
+   del_estr(outfilename);
+   del_dllist(define_list);
+   del_dllist(incfile);
+   cleanup_tcpip();
+   del_estr(msgbuf);
 }
 
 /*

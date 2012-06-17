@@ -32,6 +32,6 @@ extern BOOL handle_canchor(HSCPRC * hp, HSCTAG * tag);
 
 #endif /* HSCLIB_TAG_A_H */
 
-/* $Id$ */
+/* $Id: tag_a.h,v 1.2 2003/07/06 04:37:34 mb Exp $ */
 /* vi: set ts=4: */
 

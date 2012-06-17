@@ -207,6 +207,6 @@
 
 #endif
 
-/* $Id$ */
+/* $Id: msgid.h,v 1.10 2004/10/02 04:26:59 mb Exp $ */
 /* vi: set ts=4: */
 

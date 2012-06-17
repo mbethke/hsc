@@ -200,5 +200,5 @@ void append_output(STRPTR text)
     app_estr(outstr, text);
 }
 
-/* $Id$ */
+/* $Id: output.c,v 1.5 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */

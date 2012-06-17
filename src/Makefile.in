@@ -16,18 +16,19 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
-# $Id$
+# $Id: Makefile.in,v 1.1 2006/03/16 13:24:58 mb Exp mb $
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 BINDIR=@bindir@
 DATADIR=@datadir@
 
-.PHONY: all clean all_clean sterile depend ckx rex
+.PHONY: all clean all_clean distclean sterile depend ckx rex
 
-CFLAGS	= @CFLAGS@ -D@SYSTEM@ -DDATADIR=$(DATADIR)/hsc/ -I.
+CFLAGS	= @CFLAGS@ -D@SYSTEM@ -I.
 COMP	= @CC@ -o $@ $(CFLAGS)
 LINK	= @CC@ -o $@ $(CFLAGS)
+LINKLIBS= @LINKLIBS@
 MOVE	= mv
 COPY	= cp
 DELETE	= rm -f
@@ -71,13 +72,13 @@ all : rex $(EXE_ALL)
 	$(COMP) -c $<
 
 hsc/hsc : $(OBJ_HSC)
-	$(LINK) $(OBJ_HSC)
+	$(LINK) $(OBJ_HSC) $(LINKLIBS)
 
 hsctools/hscdepp : $(OBJ_TOOLS) $(OBJ_DEPP)
-	$(LINK) $(OBJ_DEPP) $(OBJ_TOOLS)
+	$(LINK) $(OBJ_DEPP) $(OBJ_TOOLS) $(LINKLIBS)
 
 hsctools/hscpitt : $(OBJ_TOOLS) $(OBJ_PITT)
-	$(LINK) $(OBJ_PITT) $(OBJ_TOOLS)
+	$(LINK) $(OBJ_PITT) $(OBJ_TOOLS) $(LINKLIBS)
 
 rex:
 	make -C regex
@@ -99,7 +100,8 @@ clean :
 	$(DELETE) $(EXE_ALL)
 	$(DELETE) $(foreach d,$(PROJECT_DIRS),$(wildcard $(d)/*.o))
 
-sterile : clean
+sterile: distclean
+distclean: clean
 	make -C regex distclean
 	$(DELETE) tags $(foreach d,$(PROJECT_DIRS),$d/tags)
 	$(DELETE) .nautilus-metafile.xml .thumbs .xvpics $(foreach d,$(PROJECT_DIRS),$d/{.nautilus-metafile.xml,.thumbnails,.xvpics})

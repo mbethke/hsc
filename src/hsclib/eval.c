@@ -1673,5 +1673,5 @@ STRPTR eval_conditional_assignment(HSCPRC * hp, HSCATTR * dest) {
    return (attr_val);
 }
 
-/* $Id$ */
+/* $Id: eval.c,v 1.12 2006/03/15 21:57:00 mb Exp $ */
 /* vi: set ts=4: */

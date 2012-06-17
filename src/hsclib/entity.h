@@ -83,6 +83,6 @@ extern void add_ent(DLLIST * entlist, STRPTR entid, char entreplace, short num, 
 #endif /* NOEXTERN_HSCLIB_ENTITY_H */
 #endif /* HSCLIB_ENTITY_H */
 
-/* $Id$ */
+/* $Id: entity.h,v 1.8 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */
 

@@ -789,5 +789,5 @@ ULONG set_tag_args(HSCPRC * hp, HSCTAG * tag) {
    return (result_tci);
 }
 
-/* $Id$ */
+/* $Id: deftag.c,v 1.12 2006/03/15 21:55:50 mb Exp $ */
 /* vi: set ts=4: */

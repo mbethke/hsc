@@ -169,5 +169,5 @@ static struct HSCENTITY {
  	{"diams",	9830, FALSE}
 };
 
-/* $Id$ */
+/* $Id: entities.c,v 1.5 2005/09/17 15:08:35 mb Exp $ */
 /* vi: set ts=4: */

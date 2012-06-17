@@ -299,5 +299,5 @@ BOOL hsc_include_string(HSCPRC * hp, STRPTR filename, STRPTR s, ULONG optn)
     return (hsc_base_include_string(hp, filename, s, optn, NULL));
 }
 
-/* $Id$ */
+/* $Id: include.c,v 1.7 2004/05/20 13:00:13 mb Exp $ */
 /* vi: set ts=4: */

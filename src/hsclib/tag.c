@@ -273,6 +273,6 @@ BOOL is_macro_tag( HSCTAG *tag )
     return((BOOL)(((tag->option) & HT_MACRO)>0));
 }
 
-/* $Id$ */
+/* $Id: tag.c,v 1.8 2006/03/15 22:05:06 mb Exp mb $ */
 /* vi: set ts=4: */
 

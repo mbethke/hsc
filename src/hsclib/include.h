@@ -53,6 +53,6 @@ extern BOOL hsc_base_include_string(HSCPRC * hp, STRPTR filename, STRPTR s, ULON
 
 #endif /* HSCLIB_INCLUDE_H */
 
-/* $Id$ */
+/* $Id: include.h,v 1.3 2003/07/06 04:37:34 mb Exp $ */
 /* vi: set ts=4: */
 

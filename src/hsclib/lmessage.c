@@ -492,5 +492,5 @@ void hsc_msg_nouri(HSCPRC * hp, STRPTR filename, STRPTR uriname, STRPTR note)
     }
 }
 
-/* $Id$ */
+/* $Id: lmessage.c,v 1.8 2005/09/17 15:09:52 mb Exp $ */
 /* vi: set ts=4: */

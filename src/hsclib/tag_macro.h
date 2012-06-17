@@ -35,6 +35,6 @@ extern BOOL handle_hsc_content(HSCPRC * hp, HSCTAG * tag);
 
 #endif /* HSC_TAG_MACRO_H */
 
-/* $Id$ */
+/* $Id: tag_macro.h,v 1.2 2003/07/06 04:37:34 mb Exp $ */
 /* vi: set ts=4: */
 

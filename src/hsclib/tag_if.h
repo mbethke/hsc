@@ -41,6 +41,6 @@ extern void del_select_stack_node(APTR data);
 
 #endif /* HSCLIB_TAG_IF_H */
 
-/* $Id$ */
+/* $Id: tag_if.h,v 1.3 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */
 

@@ -382,5 +382,5 @@ BOOL get_attr_size(HSCPRC * hp, HSCTAG * tag)
     return (TRUE);
 }
 
-/* $Id$ */
+/* $Id: size.c,v 1.9 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */

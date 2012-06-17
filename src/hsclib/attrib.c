@@ -464,5 +464,5 @@ STRPTR get_vardeftext(HSCATTR * var)
    return (deftext);
 }
 
-/* $Id$ */
+/* $Id: attrib.c,v 1.7 2005/04/12 14:29:35 mb Exp $ */
 

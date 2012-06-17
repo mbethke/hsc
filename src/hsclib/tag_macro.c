@@ -459,5 +459,5 @@ BOOL handle_hsc_macro(HSCPRC * hp, HSCTAG * tag)
     return (FALSE);
 }
 
-/* $Id$ */
+/* $Id: tag_macro.c,v 1.5 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */

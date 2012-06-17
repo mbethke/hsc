@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(hsc, 1.0, matthias@towiski.de)
+AC_INIT(hsc, 1.0, matthias.bethke@gmx.net)
 AC_PREREQ(2.57)
 AC_CONFIG_SRCDIR([src/ubiqx/sys_include.h])
 AC_CONFIG_HEADER([src/config.h])
@@ -19,7 +19,6 @@ AC_CHECK_HEADERS([locale.h memory.h netdb.h netinet/in.h stddef.h stdlib.h strin
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
-AC_HEADER_STDC
 AC_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_SIZE_T

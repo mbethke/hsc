@@ -187,7 +187,7 @@ STRPTR getcurrentdir(void) {
  */
 void setcurrentdir(const STRPTR dir) {
    /* this is just to avoid too much system specific stuff in other modules */
-   chdir(dir);
+   (void)chdir(dir);
 }
 
 /*

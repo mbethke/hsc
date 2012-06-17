@@ -50,6 +50,6 @@ void hsc_status_line(HSCPRC * hp)
         (*hp->CB_status_line) (hp);
 }
 
-/* $Id$ */
+/* $Id: lstatus.c,v 1.3 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */
 

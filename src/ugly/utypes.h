@@ -35,7 +35,23 @@
 
 #ifdef AMIGA
 #include <exec/types.h>
-#else
+
+#elif defined WINNT
+#include <windef.h>
+typedef void *APTR;             /* 32-bit untyped pointer */
+typedef long LONG;              /* signed 32-bit quantity */
+typedef unsigned long ULONG;    /* unsigned 32-bit quantity */
+typedef unsigned short UWORD;   /* unsigned 16-bit quantity */
+typedef unsigned char UBYTE;    /* unsigned 8-bit quantity */
+typedef char *STRPTR;           /* string pointer (NULL terminated) */
+typedef unsigned char TEXT;
+#ifndef NULL
+#define NULL            ((void*)0L)
+#endif
+#define BYTEMASK        (0xFF)
+#define WORDMASK        (0xFFFF)
+
+#else /* AMIGA/WINNT */
 
 typedef void *APTR;             /* 32-bit untyped pointer */
 typedef long LONG;              /* signed 32-bit quantity */
@@ -67,7 +83,7 @@ typedef enum { FALSE=0, TRUE=1} BOOL;
 #define BYTEMASK        (0xFF)
 #define WORDMASK        (0xFFFF)
 
-#endif /* AMIGA */
+#endif /* AMIGA/WINNT */
 
 /*
  *

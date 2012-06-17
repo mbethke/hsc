@@ -5,7 +5,7 @@
  * and ABOVE
  * Exception due to name clash: HORN=Ho, HOOK=Hk
  *
- * $Id: vietchar.hsc 164 2006-04-05 20:44:30Z mb $
+ * $Id: vietchar.hsc,v 1.1 2006/04/05 20:44:30 mb Exp mb $
  *>
 <$defent NAME="aHk" NUM=7843>
 <$defent NAME="AHk" NUM=7842>

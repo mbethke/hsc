@@ -39,6 +39,6 @@ extern BOOL add_width_height_attrs(HSCPRC *hp, ULONG width, ULONG height);
 
 #endif /* HSC_CSS_H */
 
-/* $Id$ */
+/* $Id: css.h,v 1.5 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */
 

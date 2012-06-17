@@ -627,4 +627,4 @@ void move_local_varlist(DLLIST * destlist, DLLIST * varlist, ULONG mci)
    } else panic("mci=MCI_ERROR");
 }
 
-/* $Id$ */
+/* $Id: defattr.c,v 1.5 2005/04/12 14:29:35 mb Exp $ */

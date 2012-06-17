@@ -121,5 +121,5 @@ void hscregfreeall(regex_t *r)
    ufree(r);
 }
 
-/* $Id$*/
+/* $Id: regmatch.c,v 1.5 2006/03/15 22:01:31 mb Exp $*/
 /* vi: set ts=4: */

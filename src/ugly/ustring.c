@@ -49,27 +49,6 @@ int last_ch(CONSTRPTR s)
 }
 
 /*
- * ugly_newstr
- *
- * allocate space for a string
- * (basically like umalloc, just to avoid problems with the memtracking
- * versions)
- *
- * params: size: bytes to allocate (does not add any space for '\0'!)
- * result: ptr to free memory
- * errors: out of memory: returns NULL
- *
- */
-STRPTR ugly_newstr(int size, STRPTR file, ULONG line)
-{
-#if DEBUG_UGLY_MEMORY
-        return (STRPTR) ugly_malloc_tracking(size, file, line);
-#else
-        return (STRPTR) umalloc(size);
-#endif
-}
-
-/*
  * strclone
  *
  * create a clone of a string

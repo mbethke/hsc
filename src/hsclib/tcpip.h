@@ -31,4 +31,6 @@
 #include "hsclib/hscprc.h"
 
 extern BOOL check_ext_uri(HSCPRC *hp, const char *uri);
+void init_tcpip(void);
+void cleanup_tcpip(void);
 

@@ -193,5 +193,5 @@ void add_ent(DLLIST * entlist, STRPTR entid, char entreplace, short num, char fl
     }
 }
 
-/* $Id$ */
+/* $Id: entity.c,v 1.6 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */

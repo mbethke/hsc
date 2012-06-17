@@ -51,6 +51,6 @@ extern void remove_end_tag(HSCPRC * hp, HSCTAG * tag);
 #endif /* NOEXTERN_PARSE_H */
 #endif /* HSC_PARSE_H */
 
-/* $Id$ */
+/* $Id: parse.h,v 1.3 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */
 

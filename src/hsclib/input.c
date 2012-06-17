@@ -234,6 +234,6 @@ BOOL parse_gt(HSCPRC * hp)
     return (parse_wd(hp, ">"));
 }
 
-/* $Id$ */
+/* $Id: input.c,v 1.2 2003/07/06 04:37:34 mb Exp $ */
 /* vi: set ts=4: */
 

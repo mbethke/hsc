@@ -34,6 +34,6 @@ extern void hsc_status_line(HSCPRC * hp);
 
 #endif /* HSCLIB_LSTATUS_H */
 
-/* $Id$ */
+/* $Id: lstatus.h,v 1.3 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */
 

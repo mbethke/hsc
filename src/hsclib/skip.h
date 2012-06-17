@@ -69,6 +69,6 @@ extern BOOL skip_until_tag(HSCPRC * hp, EXPSTR * content, EXPSTR * tagfound, STR
 
 #endif /* HSCLIB_SKIP_H */
 
-/* $Id$ */
+/* $Id: skip.h,v 1.4 2003/09/17 13:04:41 mb Exp $ */
 /* vi: set ts=4: */
 

@@ -422,9 +422,9 @@ BOOL hsc_assign_tagCBs(HSCPRC * hp)
 
 /* print a tag attached to a tree node -- for ubi_btTraverse() */
 #if DEBUG
-static void print_tag_node(ubi_btNode *nd)
+static void print_tag_node(ubi_btNodePtr nd, void *dummy)
 {
-   prt_tag(stderr, HSCTREENODEDP(nd,HSCTAG*));
+   prt_tag(stderr, *HSCTREENODEDP(nd,HSCTAG*));
 }
 #endif
 
@@ -485,5 +485,5 @@ BOOL hsc_init_hscprc(HSCPRC * hp, STRPTR prefs_fname)
 }
 
 
-/* $Id$ */
+/* $Id: linit.c,v 1.13 2012/06/17 19:35:34 mb Exp mb $ */
 /* vi: set ts=3: */

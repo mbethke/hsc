@@ -36,6 +36,6 @@
 
 #endif /* HSCLIB_HSCLIB_H */
 
-/* $Id$ */
+/* $Id: hsclib.h,v 1.2 2003/07/06 04:37:34 mb Exp $ */
 /* vi: set ts=4: */
 

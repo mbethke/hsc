@@ -438,7 +438,9 @@ BOOL handle_hsc_export(HSCPRC * hp, HSCTAG * tag) {
    STRPTR data = get_vartext_byname(tag->attr, "DATA");
    BOOL append = get_varbool_byname(tag->attr, "APPEND");
    BOOL relsrc = get_varbool_byname(tag->attr, "RELSRC");
+   BOOL write_error = 0;
    EXPSTR *real_filename = init_estr(1);
+   const size_t datalen = strlen(data);
 
    if (filename && data) {
       FILE *outfile = NULL;
@@ -455,11 +457,13 @@ BOOL handle_hsc_export(HSCPRC * hp, HSCTAG * tag) {
       errno = 0;
       outfile = fopen(estr2str(real_filename), writemode);
       if (outfile) {
-         fwrite(data, sizeof(char), strlen(data), outfile);
+         if(datalen != fwrite(data, sizeof(char), strlen(data), outfile))
+            write_error = 1;
          fclose(outfile);
       }
 
-      if (errno) {
+      if (errno || write_error) {
+         // should invent some errno for write_error
          hsc_message(hp, MSG_IOERROR, "error opening/writing %q: %s",
                estr2str(real_filename), strerror(errno));
       }
@@ -955,17 +959,18 @@ BOOL handle_hsc_match(HSCPRC * hp, HSCTAG * tag)
             D(fprintf(stderr,DHL "Gotta create var '%s'\n",cap[i]);)
             var = app_var(hp->defattr,cap[i]);
             var->vartype = VT_STRING;
-            var->varflag |= VF_MACRO;
-            var->macro_id = get_current_mci(hp);    /* make this a macro-local variable */
+            var->varflag |= VF_MACRO;   /* make this a macro-local variable */
+            var->macro_id = get_current_mci(hp);
          }
+         /* The variable's old contents are not needed any more in any case */
+         if(var->text) ufreestr(var->text);
+         var->text = NULL;
          /* did the pattern match and has the corresponding capture been filled? */
          if(ok && (-1 != regs_start[i])) {
-            ufreestr(var->text);
             var->text = clone_string_range(str,regs_start[i],regs_end[i]);
             D(fprintf(stderr,DHL "Set var to '%s'\n",var->text);)
          } else {
-            /* no match/unfilled capture, so set variable to "undefined" */
-            ufreestr(var->text);
+            /* no match/unfilled capture, so keep variable as undefined */
             D(fprintf(stderr,DHL "Set var to undef (no %s)\n",ok?"capture":"match");)
          }
       }
@@ -1009,5 +1014,5 @@ BOOL handle_hsc_stripws(HSCPRC * hp, HSCTAG * tag)
    return (FALSE);
 }
 
-/* $Id$ */
+/* $Id: tag_hsc.c,v 1.15 2012/06/17 19:40:14 mb Exp mb $ */
 /* vi: set ts=4: */

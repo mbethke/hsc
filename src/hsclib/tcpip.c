@@ -27,6 +27,10 @@
 
 #include "sysdep.h"
 
+#ifdef WINNT
+#include "winsock2.h"
+#endif
+
 #include "hsclib/tcpip.h"
 #include "hsclib/ldebug.h"
 #include "hsclib/lmessage.h"
@@ -35,6 +39,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <errno.h>
+
 
 #ifdef AMIGA
 #include <proto/exec.h>
@@ -45,6 +50,19 @@
 #include <netdb.h>
 #include <unistd.h>
 struct Library *SocketBase;
+
+#define SOCKERROR errno
+#define INVALID_SOCKET -1
+#define CLOSESOCKET close
+#define SOCK int
+
+#elif defined WINNT
+#define SOCKERROR WSAGetLastError()
+#define CLOSESOCKET closesocket
+#define SOCK SOCKET
+WSADATA wsaData;
+static BOOL module_init = FALSE;
+
 #elif defined UNIX && HAVE_UNISTD_H
 #ifdef SYS_SOCKET_H
 #include <sys/socket.h>
@@ -55,7 +73,12 @@ struct Library *SocketBase;
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif
+#define SOCKERROR errno
+#define INVALID_SOCKET (-1)
+#define CLOSESOCKET close
+#define SOCK int
 #else
+
 /* this system is not yet supported, just create a dummy function */
 BOOL check_ext_uri(HSCPRC *hp, char *uri)
 {
@@ -95,7 +118,8 @@ static BOOL get_http_hdr(
 {
    EXPSTR *message, *request;
    BOOL reading, ret = FALSE;
-   int sock, nread, n;
+   int nread, n;
+   SOCK sock;
    struct sockaddr_in saddr;
    struct hostent *he;
    char *rcvbuf, *cr=NULL;
@@ -109,6 +133,8 @@ static BOOL get_http_hdr(
                "cannot check external URIs -- no bsdsocket.library");
             return FALSE;
       }
+#elif defined WINNT
+
 #endif
    /* top directories must be requested as "/", even though they are sometimes
     * not explicitly given in the URI */
@@ -118,7 +144,8 @@ static BOOL get_http_hdr(
    rcvbuf = ucalloc(RCVBUF_SIZE,1);
       
    /* create socket */
-   if(-1 != (sock = socket(PF_INET, SOCK_STREAM, 0))) {
+   sock = socket(PF_INET, SOCK_STREAM, 0);
+   if(INVALID_SOCKET != sock) {
       /* construct HTTP request */
       request = init_estr(64);
       set_estr(request,HTTP_METHOD);
@@ -145,12 +172,12 @@ static BOOL get_http_hdr(
             /* send request */
             D(fprintf(stderr,DHL "Requesting '%s' %s %s\n",
                   estr2str(request),(NULL==proxy)?"from":"via",(NULL==proxy)?host:proxy);)
-            write(sock,estr2str(request),strlen(estr2str(request)));
+            send(sock,estr2str(request),strlen(estr2str(request)),0);
             shutdown(sock,SHUT_WR);
             
             /* read first part of response: "HTTP/x.x xxx " */
             for(nread=0,reading=TRUE; reading && (REPLYLEN-nread);) {
-               switch(n = read(sock,rcvbuf,REPLYLEN-nread)) {
+               switch(n = recv(sock,rcvbuf,REPLYLEN-nread,0)) {
                   case -1 :
                      hsc_message(hp, MSG_DUBIOUS_EXTURI,
                            "dubious external URI \"%s\": error reading from server: %s",
@@ -191,7 +218,7 @@ static BOOL get_http_hdr(
                         message = init_estr(32);
                         set_estr(message,rcvbuf+9);
                         /* read rest of response */
-                        while((nread = read(sock,rcvbuf,RCVBUF_SIZE-1)) > 0) {
+                        while((nread = recv(sock,rcvbuf,RCVBUF_SIZE-1,0)) > 0) {
                            if(-1 == nread) break;
                            if(NULL == cr) {
                               cr = strchr(rcvbuf,'\r');
@@ -231,7 +258,7 @@ static BOOL get_http_hdr(
 
       del_estr(request);
       close(sock);
-   } else hsc_message(hp, MSG_NO_EXTCHECK, "socket() failed: %s)",strerror(errno));
+   } else hsc_message(hp, MSG_NO_EXTCHECK, "socket() failed: %s)",strerror(SOCKERROR));
    ufree(rcvbuf);
 #ifdef AMIGA
    CloseLibrary(SocketBase);
@@ -329,6 +356,9 @@ static BOOL check_proxyonly_uri(HSCPRC *hp, CONSTRPTR uri, CONSTRPTR proxy) {
 }
 
 BOOL check_ext_uri(HSCPRC *hp, const char *uri) {
+#ifdef WINNT
+   if(!module_init) return TRUE;
+#endif
    while(isspace(*uri)) ++uri;
    if(0 == strncmp(uri,"http://",7)) {
       return check_http_uri(hp,uri,getenv("http_proxy"));
@@ -342,5 +372,22 @@ BOOL check_ext_uri(HSCPRC *hp, const char *uri) {
 }
 #endif /* defined(UNIX) || defined(AMIGA) */
 
-/* $Id$*/
+void init_tcpip(void)
+{
+#ifdef WINNT
+    if(NO_ERROR == WSAStartup(MAKEWORD(2,2), &wsaData))
+       module_init = TRUE;
+    else
+       fprintf(stderr,"Error initializing Winsock, cannot check external URIs!\n");
+#endif
+}
+
+void cleanup_tcpip(void)
+{
+#ifdef WINNT
+   WSACleanup();
+#endif
+}
+
+/* $Id: tcpip.c,v 1.6 2012/06/17 19:27:54 mb Exp mb $*/
 /* vi: set ts=4: */

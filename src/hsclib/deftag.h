@@ -34,6 +34,6 @@ extern HSCTAG *def_tag_name(HSCPRC * hp, BOOL * open_tag);
 
 #endif /* HSCLIB_DEFTAG_H */
 
-/* $Id$ */
+/* $Id: deftag.h,v 1.2 2003/07/06 04:37:34 mb Exp $ */
 /* vi: set ts=4: */
 

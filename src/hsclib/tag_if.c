@@ -469,5 +469,5 @@ BOOL handle_hsc_elseif(HSCPRC * hp, HSCTAG * tag)
     return (FALSE);
 }
 
-/* $Id$ */
+/* $Id: tag_if.c,v 1.5 2006/02/27 21:34:21 mb Exp $ */
 /* vi: set ts=4: */

@@ -54,7 +54,7 @@
 
 #elif (defined NEXTSTEP) || (defined UNIX) || (defined BEOS) || (defined WINNT)
 #define CONFIG_FILE "hsc.prefs"
-#define CONFIG_PATH DATADIR /* see Makefile, set by the configure script */
+#define CONFIG_PATH "/usr/local/lib/hsc/", "/usr/lib/hsc/"
 #define OPTION_FILE "hsc.options"
 
 /* [3] */
@@ -451,6 +451,6 @@ extern BOOL hsc_standard_nomem_handler(size_t size);
 #endif /* NOEXTERN_HSC_HSCPRC */
 #endif /* HSC_HSCPRC_H */
 
-/* $Id$ */
+/* $Id: hscprc.h,v 1.11 2005/04/12 14:29:35 mb Exp $ */
 /* vi: set ts=4: */
 

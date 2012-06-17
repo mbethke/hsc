@@ -56,6 +56,6 @@ extern BOOL handle_hsc_insert_expression(HSCPRC * hp, HSCTAG * tag);
 
 #endif /* HSCLIB_TAG_HSC_H */
 
-/* $Id$ */
+/* $Id: tag_hsc.h,v 1.4 2006/03/15 22:05:06 mb Exp mb $ */
 /* vi: set ts=4: */
 

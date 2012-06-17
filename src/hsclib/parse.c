@@ -1226,5 +1226,5 @@ BOOL hsc_parse_end_id(HSCPRC * hp)
    return (BOOL) (!hp->fatal);
 }
 
-/* $Id$ */
+/* $Id: parse.c,v 1.15 2006/03/15 22:00:53 mb Exp $ */
 /* vi: set ts=4: */

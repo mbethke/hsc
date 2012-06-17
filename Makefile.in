@@ -18,7 +18,7 @@
 #
 
 prefix=@prefix@
-docdir=@datadir@/doc/hsc
+docdir=@datadir@/doc/hsc/
 datadir=@datadir@
 DELETE	= rm -f
 DELETEALL= rm -Rf
@@ -42,12 +42,12 @@ install:
 	cp -R examples $(docdir)/
 	cp -R starter-project $(docdir)/
 	cp -R docs-source $(docdir)/examples/
-	find $(docdir)/docs -type d | xargs -r chmod 755
-	find $(docdir)/docs -type f | xargs -r chmod 644
-	find $(docdir)/examples -type d | xargs -r chmod 755
-	find $(docdir)/examples -type f | xargs -r chmod 644
-	find $(docdir)/starter-project -type d | xargs -r chmod 755
-	find $(docdir)/starter-project -type f | xargs -r chmod 644
+	find $(docdir)/docs -type d | xargs chmod 755
+	find $(docdir)/docs -type f | xargs chmod 644
+	find $(docdir)/examples -type d | xargs chmod 755
+	find $(docdir)/examples -type f | xargs chmod 644
+	find $(docdir)/starter-project -type d | xargs chmod 755
+	find $(docdir)/starter-project -type f | xargs chmod 644
 
 clean:
 	make -C src clean

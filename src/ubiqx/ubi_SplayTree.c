@@ -36,7 +36,7 @@
  *
  * -------------------------------------------------------------------------- **
  *
- * $Log$
+ * $Log: ubi_SplayTree.c,v $
  * Revision 1.1  2004/09/11 18:30:36  mb
  * Initial revision
  *
@@ -169,8 +169,8 @@
  */
 
 static char ModuleID[] = "ubi_SplayTree\n\
-\t$Revision: 112 $\n\
-\t$Date: 2004-09-11 20:30:36 +0200 (Sat, 11 Sep 2004) $\n\
+\t$Revision: 1.1 $\n\
+\t$Date: 2004/09/11 18:30:36 $\n\
 \t$Author: mb $\n";
 
 

@@ -507,5 +507,5 @@ void parse_uri(HSCPRC * hp, EXPSTR *dest_uri, STRPTR uri)
    }                           /* if (uri) */
 }
 
-/* $Id$ */
+/* $Id: uri.c,v 1.12 2006/03/15 22:05:06 mb Exp mb $ */
 /* vi: set ts=4: */
