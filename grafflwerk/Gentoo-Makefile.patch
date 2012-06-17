@@ -1,0 +1,19 @@
+*** Makefile.in.orig	2005-09-17 19:07:02.000000000 +0200
+--- Makefile.in	2005-09-17 19:15:24.000000000 +0200
+***************
+*** 18,24 ****
+  #
+  
+  prefix=@prefix@
+! docdir=@datadir@/doc/hsc/
+  datadir=@datadir@
+  DELETE	= rm -f
+  DELETEALL= rm -Rf
+--- 18,24 ----
+  #
+  
+  prefix=@prefix@
+! docdir=@datadir@/doc/${P}/
+  datadir=@datadir@
+  DELETE	= rm -f
+  DELETEALL= rm -Rf

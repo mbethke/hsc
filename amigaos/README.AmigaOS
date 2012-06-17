@@ -1,0 +1,3 @@
+Nowadays, HSC development is chiefly going on on Linux, but AmigaOS executables
+will be provided once in a while. Some functions such as external URI checking
+may not be available, or at least not on all OS versions otherwise supported.

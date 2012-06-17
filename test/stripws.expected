@@ -1,0 +1,8 @@
+<HTML><HEAD><TITLE>Strip White Spaces</TITLE></HEAD><BODY>
+
+    ab c
+    a   b c
+    a  b c
+    a     b c
+
+</BODY></HTML>

@@ -1,0 +1,112 @@
+The following is a more or less complete list of macros distributed with HSC,
+grouped by function. The "$macro" tag has been omitted, otherwise the definition
+is identical to the one in macros.hsc. A more detailed documentation can be
+found in macros.hsc itself.
+
+
+GENERAL UTILITY 
+===============
+
+<TEXT_TO_STRING /CLOSE VAR:string/R>
+<_CONVERT-NUMBER-SYSTEM SYS:string/R DEST:string/R N:num/R>
+<_MAKE-CSS-STYLE ATTR:string NAME:string/R DEST:string/R>
+
+
+LOOPS 
+=====
+
+<FOR /CLOSE VAR:string/R START:num=1 TO:num/R STEP:num=1>
+<WHILE /CLOSE COND:string/R>
+<BREAK /MBI="for|while" N:num>
+
+
+ARRAYS 
+======
+
+<_MAKE_ARRAYCODE N:num/R P:string/R VAR:string/R TYPE:string='string'
+ DEFAULT:string GLOBAL:bool>
+<(DEFARRAY_PRE)>
+<(DEFARRAY_POST)>
+<DEFARRAY_MAIN N:num/R P:string/R TYPE:string='string' DEFAULT:string
+ GLOBAL:bool>
+
+
+SCRIPTING 
+=========
+
+<INTERPRET-SCRIPT INTERPRETER:string/R PARAMS:string SCRIPT:string/R ARGS:string
+ TOVAR:string>
+<PERL /CLOSE ARGS:string TOVAR:string>
+<DYN-PERL SCRIPT:string/R ARGS:string TOVAR:string>
+<PYTHON /CLOSE ARGS:string TOVAR:string>
+<DYN-PYTHON SCRIPT:string/R ARGS:string TOVAR:string>
+
+
+PAGES AND FRAMES 
+================
+
+<THISDOCTYPE>
+<HEADER TITLE:string/R KEYWORDS:string DESCRIPTION:string AUTHOR:string
+ LANGUAGE:string STYLEFILE:uri JAVASCRIPT:string JAVASCRIPT-EXT:uri
+ SHORTCUTICON:uri DEFAULTFRAME:string
+ BASE:uri ROBOTS:enum("index|noindex|follow|nofollow") PROFILE:uri
+ REVISIT-AFTER:string CHARSET:string ALLOW-SMARTTAGS:bool
+ NOPROXYCACHE:bool NOBROWSERCACHE:bool CLASSIFICATION:string
+ DISTRIBUTION:enum("global|local") COPYRIGHT:string REPLY-TO:string
+ HOMEPAGE:uri EXTRA:string>
+<WEBPAGE /CLOSE>
+<FRAMESETPAGE /CLOSE>
+<LAST_CHANGE>
+
+
+GRAPHICS 
+========
+
+<THUMBNAIL PIC:uri/R ALT:string/R NEWWIN:bool SIZE:enum("alt|title") [__IAlign]>
+
+
+LAYOUT / TEX 
+============
+
+<FOOTNOTE /CLOSE>
+<FOOTNOTES RULERS:bool BACKLINK:string TITLE:string>
+<FOOTNOTESTITLED TITLE:string="Footnotes" TC:string="H1" RULERS:bool BACKLINK:string>
+<THEBIBLIOGRAPHY /CLOSE TITLE:string="Bibliography" TC:string="H1">
+<BIBITEM KEY:string/R AUTHOR:string/R DATE:string/R TITLE:string/R PLACE:string
+ PUBLISHER:string TYPE:string EDITION:string>
+<CITATION SRC:string/R TEXT:string BIBFILE:uri>
+<TABLE-OF-CONTENTS TITLE:string FILE:string TEXTSIZE:bool>
+<GIMME-LATEX-SECTIONS /ONLYONCE DOC:enum("book|report|article")/R SEPCHAR:string
+ NUMSTYLE:string BIAS:string> 
+ provides the following macros 
+
+    <CHAPTER       TITLE:string/R>
+    <SECTION       TITLE:string/R>
+    <SUBSECTION    TITLE:string/R>
+    <SUBSUBSECTION TITLE:string/R>
+    <PARAGRAPH     TITLE:string/R>
+    <SUBPARAGRAPH  TITLE:string/R>
+
+
+DYNAMIC LAYOUT
+==============
+
+<ROWGROUP /CLOSE NELEMS:num/R PAD:num BORDER:num STYLE:string CLASS:string>
+<COLUMNGROUP /CLOSE NELEMS:num/R PAD:num BORDER:num CLASS:string>
+<GROUPENTRY /CLOSE /MBI="rowgroup|columngroup" HEAD:bool>
+<ROWGROUP-NEWCOLUMN /MBI="rowgroup" HEAD:bool>
+<COLUMNGROUP-NEWROW /MBI="columngroup" CELLS:bool>
+
+
+MENUS 
+=====
+
+<TOPMENU /CLOSE /MBI="html" /NAW="topmenu" MAXNESTDEPTH:num='4'
+ MENUSTYLE:string='' ITEMHLSTYLE:string
+ ITEMHLID:string AUTOCLASS:string MENUCLASS:string=''
+ LINKCURRENT:bool JSCLICKS:bool>
+<SUBMENU /CLOSE /MBI="menuitem" MENUSTYLE:string=''
+ MENUCLASS:string='' FILE:string>
+<MENUITEM /CLOSE /MBI="topmenu|submenu" HREF:uri/R TEXT:string/R
+ TITLE:string='__HSC_NO_TITLE__' KEY:string>
+

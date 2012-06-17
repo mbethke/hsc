@@ -1,0 +1,81 @@
+Simple Example Project
+======================
+
+This directory contains a small example project.
+
+The sources are collected in "source_hsc/" and should be converted to
+"object_html/". This is the directory where the "browsable" data
+will be located.
+
+This text assumes that you are in the CLI and your current directory
+is "[hsc]/examples/simple/source_hsc/", with "[hsc]" being the
+directory where you installed this package to.
+
+Description of sources:
+-----------------------
+
+main.hsc              the welcome page of this project
+stupid.hsc            a simple page that can be reached from "main"
+macro.hsc             contains some macro definitions and is
+                      included into all files
+hugo/                 a subdirectory, where all information about
+                      Hugo is collected
+hugo/hugo.hsc         some information about Hugo
+hugo/hugo.gif         a picture of Hugo
+
+Setting up the object directory:
+--------------------------------
+
+For every directory in the source-dir, a corresponding directory
+with the same name has to be created. This can be done via
+
+    makedir /object_html/hugo
+
+As the picture is of no real use in the source directory, you should
+move it to the object directory:
+
+    rename hugo/hugo.gif /object_html/hugo/
+
+Note that every file, that is not a hsc-source or include-file has to
+be located somewhere in the object directory. This especially concerns
+pictures, sounds and everything else that is linked, but not a hsc
+source file.
+
+Starting the conversion:
+------------------------
+
+Now you are ready to start `make':
+
+    make
+
+Of course, you need to have a `make' command installed in your search
+path. See the main documentation where to obtain it.
+
+After that, all html-objects in "object_html/" should be ready.
+
+Note that there does not exist a "macro.html", because the there is
+no rule for this in the makefile. There is no rule necessary,
+because "macro.hsc" is never converted alone, but only included by
+the other files. Additionally, "macro.hsc" contains no readable text
+or tags.
+
+Take a look at the "Makefile" to understand the basic concept of hsc.
+
+Toubleshooting:
+---------------
+
+If make aborts with a message like
+
+   *** unable to open `/object_html/hugo/hugo.html' for output:
+       No such file or directory
+
+you forgot the call to `makedir' mentioned above.
+
+If make aborts with a message like
+
+   Makefile:31: *** missing separator.  Stop.
+
+you are using a editor which replaces TABs by normal blanks. This is a
+good time to start browsing the documantation, section `Project
+Management/Make'...
+

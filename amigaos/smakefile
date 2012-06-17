@@ -1,0 +1,89 @@
+#
+# Makefile for hsc ("html sucks completely")
+#
+# Copyright (C) 2002 Matthias Bethke
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+
+# Now that HSC development has continued on Linux for a while, it seems time for
+# a "backport" to AmigaOS.
+# /me digs for smakefile syntax under the new heaps of GNUwledge...
+
+# NOTE: this smakefile is *not* "standalone. It requires dependencies generated
+# only by the GNU Makefile, and it can't do any of the things that require
+# sh/bash functionality
+
+CFLAGS=OPT OPTSCHED ANSI CPU=68020 DEF AMIGA IGN=304 IGN=315
+COMP=sc $(CFLAGS)
+
+.c.o:
+	$(COMP) $*.c
+
+#
+# symbols for objects and executables
+#
+OBJ_TOOLS	= ugly/umemory.o ugly/ustring.o ugly/unikot.o ugly/expstr.o \
+		ugly/fname.o ugly/dllist.o ugly/ufile.o ugly/uargs.o \
+		ugly/ustrlist.o ugly/infile.o ugly/prginfo.o \
+		hscprj/document.o hscprj/license.o hscprj/project.o \
+		hscprj/readprj.o hscprj/writeprj.o
+
+OBJ_HSC		= $(OBJ_TOOLS) \
+		hsclib/lmessage.o hsclib/entity.o hsclib/tag.o hsclib/attrib.o \
+		hsclib/idref.o hsclib/hscprc.o hsclib/lstatus.o hsclib/input.o \
+		hsclib/skip.o hsclib/uri.o hsclib/eval.o hsclib/posteval.o \
+		hsclib/defattr.o hsclib/deftag.o hsclib/css.o hsclib/parse.o \
+		hsclib/include.o hsclib/linit.o hsclib/size.o hsclib/tag_misc.o \
+		hsclib/tag_a.o hsclib/tag_hsc.o hsclib/tag_if.o \
+		hsclib/tag_macro.o \
+		hsc/global.o hsc/status.o hsc/callback.o hsc/args.o \
+		hsc/output.o hsc/hsc.o
+OBJ_DEPP	= hsctools/hscdepp.o
+OBJ_PITT	= hsctools/hscpitt.o
+OBJ_ALL		= $(OBJ_HSC)
+EXE_ALL		= hsc/hsc hsctools/hscdepp hsctools/hscpitt
+
+#
+# compile all tools
+#
+all : $(EXE_ALL)
+
+hsc/hsc : $(OBJ_HSC)
+	slink <with <
+	TO hsc/hsc
+	FROM lib:c.o $(OBJ_HSC)
+	LIB lib:sc.lib lib:amiga.lib
+	STRIPDEBUG
+	<
+
+hsctools/hscdepp : $(OBJ_TOOLS) $(OBJ_DEPP)
+	slink <with <
+	TO hsctools/hscdepp
+	FROM lib:c.o $(OBJ_DEPP) $(OBJ_TOOLS)
+	LIB lib:sc.lib lib:amiga.lib
+	STRIPDEBUG
+	<
+
+hsctools/hscpitt : $(OBJ_TOOLS) $(OBJ_PITT)
+	slink <with <
+	TO hsctools/hscpitt
+	FROM lib:c.o $(OBJ_PITT) $(OBJ_TOOLS)
+	LIB lib:sc.lib lib:amiga.lib
+	STRIPDEBUG
+	<
+
+#include .deps
+

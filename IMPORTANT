@@ -1,0 +1,17 @@
+IMPORTANT
+=========
+
+For a short general information, read `README'.
+
+For a complete list of fixes and improvements, read `CHANGES'.
+
+If you want to compile this package, run
+./configure
+make
+make install
+...or read Makefile.in if you have to tweak anything.
+
+To read the documentation before compiling HSC, see
+http://towiski.de/hsc/index.html
+Compiling HSC will also create the manual in the docs/ directory -- just
+start your browser and open the file `docs/index.html'.

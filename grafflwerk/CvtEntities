@@ -1,0 +1,8 @@
+# This converts entity lists as found on the web to HSC $defent tags
+perl -e '
+  while(<>) {
+    chomp;
+    next unless length > 5;
+    ($name,$num,$c)=/<!ENTITY (\w+)\s+"&#x([^;]+);"\s*>(.*)/;
+    printf "<\$defent NAME=\"%s\" RPLC=\"\" NUM=\"%d\" $c\n",$name,hex($num);
+  }'

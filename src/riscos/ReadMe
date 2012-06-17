@@ -1,0 +1,68 @@
+Preparing the sources for compilation
+=====================================
+
+The sources of hsc come in Unix filename conventions (ie. '/c' and '/h'
+extensions) so you need to convert them to RISC OS format (ie. directories
+'c', 'h' and 'o'). The RunMe1st Obey file does this automatically, it scans
+all the source directory, renames the files accordingly and creates the 'o'
+directories where needed. It also sets the filetype of MakeStubs (see below)
+and copies the Makefile from the 'riscos' directory to the upper directory
+from where you can run it.
+
+Note that you need a filing system that supports names longer than 10
+characters in order to compile hsc (eg. use LongFiles on FileCore discs or
+an image filing system such as X-Files or SparkFS). Actually names longer
+than 10 characters are only present before the files are moved to the 'c' and
+'h' directories, once you have executed the RunMe1st file you can copy the
+sources to any filing system.
+
+
+Making o.UnixStubs
+==================
+
+You will need to make o.UnixStubs before you can compile this program.  This
+is a patched SharedCLibrary.
+
+
+Semi-Automatic
+--------------
+
+Copy your Cv5 o.Stubs from their normal place into the o directory as
+UnixStubs.
+
+Show the Filer the !Patch application (comes with all versions of RISCOS)
+
+Double click on the MakeStubs patch file.
+
+Drag o.UnixStubs onto Patch, tick the patch and then choose to patch all
+from the menu.
+
+
+Manual
+------
+
+Copy your Cv5 o.Stubs from their normal place into the o directory as
+UnixStubs.
+
+Load it into a text editor.
+
+Change the occurrence of
+  fopen   --> gopen
+  freopen --> greopen
+  rename  --> gename
+  remove  --> gemove
+
+Save the file.  Note that you shouldn't have made the file any longer in the
+process and you should only have changed 4 bytes.
+
+
+Compiling the sources
+=====================
+
+Just set the CSD in the 'source' directory and execute 'amu' or double click
+the Makefile. At the end of the compilation you'll find the three executables
+'hsc', 'hscdepp' and 'hscpitt' in the main hsc directory (ie. one level above
+'source').
+
+Currently only the Acorn C V5 compiler has been tested but probably also
+Acorn C V4 will be able to compile hsc.

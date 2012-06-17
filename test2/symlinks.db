@@ -1,0 +1,5 @@
+root = :root
+foo  = %root%/foo.html
+bar  = %root%/bar.html
+sub  = %root%/subdir
+baz  = %sub%/baz.html

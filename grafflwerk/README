@@ -1,0 +1,47 @@
+About `grafflwerk'
+==================
+
+This drawer contains some files and material that can be useful in
+combination with hsc. Do with it whatever you want, use at your own
+risk.
+
+The ARexx-scripts for ScMsg are a bit experimental because I don't
+like ScMsg and don't use these scripts myself.
+
+The Arexx-script `SendBrowser' currently only supports AWeb, but
+should be easy to modify for other Browsers because it is not very
+complex.
+
+hScMsg.rexx
+-----------
+An ARexx-script that invokes hsc redirecting it's messages and sends
+messages outputed by hsc to ScMsg, which is part of the
+SAS/c-package. It is supposed to be used as a substitute for hsc
+inside Makefiles. See the source-code for usage.
+
+hscPalthrow.rexx
+----------------
+An ARexx-script which invokes hscpitt and parses it's output, so the
+user can easily access it. Refer to the documentation, section
+"project management/hscpalthrow for details.
+
+SendBrowser.rexx
+----------------
+An ARexx-script that can be used to display an updated html-object in
+AWeb. Refer to the documentaion, section "project
+management/makefiles/postprocessing" for details.
+
+SendScMsg.rexx
+--------------
+An ARexx-script that sends messages outputed by hsc to ScMsg, which
+is part of the SAS/c-package. See the source-code for usage.
+
+CvtEntities
+-----------
+This is a primitive Perl script to convert lists of entities in SGML notation
+to HSC's <$defent> syntax. If you can't figure out how to use it, you shouldn't.
+
+vietchar.hsc
+------------
+Provides character entities for Vietnamese characters outside the ISO-8859-1
+range. See documentation at start of file.

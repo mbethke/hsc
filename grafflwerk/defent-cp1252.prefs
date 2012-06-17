@@ -1,0 +1,31 @@
+<* This file contains entity definitions to map Windows CP-1252 characters in
+ * the #128-#159 range to their HTML-valid Unicode equivalents.
+ * You can paste it into your hsc.prefs or just put an <$include> there.
+ *>
+
+<$defent NAME="euro"  RPLC="€" NUM="8218"> <* Single Low-9 Quotation Mark *>
+<$defent NAME="sbquo"  RPLC="130" NUM="8218"> <* Single Low-9 Quotation Mark *>
+<$defent NAME="fnof"   RPLC="‚131" NUM="402">  <* Latin Small Letter F With Hook *>
+<$defent NAME="bdquo"  RPLC="ƒ132" NUM="8222"> <* Double Low-9 Quotation Mark *>
+<$defent NAME="hellip" RPLC="„" NUM="8230"> <* Horizontal Ellipsis *>
+<$defent NAME="dagger" RPLC="…" NUM="8224"> <* Dagger *>
+<$defent NAME="Dagger" RPLC="†" NUM="8225"> <* Double Dagger *>
+<$defent NAME="circ"   RPLC="‡" NUM="710">  <* Modifier Letter Circumflex Accent *>
+<$defent NAME="permil" RPLC="ˆ" NUM="8240"> <* Per Mille Sign *>
+<$defent NAME="Scaron" RPLC="‰" NUM="352">  <* Latin Capital Letter S With Caron *>
+<$defent NAME="lsaquo" RPLC="Š" NUM="8249"> <* Single Left-Pointing Angle Quotation Mark *>
+<$defent NAME="OElig"  RPLC="‹" NUM="338">  <* Latin Capital Ligature OE *>
+<$defent NAME="lsquo"  RPLC="‘" NUM="8216"> <* Left Single Quotation Mark *>
+<$defent NAME="rsquo"  RPLC="’" NUM="8217"> <* Right Single Quotation Mark *>
+<$defent NAME="ldquo"  RPLC="“" NUM="8220"> <* Left Double Quotation Mark *>
+<$defent NAME="rdquo"  RPLC="”" NUM="8221"> <* Right Double Quotation Mark *>
+<$defent NAME="bull"   RPLC="•" NUM="8226"> <* Bullet *>
+<$defent NAME="ndash"  RPLC="–" NUM="8211"> <* En Dash *>
+<$defent NAME="mdash"  RPLC="—" NUM="8212"> <* Em Dash *>
+<$defent NAME="tilde"  RPLC="˜" NUM="732">  <* Small Tilde *>
+<$defent NAME="trade"  RPLC="™" NUM="8482"> <* Trade Mark Sign *>
+<$defent NAME="scaron" RPLC="š" NUM="353">  <* Latin Small Letter S With Caron *>
+<$defent NAME="rsaquo" RPLC="›" NUM="8250"> <* Single Right-Pointing Angle Quotation Mark *>
+<$defent NAME="oelig"  RPLC="œ" NUM="339">  <* Latin Small Ligature OE *>
+<$defent NAME="Yuml"   RPLC="" NUM="376">  <* Latin Capital Letter Y With Diaeresis *>
+

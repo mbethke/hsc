@@ -1,0 +1,523 @@
+<* $Id: hsc.prefs,v 1.22 2004/05/20 11:07:09 mb Exp mb $
+**
+** This is the config file for HSC
+**
+** It defines all tags of XHTML 1.0 and HTML 4.01,
+** and all entities for the ISO-Latin-1 charset. 
+**
+** (C) 2001-2003 Matthias Bethke
+** released under GPL als part of HSC
+**
+*>
+
+<* Some definitions for later use in tag declaration; they roughly
+ * correspond to the entities by the same name in the HTML4.01/strict DTD
+ *>
+<$varlist __coreattrs /LAZY='icyt'>                <* HTML4 %coreattrs *>
+<$varlist __i18n /LAZY='ld'>                       <* HTML4 %i18n attrs *>
+<$varlist __attrs /LAZY='v' [__coreattrs] [__i18n]><* HTML4 %attrs *>
+
+<* some ENUMs *>
+<$varlist __Align ALIGN:enum("left|center|right|justify")>     <* general alignment *>
+<$varlist __IAlign ALIGN:enum("top|middle|bottom|left|right")> <* image alignment *>
+<$varlist __Shape SHAPE:enum("rect|circle|poly|default")>      <* for AREA etc. *>
+
+<* These are not needed (yet)
+<$define __elem-pureblock:string/CONST="address|blockquote|center|dir|div|dl|fieldset|form|h1|h2|h3|h4|h5|h6|hr|isindex|menu|noframes|noscript|ol|p|pre|table|ul">
+<$define __elem-kindablock:string/CONST="dd|dt|frameset|li|tbody|td|tfoot|th|thead|tr">
+<$define __elem-block:string/CONST=(__elem-pureblock + __elem-kindablock)>
+*>
+<$define __elem-inline:string/CONST="a|abbr|acronym|b|basefont|bdo|big|br|cite|code|dfn|em|font|i|img|input|kbd|label|q|s|samp|select|small|span|strike|strong|sub|sup|textarea|tt|u|var">
+
+<* for CSS *>
+<$define __css-border-styles:string/CONST="none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset">
+
+<* Shortcut declarations for some frequently used attribute combinations *>
+<$varlist __HVAlign ALIGN:enum("left|center|right|justify|char")
+                   VALIGN:enum("top|middle|bottom|baseline")>
+<$varlist __HeadingAttrs [__Align] NOWRAP:bool/O SEQNUM:string/O
+                         SKIP:string/O DINGBAT:string/O>
+<$varlist __ColumnAttrs SPAN:num WIDTH:string [__HVAlign] CHAR:string
+                        CHAROFF:string>
+<$varlist __WidthHeight WIDTH:string HEIGHT:string>
+<$varlist __OnFocusOnBlur onFocus:string onBlur:string>
+<$varlist __TFrameRules FRAME:enum("void|above|below|hsides|lhs|rhs|vsides|box|border")
+                        RULES:enum("none|groups|rows|cols|all")>
+
+<* Define HSC_ACCESSIBILITY_MOANING to get extra
+   "recommended attribute missing" warnings for stuff recommended in the
+   W3C Accessibility Guidelines for non-visual user agents *>
+<$if COND=(defined HSC_ACCESSIBILITY_MOANING)>
+  <$varlist __Alt ALT:string/RCMD>
+  <$varlist __Summary SUMMARY:string/RCMD>
+  <$varlist __Abbr ABBR:string/RCMD>
+  <$varlist __TabIndex TABINDEX:num/RCMD>
+  <$varlist __AccessKey ACCESSKEY:string/RCMD>
+<$else>
+  <$varlist __Alt ALT:string>
+  <$varlist __Summary SUMMARY:string>
+  <$varlist __Abbr ABBR:string>
+  <$varlist __TabIndex TABINDEX:num>
+  <$varlist __AccessKey ACCESSKEY:string>
+</$if>
+
+<* Some attributes get treated differently in XHTML mode (also see below) *>
+<$if COND=(defined HSC.OPTS.XHTML)>
+  <$varlist __Background> 
+  <$varlist __BodyColors>
+  <$varlist __Compact>
+  <$varlist __Focus [__TabIndex] [__AccessKey] [__OnFocusOnBlur]>
+  <$varlist __Target>
+  <$define __applet:string=''>
+<$else>
+  <$varlist __Background BGCOLOR:color BACKGROUND:uri/O>
+  <$varlist __BodyColors TEXT:color LINK:color VLINK:color ALINK:color
+                         BGCOLOR:color>
+  <$varlist __Compact COMPACT:bool>
+  <$varlist __Focus [__AccessKey] [__OnFocusOnBlur]>
+  <$varlist __Target TARGET:string>
+  <$define __applet:string='applet|'>
+</$if>
+
+<* some HSC defaults *>
+<$define HSC.CLICK-HERE:string/c="click|here|klicken">
+<$define HSC.COLOR-NAMES:string/c=("aqua|black|blue|fuchsia|gray|green|lime|" +
+  "maroon|navy|olive|purple|red|silver|teal|white|yellow" +
+  "activeborder|activeborder|activecaption|appworkspace|background|" +
+  "buttonface|buttonhighlight|buttontext|captiontext|greytext|highlight|" +
+  "highlighttext|inactiveborder|inactivecaption|infobackground|infotext|" +
+  "menu|menutext|scrollbar|threeddarkshadow|threedface|threedhighlight|"+
+  "threedlightshadow|threedshadow|window|windowframe|windowtext")>
+
+<************>
+<* entities *>
+<************>
+<$defent NAME="nbsp"   RPLC=" " NUM="160">
+<$defent NAME="iexcl"  RPLC="¡" NUM="161">
+<$defent NAME="cent"   RPLC="¢" NUM="162">
+<$defent NAME="pound"  RPLC="£" NUM="163">
+<$defent NAME="curren" RPLC="¤" NUM="164">
+<$defent NAME="yen"    RPLC="¥" NUM="165">
+<$defent NAME="brvbar" RPLC="¦" NUM="166">
+<$defent NAME="sect"   RPLC="§" NUM="167">
+<$defent NAME="die"    RPLC="¨" NUM="168">
+<$defent NAME="copy"   RPLC="©" NUM="169">
+<$defent NAME="ordf"   RPLC="ª" NUM="170">
+<$defent NAME="laquo"  RPLC="«" NUM="171">
+<$defent NAME="not"    RPLC="¬" NUM="172">
+<$defent NAME="shy"    RPLC="­" NUM="173">
+<$defent NAME="reg"    RPLC="®" NUM="174">
+<$defent NAME="macr"   RPLC="¯" NUM="175">
+<$defent NAME="deg"    RPLC="°" NUM="176">
+<$defent NAME="plusmn" RPLC="±" NUM="177">
+<$defent NAME="sup2"   RPLC="²" NUM="178">
+<$defent NAME="sup3"   RPLC="³" NUM="179">
+<$defent NAME="acute"  RPLC="´" NUM="180">
+<$defent NAME="micro"  RPLC="µ" NUM="181">
+<$defent NAME="para"   RPLC="¶" NUM="182">
+<$defent NAME="middot" RPLC="·" NUM="183">
+<$defent NAME="cedil"  RPLC="¸" NUM="184">
+<$defent NAME="sup1"   RPLC="¹" NUM="185">
+<$defent NAME="ordm"   RPLC="º" NUM="186">
+<$defent NAME="raquo"  RPLC="»" NUM="187">
+<$defent NAME="frac14" RPLC="¼" NUM="188">
+<$defent NAME="frac12" RPLC="½" NUM="189">
+<$defent NAME="frac34" RPLC="¾" NUM="190">
+<$defent NAME="iquest" RPLC="¿" NUM="191">
+<$defent NAME="Agrave" RPLC="À" NUM="192">
+<$defent NAME="Aacute" RPLC="Á" NUM="193">
+<$defent NAME="Acirc"  RPLC="Â" NUM="194">
+<$defent NAME="Atilde" RPLC="Ã" NUM="195">
+<$defent NAME="Auml"   RPLC="Ä" NUM="196">
+<$defent NAME="Aring"  RPLC="Å" NUM="197">
+<$defent NAME="AElig"  RPLC="Æ" NUM="198">
+<$defent NAME="Ccedil" RPLC="Ç" NUM="199">
+<$defent NAME="Egrave" RPLC="È" NUM="200">
+<$defent NAME="Eacute" RPLC="É" NUM="201">
+<$defent NAME="Ecirc"  RPLC="Ê" NUM="202">
+<$defent NAME="Euml"   RPLC="Ë" NUM="203">
+<$defent NAME="Igrave" RPLC="Ì" NUM="204">
+<$defent NAME="Iacute" RPLC="Í" NUM="205">
+<$defent NAME="Icirc"  RPLC="Î" NUM="206">
+<$defent NAME="Iuml"   RPLC="Ï" NUM="207">
+<$defent NAME="ETH"    RPLC="Ð" NUM="208">
+<$defent NAME="Ntilde" RPLC="Ñ" NUM="209">
+<$defent NAME="Ograve" RPLC="Ò" NUM="210">
+<$defent NAME="Oacute" RPLC="Ó" NUM="211">
+<$defent NAME="Ocirc"  RPLC="Ô" NUM="212">
+<$defent NAME="Otilde" RPLC="Õ" NUM="213">
+<$defent NAME="Ouml"   RPLC="Ö" NUM="214">
+<$defent NAME="times"  RPLC="×" NUM="215">
+<$defent NAME="Oslash" RPLC="Ø" NUM="216">
+<$defent NAME="Ugrave" RPLC="Ù" NUM="217">
+<$defent NAME="Uacute" RPLC="Ú" NUM="218">
+<$defent NAME="Ucirc"  RPLC="Û" NUM="219">
+<$defent NAME="Uuml"   RPLC="Ü" NUM="220">
+<$defent NAME="Yacute" RPLC="Ý" NUM="221">
+<$defent NAME="THORN"  RPLC="Þ" NUM="222">
+<$defent NAME="szlig"  RPLC="ß" NUM="223">
+<$defent NAME="agrave" RPLC="à" NUM="224">
+<$defent NAME="aacute" RPLC="á" NUM="225">
+<$defent NAME="acirc"  RPLC="â" NUM="226">
+<$defent NAME="atilde" RPLC="ã" NUM="227">
+<$defent NAME="auml"   RPLC="ä" NUM="228">
+<$defent NAME="aring"  RPLC="å" NUM="229">
+<$defent NAME="aelig"  RPLC="æ" NUM="230">
+<$defent NAME="ccedil" RPLC="ç" NUM="231">
+<$defent NAME="egrave" RPLC="è" NUM="232">
+<$defent NAME="eacute" RPLC="é" NUM="233">
+<$defent NAME="ecirc"  RPLC="ê" NUM="234">
+<$defent NAME="euml"   RPLC="ë" NUM="235">
+<$defent NAME="igrave" RPLC="ì" NUM="236">
+<$defent NAME="iacute" RPLC="í" NUM="237">
+<$defent NAME="icirc"  RPLC="î" NUM="238">
+<$defent NAME="iuml"   RPLC="ï" NUM="239">
+<$defent NAME="eth"    RPLC="ð" NUM="240">
+<$defent NAME="ntilde" RPLC="ñ" NUM="241">
+<$defent NAME="ograve" RPLC="ò" NUM="242">
+<$defent NAME="oacute" RPLC="ó" NUM="243">
+<$defent NAME="ocirc"  RPLC="ô" NUM="244">
+<$defent NAME="otilde" RPLC="õ" NUM="245">
+<$defent NAME="ouml"   RPLC="ö" NUM="246">
+<$defent NAME="divide" RPLC="÷" NUM="247">
+<$defent NAME="oslash" RPLC="ø" NUM="248">
+<$defent NAME="ugrave" RPLC="ù" NUM="249">
+<$defent NAME="uacute" RPLC="ú" NUM="250">
+<$defent NAME="ucirc"  RPLC="û" NUM="251">
+<$defent NAME="uuml"   RPLC="ü" NUM="252">
+<$defent NAME="yacute" RPLC="ý" NUM="253">
+<$defent NAME="thorn"  RPLC="þ" NUM="254">
+<$defent NAME="yuml"   RPLC="ÿ" NUM="255">
+
+
+<*****************>
+<* icon entities *>
+<*****************>
+<$deficon name="archive">
+<$deficon name="audio">
+<$deficon name="binary.document">
+<$deficon name="binhex.document">
+<$deficon name="calculator">
+<$deficon name="caution">
+<$deficon name="cd.i">
+<$deficon name="cd.rom">
+<$deficon name="clock">
+<$deficon name="compressed.document">
+<$deficon name="disk.drive">
+<$deficon name="diskette">
+<$deficon name="document">
+<$deficon name="fax">
+<$deficon name="filing.cabinet">
+<$deficon name="film">
+<$deficon name="fixed.disk">
+<$deficon name="folder">
+<$deficon name="form">
+<$deficon name="ftp">
+<$deficon name="glossary">
+<$deficon name="gopher">
+<$deficon name="home">
+<$deficon name="html">
+<* <$deficon name="image"> Sorry, this is now an official entity name *>
+<$deficon name="index">
+<$deficon name="keyboard">
+<$deficon name="mail">
+<$deficon name="mail.in">
+<$deficon name="mail.out">
+<$deficon name="map">
+<$deficon name="mouse">
+<$deficon name="new">
+<$deficon name="next">
+<$deficon name="notebook">
+<$deficon name="parent">
+<$deficon name="play.fast.forward">
+<$deficon name="play.fast.reverse">
+<$deficon name="play.pause">
+<$deficon name="play.start">
+<$deficon name="play.stop">
+<$deficon name="previous">
+<$deficon name="printer">
+<$deficon name="sadsmiley">
+<$deficon name="smiley">
+<$deficon name="stop">
+<$deficon name="summary">
+<$deficon name="telephone">
+<$deficon name="telnet">
+<$deficon name="text.document">
+<$deficon name="tn3270">
+<$deficon name="toc">
+<$deficon name="trash">
+<$deficon name="unknown.document">
+<$deficon name="uuencoded.document">
+<$deficon name="work">
+<$deficon name="www">
+
+<******************>
+<* CSS properties *>
+<******************>
+<* NOTE: pseudo-formats (like a:hover) and font-file definitions are not
+ * included as these are not intended for STYLE attributes anyway *>
+<$defstyle name="font">
+<$defstyle name="font-family">
+<$defstyle name="font-style" val="italic|oblique|normal">
+<$defstyle name="font-variant" val="small-caps|normal">
+<$defstyle name="font-size" val="%p|xx-small|x-small|small|medium|large|x-large|xx-large|smaller|larger">
+<$defstyle name="font-weight" val="normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900">
+<$defstyle name="font-stretch" val="wider|narrower|condensed|semi condensed|extra-condensed|ultra-condensed|expanded|semi-expanded|extra-expanded|ultra-expanded|normal">
+<$defstyle name="word-spacing" val="%n">
+<$defstyle name="letter-spacing" val="%n">
+<$defstyle name="text-decoration" val="underline|overline|line-through|blink|none">
+<$defstyle name="text-transform" val="capitalize|uppercase|lowercase|none">
+<$defstyle name="color" val="%c">
+<$defstyle name="text-shadow" val="%c|none">
+
+<$defstyle name="text-indent" val="%P">
+<$defstyle name="line-height" val="%p">
+<$defstyle name="vertical-align" val="middle|bottom|baseline|sub|super|text-top|text-bottom">
+<$defstyle name="text-align" val="left|center|right|justify">
+<$defstyle name="white-space" val="normal|pre|nowrap">
+
+<$defstyle name="margin" val="%P">
+<$defstyle name="margin-top" val="%P">
+<$defstyle name="margin-bottom" val="%P">
+<$defstyle name="margin-left" val="%P">
+<$defstyle name="margin-right" val="%P">
+
+<$defstyle name="padding" val="%P">
+<$defstyle name="padding-top" val="%P">
+<$defstyle name="padding-bottom" val="%P">
+<$defstyle name="padding-left" val="%P">
+<$defstyle name="padding-right" val="%P">
+
+<$defstyle name="border">
+<$defstyle name="border-top">
+<$defstyle name="border-bottom">
+<$defstyle name="border-left">
+<$defstyle name="border-right">
+<$defstyle name="border-width" val="%n|thin|medium|thick">
+<$defstyle name="border-top-width" val="%n|thin|medium|thick">
+<$defstyle name="border-bottom-width" val="%n|thin|medium|thick">
+<$defstyle name="border-left-width" val="%n|thin|medium|thick">
+<$defstyle name="border-right-width" val="%n|thin|medium|thick">
+<$defstyle name="border-color" val="%c|transparent">
+<$defstyle name="border-top-color" val="%c|transparent">
+<$defstyle name="border-bottom-color" val="%c|transparent">
+<$defstyle name="border-left-color" val="%c|transparent">
+<$defstyle name="border-right-color" val="%c|transparent">
+<$defstyle name="border-style" val=(__css-border-styles)>
+<$defstyle name="border-top-style" val=(__css-border-styles)>
+<$defstyle name="border-bottom-style" val=(__css-border-styles)>
+<$defstyle name="border-left-style" val=(__css-border-styles)>
+<$defstyle name="border-right-style" val=(__css-border-styles)>
+
+<$defstyle name="background">
+<$defstyle name="background-color" val="%c">
+<$defstyle name="background-image" val="%u">
+<$defstyle name="background-repeat" val="repeat|repeat-x|repeat-y|no-repeat">
+<$defstyle name="background-attachment" val="scroll|fixed">
+<$defstyle name="background-position" val="top|center|middle|bottom|left|right">
+
+<$defstyle name="list-style">
+<$defstyle name="list-style-type" val="decimal|lower-roman|upper-roman|lower-alpha|upper-alpha|lower-latin|upper-latin|disc|circle|square|none|lower-greek|hebrew|decimal-leading-zero|cjk-ideographic|hiragana|katakana|hiragana-iroha|katakana-iroha">
+<$defstyle name="list-style-position" val="inside|outside">
+<$defstyle name="list-style-image" val="%u">
+
+<$defstyle name="caption-side" val="top|bottom|left|right">
+<$defstyle name="table-layout" val="fixed|auto">
+<$defstyle name="border-collapse" val="separate|collapse">
+<$defstyle name="border-spacing" val="%p">
+<$defstyle name="empty-cells" val="show|collapse">
+<$defstyle name="speak-header-cell" val="always|once">
+
+<$defstyle name="position" val="absolute|fixed|relative|static">
+<$defstyle name="top" val="%P|auto">
+<$defstyle name="bottom" val="%P|auto">
+<$defstyle name="left" val="%P|auto">
+<$defstyle name="right" val="%P|auto">
+<$defstyle name="width" val="%P|auto">
+<$defstyle name="min-width" val="%p">
+<$defstyle name="max-width" val="%p">
+<$defstyle name="height" val="%p|auto">
+<$defstyle name="min-height" val="%p">
+<$defstyle name="max-height" val="%p">
+<$defstyle name="overflow" val="visible|hidden|scroll|auto">
+<$defstyle name="direction" val="rtl|ltr">
+<$defstyle name="float" val="left|right|none">
+<$defstyle name="clear" val="left|right|both|none">
+<$defstyle name="z-index" val="%d">
+<$defstyle name="display" val="block|inline|list-item|marker|run-in|compact|none|table|inline-table|table-row|table-row-group|table-header-group|table-footer-group|table-column|table-column-group|table-caption">
+<$defstyle name="visibility" val="visible|hidden">
+<$defstyle name="clip" val="%r|auto">
+
+<$defstyle name="size" val="auto|landscape|portrait">
+<$defstyle name="marks" val="none|crop|cross|crop cross|cross crop">
+<$defstyle name="page-break-before" val="always|avoid|left|right|inherit|auto">
+<$defstyle name="page-break-after" val="always|avoid|left|right|inherit|auto">
+<$defstyle name="orphans" val="%d">
+<$defstyle name="widows" val="%d">
+
+<$defstyle name="volume" val="silent|x-soft|soft|medium|loud|x-loud">
+<$defstyle name="speak" val="none|normal|spell-out">
+<$defstyle name="pause">
+<$defstyle name="pause-before"><*s-ms-%*>
+<$defstyle name="pause-after"><*s-ms-%*>
+<$defstyle name="cue" val="%u">
+<$defstyle name="cue-before" val="%u">
+<$defstyle name="cue-after" val="%u">
+<$defstyle name="play-during">
+<$defstyle name="azimuth">
+<$defstyle name="elevation" val="below|lower|level|above|higher">
+<$defstyle name="speech-rate" val="x-slow|slow|slower|medium|faster|fast|x-fast">
+<$defstyle name="voice-family" val="male|female|child"><*too restrictive?*>
+<$defstyle name="pitch" val="%h|x-low|low|medium|high|x-high">
+<$defstyle name="pitch-range" val="%d">
+<$defstyle name="stress" val="%d">
+<$defstyle name="richness" val="%d">
+<$defstyle name="speak-punctuation" val="code|none">
+<$defstyle name="speak-numeral" val="digits|continous">
+
+<$defstyle name="cursor" val="auto|default|crosshair|pointer|move|n-resize|ne-resize|e-resize|se-resize|s-resize|sw-resize|w-resize|nw-resize|text|wait|help"><*add url!*>
+
+
+<* HTML *>
+
+<$deftag ! /SPECIAL>
+<$deftag A /CLOSE /NAW="a" /LAZY="hm" /WHTSPC [__attrs] CHARSET:string TYPE:string NAME:id HREFLANG:string [__Target] REL:string REV:string [__Shape] COORDS:string [__Focus]>
+<$deftag ABBR /CLOSE /WHTSPC [__attrs]>
+<$deftag ACRONYM /CLOSE /WHTSPC [__attrs]>
+<$deftag ADDRESS /CLOSE [__attrs]>
+<$deftag AREA /MBI="map" /EMPTY [__Shape] COORDS:string HREF:uri [__Target] NOHREF:bool ALT:string/R [__Focus]>
+<$deftag B /CLOSE /WHTSPC [__attrs]>
+<$deftag BASE /MBI="head" /EMPTY /ONLYONCE /LAZY='ih' [__Target]>
+<$deftag BDO [__coreattrs] LANG:string/RCMD DIR:enum("ltr|rtl")>
+<$deftag BIG /CLOSE /NAW="pre" /WHTSPC [__attrs]>
+<$deftag BLOCKQUOTE /CLOSE /NAW=(__elem-inline) [__attrs] CITE:uri>
+<$deftag BR /LAZY='k' /EMPTY [__coreattrs]>
+<$deftag BUTTON /CLOSE /NAW="a|input|select|textarea|label|button|form|isindex|fieldset|iframe" [__attrs] NAME:id VALUE:string TYPE:enum("button|submit|reset") DISABLED:bool [__Focus]>
+<$deftag CAPTION /CLOSE /MBI="fig|table" [__attrs] ALIGN:enum("top|bottom|left|right")>
+<$deftag CITE /CLOSE /WHTSPC [__attrs]>
+<$deftag CODE /CLOSE /WHTSPC [__attrs]>
+<$deftag COL /EMPTY /MBI="table|colgroup" [__attrs] [__ColumnAttrs]>
+<$deftag DD /AUTOCLOSE /MBI="dl" [__attrs]>
+<$deftag DEL /CLOSE /WHTSPC [__attrs] CITE:uri DATETIME:string>
+<$deftag DFN /CLOSE /WHTSPC [__attrs]>
+<$deftag DIV /CLOSE /NAW=(__elem-inline) [__attrs] NOWRAP:bool/O [__Align]>
+<$deftag DL /CLOSE /NAW=(__elem-inline) [__attrs] [__Compact]>
+<$deftag DT /AUTOCLOSE /MBI="dl" [__attrs]>
+<$deftag EM /CLOSE /WHTSPC [__attrs]>
+<$deftag FIELDSET /CLOSE [__attrs]>
+<$deftag FORM /CLOSE /NAW=(__elem-inline + "|form") [__attrs] ACTION:uri/R METHOD:enum("get|post") ENCTYPE:string ACCEPT:string NAME:string onSubmit:string onReset:string [__Target] ACCEPT-CHARSET:string SCRIPT:string/O>
+<$deftag FRAME /EMPTY /MBI="frameset" [__coreattrs] LONGDESC:uri NAME:string SRC:uri FRAMEBORDER:enum("1|0") MARGINWIDTH:num MARGINHEIGHT:num NORESIZE:bool SCROLLING:enum("yes|no|auto")>
+<$deftag FRAMESET /CLOSE [__coreattrs] ROWS:string COLS:string BORDER:string/J FRAMEBORDER:num/J FRAMESPACING:num/J onLoad:string onUnload:string>
+<$deftag H1 /CLOSE /NAW=(__elem-inline + "|h1|h2|h3|h4|h5|h6") /WHTSPC [__attrs] [__HeadingAttrs]>
+<$deftag H2 /CLOSE /NAW=(__elem-inline + "|h1|h2|h3|h4|h5|h6") /WHTSPC [__attrs] [__HeadingAttrs]>
+<$deftag H3 /CLOSE /NAW=(__elem-inline + "|h1|h2|h3|h4|h5|h6") /WHTSPC [__attrs] [__HeadingAttrs]>
+<$deftag H4 /CLOSE /NAW=(__elem-inline + "|h1|h2|h3|h4|h5|h6") /WHTSPC [__attrs] [__HeadingAttrs]>
+<$deftag H5 /CLOSE /NAW=(__elem-inline + "|h1|h2|h3|h4|h5|h6") /WHTSPC [__attrs] [__HeadingAttrs]>
+<$deftag H6 /CLOSE /NAW=(__elem-inline + "|h1|h2|h3|h4|h5|h6") /WHTSPC [__attrs] [__HeadingAttrs]>
+<$deftag HR /EMPTY [__attrs] SRC:uri/Z/O SIZE:string WIDTH:string ALIGN:enum("left|right|center") NOSHADE:bool>
+<$deftag I /CLOSE /WHTSPC [__attrs]>
+<$deftag IFRAME /NAW="button" [__coreattrs] LONGDESC:uri NAME:string SRC:uri FRAMEBORDER:enum("1|0") MARGINWIDTH:num MARGINHEIGHT:num SCROLLING:enum("yes|no|auto") [__IAlign] HEIGHT:string WIDTH:string>
+<$deftag INPUT /EMPTY /NAW="button" [__attrs] TYPE:enum("text|password|checkbox|radio|submit|reset|file|hidden|image|button") NAME:string VALUE:string CHECKED:bool DISABLED:bool READONLY:bool SIZE:string MAXLENGTH:num SRC:uri [__Alt] USEMAP:uri ISMAP:bool TABINDEX:num [__Focus] onSelect:string onChange:string ACCEPT:string [__IAlign]>
+<$deftag INS /CLOSE /WHTSPC [__attrs] CITE:uri DATETIME:string>
+<$deftag KBD /CLOSE /WHTSPC [__attrs]>
+<$deftag LABEL /CLOSE /NAW="button" [__attrs] FOR:string [__AccessKey] [__OnFocusOnBlur]>
+<$deftag LEGEND /CLOSE /MBI="fieldset" /NAW=(__elem-inline) [__attrs] [__AccessKey] ALIGN:enum("top|bottom|left|right")>
+<$deftag LI /AUTOCLOSE /MBI="ul|ol|dir|menu" [__attrs] VALUE:string SKIP:string/O DINGBAT:string/O TYPE:string/J>
+<$deftag LINK /EMPTY /MBI="head" [__attrs] CHARSET:string HREF:uri/x HREFLANG:string TYPE:string REL:string REV:string MEDIA:string URN:string/JERK METHODS:string/JERK>
+<$deftag MAP /CLOSE [__attrs] NAME:id>
+<$deftag META /EMPTY /MBI="head" [__i18n] HTTP-EQUIV:string NAME:string CONTENT:string/R SCHEME:string>
+<$deftag NOFRAMES /MBI=(__applet + "blockquote|body|button|center|dd|del|div|fieldset|form|frameset|iframe|ins|li|map|noscript|object|td|th") /CLOSE [__attrs]>
+<$deftag NOSCRIPT /CLOSE /NAW=(__elem-inline) [__attrs]>
+<$deftag OBJECT /CLOSE /NAW="pre" [__attrs] DECLARE:bool CLASSID:uri CODEBASE:uri DATA:uri TYPE:string CODETYPE:string ARCHIVE:string STANDBY:string HEIGHT:string WIDTH:string USEMAP:uri NAME:string TABINDEX:num [__IAlign] BORDER:num HSPACE:num VSPACE:num>
+<$deftag OPTGROUP /CLOSE /MBI="select" [__attrs] DISABLED:bool LABEL:string>
+<$deftag OPTION /AUTOCLOSE /MBI="select|optgroup" [__attrs] SELECTED:bool DISABLED:bool VALUE:string LABEL:string>
+<$deftag P /AUTOCLOSE /MBI=(__applet + "address|blockquote|body|button|center|del|dd|div|fieldset|form|iframe|ins|li|map|noframes|noscript|object|td|th") /NAW=(__elem-inline) [__attrs] NOWRAP:bool/O [__Align]>
+<$deftag PARAM /EMPTY /LAZY='i' /MBI=(__applet + "object") NAME:string VALUE:string VALUETYPE:enum("data|ref|object") TYPE:string>
+<$deftag PRE /CLOSE /NAW=(__elem-inline) [__attrs] WIDTH:num>
+<$deftag Q /CLOSE /WHTSPC [__attrs] CITE:uri>
+<$deftag SAMP /CLOSE /WHTSPC [__attrs]>
+<$deftag SCRIPT /CLOSE /NAW="select|script" CHARSET:string TYPE:string/R LANGUAGE:string/O SRC:uri DEFER:bool EVENT:string FOR:uri>
+<$deftag SELECT /CLOSE /MBI="form" /NAW="button" [__attrs] NAME:string/r SIZE:num MULTIPLE:bool ROWS:string/O COLS:string/O DISABLED:bool ERROR:string/O WIDTH:string/O HEIGHT:string/O UNITS:string/O TABINDEX:num [__OnFocusOnBlur] onChange:string>
+<$deftag SMALL /CLOSE /NAW="pre" /WHTSPC [__attrs]>
+<$deftag SPAN /CLOSE [__attrs]>
+<$deftag STRONG /CLOSE /WHTSPC [__attrs]>
+<$deftag STYLE /CLOSE /MBI="head" [__i18n] TYPE:string/R MEDIA:string TITLE:string>
+<$deftag SUB /CLOSE /NAW="pre" /WHTSPC [__attrs]>
+<$deftag SUP /CLOSE /NAW="pre" /WHTSPC [__attrs]>
+<$deftag TBODY /AUTOCLOSE /MBI="table" /NAW=(__elem-inline) [__attrs] [__HVAlign]>
+<$deftag TD /CLOSE /MBI="tr" /NAW=(__elem-inline) [__attrs] ABBR:string AXIS:string HEADERS:string SCOPE:enum("row|col|rowgroup|colgroup") ROWSPAN:string COLSPAN:string [__HVAlign] NOWRAP:bool NOFLOW:bool/O [__Background] [__WidthHeight]>
+<$deftag TEXTAREA /MBI="form" /CLOSE [__attrs] NAME:string ROWS:num/R COLS:num/R DISABLED:bool READONLY:bool [__Focus] onSelect:string onChange:string WRAP:enum("off|soft|hard")/O>
+<$deftag TFOOT /AUTOCLOSE /MBI="table" /NAW=(__elem-inline) [__attrs] [__HVAlign]>
+<$deftag TH /CLOSE /MBI="tr" /NAW=(__elem-inline) [__attrs] [__Abbr] AXIS:string HEADERS:string SCOPE:enum("row|col|rowgroup|colgroup") ROWSPAN:string COLSPAN:string [__HVAlign] NOWRAP:bool NOFLOW:bool/O [__Background] [__WidthHeight]>
+<$deftag THEAD /AUTOCLOSE /MBI="table" /NAW=(__elem-inline) [__attrs] [__HVAlign]>
+<$deftag TR /CLOSE /MBI="table|thead|tbody|tfoot" /NAW=(__elem-inline) [__attrs] NOWRAP:bool/O [__HVAlign] DP:string/O [__Background]>
+<$deftag TT /CLOSE /WHTSPC [__attrs]>
+<$deftag VAR /CLOSE /WHTSPC [__attrs]>
+
+<* tags with special treatment in XHTML mode - $VARLISTs would complicate things here *>
+<$if COND=(defined HSC.OPTS.XHTML)>
+  <$deftag BODY /CLOSE /REQUIRED /ONLYONCE /MBI="html" [__attrs] BACKGROUND:uri [__BodyColors] onLoad:string onUnload:string>
+  <$deftag COLGROUP /CLOSE /MBI="table" [__attrs] [__ColumnAttrs]>
+  <$deftag HEAD /CLOSE /REQUIRED /ONLYONCE /MBI="html" [__i18n] PROFILE:uri>
+  <$deftag HTML /CLOSE /REQUIRED /ONLYONCE [__i18n] XMLNS:uri>
+  <$deftag IMG /EMPTY /NAW="pre" [__attrs] SRC:uri/X/Z/R ALT:string/R LONGDESC:uri NAME:string HEIGHT:string/O WIDTH:string/O USEMAP:uri ISMAP:bool/J [__IAlign] BORDER:num/O HSPACE:string/O VSPACE:string/O LOWSRC:uri/J>
+  <$deftag OL /CLOSE /NAW=(__elem-inline) [__attrs]>
+  <$deftag TABLE /CLOSE [__attrs] [__Summary] WIDTH:string BORDER:num ALIGN:enum("left|center|right")/O [__TFrameRules] CELLSPACING:string CELLPADDING:string [__Background]>
+  <$deftag TITLE /CLOSE /REQUIRED /ONLYONCE /MBI="head" /WHTSPC [__attrs]>
+  <$deftag UL /CLOSE /NAW=(__elem-inline) [__attrs]>
+<$else>
+  <$deftag BODY /AUTOCLOSE /RECOMMENDED /ONLYONCE [__attrs] BACKGROUND:uri [__BodyColors] onLoad:string onUnload:string>
+  <$deftag COLGROUP /AUTOCLOSE /MBI="table" [__attrs] [__ColumnAttrs]>
+  <$deftag HEAD /CLOSE /RECOMMENDED /ONLYONCE [__i18n] PROFILE:uri>
+  <$deftag HTML /CLOSE /RECOMMENDED /ONLYONCE [__i18n]>
+  <$deftag IMG /EMPTY /NAW="pre" [__attrs] SRC:uri/X/Z/R ALT:string/R LONGDESC:uri NAME:string HEIGHT:string WIDTH:string USEMAP:uri ISMAP:bool/J [__IAlign] BORDER:num HSPACE:string VSPACE:string LOWSRC:uri/J>
+  <$deftag OL /CLOSE /NAW=(__elem-inline) [__attrs] TYPE:enum("1|a|i") COMPACT:bool START:num>
+  <$deftag TABLE /CLOSE [__attrs] [__Summary] WIDTH:string BORDER:num ALIGN:enum("left|center|right")/O [__TFrameRules] CELLSPACING:string CELLPADDING:string [__Background] UNITS:string/O NOWRAP:bool/J NOFLOW:bool/J>
+  <$deftag TITLE /CLOSE /RECOMMENDED /ONLYONCE /WHTSPC [__attrs]>
+  <$deftag UL /CLOSE /NAW=(__elem-inline) [__attrs] TYPE:enum("disc|square|circle") COMPACT:bool DINGBAT:string/O WRAP:string/O PLAIN:bool/O>
+
+  <* OBSOLETE tags as of HTML 4.01 *>
+  <$deftag APPLET /CLOSE /NAW="pre" /OBSOLETE [__coreattrs] CODEBASE:uri ARCHIVE:string CODE:string OBJECT:string [__Alt] NAME:id [__WidthHeight] HSPACE:num VSPACE:num [__IAlign]>
+  <$deftag CENTER /CLOSE /OBSOLETE [__attrs]>
+  <$deftag HP0 /CLOSE /OBSOLETE /WHTSPC> <* highlight phrase *>
+  <$deftag HP1 /CLOSE /OBSOLETE /WHTSPC>
+  <$deftag HP2 /CLOSE /OBSOLETE /WHTSPC>
+  <$deftag HP3 /CLOSE /OBSOLETE /WHTSPC>
+  <$deftag ISINDEX /EMPTY /OBSOLETE [__coreattrs] [__i18n] PROMPT:string>
+  <$deftag LH /CLOSE /OBSOLETE [__coreattrs] [__i18n]>
+  <$deftag LISTING /CLOSE /OBSOLETE>
+  <$deftag MENU /CLOSE /OBSOLETE [__attrs] COMPACT:bool>
+  <$deftag PLAINTEXT /CLOSE /OBSOLETE>
+  <$deftag S /CLOSE /WHTSPC /OBSOLETE [__attrs]>
+  <$deftag STRIKE /CLOSE /WHTSPC /OBSOLETE [__attrs]>
+  <$deftag U /CLOSE /WHTSPC /OBSOLETE [__attrs]>
+  <$deftag XMP /CLOSE /OBSOLETE><$deftag DIR /CLOSE /OBSOLETE COMPACT:bool [__attrs]>
+
+<* dubious/JERK tags or otherwise not found in HTML 4.01 *>
+  <$deftag AU /CLOSE /WHTSPC [__coreattrs] [__i18n]>
+  <$deftag BANNER /CLOSE [__coreattrs] [__i18n]>
+  <$deftag BASEFONT /JERK /EMPTY /LAZY='i' /NAW="pre" SIZE:enum("1|2|3|4|5|6|7") COLOR:color/O FACE:string>
+  <$deftag BGSOUND /JERK SRC:uri LOOP:string>
+  <$deftag BLINK /CLOSE /JERK>
+  <$deftag BQ /CLOSE [__coreattrs] [__i18n] NOWRAP:bool>
+  <$deftag CREDIT /CLOSE /MBI="bq|fig" [__coreattrs] [__i18n]>
+  <$deftag EMBED /AUTOCLOSE /JERK SRC:uri HEIGHT:string WIDTH:string ATTRIBUTE_1:string ATTRIBUTE_2:string>
+  <$deftag FIG /CLOSE /LAZY="cikl" SRC:uri/x/z/r ALIGN:enum("left|right|center|justify|bleedleft|bleedright") NOFLOW:bool MD:string [__WidthHeight] UNITS:string IMAGEMAP:uri>
+  <$deftag FN /CLOSE [__coreattrs] [__i18n]>
+  <$deftag FONT /JERK /CLOSE /NAW="pre" [__coreattrs] [__i18n] SIZE:enum("1|2|3|4|5|6|7|+1|+2|+3|+4|+5|+6|+7|-1|-2|-3|-4|-5|-6|-7") COLOR:color FACE:string>
+  <$deftag LANG /CLOSE /WHTSPC [__coreattrs] [__i18n]>
+  <$deftag MULTICOL /CLOSE /JERK COLS:string GUTTER:string WIDTH:string>
+  <$deftag NEXTID N:string>
+  <$deftag NOEMBED /CLOSE /JERK>
+  <$deftag NOBR /CLOSE /JERK>
+  <$deftag NOTE /CLOSE /LAZY="ciklms">
+  <$deftag OVERLAY SRC:uri/x/z/r MD:string UNITS:string X:string Y:string  WIDTH:string/j HEIGHT:string/j IMAGEMAP:uri>
+  <$deftag PERSON /CLOSE /WHTSPC [__coreattrs] [__i18n]>
+  <$deftag RANGE /LAZY="ci" FROM:uri UNTIL:uri>
+  <$deftag SPACER /JERK TYPE:enum("vertical|horizontal|block") SIZE:string [__WidthHeight] ALIGN:enum("top|bottom|middle|left|right|texttop|absmiddle|baseline|absbottom")>
+  <$deftag WBR /JERK>
+</$if>
+
+<* vi: set nowrap tw=0 et ts=2: *>
+<* EOF *>
+
