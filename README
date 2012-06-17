@@ -9,7 +9,7 @@ VERSION
 
 AUTHOR
 
-  Matthias Bethke <Matthias.Bethke@gmx.net> (since V0.918)
+  Matthias Bethke <matthias@towiski.de> (since V0.918)
   Thomas Aglassinger <agi@giga.or.at>
 
 DESCRIPTION
@@ -63,15 +63,15 @@ NEW FEATURES
 
 REQUIREMENTS
 
-  Unixoid: tested on Linux, and MacOS X; Makefile supports
+  Unixoid: tested on Linux and MacOS X; Makefile supports
            NeXTStep, should compile fine on other flavors, too.
   AmigaOS: OS2.04 or higher (tested: OS3.1), 2 MB RAM, 68020
            recommended: 4 MB RAM, 68060.
-           Compilation requires unistd.h which comes (at least) with SAS/C
-           and gcc
+           Compilation requires unistd.h which comes with SAS/C
+	   and gcc
   Windows: Should be fine on any W32 system, as long as the file system
            supports long filenames (or what counted as "long" in the last
-           millennium...)
+           millennium)
   RiscOS : anybody without the latest version left? :) This hasn't been tested
            for quite a few releases and is likely to need fixing.
 
@@ -85,10 +85,9 @@ REQUIREMENTS
 
 AVAILABILITY
 
- - currently only from my homepage at
+ - Latest version on github: http://github.com/mbethke/hsc
+ - Occasional snapshots from my homepage at
    http://www.linguistik.uni-erlangen.de/~msbethke/software.html
-   This release consists of a source archive and an RPM for Linux/i386
-   See the webpage or mail me (mb) for binaries for other platforms.
 
 PRICE
 
