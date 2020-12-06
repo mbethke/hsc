@@ -513,7 +513,8 @@ static HSCATTR *copy_local_var(DLLIST * destlist, HSCATTR * locvar, ULONG mci)
    var->varflag = locvar->varflag & (~VF_MACRO);       /* disable VF_MACRO */
    set_vartext(var, locvar->text);
    var->quote = locvar->quote;
-   
+   var->enumstr = locvar->enumstr ? strclone(locvar->enumstr) : NULL;
+
    return (var);
 }
 
