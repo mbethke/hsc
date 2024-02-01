@@ -59,8 +59,8 @@ hsc_license2 =
  */
 void show_license(void)
 {
-   /* 2*printf just to avoid compiler moaning */
-   fprintf(stderr, hsc_license1);
-   fprintf(stderr, hsc_license2);
+   /* 2*fputs just to avoid compiler moaning */
+   fputs(hsc_license1, stderr);
+   fputs(hsc_license2, stderr);
 }
 
