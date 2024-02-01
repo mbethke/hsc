@@ -213,7 +213,7 @@ static BOOL hsc_init_project(HSCPRC * hp, STRPTR project_fname)
     return (ok);
 }
 
-void fpf(FILE *s, APTR d) { fprintf(s,d); }
+void fpf(FILE *s, APTR d) { fputs(d,s); }
 /*
  * hsc_main()
  */
